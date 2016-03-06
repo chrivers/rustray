@@ -3,12 +3,14 @@
 use std::ops::{Add, Sub, Mul};
 use num::Float;
 
+pub const EPSILON: f64 = 1e-10;
+
 #[derive(Clone, Copy)]
 pub struct Vector<F: Float>
 {
-    x: F,
-    y: F,
-    z: F,
+    pub x: F,
+    pub y: F,
+    pub z: F,
 }
 
 impl<F: Float> Add for Vector<F>
