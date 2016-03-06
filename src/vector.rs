@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-use std::ops::{Add, Sub};
+use std::ops::{Add, Sub, Mul};
 use num::Float;
 
 #[derive(Clone, Copy)]
-struct Vector<F: Float>
+pub struct Vector<F: Float>
 {
     x: F,
     y: F,
@@ -39,14 +39,29 @@ impl<F: Float> Sub for Vector<F>
     }
 }
 
+impl<F: Float> Mul<F> for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn mul(self, other: F) -> Vector<F>
+    {
+        Vector
+        {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
+        }
+    }
+}
+
 impl<F: Float> Vector<F>
 {
-    fn length(&self) -> F
+    pub fn length(&self) -> F
     {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    fn normalized(self) -> Vector<F>
+    pub fn normalized(self) -> Vector<F>
     {
         let l = self.length();
         if l != F::zero()
@@ -63,12 +78,12 @@ impl<F: Float> Vector<F>
         }
     }
 
-    fn dot(self, other: Vector<F>) -> F
+    pub fn dot(self, other: Vector<F>) -> F
     {
         other.x * self.x + other.y * self.y + other.z * self.z
     }
 
-    fn cross(self, other: Vector<F>) -> Vector<F>
+    pub fn crossed(self, other: Vector<F>) -> Vector<F>
     {
         Vector
         {
@@ -78,7 +93,7 @@ impl<F: Float> Vector<F>
         }
     }
 
-    fn vector_to(self, other: Vector<F>) -> Vector<F>
+    pub fn vector_to(self, other: Vector<F>) -> Vector<F>
     {
         Vector
         {
@@ -88,17 +103,17 @@ impl<F: Float> Vector<F>
         }
     }
 
-    fn length_to(self, other: Vector<F>) -> F
+    pub fn length_to(self, other: Vector<F>) -> F
     {
         self.vector_to(other).length()
     }
 
-    fn cos_angle(self, other: Vector<F>) -> F
+    pub fn cos_angle(self, other: Vector<F>) -> F
     {
         self.normalized().dot(other.normalized())
     }
 
-    fn scaled(self, scale: F) -> Vector<F>
+    pub fn scaled(self, scale: F) -> Vector<F>
     {
         Vector
         {
