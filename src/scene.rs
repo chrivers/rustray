@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-// use std::ops::{Add, Sub, Mul};
+use ray::Ray;
 use vector::Vector;
 use color::Color;
 use num::Float;
@@ -21,4 +21,9 @@ pub trait HasColor<F: Float>
 {
     fn get_color(&self) -> Color<F>;
     fn set_color(&mut self, value: Color<F>);
+}
+
+pub trait RayTarget<F: Float>
+{
+    fn ray_hit(&self, ray: Ray<F>) -> Option<Vector<F>>;
 }
