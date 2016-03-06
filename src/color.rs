@@ -4,7 +4,7 @@ use std::ops::{Add, Sub, Mul};
 use num::Float;
 
 #[derive(Clone, Copy)]
-struct Color<F: Float>
+pub struct Color<F: Float>
 {
     r: F,
     g: F,
