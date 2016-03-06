@@ -98,4 +98,16 @@ impl<F: Float> Color<F>
         let r = Color::clamp(self.r);
         Color { r: r, g: r, b: r }
     }
+
+    pub fn mixed(input: &[Color<F>]) -> Color<F>
+    {
+        if input.len() > 0
+        {
+            let sum = input.iter().fold(Color::black(), |a, &c| a + c);
+            sum * (F::one() / F::from(input.len()).unwrap())
+        } else
+        {
+            Color::black()
+        }
+    }
 }
