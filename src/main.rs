@@ -5,7 +5,11 @@ use image::ColorType;
 use image::png::PNGEncoder;
 use image::ImageBuffer;
 
+pub mod color;
 pub mod vector;
+pub mod point;
+pub mod camera;
+pub mod ray;
 
 fn main() {
     let buffer = File::create("output.png").unwrap();
