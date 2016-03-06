@@ -6,8 +6,8 @@ use num::Float;
 #[derive(Clone, Copy)]
 pub struct Ray<F: Float>
 {
-    pos: Vector<F>,
-    dir: Vector<F>,
+    pub pos: Vector<F>,
+    pub dir: Vector<F>,
 }
 
 impl<F: Float> Ray<F>
