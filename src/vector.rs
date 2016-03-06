@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::ops::{Add, Sub};
 use num::Float;
 
@@ -44,7 +46,7 @@ impl<F: Float> Vector<F>
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    fn normalize(self) -> Vector<F>
+    fn normalized(self) -> Vector<F>
     {
         let l = self.length();
         if l != F::zero()
@@ -58,6 +60,51 @@ impl<F: Float> Vector<F>
         } else
         {
             Vector { x: F::zero(), y: F::zero(), z: F::zero() }
+        }
+    }
+
+    fn dot(self, other: Vector<F>) -> F
+    {
+        other.x * self.x + other.y * self.y + other.z * self.z
+    }
+
+    fn cross(self, other: Vector<F>) -> Vector<F>
+    {
+        Vector
+        {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x
+        }
+    }
+
+    fn vector_to(self, other: Vector<F>) -> Vector<F>
+    {
+        Vector
+        {
+            x: other.x - self.x,
+            y: other.y - self.y,
+            z: other.z - self.z
+        }
+    }
+
+    fn length_to(self, other: Vector<F>) -> F
+    {
+        self.vector_to(other).length()
+    }
+
+    fn cos_angle(self, other: Vector<F>) -> F
+    {
+        self.normalized().dot(other.normalized())
+    }
+
+    fn scaled(self, scale: F) -> Vector<F>
+    {
+        Vector
+        {
+            x: self.x * scale,
+            y: self.y * scale,
+            z: self.z * scale,
         }
     }
 }
