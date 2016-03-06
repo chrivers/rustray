@@ -43,4 +43,21 @@ impl<F: Float> Vector<F>
     {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
+
+    fn normalize(self) -> Vector<F>
+    {
+        let l = self.length();
+        if l != F::zero()
+        {
+            Vector
+            {
+                x: self.x / l,
+                y: self.y / l,
+                z: self.z / l,
+            }
+        } else
+        {
+            Vector { x: F::zero(), y: F::zero(), z: F::zero() }
+        }
+    }
 }
