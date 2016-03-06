@@ -1,39 +1,46 @@
-mod vector
+use std::ops::{Add, Sub};
+use num::Float;
+
+#[derive(Clone, Copy)]
+struct Vector<F: Float>
 {
-    use std::ops::{Add, Sub};
+    x: F,
+    y: F,
+    z: F,
+}
 
-    struct Vector<Float>
+impl<F: Float> Add for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn add(self, other: Vector<F>) -> Vector<F>
     {
-        x: Float,
-        y: Float,
-        z: Float,
-    }
-
-    impl<Float: Add<Output=Float>> Add for Vector<Float>
-    {
-        type Output = Vector<Float>;
-
-        fn add(self, other: Vector<Float>) -> Vector<Float>
-        {
-            Vector::<Float> {
-                x: self.x + other.x,
-                y: self.y + other.y,
-                z: self.z + other.z,
-            }
+        Vector {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
         }
     }
+}
 
-    impl<Float: Sub<Output=Float>> Sub for Vector<Float>
+impl<F: Float> Sub for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn sub(self, other: Vector<F>) -> Vector<F>
     {
-        type Output = Vector<Float>;
-
-        fn sub(self, other: Vector<Float>) -> Vector<Float>
-        {
-            Vector::<Float> {
-                x: self.x - other.x,
-                y: self.y - other.y,
-                z: self.z - other.z,
-            }
+        Vector {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
         }
+    }
+}
+
+impl<F: Float> Vector<F>
+{
+    fn length(&self) -> F
+    {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 }

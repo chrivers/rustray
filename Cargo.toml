@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Christian Iversen <ci@iversenit.dk>"]
 
 [dependencies]
+image = "*"
+num = "0.1.31"
