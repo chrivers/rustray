@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use light::Light;
 use ray::Ray;
 use vector::Vector;
 use color::Color;
@@ -25,5 +26,6 @@ pub trait HasColor<F: Float>
 
 pub trait RayTarget<F: Float>
 {
-    fn ray_hit(&self, ray: Ray<F>) -> Option<Vector<F>>;
+    fn ray_hit(&self, &ray: Ray<F>) -> Option<Vector<F>>;
+    fn trace(&self, &hit: Vector<F>, &light: Light<F>) -> Color<F>;
 }
