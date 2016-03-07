@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 
 use std::ops::{Add, Sub, Mul};
+use num;
 use num::Float;
+use num::NumCast;
 
 #[derive(Clone, Copy)]
 pub struct Color<F: Float>
@@ -109,5 +111,16 @@ impl<F: Float> Color<F>
         {
             Color::black()
         }
+    }
+
+    pub fn to_array(&self) -> [u8; 3]
+    {
+        let clamped = self.clamped();
+        let max = F::from(255.0).unwrap();
+        [
+            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap(),
+            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap(),
+            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap(),
+        ]
     }
 }
