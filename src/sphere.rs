@@ -18,10 +18,10 @@ struct Sphere<F: Float>
 
 impl<F: Float> RayTarget<F> for Sphere<F>
 {
-    fn trace(&self, &hit: Vector<F>, &light: Light<F>) -> Color<F>
+    fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>
     {
         let m = hit.vector_to(light.pos);
-        let normal = self.pos.vector_to(hit);
+        let normal = self.pos.vector_to(*hit);
         let light_color = light.color * self.color;
         let reflection_coeff = F::max(normal.cos_angle(m), (normal * (-F::one())).cos_angle(m));
         light_color * reflection_coeff

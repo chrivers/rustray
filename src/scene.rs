@@ -27,5 +27,5 @@ pub trait HasColor<F: Float>
 pub trait RayTarget<F: Float>
 {
     fn ray_hit(&self, &ray: Ray<F>) -> Option<Vector<F>>;
-    fn trace(&self, &hit: Vector<F>, &light: Light<F>) -> Color<F>;
+    fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>;
 }
