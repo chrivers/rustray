@@ -7,7 +7,7 @@ use num::Float;
 #[derive(Clone, Copy)]
 pub struct Camera<F: Float>
 {
-    pos: Vector<F>,
+    pub pos: Vector<F>,
     dir: Vector<F>,
     hor: Vector<F>,
     ver: Vector<F>,
