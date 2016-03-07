@@ -5,7 +5,7 @@ use ray::Ray;
 use num::Float;
 
 #[derive(Clone, Copy)]
-struct Camera<F: Float>
+pub struct Camera<F: Float>
 {
     pos: Vector<F>,
     dir: Vector<F>,
@@ -17,7 +17,7 @@ struct Camera<F: Float>
 
 impl<F: Float> Camera<F>
 {
-    fn get_ray(self, xp: F, yp: F) -> Ray<F>
+    pub fn get_ray(self, xp: F, yp: F) -> Ray<F>
     {
         let one_half = F::one() / (F::one() + F::one());
         let dir = self.dir +
