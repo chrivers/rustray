@@ -13,6 +13,7 @@ pub mod ray;
 pub mod scene;
 pub mod sphere;
 pub mod light;
+pub mod tracer;
 
 fn main() {
     let buffer = File::create("output.png").unwrap();
