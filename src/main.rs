@@ -25,9 +25,10 @@ fn main() {
     let buffer = File::create("output.png").unwrap();
     let png = PNGEncoder::new(buffer);
 
+    let pos = Vector::new(0.0, 10.0, -10.0);
     let camera = camera::Camera::new(
-        Vector::new(0.0, 10.0, -10.0),
-        Vector::new(-5.0, -5.0, 0.0),
+        pos,
+        pos.vector_to(Vector::new(0.0, 0.0, 0.0)),
         Vector::new(0.0, 10.0, 0.0),
         Vector::new(10.0, 0.0, 0.0),
         512,
@@ -44,9 +45,11 @@ fn main() {
         lights,
     );
 
-    let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(32, 32);
+    const WIDTH: u32 = 512;
+    const HEIGHT: u32 = 512;
+    let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(WIDTH, HEIGHT);
     tracer.render_image::<_, _, u8>(&mut img);
-    png.encode(&img.into_raw(), 32, 32, ColorType::RGB(8)).expect("Failed to encode");
+    png.encode(&img.into_raw(), WIDTH, HEIGHT, ColorType::RGB(8)).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.
 
