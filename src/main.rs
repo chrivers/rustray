@@ -5,6 +5,7 @@ use image::ColorType;
 use image::png::PNGEncoder;
 use image::ImageBuffer;
 
+pub mod traits;
 pub mod color;
 pub mod vector;
 pub mod point;
@@ -14,18 +15,40 @@ pub mod scene;
 pub mod sphere;
 pub mod light;
 pub mod tracer;
+use color::Color;
+use vector::Vector;
+use light::Light;
+use sphere::Sphere;
+use scene::RayTarget;
 
 fn main() {
     let buffer = File::create("output.png").unwrap();
     let png = PNGEncoder::new(buffer);
 
+    let camera = camera::Camera::new(
+        Vector::new(0.0, 10.0, -10.0),
+        Vector::new(-5.0, -5.0, 0.0),
+        Vector::new(0.0, 10.0, 0.0),
+        Vector::new(10.0, 0.0, 0.0),
+        512,
+        512
+    );
+
+    let lights = vec![Box::new(Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 1.0, g: 0.0, b: 0.0 } })];
+    let sphere = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let objects = vec![Box::new(sphere) as Box<RayTarget<f32>>];
+
+    let tracer = tracer::Tracer::new(
+        camera,
+        objects,
+        lights,
+    );
+
+    let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(32, 32);
+    tracer.render_image::<_, _, u8>(&mut img);
+    png.encode(&img.into_raw(), 32, 32, ColorType::RGB(8)).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.
-    let mut img = ImageBuffer::new(512, 512);
-    for x in 0..img.width()
-    {
-        img.put_pixel(10, x, image::Rgb([12, 255, 255]));
-    }
 
     // //Construct a new by repeated calls to the supplied closure.
     // let img = ImageBuffer::from_fn(512, 512, |x, y| {
@@ -48,10 +71,10 @@ fn main() {
     //     // }
     // });
 
-    png.encode(&img.into_raw(), 512, 512, ColorType::RGB(8)).expect("Failed to encode");
+    // png.encode(&img.into_raw(), img.width(), img.height(), ColorType::RGB(8)).expect("Failed to encode");
     // Change this to OpenGL::V2_1 if not working.
     // let opengl = OpenGL::V3_2;
-    // let window: PistonWindow = 
+    // let window: PistonWindow =
     //     WindowSettings::new("Hello Piston!", [640, 480])
     //     .opengl(opengl)
     //     .exit_on_esc(true)
@@ -66,4 +89,3 @@ fn main() {
     //     });
     // }
 }
-
