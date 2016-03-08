@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
-use num::Float;
-
+use traits::Float;
 use scene::*;
 use vector;
 use vector::Vector;
@@ -9,7 +8,7 @@ use color::Color;
 use light::Light;
 use ray::Ray;
 
-struct Sphere<F: Float>
+pub struct Sphere<F: Float>
 {
     pos: Vector<F>,
     color: Color<F>,
@@ -27,7 +26,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         light_color * reflection_coeff
     }
 
-    fn ray_hit(&self, ray: Ray<F>) -> Option<Vector<F>>
+    fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>
     {
         let xd = ray.pos.x - self.pos.x;
         let yd = ray.pos.y - self.pos.y;
@@ -63,7 +62,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         let t1 = (-b + d.sqrt()) / twice_a;
         let t2 = (-b - d.sqrt()) / twice_a;
 
-        let t = match t1
+        let t = match true
         {
             _ if t1 < _0 => t2,
             _ if t2 < _0 => t1,
@@ -77,5 +76,13 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         {
             Some(ray.extend(t))
         }
+    }
+}
+
+impl<F: Float> Sphere<F>
+{
+    pub fn new(pos: Vector<F>, color: Color<F>, radius: F) -> Sphere<F>
+    {
+        Sphere { pos: pos, color: color, radius: radius }
     }
 }
