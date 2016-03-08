@@ -35,9 +35,22 @@ fn main() {
         512
     );
 
-    let lights = vec![Box::new(Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 1.0, g: 0.0, b: 0.0 } })];
-    let sphere = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
-    let objects = vec![Box::new(sphere) as Box<RayTarget<f32>>];
+    let light1 = Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 1.0, g: 0.0, b: 0.0 } };
+    let light2 = Light { pos: Vector::new(5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 1.0, b: 0.0 } };
+    let light3 = Light { pos: Vector::new(-5.0, 0.0, -5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 1.0 } };
+    let lights = vec![
+        Box::new(light1),
+        Box::new(light2),
+        Box::new(light3),
+    ];
+    let sphere1 = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let objects = vec![
+        Box::new(sphere1) as Box<RayTarget<f32>>,
+        Box::new(sphere2) as Box<RayTarget<f32>>,
+        Box::new(sphere3) as Box<RayTarget<f32>>,
+    ];
 
     let tracer = tracer::Tracer::new(
         camera,
