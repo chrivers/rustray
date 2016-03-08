@@ -2,7 +2,6 @@
 
 use traits::Float;
 use scene::*;
-use vector;
 use vector::Vector;
 use color::Color;
 use light::Light;
@@ -70,7 +69,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
             _ => F::min(t1, t2),
         };
 
-        if t < F::from(vector::EPSILON).unwrap()
+        if t < F::epsilon()
         {
             None
         } else
