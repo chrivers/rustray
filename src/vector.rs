@@ -3,8 +3,6 @@
 use traits::Float;
 use std::ops::{Add, Sub, Mul};
 
-pub const EPSILON: f64 = 1e-10;
-
 #[derive(Clone, Copy, Debug)]
 pub struct Vector<F: Float>
 {
