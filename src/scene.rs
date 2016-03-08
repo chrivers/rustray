@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt::Debug;
+
 use traits::Float;
 use light::Light;
 use ray::Ray;
@@ -24,7 +26,7 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait RayTarget<F: Float>
+pub trait RayTarget<F: Float> : Debug
 {
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>;
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>;
