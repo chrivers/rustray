@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
+use traits::Float;
 use std::ops::{Add, Sub, Mul};
-use num::Float;
 
 pub const EPSILON: f64 = 1e-10;
 
@@ -58,6 +58,11 @@ impl<F: Float> Mul<F> for Vector<F>
 
 impl<F: Float> Vector<F>
 {
+    pub fn new(x: F, y: F, z: F) -> Vector<F>
+    {
+        Vector { x: x, y: y, z: z }
+    }
+
     pub fn length(&self) -> F
     {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
