@@ -8,6 +8,7 @@ use color::Color;
 use light::Light;
 use ray::Ray;
 
+#[derive(Debug)]
 pub struct Sphere<F: Float>
 {
     pos: Vector<F>,
