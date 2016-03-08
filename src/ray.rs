@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
+use traits::Float;
 use vector::Vector;
-use num::Float;
 
 #[derive(Clone, Copy)]
 pub struct Ray<F: Float>

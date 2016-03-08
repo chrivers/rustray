@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
+use traits::Float;
 use vector::Vector;
 use color::Color;
 use scene::*;
-use num::Float;
 
 pub struct Light<F: Float>
 {
