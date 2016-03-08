@@ -98,7 +98,9 @@ impl<F: Float> Color<F>
     pub fn clamped(self) -> Color<F>
     {
         let r = Color::clamp(self.r);
-        Color { r: r, g: r, b: r }
+        let g = Color::clamp(self.g);
+        let b = Color::clamp(self.b);
+        Color { r: r, g: g, b: b }
     }
 
     pub fn mixed(input: &[Color<F>]) -> Color<F>
