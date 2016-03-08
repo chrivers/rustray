@@ -29,8 +29,8 @@ fn main() {
     let camera = camera::Camera::new(
         pos,
         pos.vector_to(Vector::new(0.0, 0.0, 0.0)),
-        Vector::new(0.0, 10.0, 0.0),
         Vector::new(10.0, 0.0, 0.0),
+        Vector::new(0.0, 10.0, 0.0),
         512,
         512
     );
