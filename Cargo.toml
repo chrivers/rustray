@@ -3,6 +3,10 @@ name = "rustray"
 version = "0.1.0"
 authors = ["Christian Iversen <ci@iversenit.dk>"]
 
+[features]
+default = ["self_shadowing"]
+self_shadowing = []
+
 [dependencies]
 image = "*"
 num = "0.1.31"

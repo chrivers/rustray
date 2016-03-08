@@ -8,6 +8,7 @@ use light::Light;
 use color::Color;
 use camera::Camera;
 use scene::RayTarget;
+use ray::Ray;
 
 //#[derive(Clone)]
 pub struct Tracer<F: Float>
@@ -54,6 +55,31 @@ impl<F: Float> Tracer<F>
         for light in &self.lights
         {
             let mut isblocked = false;
+            if cfg!(self_shadowing)
+            {
+                let light_length = light.pos.vector_to(hit).length();
+                let mut hitray = Ray::new(hit, hit.vector_to(light.pos));
+                hitray.pos = hitray.pos + hitray.dir * F::epsilon();
+                for curobj in &self.objects
+                {
+                    // if !cfg!(self_shadowing) && curobj == obj
+                    // {
+                    //     continue
+                    // }
+                    if let Some(curhit) = curobj.ray_hit(&hitray)
+                    {
+                        if hit.vector_to(curhit).length() < light_length
+                        {
+                            isblocked = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if isblocked
+            {
+                continue
+            }
             res = res + obj.trace(&hit, light);
         }
         Some(res)
