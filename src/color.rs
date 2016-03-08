@@ -1,16 +1,16 @@
 #![allow(dead_code)]
 
+use traits::Float;
 use std::ops::{Add, Sub, Mul};
 use num;
-use num::Float;
 use num::NumCast;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Color<F: Float>
 {
-    r: F,
-    g: F,
-    b: F,
+    pub r: F,
+    pub g: F,
+    pub b: F,
 }
 
 impl<F: Float> Add for Color<F>
