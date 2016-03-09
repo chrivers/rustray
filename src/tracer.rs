@@ -59,7 +59,7 @@ impl<F: Float> Tracer<F>
             {
                 let light_length = light.pos.vector_to(hit).length();
                 let mut hitray = Ray::new(hit, hit.vector_to(light.pos));
-                hitray.pos = hitray.pos + hitray.dir * F::epsilon();
+                hitray.pos = hitray.pos + hitray.dir * F::small_value();
                 for curobj in &self.objects
                 {
                     // if !cfg!(self_shadowing) && curobj == obj
@@ -90,13 +90,40 @@ impl<F: Float> Tracer<F>
               P: Pixel<Subpixel=u8>,
               S: Primitive
     {
+        let e_height = F::from_int(if cfg!(feature="antialias") { target.height() * 4 } else { target.height() });
+        let e_width  = F::from_int(if cfg!(feature="antialias") { target.width()  * 4 } else { target.width() });
         for y in 0..target.height()
         {
             for x in 0..target.width()
             {
-                let xp: F = F::from(x).unwrap() / F::from(target.width()).unwrap();
-                let yp: F = F::from(y).unwrap() / F::from(target.height()).unwrap();
-                if let Some(color) = self.render_pixel(xp, yp)
+                let color = if cfg!(feature="antialias")
+                {
+                    let mut colors = vec![];
+                    for xa in 0..4
+                    {
+                        for ya in 0..4
+                        {
+                            let xp: F = F::from_int(x*4 + xa) / e_width;
+                            let yp: F = F::from_int(y*4 + ya) / e_height;
+                            if let Some(color) = self.render_pixel(xp, yp)
+                            {
+                                colors.push(color)
+                            }
+                        }
+                    }
+                    if colors.len() > 0
+                    {
+                        Some(Color::mixed(&colors))
+                    } else
+                    {
+                        None
+                    }
+                } else {
+                    let xp: F = F::from_int(x) / e_width;
+                    let yp: F = F::from_int(y) / e_height;
+                    self.render_pixel(xp, yp)
+                };
+                if let Some(color) = color
                 {
                     let chans = color.to_array();
                     let pixel = P::from_slice(&chans);
