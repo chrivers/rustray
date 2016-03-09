@@ -10,3 +10,4 @@ self_shadowing = []
 [dependencies]
 image = "*"
 num = "0.1.31"
+rand = "0.3"
