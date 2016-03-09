@@ -1,5 +1,7 @@
 extern crate num;
 extern crate image;
+extern crate rand;
+
 use std::fs::File;
 use image::ColorType;
 use image::png::PNGEncoder;
@@ -13,13 +15,17 @@ pub mod camera;
 pub mod ray;
 pub mod scene;
 pub mod sphere;
+pub mod plane;
 pub mod light;
 pub mod tracer;
+pub mod testobj;
 use color::Color;
 use vector::Vector;
 use light::Light;
 use sphere::Sphere;
 use scene::RayTarget;
+use plane::Plane;
+use testobj::TestObject;
 
 fn main() {
     let buffer = File::create("output.png").unwrap();
@@ -37,16 +43,19 @@ fn main() {
 
     let light1 = Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 1.0, g: 0.0, b: 0.0 } };
     let light2 = Light { pos: Vector::new(5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 1.0, b: 0.0 } };
-    let light3 = Light { pos: Vector::new(-5.0, 0.0, -5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 1.0 } };
+    let light3 = Light { pos: Vector::new(-5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 1.0 } };
     let lights = vec![
         Box::new(light1),
         Box::new(light2),
         Box::new(light3),
     ];
+    let testobj = TestObject::new(0.9f32);
+    let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
     let sphere1 = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let objects = vec![
+        Box::new(plane1) as Box<RayTarget<f32>>,
         Box::new(sphere1) as Box<RayTarget<f32>>,
         Box::new(sphere2) as Box<RayTarget<f32>>,
         Box::new(sphere3) as Box<RayTarget<f32>>,
