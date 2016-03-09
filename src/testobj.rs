@@ -4,7 +4,6 @@ use rand;
 
 use traits::Float;
 use scene::*;
-use vector;
 use vector::Vector;
 use color::Color;
 use light::Light;
@@ -18,6 +17,7 @@ pub struct TestObject<F: Float>
 
 impl<F: Float> RayTarget<F> for TestObject<F>
 {
+    #[allow(unused_variables)]
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>
     {
         Color::<F>::white()
