@@ -17,8 +17,7 @@ pub struct TestObject<F: Float>
 
 impl<F: Float> RayTarget<F> for TestObject<F>
 {
-    #[allow(unused_variables)]
-    fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>
+    fn trace(&self, _hit: &Vector<F>, _light: &Light<F>) -> Color<F>
     {
         Color::<F>::white()
     }
