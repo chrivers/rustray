@@ -55,7 +55,7 @@ impl<F: Float> Tracer<F>
         for light in &self.lights
         {
             let mut isblocked = false;
-            if cfg!(self_shadowing)
+            if cfg!(feature="self_shadowing")
             {
                 let light_length = light.pos.vector_to(hit).length();
                 let mut hitray = Ray::new(hit, hit.vector_to(light.pos));
