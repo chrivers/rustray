@@ -21,7 +21,7 @@ impl<F: Float> RayTarget<F> for Plane<F>
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>
     {
         let m = hit.vector_to(light.pos);
-        let normal = self.pos.vector_to(*hit);
+        let normal = self.dir2.crossed(self.dir1);
         let light_color = light.color * self.color;
         // let reflection_coeff = F::max(normal.cos_angle(m), (normal * (-F::one())).cos_angle(m));
         let reflection_coeff = normal.cos_angle(m);
@@ -36,8 +36,8 @@ impl<F: Float> RayTarget<F> for Plane<F>
         let a = (v2.y - v1.y) * (v3.z - v1.z) - (v3.y - v1.y) * (v2.z - v1.z);
 	let b = (v2.z - v1.z) * (v3.x - v1.x) - (v3.z - v1.z) * (v2.x - v1.x);
 	let c = (v2.x - v1.x) * (v3.y - v1.y) - (v3.x - v1.x) * (v2.y - v1.y);
-	let d = -a * v1.x - b * v1.y - c * v1.z;
-	let t =  - (a * ray.pos.x + b * ray.pos.y + c * ray.pos.z + d) / (a * ray.dir.x + b * ray.dir.y + c * ray.dir.z);
+	let d = (-a * v1.x) + (-b * v1.y) + (-c * v1.z);
+	let t = -(a * ray.pos.x + b * ray.pos.y + c * ray.pos.z + d) / (a * ray.dir.x + b * ray.dir.y + c * ray.dir.z);
 	
 	if t < F::epsilon()
         {
