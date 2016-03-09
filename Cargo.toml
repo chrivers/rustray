@@ -4,8 +4,9 @@ version = "0.1.0"
 authors = ["Christian Iversen <ci@iversenit.dk>"]
 
 [features]
-default = ["self_shadowing"]
+default = ["self_shadowing", "antialias"]
 self_shadowing = []
+antialias = []
 
 [dependencies]
 image = "*"
