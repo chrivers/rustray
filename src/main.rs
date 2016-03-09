@@ -19,6 +19,7 @@ pub mod plane;
 pub mod light;
 pub mod tracer;
 pub mod testobj;
+
 use color::Color;
 use vector::Vector;
 use light::Light;
