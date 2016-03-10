@@ -98,7 +98,8 @@ impl<F: Float> Tracer<F>
             {
                 let color = if cfg!(feature="antialias")
                 {
-                    let mut colors = vec![];
+                    let mut colors = [Color::black(); 16];
+                    let mut index = 0;
                     for xa in 0..4
                     {
                         for ya in 0..4
@@ -107,17 +108,12 @@ impl<F: Float> Tracer<F>
                             let yp: F = F::from_int(y*4 + ya) / e_height;
                             if let Some(color) = self.render_pixel(xp, yp)
                             {
-                                colors.push(color)
+                                colors[index] = color;
+                                index += 1;
                             }
                         }
                     }
-                    if colors.len() > 0
-                    {
-                        Some(Color::mixed(&colors))
-                    } else
-                    {
-                        None
-                    }
+                    Some(Color::mixed(&colors))
                 } else {
                     let xp: F = F::from_int(x) / e_width;
                     let yp: F = F::from_int(y) / e_height;
