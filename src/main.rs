@@ -36,19 +36,19 @@ fn main() {
     let buffer = File::create("output.png").unwrap();
     let png = PNGEncoder::new(buffer);
 
-    let pos = Vector::new(0.0, 10.0, -10.0);
+    let pos = Vector::new(-5.0, 5.0, -10.0);
     let camera = camera::Camera::new(
         pos,
         pos.vector_to(Vector::new(0.0, 0.0, 0.0)),
-        Vector::new(10.0, 0.0, 0.0),
-        Vector::new(0.0, 10.0, 0.0),
+        Vector::new(12.0, 0.0, 0.0),
+        Vector::new(0.0, 12.0, 0.0),
         512,
         512
     );
 
-    let light1 = Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 1.0, g: 0.0, b: 0.0 } };
-    let light2 = Light { pos: Vector::new(5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 1.0, b: 0.0 } };
-    let light3 = Light { pos: Vector::new(-5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 1.0 } };
+    let light1 = Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 2.0, g: 0.0, b: 0.0 } };
+    let light2 = Light { pos: Vector::new(5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 2.0, b: 0.0 } };
+    let light3 = Light { pos: Vector::new(-5.0, 5.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 4.0 } };
     let lights = vec![
         Box::new(light1),
         Box::new(light2),
@@ -57,11 +57,11 @@ fn main() {
     let testobj = TestObject::new(0.9f32);
     let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
     let plane2  = ChessPlane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
-    let sphere1 = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
-    let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
-    let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let sphere1 = Sphere::new(Vector::new(0.0, 1.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
+    let sphere2 = Sphere::new(Vector::new(4.0, -2.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 2.0);
+    let sphere3 = Sphere::new(Vector::new(-4.0, -2.0, 9.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 3.0);
     let objects = vec![
-        Box::new(plane1) as Box<RayTarget<f32>>,
+        // Box::new(plane1) as Box<RayTarget<f32>>,
         Box::new(plane2) as Box<RayTarget<f32>>,
         Box::new(sphere1) as Box<RayTarget<f32>>,
         Box::new(sphere2) as Box<RayTarget<f32>>,
