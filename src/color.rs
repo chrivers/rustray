@@ -73,6 +73,11 @@ impl<F: Float> Mul for Color<F>
 
 impl<F: Float> Color<F>
 {
+    pub fn new(r: F, g: F, b: F) -> Color<F>
+    {
+        Color { r: r, g: g, b: b }
+    }
+
     pub fn black() -> Color<F>
     {
         let zero = F::zero();
