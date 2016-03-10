@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 extern crate num;
 extern crate image;
 extern crate rand;
@@ -16,6 +18,7 @@ pub mod ray;
 pub mod scene;
 pub mod sphere;
 pub mod plane;
+pub mod chessplane;
 pub mod light;
 pub mod tracer;
 pub mod testobj;
@@ -26,6 +29,7 @@ use light::Light;
 use sphere::Sphere;
 use scene::RayTarget;
 use plane::Plane;
+use chessplane::ChessPlane;
 use testobj::TestObject;
 
 fn main() {
@@ -52,11 +56,13 @@ fn main() {
     ];
     let testobj = TestObject::new(0.9f32);
     let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
+    let plane2  = ChessPlane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
     let sphere1 = Sphere::new(Vector::new(0.0, 0.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
     let objects = vec![
         Box::new(plane1) as Box<RayTarget<f32>>,
+        Box::new(plane2) as Box<RayTarget<f32>>,
         Box::new(sphere1) as Box<RayTarget<f32>>,
         Box::new(sphere2) as Box<RayTarget<f32>>,
         Box::new(sphere3) as Box<RayTarget<f32>>,
