@@ -3,7 +3,6 @@
 use traits::Float;
 use std::ops::{Add, Sub, Mul};
 use num;
-use num::NumCast;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Color<F: Float>
