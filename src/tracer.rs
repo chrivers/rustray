@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
-use traits::Float;
+use crate::traits::Float;
 use image::{GenericImage, Pixel, Primitive};
 
-use vector::Vector;
-use light::Light;
-use color::Color;
-use camera::Camera;
-use scene::RayTarget;
-use ray::Ray;
+use crate::vector::Vector;
+use crate::light::Light;
+use crate::color::Color;
+use crate::camera::Camera;
+use crate::scene::RayTarget;
+use crate::ray::Ray;
 
 //#[derive(Clone)]
 pub struct Tracer<F: Float>

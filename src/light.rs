@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use traits::Float;
-use vector::Vector;
-use color::Color;
-use scene::*;
+use crate::traits::Float;
+use crate::vector::Vector;
+use crate::color::Color;
+use crate::scene::*;
 
 pub struct Light<F: Float>
 {

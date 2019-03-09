@@ -2,11 +2,11 @@
 
 use std::fmt::Debug;
 
-use traits::Float;
-use light::Light;
-use ray::Ray;
-use vector::Vector;
-use color::Color;
+use crate::traits::Float;
+use crate::light::Light;
+use crate::ray::Ray;
+use crate::vector::Vector;
+use crate::color::Color;
 
 pub trait HasPosition<F: Float>
 {

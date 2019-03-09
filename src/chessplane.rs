@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 
-use traits::Float;
-use scene::*;
-use vector::Vector;
-use color::Color;
-use light::Light;
-use ray::Ray;
-use plane;
+use crate::traits::Float;
+use crate::scene::*;
+use crate::vector::Vector;
+use crate::color::Color;
+use crate::light::Light;
+use crate::ray::Ray;
+use crate::plane;
 
 #[derive(Debug)]
 pub struct ChessPlane<F: Float>

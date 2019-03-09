@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use traits::Float;
+use crate::traits::Float;
 use std::ops::{Add, Sub, Mul};
 use num;
 

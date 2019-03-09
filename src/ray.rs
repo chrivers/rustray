@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-use traits::Float;
-use vector::Vector;
+use crate::traits::Float;
+use crate::vector::Vector;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>

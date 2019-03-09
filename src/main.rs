@@ -23,14 +23,14 @@ pub mod light;
 pub mod tracer;
 pub mod testobj;
 
-use color::Color;
-use vector::Vector;
-use light::Light;
-use sphere::Sphere;
-use scene::RayTarget;
-use plane::Plane;
-use chessplane::ChessPlane;
-use testobj::TestObject;
+use crate::color::Color;
+use crate::vector::Vector;
+use crate::light::Light;
+use crate::sphere::Sphere;
+use crate::scene::RayTarget;
+use crate::plane::Plane;
+use crate::chessplane::ChessPlane;
+use crate::testobj::TestObject;
 
 fn main() {
     let buffer = File::create("output.png").unwrap();

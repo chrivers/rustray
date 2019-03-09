@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use traits::Float;
-use vector::Vector;
-use ray::Ray;
+use crate::traits::Float;
+use crate::vector::Vector;
+use crate::ray::Ray;
 
 #[derive(Clone, Copy)]
 pub struct Camera<F: Float>
