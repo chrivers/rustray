@@ -14,13 +14,13 @@ use crate::ray::Ray;
 pub struct Tracer<F: Float>
 {
     camera: Camera<F>,
-    objects: Vec<Box<RayTarget<F>>>,
-    lights: Vec<Box<Light<F>>>,
+    objects: Vec<Box<dyn RayTarget<F>>>,
+    lights: Vec<Light<F>>,
 }
 
 impl<F: Float> Tracer<F>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<Box<RayTarget<F>>>, lights: Vec<Box<Light<F>>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<Box<RayTarget<F>>>, lights: Vec<Light<F>>) -> Tracer<F>
     {
         Tracer { camera: camera, objects: objects, lights: lights }
     }

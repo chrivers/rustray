@@ -1,4 +1,5 @@
 #![allow(unused_variables)]
+#![feature(box_syntax)]
 
 extern crate num;
 extern crate image;
@@ -50,22 +51,21 @@ fn main() {
     let light2 = Light { pos: Vector::new(5.0, 0.0, 5.0), color: Color::<f32> { r: 0.0, g: 2.0, b: 0.0 } };
     let light3 = Light { pos: Vector::new(-5.0, 5.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 4.0 } };
     let lights = vec![
-        Box::new(light1),
-        Box::new(light2),
-        Box::new(light3),
+        light1,
+        light2,
+        light3,
     ];
     let testobj = TestObject::new(0.9f32);
     let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
     let plane2  = ChessPlane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
-    let sphere1 = Sphere::new(Vector::new(0.0, 1.0, 6.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 1.0);
-    let sphere2 = Sphere::new(Vector::new(4.0, -2.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 2.0);
-    let sphere3 = Sphere::new(Vector::new(-4.0, -2.0, 9.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 }, 3.0);
-    let objects = vec![
-        // Box::new(plane1) as Box<RayTarget<f32>>,
-        Box::new(plane2) as Box<RayTarget<f32>>,
-        Box::new(sphere1) as Box<RayTarget<f32>>,
-        Box::new(sphere2) as Box<RayTarget<f32>>,
-        Box::new(sphere3) as Box<RayTarget<f32>>,
+    let sphere1 = Sphere::new(Vector::new(0.0, 1.0, 6.0), Color::<f32>::white(), 1.0);
+    let sphere2 = Sphere::new(Vector::new(4.0, -2.0, 1.0), Color::<f32>::white(), 2.0);
+    let sphere3 = Sphere::new(Vector::new(-4.0, -2.0, 9.0), Color::<f32>::white(), 3.0);
+    let objects: Vec<Box<dyn RayTarget<f32>>> = vec![
+        box plane2,
+        box sphere1,
+        box sphere2,
+        box sphere3,
     ];
 
     let tracer = tracer::Tracer::new(
