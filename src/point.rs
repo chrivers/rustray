@@ -3,15 +3,20 @@
 use num::Float;
 
 #[derive(Clone, Copy)]
-struct Point<F: Float>
+pub struct Point<F: Float>
 {
-    x: F,
-    y: F,
+    pub x: F,
+    pub y: F,
 }
 
 impl<F: Float> Point<F>
 {
-    fn line_to(&self, other: Point<F>) -> Point<F>
+    pub fn new(x: F, y: F) -> Point<F>
+    {
+        Point { x, y }
+    }
+
+    pub fn line_to(&self, other: Point<F>) -> Point<F>
     {
         Point
         {
@@ -20,7 +25,7 @@ impl<F: Float> Point<F>
         }
     }
 
-    fn pos_det(&self, other: Point<F>) -> bool
+    pub fn pos_det(&self, other: Point<F>) -> bool
     {
         self.x * other.y - self.y * other.x > F::zero()
     }

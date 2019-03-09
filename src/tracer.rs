@@ -9,6 +9,7 @@ use crate::color::Color;
 use crate::camera::Camera;
 use crate::scene::RayTarget;
 use crate::ray::Ray;
+use crate::point::Point;
 
 //#[derive(Clone)]
 pub struct Tracer<F: Float>
@@ -25,9 +26,9 @@ impl<F: Float> Tracer<F>
         Tracer { camera: camera, objects: objects, lights: lights }
     }
 
-    fn render_pixel(&self, x: F, y: F) -> Option<Color<F>>
+    fn render_pixel(&self, point: Point<F>) -> Option<Color<F>>
     {
-        let ray = self.camera.get_ray(x, y);
+        let ray = self.camera.get_ray(point);
         let mut dist = F::max_value();
         let mut hit: Option<Vector<F>> = None;
         let mut obj: Option<&Box<RayTarget<F>>> = None;
@@ -106,7 +107,7 @@ impl<F: Float> Tracer<F>
                         {
                             let xp: F = F::from_int(x*4 + xa) / e_width;
                             let yp: F = F::from_int(y*4 + ya) / e_height;
-                            if let Some(color) = self.render_pixel(xp, yp)
+                            if let Some(color) = self.render_pixel(Point::new(xp, yp))
                             {
                                 colors[index] = color;
                                 index += 1;
@@ -117,7 +118,7 @@ impl<F: Float> Tracer<F>
                 } else {
                     let xp: F = F::from_int(x) / e_width;
                     let yp: F = F::from_int(y) / e_height;
-                    self.render_pixel(xp, yp)
+                    self.render_pixel(Point::new(xp, yp))
                 };
                 if let Some(color) = color
                 {

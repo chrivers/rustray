@@ -3,6 +3,7 @@
 use crate::traits::Float;
 use crate::vector::Vector;
 use crate::ray::Ray;
+use point::Point;
 
 #[derive(Clone, Copy)]
 pub struct Camera<F: Float>
@@ -28,12 +29,12 @@ impl<F: Float> Camera<F>
         Camera { pos: pos, dir: dir, hor: hor, ver: ver, x: x, y: y }
     }
 
-    pub fn get_ray(self, xp: F, yp: F) -> Ray<F>
+    pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
-        let one_half = F::one() / (F::one() + F::one());
+        let one_half = F::from_float(0.5);
         let dir = self.dir +
-            self.hor * ( xp - one_half) +
-            self.ver * (-yp + one_half);
+            self.hor * ( point.x - one_half) +
+            self.ver * (-point.y + one_half);
         Ray::new(self.pos, dir.normalized())
     }
 }
