@@ -109,13 +109,12 @@ impl<F: Float> Color<F>
 
     pub fn mixed(input: &[Color<F>]) -> Color<F>
     {
-        if input.len() > 0
-        {
-            let sum = input.iter().fold(Color::black(), |a, &c| a + c);
-            sum * (F::one() / F::from(input.len()).unwrap())
-        } else
-        {
-            Color::black()
+        match input.len() {
+            0 => Color::black(),
+            n => {
+                let sum = input.iter().fold(Color::black(), |a, &c| a + c);
+                sum * (F::one() / F::from(n).unwrap())
+            }
         }
     }
 
