@@ -9,6 +9,6 @@ self_shadowing = []
 antialias = []
 
 [dependencies]
-image = ""
-num = "0.1"
-rand = "0.4"
+image = "0.21"
+num = "0.2"
+rand = "0.6.5"
