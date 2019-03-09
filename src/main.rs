@@ -4,11 +4,13 @@
 extern crate num;
 extern crate image;
 extern crate rand;
+extern crate indicatif;
 
 use std::fs::File;
 use image::ColorType;
 use image::png::PNGEncoder;
 use image::ImageBuffer;
+use indicatif::{ProgressBar, ProgressStyle};
 
 pub mod traits;
 pub mod color;
@@ -74,10 +76,24 @@ fn main() {
         lights,
     );
 
-    const WIDTH: u32 = 512;
-    const HEIGHT: u32 = 512;
+    const WIDTH:  u32 = 1920;
+    const HEIGHT: u32 = 1080;
+
+
+    let pb = ProgressBar::new(HEIGHT as u64);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})")
+            .progress_chars("*>-")
+    );
+
     let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(WIDTH, HEIGHT);
-    tracer.render_image::<_, _, u8>(&mut img);
+    for y in 0..HEIGHT
+    {
+        tracer.render_line::<_, _, u8>(y, &mut img);
+        pb.set_position(y as u64);
+    }
+    pb.finish_with_message("render complete");
     png.encode(&img.into_raw(), WIDTH, HEIGHT, ColorType::RGB(8)).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.

@@ -86,47 +86,55 @@ impl<F: Float> Tracer<F>
         Some(res)
     }
 
-    pub fn render_image<I, P, S>(&self, target: &mut I)
+    pub fn render_line<I, P, S>(&self, y: u32, target: &mut I)
         where I: GenericImage<Pixel=P>,
               P: Pixel<Subpixel=u8>,
               S: Primitive
     {
         let e_height = F::from_int(if cfg!(feature="antialias") { target.height() * 4 } else { target.height() });
         let e_width  = F::from_int(if cfg!(feature="antialias") { target.width()  * 4 } else { target.width() });
-        for y in 0..target.height()
+        for x in 0..target.width()
         {
-            for x in 0..target.width()
+            let color = if cfg!(feature="antialias")
             {
-                let color = if cfg!(feature="antialias")
+                let mut colors = [Color::black(); 16];
+                let mut index = 0;
+                for xa in 0..4
                 {
-                    let mut colors = [Color::black(); 16];
-                    let mut index = 0;
-                    for xa in 0..4
+                    for ya in 0..4
                     {
-                        for ya in 0..4
+                        let xp: F = F::from_int(x*4 + xa) / e_width;
+                        let yp: F = F::from_int(y*4 + ya) / e_height;
+                        if let Some(color) = self.render_pixel(Point::new(xp, yp))
                         {
-                            let xp: F = F::from_int(x*4 + xa) / e_width;
-                            let yp: F = F::from_int(y*4 + ya) / e_height;
-                            if let Some(color) = self.render_pixel(Point::new(xp, yp))
-                            {
-                                colors[index] = color;
-                                index += 1;
-                            }
+                            colors[index] = color;
+                            index += 1;
                         }
                     }
-                    Some(Color::mixed(&colors))
-                } else {
-                    let xp: F = F::from_int(x) / e_width;
-                    let yp: F = F::from_int(y) / e_height;
-                    self.render_pixel(Point::new(xp, yp))
-                };
-                if let Some(color) = color
-                {
-                    let chans = color.to_array();
-                    let pixel = P::from_slice(&chans);
-                    target.put_pixel(x, y, *pixel);
                 }
+                Some(Color::mixed(&colors))
+            } else {
+                let xp: F = F::from_int(x) / e_width;
+                let yp: F = F::from_int(y) / e_height;
+                self.render_pixel(Point::new(xp, yp))
+            };
+            if let Some(color) = color
+            {
+                let chans = color.to_array();
+                let pixel = P::from_slice(&chans);
+                target.put_pixel(x, y, *pixel);
             }
+        }
+    }
+
+    pub fn render_image<I, P, S>(&self, target: &mut I)
+        where I: GenericImage<Pixel=P>,
+              P: Pixel<Subpixel=u8>,
+              S: Primitive
+    {
+        for y in 0..target.height()
+        {
+            self.render_line::<I, P, S>(y, target)
         }
     }
 }
