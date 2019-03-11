@@ -1,6 +1,8 @@
 #![allow(unused_variables)]
 #![feature(box_syntax)]
 
+#[macro_use]
+extern crate log;
 extern crate num;
 extern crate image;
 extern crate rand;
@@ -39,6 +41,8 @@ fn main() {
     let buffer = File::create("output.png").unwrap();
     let png = PNGEncoder::new(buffer);
 
+    colog::init();
+    info!("rustray initialized");
     let pos = Vector::new(-5.0, 5.0, -10.0);
     let camera = camera::Camera::new(
         pos,
