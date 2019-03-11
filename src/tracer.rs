@@ -60,7 +60,7 @@ impl<F: Float> Tracer<F>
             {
                 let light_length = light.pos.vector_to(hit).length();
                 let mut hitray = Ray::new(hit, hit.vector_to(light.pos));
-                hitray.pos = hitray.pos + hitray.dir * F::small_value();
+                hitray.pos = hitray.pos + hitray.dir * F::BIAS;
                 for curobj in &self.objects
                 {
                     // if !cfg!(self_shadowing) && curobj == obj
