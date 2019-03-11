@@ -40,6 +40,10 @@ use crate::testobj::TestObject;
 fn main() {
     colog::init();
     info!("rustray initialized");
+
+    const WIDTH:  u32 = 1920;
+    const HEIGHT: u32 = 1080;
+
     let pos = Vector::new(-5.0, 5.0, -10.0);
     let camera = camera::Camera::new(
         pos,
@@ -76,9 +80,6 @@ fn main() {
         objects,
         lights,
     );
-
-    const WIDTH:  u32 = 1920;
-    const HEIGHT: u32 = 1080;
 
 
     let pb = ProgressBar::new(HEIGHT as u64);
