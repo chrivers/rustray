@@ -16,7 +16,7 @@ pub struct Camera<F: Float>
 
 impl<F: Float> Camera<F>
 {
-    pub fn new(
+    pub fn raw(
         pos: Vector<F>,
         lookat: Vector<F>,
         hor: Vector<F>,
