@@ -18,12 +18,13 @@ impl<F: Float> Camera<F>
 {
     pub fn new(
         pos: Vector<F>,
-        dir: Vector<F>,
+        lookat: Vector<F>,
         hor: Vector<F>,
         ver: Vector<F>,
     ) -> Camera<F>
     {
-        Camera { pos: pos, dir: dir.normalized(), hor: hor, ver: ver }
+        let dir = (lookat - pos).normalized();
+        Camera { pos, dir, hor, ver }
     }
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>

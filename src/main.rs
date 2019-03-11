@@ -46,10 +46,9 @@ fn main() {
     const HEIGHT: u32 = 1080;
     let scaling = max(WIDTH, HEIGHT) as f32 * 1.5;
 
-    let pos = Vector::new(0.0, 10.0, -30.0);
     let camera = camera::Camera::new(
-        pos,
-        pos.vector_to(Vector::new(0.0, 0.0, 10.0)),
+        Vector::new(0.0, 10.0, -30.0),
+        Vector::new(0.0, 0.0, 10.0),
         Vector::new((WIDTH as f32) / scaling, 0.0, 0.0),
         Vector::new(0.0, (HEIGHT as f32) / scaling, 0.0),
     );
