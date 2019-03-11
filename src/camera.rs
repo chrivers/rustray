@@ -23,7 +23,7 @@ impl<F: Float> Camera<F>
         ver: Vector<F>,
     ) -> Camera<F>
     {
-        Camera { pos: pos, dir: dir, hor: hor, ver: ver }
+        Camera { pos: pos, dir: dir.normalized(), hor: hor, ver: ver }
     }
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
