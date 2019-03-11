@@ -30,8 +30,8 @@ impl<F: Float> Camera<F>
     {
         let one_half = F::from_float(0.5);
         let dir = self.dir +
-            self.hor * ( point.x - one_half) +
-            self.ver * (-point.y + one_half);
+            self.hor * (point.x - one_half) -
+            self.ver * (point.y - one_half);
         Ray::new(self.pos, dir.normalized())
     }
 }
