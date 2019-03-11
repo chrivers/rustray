@@ -21,8 +21,8 @@ impl<F: Float> RayTarget<F> for ChessPlane<F>
 {
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>
     {
-        let xs = F::from_float(4.0);
-        let ys = F::from_float(4.0);
+        let xs = F::from_float(2.0);
+        let ys = F::from_float(2.0);
 
 	let s;
 	let t;
