@@ -12,8 +12,6 @@ pub struct Camera<F: Float>
     dir: Vector<F>,
     hor: Vector<F>,
     ver: Vector<F>,
-    x: u32,
-    y: u32,
 }
 
 impl<F: Float> Camera<F>
@@ -23,10 +21,9 @@ impl<F: Float> Camera<F>
         dir: Vector<F>,
         hor: Vector<F>,
         ver: Vector<F>,
-        x: u32,
-        y: u32) -> Camera<F>
+    ) -> Camera<F>
     {
-        Camera { pos: pos, dir: dir, hor: hor, ver: ver, x: x, y: y }
+        Camera { pos: pos, dir: dir, hor: hor, ver: ver }
     }
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
