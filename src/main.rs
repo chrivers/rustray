@@ -13,6 +13,7 @@ use image::ColorType;
 use image::png::PNGEncoder;
 use image::ImageBuffer;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::cmp::max;
 
 pub mod traits;
 pub mod color;
@@ -43,15 +44,14 @@ fn main() {
 
     const WIDTH:  u32 = 1920;
     const HEIGHT: u32 = 1080;
+    let scaling = max(WIDTH, HEIGHT) as f32 * 1.5;
 
-    let pos = Vector::new(-5.0, 5.0, -10.0);
+    let pos = Vector::new(0.0, 10.0, -30.0);
     let camera = camera::Camera::new(
         pos,
-        pos.vector_to(Vector::new(0.0, 0.0, 0.0)),
-        Vector::new(12.0, 0.0, 0.0),
-        Vector::new(0.0, 12.0, 0.0),
-        512,
-        512
+        pos.vector_to(Vector::new(0.0, 0.0, 10.0)),
+        Vector::new((WIDTH as f32) / scaling, 0.0, 0.0),
+        Vector::new(0.0, (HEIGHT as f32) / scaling, 0.0),
     );
 
     let light1 = Light { pos: Vector::new(0.0, 0.0, 0.0), color: Color::<f32> { r: 2.0, g: 0.0, b: 0.0 } };
@@ -62,9 +62,9 @@ fn main() {
         light2,
         light3,
     ];
-    let testobj = TestObject::new(0.9f32);
-    let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
-    let plane2  = ChessPlane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32> { r: 1.0, g: 1.0, b: 1.0 });
+    let testobj = TestObject::new(0.99f32);
+    let plane1  = Plane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32>::white());
+    let plane2  = ChessPlane::new(Vector::new(0.0, -1.0, 0.0), Vector::new(1.0, 0.0, 0.0), Vector::new(0.0, 0.0, 1.0), Color::<f32>::white());
     let sphere1 = Sphere::new(Vector::new(0.0, 1.0, 6.0), Color::<f32>::white(), 1.0);
     let sphere2 = Sphere::new(Vector::new(4.0, -2.0, 1.0), Color::<f32>::white(), 2.0);
     let sphere3 = Sphere::new(Vector::new(-4.0, -2.0, 9.0), Color::<f32>::white(), 3.0);
