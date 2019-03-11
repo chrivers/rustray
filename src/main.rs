@@ -38,9 +38,6 @@ use crate::chessplane::ChessPlane;
 use crate::testobj::TestObject;
 
 fn main() {
-    let buffer = File::create("output.png").unwrap();
-    let png = PNGEncoder::new(buffer);
-
     colog::init();
     info!("rustray initialized");
     let pos = Vector::new(-5.0, 5.0, -10.0);
@@ -98,6 +95,9 @@ fn main() {
         pb.set_position(y as u64);
     }
     pb.finish_with_message("render complete");
+
+    let buffer = File::create("output.png").unwrap();
+    let png = PNGEncoder::new(buffer);
     png.encode(&img.into_raw(), WIDTH, HEIGHT, ColorType::RGB(8)).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.
