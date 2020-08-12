@@ -259,6 +259,7 @@ dependencies = [
  "console",
  "lazy_static",
  "number_prefix",
+ "rayon",
  "regex",
 ]
 
@@ -539,6 +540,7 @@ dependencies = [
  "log",
  "num",
  "rand",
+ "rayon",
 ]
 
 [[package]]

@@ -13,6 +13,7 @@ antialias = []
 image = "0.23.8"
 num = "0.3.0"
 rand = "0.7.3"
-indicatif = "0.15.0"
+indicatif = { version = "0.15.0", features = ["rayon"] }
 colog = "1.0.0"
 log = "0.4.11"
+rayon = "*"
