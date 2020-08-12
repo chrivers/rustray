@@ -100,12 +100,7 @@ impl<F: Float> Vector<F>
         let l = self.length();
         if l != F::zero()
         {
-            Vector
-            {
-                x: self.x / l,
-                y: self.y / l,
-                z: self.z / l,
-            }
+            self / l
         } else
         {
             Vector { x: F::zero(), y: F::zero(), z: F::zero() }
