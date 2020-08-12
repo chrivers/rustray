@@ -91,12 +91,10 @@ impl<F: Float> Tracer<F>
               P: Pixel<Subpixel=u8>,
               S: Primitive
     {
-        let e_height = F::from_int(target.height());
-        let e_width  = F::from_int(target.width());
-        let yp: F = F::from_int(y) / e_height;
+        let py = F::from_i32(-(y as i32) + target.height() as i32 / 2);
         for x in 0..target.width()
         {
-            let xp: F = F::from_int(x) / e_width;
+            let px = F::from_i32(x as i32 - target.width() as i32 / 2);
             let color = if cfg!(feature="antialias")
             {
                 const SAMPLES_X: u32 = 2;
@@ -107,8 +105,8 @@ impl<F: Float> Tracer<F>
                 {
                     for ya in 0..SAMPLES_Y
                     {
-                        let pixelx = xp + F::from_int(xa) / F::from_int(SAMPLES_X * target.width());
-                        let pixely = yp + F::from_int(ya) / F::from_int(SAMPLES_Y * target.height());
+                        let pixelx = px + F::from_u32(xa) / F::from_u32(SAMPLES_X);
+                        let pixely = py + F::from_u32(ya) / F::from_u32(SAMPLES_Y);
                         if let Some(color) = self.render_pixel(Point::new(pixelx, pixely))
                         {
                             colors[index] = color;
@@ -122,7 +120,7 @@ impl<F: Float> Tracer<F>
                     None
                 }
             } else {
-                self.render_pixel(Point::new(xp, yp))
+                self.render_pixel(Point::new(px, py))
             };
             if let Some(color) = color
             {
