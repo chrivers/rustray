@@ -1,5 +1,5 @@
 use crate::traits::Float;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Sub, Mul, Div, Neg};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Vector<F: Float>
@@ -78,6 +78,16 @@ impl<F: Float> Mul<Vector<F>> for Vector<F>
             y: self.y * other.y,
             z: self.z * other.z,
         }
+    }
+}
+
+impl<F: Float> Neg for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn neg(self) -> Vector<F>
+    {
+        Self::Output { x: -self.x, y: -self.y, z: -self.z, }
     }
 }
 
