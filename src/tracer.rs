@@ -45,10 +45,9 @@ impl<F: Float> Tracer<F>
                 }
             }
         }
-        if hit.is_none()
-        {
-            return None;
-        }
+
+        hit?;
+
         let mut res = Color::<F>::black();
         let obj = obj.unwrap();
         let hit = hit.unwrap();

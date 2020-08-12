@@ -19,7 +19,7 @@ impl<F: Float> Ray<F>
 
     pub fn length_to(self, other: Vector<F>) -> F
     {
-        return (self.dir.crossed(self.pos.vector_to(other)).length()) / self.dir.length();
+        self.dir.crossed(self.pos.vector_to(other)).length() / self.dir.length()
     }
 
     pub fn extend(self, scale: F) -> Vector<F>
