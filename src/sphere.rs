@@ -33,10 +33,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         let f2 = F::from_float(2.0);
         let f4 = F::from_float(4.0);
 
-        let a =
-            ray.dir.x * ray.dir.x +
-            ray.dir.y * ray.dir.y +
-            ray.dir.z * ray.dir.z;
+        let a = ray.dir.dot(ray.dir);
 
         let b =
             f2 *
