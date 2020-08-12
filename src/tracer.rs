@@ -135,7 +135,7 @@ impl<F: Float> Tracer<F>
         self._render_line(y, y, target)
     }
 
-    pub fn render_span<I, P, S>(&self, y: u32, target: &mut I)
+    pub fn render_span<I, P>(&self, y: u32, target: &mut I)
         where I: GenericImage<Pixel=P>,
               P: Pixel<Subpixel=u8>
     {
