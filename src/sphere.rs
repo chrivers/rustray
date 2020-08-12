@@ -26,29 +26,20 @@ impl<F: Float> RayTarget<F> for Sphere<F>
 
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>
     {
-        let xd = ray.pos.x - self.pos.x;
-        let yd = ray.pos.y - self.pos.y;
-        let zd = ray.pos.z - self.pos.z;
+        let dir = ray.pos - self.pos;
+
         let f0 = F::zero();
         let f2 = F::from_float(2.0);
         let f4 = F::from_float(4.0);
 
         let a = ray.dir.dot(ray.dir);
 
-        let b =
-            f2 *
-            (ray.dir.x * xd +
-             ray.dir.y * yd +
-             ray.dir.z * zd);
-        let c =
-            xd * xd +
-            yd * yd +
-            zd * zd -
-            self.radius * self.radius;
+        let b = ray.dir.dot(dir) * f2;
+        let c = dir.dot(dir) - self.radius * self.radius;
 
         let d = b * b - f4 * a * c;
 
-        if d < F::zero()
+        if d.is_negative()
         {
             return None;
         }
