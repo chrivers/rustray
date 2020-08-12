@@ -4,10 +4,6 @@
 
 #[macro_use]
 extern crate log;
-extern crate num;
-extern crate image;
-extern crate rand;
-extern crate indicatif;
 
 use std::fs::File;
 use image::ColorType;
