@@ -60,10 +60,7 @@ impl<F: Float> Camera<F>
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
-        let one_half = F::from_float(0.5);
-        let dir = self.dir +
-            self.hor * (point.x - one_half) -
-            self.ver * (point.y - one_half);
-        Ray::new(self.pos, dir.normalized())
+        let vpp = self.dir + (self.hor * (point.x - F::from_u32(0))) + (self.ver * (point.y - F::from_u32(0)));
+        Ray::new(self.pos, vpp.normalized())
     }
 }
