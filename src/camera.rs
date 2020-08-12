@@ -51,8 +51,8 @@ impl<F: Float> Camera<F>
         let x_inc_vector = (u * F::from_u32(2) * viewplane_half_width)  / F::from_u32(xres as u32);
         let y_inc_vector = (v * F::from_u32(2) * viewplane_half_height) / F::from_u32(yres as u32);
         info!("aspect_ratio: {}", aspect_ratio);
-        info!("vp_half_width: {}", viewplane_half_width);
-        info!("vp_half_height: {}", viewplane_half_height);
+        info!("vp_half_width: {:.4}", viewplane_half_width);
+        info!("vp_half_height: {:.4}", viewplane_half_height);
         info!("vp_bottom_left: {:?}", viewplane_bottom_left);
         info!("x_int_vector: {:?}", x_inc_vector);
         info!("y_int_vector: {:?}", y_inc_vector);
