@@ -31,9 +31,9 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         let xd = ray.pos.x - self.pos.x;
         let yd = ray.pos.y - self.pos.y;
         let zd = ray.pos.z - self.pos.z;
-        let _0 = F::zero();
-        let _2 = F::from(2.0).unwrap();
-        let _4 = F::from(4.0).unwrap();
+        let f0 = F::zero();
+        let f2 = F::from_float(2.0);
+        let f4 = F::from_float(4.0);
 
         let a =
             ray.dir.x * ray.dir.x +
@@ -41,7 +41,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
             ray.dir.z * ray.dir.z;
 
         let b =
-            _2 *
+            f2 *
             (ray.dir.x * xd +
              ray.dir.y * yd +
              ray.dir.z * zd);
@@ -51,29 +51,28 @@ impl<F: Float> RayTarget<F> for Sphere<F>
             zd * zd -
             self.radius * self.radius;
 
-        let d = b * b - _4 * a * c;
+        let d = b * b - f4 * a * c;
 
         if d < F::zero()
         {
             return None;
         }
 
-        let twice_a = _2 * a;
-        let t1 = (-b + d.sqrt()) / twice_a;
-        let t2 = (-b - d.sqrt()) / twice_a;
-
-        let t = match true
-        {
-            _ if t1 < _0 => t2,
-            _ if t2 < _0 => t1,
-            _ => F::min(t1, t2),
+        let twice_a = f2 * a;
+        let dr = d.sqrt();
+        let t = if dr < b {
+            -b - dr
+        } else if -dr < b {
+            -b + dr
+        } else {
+            F::min(-b + dr, -b - dr)
         };
 
-        if t < F::epsilon()
-        {
+        let t = t / twice_a;
+
+        if t < F::epsilon() {
             None
-        } else
-        {
+        } else {
             Some(ray.extend(t))
         }
     }
