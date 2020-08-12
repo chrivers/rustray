@@ -50,9 +50,8 @@ impl<F: Float> Tracer<F>
         let obj = obj.unwrap();
         let hit = hit.unwrap();
 
-        for light in &self.lights
+        'lights: for light in &self.lights
         {
-            let mut isblocked = false;
             if cfg!(feature="self_shadowing")
             {
                 let light_length = light.pos.vector_to(hit).length();
@@ -68,15 +67,10 @@ impl<F: Float> Tracer<F>
                     {
                         if hit.vector_to(curhit).length() < light_length
                         {
-                            isblocked = true;
-                            break;
+                            continue 'lights;
                         }
                     }
                 }
-            }
-            if isblocked
-            {
-                continue
             }
             res = res + obj.trace(&hit, light);
         }
