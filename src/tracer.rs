@@ -117,7 +117,7 @@ impl<F: Float> Tracer<F>
                 if index > 0 {
                     Some(Color::mixed(&colors))
                 } else {
-                    None
+                    Some(Color::new(F::zero(), F::zero(), F::from_float(0.2)))
                 }
             } else {
                 self.render_pixel(Point::new(px, py))
