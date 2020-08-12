@@ -2,7 +2,7 @@
 
 use num::Float;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Point<F: Float>
 {
     pub x: F,
