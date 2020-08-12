@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::fmt::Display;
 
-pub trait Float : num::Float + Debug + Display + Sync
+pub trait Float : num::Float + num::Signed + Debug + Display + Sync
 {
     const BIAS: Self;
     const HALF: Self;
