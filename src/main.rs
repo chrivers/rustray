@@ -8,8 +8,9 @@ extern crate log;
 use std::fs::File;
 use image::ColorType;
 use image::png::PNGEncoder;
-use image::{ImageBuffer, GenericImage};
+use image::{ImageBuffer};
 use indicatif::{ProgressBar, ProgressStyle};
+use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use std::cmp::max;
 
 pub mod traits;
@@ -38,16 +39,16 @@ fn main() {
     colog::init();
     info!("rustray initialized");
 
-    const WIDTH:  u32 = 1920;
-    const HEIGHT: u32 = 1080;
+    const WIDTH:  usize = 1920;
+    const HEIGHT: usize = 1080;
     let scaling = max(WIDTH, HEIGHT) as f32 * 1.5;
 
     let camera = camera::Camera::parametric(
         Vector::new(5.0, 4.0, -15.0),
         Vector::new(0.0, 0.0, 10.0),
         (50.0f32).to_radians(),
-        WIDTH as usize,
-        HEIGHT as usize
+        WIDTH,
+        HEIGHT,
     );
 
     // let camera = camera::Camera::raw(
@@ -95,18 +96,27 @@ fn main() {
             .progress_chars("*>-")
     );
 
-    let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(WIDTH, HEIGHT);
-    for y in 0..HEIGHT
-    {
-        let mut subimg = img.sub_image(0, y, WIDTH, 1);
-        tracer.render_span::<_, _, u8>(y, &mut subimg);
-        pb.set_position(y as u64);
+    let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(WIDTH as u32, HEIGHT as u32);
+
+    let bar = ProgressBar::new(HEIGHT as u64);
+    let lines: Vec<_> = (0..HEIGHT).into_par_iter().map(|y| {
+        pb.inc(1);
+        tracer.generate_span(y as u32)
+    }).collect();
+
+    for y in 0..HEIGHT {
+        assert_eq!(lines[y].len(), WIDTH as usize);
+        for x in 0..WIDTH as usize {
+            let colors = lines[y][x].to_array();
+            img.put_pixel(x as u32, y as u32, image::Rgb(colors));
+        }
     }
-    pb.finish_with_message("render complete");
+    pb.finish();
+    info!("render complete");
 
     let buffer = File::create("output.png").unwrap();
     let png = PNGEncoder::new(buffer);
-    png.encode(&img.into_raw(), WIDTH, HEIGHT, ColorType::Rgb8).expect("Failed to encode");
+    png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.
 
