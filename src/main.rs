@@ -8,7 +8,7 @@ extern crate log;
 use std::fs::File;
 use image::ColorType;
 use image::png::PNGEncoder;
-use image::ImageBuffer;
+use image::{ImageBuffer, GenericImage};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::cmp::max;
 
@@ -98,7 +98,8 @@ fn main() {
     let mut img = ImageBuffer::<image::Rgb<u8>, Vec<u8>>::new(WIDTH, HEIGHT);
     for y in 0..HEIGHT
     {
-        tracer.render_line::<_, _, u8>(y, &mut img);
+        let mut subimg = img.sub_image(0, y, WIDTH, 1);
+        tracer.render_span::<_, _, u8>(y, &mut subimg);
         pb.set_position(y as u64);
     }
     pb.finish_with_message("render complete");
