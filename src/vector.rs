@@ -98,6 +98,11 @@ impl<F: Float> Vector<F>
         Vector { x, y, z }
     }
 
+    pub fn zero() -> Vector<F>
+    {
+        Vector { x: F::zero(), y: F::zero(), z: F::zero() }
+    }
+
     pub fn length(&self) -> F
     {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
@@ -109,7 +114,7 @@ impl<F: Float> Vector<F>
         if l != F::zero() {
             self / l
         } else {
-            Vector { x: F::zero(), y: F::zero(), z: F::zero() }
+            Self::zero()
         }
     }
 
