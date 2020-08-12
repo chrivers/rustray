@@ -10,6 +10,8 @@ pub struct Camera<F: Float>
     dir: Vector<F>,
     hor: Vector<F>,
     ver: Vector<F>,
+    xres: usize,
+    yres: usize,
 }
 
 impl<F: Float> Camera<F>
@@ -19,12 +21,14 @@ impl<F: Float> Camera<F>
         lookat: Vector<F>,
         hor: Vector<F>,
         ver: Vector<F>,
+        xres: usize,
+        yres: usize,
     ) -> Camera<F>
     {
         let dir = (lookat - pos).normalized();
 
         info!("Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]", pos, dir, hor, ver);
-        Camera { pos, dir, hor, ver }
+        Camera { pos, dir, hor, ver, xres, yres }
     }
 
     pub fn parametric(
@@ -53,12 +57,17 @@ impl<F: Float> Camera<F>
         info!("x_int_vector: {:?}", x_inc_vector);
         info!("y_int_vector: {:?}", y_inc_vector);
 
-        Camera::raw(pos, viewplane_bottom_left, x_inc_vector, y_inc_vector)
+        Camera::raw(pos, viewplane_bottom_left, x_inc_vector, y_inc_vector, xres, yres)
     }
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
         let vpp = self.dir + (self.hor * (point.x - F::from_u32(0))) + (self.ver * (point.y - F::from_u32(0)));
         Ray::new(self.pos, vpp.normalized())
+    }
+
+    pub fn size(self) -> (usize, usize)
+    {
+        (self.xres, self.yres)
     }
 }
