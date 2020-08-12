@@ -24,6 +24,8 @@ impl<F: Float> Camera<F>
     ) -> Camera<F>
     {
         let dir = (lookat - pos).normalized();
+
+        info!("Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]", pos, dir, hor, ver);
         Camera { pos, dir, hor, ver }
     }
 
