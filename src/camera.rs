@@ -57,7 +57,14 @@ impl<F: Float> Camera<F>
         info!("x_int_vector: {:?}", x_inc_vector);
         info!("y_int_vector: {:?}", y_inc_vector);
 
-        Camera::raw(pos, viewplane_bottom_left, x_inc_vector, y_inc_vector, xres, yres)
+        Camera {
+            pos: pos,
+            dir: (viewplane_bottom_left - pos).normalized(),
+            hor: x_inc_vector,
+            ver: y_inc_vector,
+            xres: xres,
+            yres: yres
+        }
     }
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
