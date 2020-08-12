@@ -147,6 +147,18 @@ impl<F: Float> Tracer<F>
         self._render_line(y, 0, target)
     }
 
+    pub fn generate_span(&self, y: u32) -> Vec<Color<F>>
+    {
+        let (xres, yres) = self.camera.size();
+        let py = F::from_i32(-(y as i32) + yres as i32 / 2);
+        (0..xres).map(
+            |x| {
+                let px = F::from_i32(x as i32 - xres as i32 / 2);
+                self.render_pixel(px, py).unwrap_or(Color::black())
+            }
+        ).collect()
+    }
+
     pub fn render_image<I, P>(&self, target: &mut I)
         where I: GenericImage<Pixel=P>,
               P: Pixel<Subpixel=u8>
