@@ -45,8 +45,8 @@ impl<F: Float> RayTarget<F> for ChessPlane<F>
 	let xv = s/xs;
 	let yv = t/ys;
 	
-        let x = (xv - xv.floor()) > F::from_float(0.5);
-        let y = (yv - yv.floor()) > F::from_float(0.5);
+        let x = (xv - xv.floor()) > F::HALF;
+        let y = (yv - yv.floor()) > F::HALF;
 
         let self_color = if x^y {
 	    Color::black()
