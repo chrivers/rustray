@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::traits::Float;
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Div};
 use num;
 
 #[derive(Clone, Copy, Debug)]
@@ -66,6 +66,36 @@ impl<F: Float> Mul for Color<F>
             r: self.r * other.r,
             g: self.g * other.g,
             b: self.b * other.b,
+        }
+    }
+}
+
+impl<F: Float> Div for Color<F>
+{
+    type Output = Color<F>;
+
+    fn div(self, other: Color<F>) -> Color<F>
+    {
+        Color
+        {
+            r: self.r / other.r,
+            g: self.g / other.g,
+            b: self.b / other.b,
+        }
+    }
+}
+
+impl<F: Float> Div<F> for Color<F>
+{
+    type Output = Color<F>;
+
+    fn div(self, other: F) -> Color<F>
+    {
+        Color
+        {
+            r: self.r / other,
+            g: self.g / other,
+            b: self.b / other,
         }
     }
 }
