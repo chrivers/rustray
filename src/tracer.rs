@@ -24,7 +24,7 @@ impl<F: Float> Tracer<F>
         Tracer { camera, objects, lights }
     }
 
-    fn render_pixel(&self, point: Point<F>) -> Option<Color<F>>
+    fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
     {
         let ray = self.camera.get_ray(point);
         let mut dist = F::max_value();
@@ -83,6 +83,37 @@ impl<F: Float> Tracer<F>
         Some(res)
     }
 
+    pub fn render_pixel(&self, px: F, py: F) -> Option<Color<F>>
+    {
+        if cfg!(feature="antialias")
+        {
+            const SAMPLES_X: u32 = 2;
+            const SAMPLES_Y: u32 = 2;
+            let mut colors = [Color::black(); (SAMPLES_X * SAMPLES_Y) as usize];
+            let mut index = 0;
+            for xa in 0..SAMPLES_X
+            {
+                for ya in 0..SAMPLES_Y
+                {
+                    let pixelx = px + F::from_u32(xa) / F::from_u32(SAMPLES_X);
+                    let pixely = py + F::from_u32(ya) / F::from_u32(SAMPLES_Y);
+                    if let Some(color) = self._render_pixel(Point::new(pixelx, pixely))
+                    {
+                        colors[index] = color;
+                        index += 1;
+                    }
+                }
+            }
+            if index > 0 {
+                Some(Color::mixed(&colors))
+            } else {
+                Some(Color::new(F::zero(), F::zero(), F::from_float(0.2)))
+            }
+        } else {
+            self._render_pixel(Point::new(px, py))
+        }
+    }
+
     fn _render_line<I, P>(&self, y: u32, output_line: u32, target: &mut I)
         where I: GenericImage<Pixel=P>,
               P: Pixel<Subpixel=u8>
@@ -92,33 +123,7 @@ impl<F: Float> Tracer<F>
         for x in 0..target.width()
         {
             let px = F::from_i32(x as i32 - xres as i32 / 2);
-            let color = if cfg!(feature="antialias")
-            {
-                const SAMPLES_X: u32 = 2;
-                const SAMPLES_Y: u32 = 2;
-                let mut colors = [Color::black(); (SAMPLES_X * SAMPLES_Y) as usize];
-                let mut index = 0;
-                for xa in 0..SAMPLES_X
-                {
-                    for ya in 0..SAMPLES_Y
-                    {
-                        let pixelx = px + F::from_u32(xa) / F::from_u32(SAMPLES_X);
-                        let pixely = py + F::from_u32(ya) / F::from_u32(SAMPLES_Y);
-                        if let Some(color) = self.render_pixel(Point::new(pixelx, pixely))
-                        {
-                            colors[index] = color;
-                            index += 1;
-                        }
-                    }
-                }
-                if index > 0 {
-                    Some(Color::mixed(&colors))
-                } else {
-                    Some(Color::new(F::zero(), F::zero(), F::from_float(0.2)))
-                }
-            } else {
-                self.render_pixel(Point::new(px, py))
-            };
+            let color = self.render_pixel(px, py);
             if let Some(color) = color
             {
                 let chans = color.to_array();
