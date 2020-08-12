@@ -21,7 +21,7 @@ pub struct Tracer<F: Float>
 
 impl<F: Float> Tracer<F>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<Box<RayTarget<F>>>, lights: Vec<Light<F>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<Box<dyn RayTarget<F>>>, lights: Vec<Light<F>>) -> Tracer<F>
     {
         Tracer { camera: camera, objects: objects, lights: lights }
     }
@@ -31,7 +31,7 @@ impl<F: Float> Tracer<F>
         let ray = self.camera.get_ray(point);
         let mut dist = F::max_value();
         let mut hit: Option<Vector<F>> = None;
-        let mut obj: Option<&Box<RayTarget<F>>> = None;
+        let mut obj: Option<&Box<dyn RayTarget<F>>> = None;
         for curobj in &self.objects
         {
             if let Some(curhit) = curobj.ray_hit(&ray)
