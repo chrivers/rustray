@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use num::Float;
 
 #[derive(Clone, Copy, Debug)]

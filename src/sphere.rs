@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::traits::Float;
 use crate::scene::*;
 use crate::vector::Vector;

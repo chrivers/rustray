@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::traits::Float;
 use image::{GenericImage, Pixel, Primitive};
 
