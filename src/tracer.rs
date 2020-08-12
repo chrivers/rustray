@@ -1,5 +1,5 @@
 use crate::traits::Float;
-use image::{GenericImage, Pixel, Primitive};
+use image::{GenericImage, Pixel};
 
 use crate::vector::Vector;
 use crate::light::Light;
@@ -83,15 +83,15 @@ impl<F: Float> Tracer<F>
         Some(res)
     }
 
-    pub fn render_line<I, P, S>(&self, y: u32, target: &mut I)
+    fn _render_line<I, P>(&self, y: u32, output_line: u32, target: &mut I)
         where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>,
-              S: Primitive
+              P: Pixel<Subpixel=u8>
     {
-        let py = F::from_i32(-(y as i32) + target.height() as i32 / 2);
+        let (xres, yres) = self.camera.size();
+        let py = F::from_i32(-(y as i32) + yres as i32 / 2);
         for x in 0..target.width()
         {
-            let px = F::from_i32(x as i32 - target.width() as i32 / 2);
+            let px = F::from_i32(x as i32 - xres as i32 / 2);
             let color = if cfg!(feature="antialias")
             {
                 const SAMPLES_X: u32 = 2;
@@ -123,19 +123,32 @@ impl<F: Float> Tracer<F>
             {
                 let chans = color.to_array();
                 let pixel = P::from_slice(&chans);
-                target.put_pixel(x, y, *pixel);
+                target.put_pixel(x, output_line, *pixel);
             }
         }
     }
 
-    pub fn render_image<I, P, S>(&self, target: &mut I)
+    pub fn render_line<I, P>(&self, y: u32, target: &mut I)
         where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>,
-              S: Primitive
+              P: Pixel<Subpixel=u8>
+    {
+        self._render_line(y, y, target)
+    }
+
+    pub fn render_span<I, P, S>(&self, y: u32, target: &mut I)
+        where I: GenericImage<Pixel=P>,
+              P: Pixel<Subpixel=u8>
+    {
+        self._render_line(y, 0, target)
+    }
+
+    pub fn render_image<I, P>(&self, target: &mut I)
+        where I: GenericImage<Pixel=P>,
+              P: Pixel<Subpixel=u8>
     {
         for y in 0..target.height()
         {
-            self.render_line::<I, P, S>(y, target)
+            self.render_line(y, target)
         }
     }
 }
