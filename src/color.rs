@@ -2,7 +2,6 @@
 
 use crate::traits::Float;
 use std::ops::{Add, Sub, Mul, Div};
-use num;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Color<F: Float>

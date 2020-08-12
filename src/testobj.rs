@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use rand;
-
 use crate::traits::Float;
 use crate::scene::*;
 use crate::vector::Vector;

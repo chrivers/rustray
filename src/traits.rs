@@ -1,4 +1,3 @@
-use num;
 use std::fmt::Debug;
 use std::fmt::Display;
 
