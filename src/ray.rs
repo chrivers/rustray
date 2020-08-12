@@ -14,7 +14,7 @@ impl<F: Float> Ray<F>
 {
     pub fn new(pos: Vector<F>, dir: Vector<F>) -> Ray<F>
     {
-        Ray { pos: pos, dir: dir }
+        Ray { pos, dir }
     }
 
     pub fn length_to(self, other: Vector<F>) -> F

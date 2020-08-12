@@ -23,7 +23,7 @@ impl<F: Float> Tracer<F>
 {
     pub fn new(camera: Camera<F>, objects: Vec<Box<dyn RayTarget<F>>>, lights: Vec<Light<F>>) -> Tracer<F>
     {
-        Tracer { camera: camera, objects: objects, lights: lights }
+        Tracer { camera, objects, lights }
     }
 
     fn render_pixel(&self, point: Point<F>) -> Option<Color<F>>

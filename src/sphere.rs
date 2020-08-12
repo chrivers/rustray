@@ -83,6 +83,6 @@ impl<F: Float> Sphere<F>
 {
     pub fn new(pos: Vector<F>, color: Color<F>, radius: F) -> Sphere<F>
     {
-        Sphere { pos: pos, color: color, radius: radius }
+        Sphere { pos, color, radius }
     }
 }

@@ -87,7 +87,7 @@ impl<F: Float> Vector<F>
 {
     pub fn new(x: F, y: F, z: F) -> Vector<F>
     {
-        Vector { x: x, y: y, z: z }
+        Vector { x, y, z }
     }
 
     pub fn length(&self) -> F

@@ -39,7 +39,7 @@ impl<F: Float> Plane<F>
 {
     pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, color: Color<F>) -> Plane<F>
     {
-        Plane { pos: pos, dir1: dir1, dir2: dir2, color: color }
+        Plane { pos, dir1, dir2, color }
     }
 }
 

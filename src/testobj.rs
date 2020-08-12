@@ -39,6 +39,6 @@ impl<F: Float> TestObject<F>
 {
     pub fn new(pct: F) -> TestObject<F>
     {
-        TestObject { pct: pct }
+        TestObject { pct }
     }
 }
