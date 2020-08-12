@@ -55,11 +55,9 @@ pub fn ray_hit_plane<F>(pos: &Vector<F>, dir1: &Vector<F>, dir2: &Vector<F>, ray
     let d = (-a * v1.x) + (-b * v1.y) + (-c * v1.z);
     let t = -(a * ray.pos.x + b * ray.pos.y + c * ray.pos.z + d) / (a * ray.dir.x + b * ray.dir.y + c * ray.dir.z);
 
-    if t < F::epsilon()
-    {
+    if t < F::epsilon() {
         None
-    } else
-    {
+    } else {
         Some(ray.extend(t))
     }
 }
