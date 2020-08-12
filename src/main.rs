@@ -1,4 +1,5 @@
 #![allow(unused_variables)]
+#![allow(clippy::many_single_char_names)]
 #![feature(box_syntax)]
 
 #[macro_use]
