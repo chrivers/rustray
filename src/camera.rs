@@ -3,7 +3,7 @@
 use crate::traits::Float;
 use crate::vector::Vector;
 use crate::ray::Ray;
-use point::Point;
+use crate::point::Point;
 
 #[derive(Clone, Copy)]
 pub struct Camera<F: Float>
