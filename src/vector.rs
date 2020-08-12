@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::traits::Float;
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Div};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Vector<F: Float>
@@ -50,6 +50,35 @@ impl<F: Float> Mul<F> for Vector<F>
             x: self.x * other,
             y: self.y * other,
             z: self.z * other,
+        }
+    }
+}
+
+impl<F: Float> Div<F> for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn div(self, other: F) -> Vector<F> {
+        Vector {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
+    }
+}
+
+
+impl<F: Float> Mul<Vector<F>> for Vector<F>
+{
+    type Output = Vector<F>;
+
+    fn mul(self, other: Vector<F>) -> Vector<F>
+    {
+        Vector
+        {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
         }
     }
 }
