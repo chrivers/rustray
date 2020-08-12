@@ -20,7 +20,7 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         let m = hit.vector_to(light.pos);
         let normal = self.pos.vector_to(*hit);
         let light_color = light.color * self.color;
-        let reflection_coeff = F::max(normal.cos_angle(m), (normal * (-F::one())).cos_angle(m));
+        let reflection_coeff = F::max(normal.cos_angle(m), (-normal).cos_angle(m));
         light_color * reflection_coeff / m.length().sqrt()
     }
 
