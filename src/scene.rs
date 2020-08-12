@@ -24,7 +24,7 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait RayTarget<F: Float> : Debug
+pub trait RayTarget<F: Float> : Debug + Sync
 {
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>;
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>;
