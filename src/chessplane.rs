@@ -57,9 +57,8 @@ impl<F: Float> RayTarget<F> for ChessPlane<F>
         let m = hit.vector_to(light.pos);
         let normal = self.dir2.crossed(self.dir1);
         let light_color = light.color * self_color;
-        // // let reflection_coeff = F::max(normal.cos_angle(m), (normal * (-F::one())).cos_angle(m));
         let reflection_coeff = normal.cos_angle(m);
-        light_color * reflection_coeff * (F::one() / m.length())
+        light_color * reflection_coeff / m.length().sqrt()
     }
 
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>
