@@ -2,7 +2,7 @@
 name = "rustray"
 version = "0.1.0"
 authors = ["Christian Iversen <ci@iversenit.dk>"]
-edition = "2018"
+edition = "2021"
 
 [features]
 default = ["self_shadowing", "antialias"]
