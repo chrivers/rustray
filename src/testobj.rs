@@ -15,12 +15,12 @@ impl<F: Float> RayTarget<F> for TestObject<F>
 {
     fn trace(&self, _hit: &Vector<F>, _light: &Light<F>) -> Color<F>
     {
-        Color::<F>::white()
+        Color::white()
     }
 
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>
     {
-        let rand = rand::random::<f32>();
+        let rand = rand::random();
         if F::from_float(rand) > self.pct {
             Some(ray.pos)
         } else {

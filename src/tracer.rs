@@ -46,7 +46,7 @@ impl<'a, F: Float> Tracer<'a, F>
 
         hit?;
 
-        let mut res = Color::<F>::black();
+        let mut res = Color::black();
         let obj = obj.unwrap();
         let hit = hit.unwrap();
 
