@@ -1,6 +1,11 @@
 use crate::traits::Float;
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
+#[macro_export]
+macro_rules! vec3 {
+    ($( $vals:expr ),+) => { Vector::new( $($vals),+ ) }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct Vector<F: Float>
 {
