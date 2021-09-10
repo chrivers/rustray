@@ -6,7 +6,7 @@ use crate::point::Point;
 #[derive(Clone, Copy)]
 pub struct Camera<F: Float>
 {
-    pub pos: Vector<F>,
+    pos: Vector<F>,
     dir: Vector<F>,
     hor: Vector<F>,
     ver: Vector<F>,
@@ -76,5 +76,10 @@ impl<F: Float> Camera<F>
     pub fn size(self) -> (usize, usize)
     {
         (self.xres, self.yres)
+    }
+
+    pub fn length_to(self, pos: Vector<F>) -> F
+    {
+        pos.length_to(self.pos)
     }
 }

@@ -34,7 +34,7 @@ impl<'a, F: Float> Tracer<'a, F>
         {
             if let Some(curhit) = curobj.ray_hit(&ray)
             {
-                let curdist = curhit.length_to(self.camera.pos);
+                let curdist = self.camera.length_to(curhit);
                 if curdist < dist
                 {
                     dist = curdist;
