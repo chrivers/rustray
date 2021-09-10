@@ -68,18 +68,20 @@ fn main() {
         light3,
         light4,
     ];
+
     let testobj = TestObject::new(0.99f32);
     let plane1  = ChessPlane::new(Vector::new(0.0,  6.0, 0.0), Vector::new(-1.0, 0.0, 0.0), Vector::new(0.0, 0.5, -1.0), Color::<f32>::white());
     let plane2  = ChessPlane::new(Vector::new(0.0,  0.0, 0.0), Vector::new( 1.0, 0.0, 0.0), Vector::new(0.0, 0.0,  1.0), Color::<f32>::white());
     let sphere1 = Sphere::new(Vector::new(0.0, 3.0, 5.0), Color::<f32>::white(), 1.0);
     let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32>::white(), 2.0);
     let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 9.0), Color::<f32>::white(), 3.0);
-    let objects: Vec<Box<dyn RayTarget<f32>>> = vec![
-        box plane1,
-        box plane2,
-        box sphere1,
-        box sphere2,
-        box sphere3,
+
+    let objects: Vec<&dyn RayTarget<f32>> = vec![
+        &plane1,
+        &plane2,
+        &sphere1,
+        &sphere2,
+        &sphere3,
     ];
 
     let tracer = tracer::Tracer::new(

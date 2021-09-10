@@ -10,16 +10,16 @@ use crate::ray::Ray;
 use crate::point::Point;
 
 //#[derive(Clone)]
-pub struct Tracer<F: Float>
+pub struct Tracer<'a, F: Float>
 {
     camera: Camera<F>,
-    objects: Vec<Box<dyn RayTarget<F>>>,
+    objects: Vec<&'a dyn RayTarget<F>>,
     lights: Vec<Light<F>>,
 }
 
-impl<F: Float> Tracer<F>
+impl<'a, F: Float> Tracer<'a, F>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<Box<dyn RayTarget<F>>>, lights: Vec<Light<F>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<&dyn RayTarget<F>>, lights: Vec<Light<F>>) -> Tracer<F>
     {
         Tracer { camera, objects, lights }
     }
@@ -29,7 +29,7 @@ impl<F: Float> Tracer<F>
         let ray = self.camera.get_ray(point);
         let mut dist = F::max_value();
         let mut hit: Option<Vector<F>> = None;
-        let mut obj: Option<&Box<dyn RayTarget<F>>> = None;
+        let mut obj: Option<&dyn RayTarget<F>> = None;
         for curobj in &self.objects
         {
             if let Some(curhit) = curobj.ray_hit(&ray)
@@ -39,7 +39,7 @@ impl<F: Float> Tracer<F>
                 {
                     dist = curdist;
                     hit = Some(curhit);
-                    obj = Some(curobj);
+                    obj = Some(*curobj);
                 }
             }
         }
