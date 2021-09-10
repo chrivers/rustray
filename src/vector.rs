@@ -116,7 +116,8 @@ impl<F: Float> Vector<F>
     pub fn normalized(self) -> Vector<F>
     {
         let l = self.length();
-        if l != F::zero() {
+
+        if l.non_zero() {
             self / l
         } else {
             Self::zero()

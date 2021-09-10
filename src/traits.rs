@@ -8,6 +8,7 @@ pub trait Float : num::Float + num::Signed + Debug + Display + Sync
     fn from_i32(value: i32) -> Self;
     fn from_u32(value: u32) -> Self;
     fn from_float(value: f32) -> Self;
+    fn non_zero(self) -> bool { self != Self::zero() }
 }
 
 impl Float for f32
