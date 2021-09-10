@@ -58,10 +58,11 @@ fn main() {
     //     Vector::new(0.0, (HEIGHT as f32) / scaling, 0.0),
     // );
 
-    let light1 = Light { pos: Vector::new(0.0, 2.0, 0.0), color: Color::<f32> { r: 2.0, g: 0.0, b: 0.0 } };
-    let light2 = Light { pos: Vector::new(5.0, 2.0, 5.0), color: Color::<f32> { r: 0.0, g: 2.0, b: 0.0 } };
-    let light3 = Light { pos: Vector::new(-5.0, 2.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 4.0 } };
-    let light4 = Light { pos: Vector::new(0.0, 8.0, 0.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 8.0 } };
+    let light1 = Light { pos: vec3!(0.0, 2.0, 0.0), color: Color::<f32> { r: 2.0, g: 0.0, b: 0.0 } };
+    let light2 = Light { pos: vec3!(5.0, 2.0, 5.0), color: Color::<f32> { r: 0.0, g: 2.0, b: 0.0 } };
+    let light3 = Light { pos: vec3!(-5.0, 2.0, 5.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 4.0 } };
+    let light4 = Light { pos: vec3!(0.0, 8.0, 0.0), color: Color::<f32> { r: 0.0, g: 0.0, b: 8.0 } };
+
     let lights = vec![
         light1,
         light2,
@@ -70,11 +71,11 @@ fn main() {
     ];
 
     let testobj = TestObject::new(0.99f32);
-    let plane1  = ChessPlane::new(Vector::new(0.0,  6.0, 0.0), Vector::new(-1.0, 0.0, 0.0), Vector::new(0.0, 0.5, -1.0), Color::<f32>::white());
-    let plane2  = ChessPlane::new(Vector::new(0.0,  0.0, 0.0), Vector::new( 1.0, 0.0, 0.0), Vector::new(0.0, 0.0,  1.0), Color::<f32>::white());
-    let sphere1 = Sphere::new(Vector::new(0.0, 3.0, 5.0), Color::<f32>::white(), 1.0);
-    let sphere2 = Sphere::new(Vector::new(4.0, 0.0, 1.0), Color::<f32>::white(), 2.0);
-    let sphere3 = Sphere::new(Vector::new(-4.0, 0.0, 9.0), Color::<f32>::white(), 3.0);
+    let plane1  = ChessPlane::new(vec3!(0.0,  6.0, 0.0), vec3!(-1.0, 0.0, 0.0), vec3!(0.0, 0.5, -1.0), Color::<f32>::white());
+    let plane2  = ChessPlane::new(vec3!(0.0,  0.0, 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0,  1.0), Color::<f32>::white());
+    let sphere1 = Sphere::new(vec3!(0.0, 3.0, 5.0), Color::<f32>::white(), 1.0);
+    let sphere2 = Sphere::new(vec3!(4.0, 0.0, 1.0), Color::<f32>::white(), 2.0);
+    let sphere3 = Sphere::new(vec3!(-4.0, 0.0, 9.0), Color::<f32>::white(), 3.0);
 
     let objects: Vec<&dyn RayTarget<f32>> = vec![
         &plane1,
