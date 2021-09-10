@@ -22,35 +22,35 @@ impl<F: Float> RayTarget<F> for ChessPlane<F>
         let xs = F::from_float(2.0);
         let ys = F::from_float(2.0);
 
-	let s;
-	let t;
+        let s;
+        let t;
 
-	if self.dir1.x != F::zero() {
-	    s = hit.x/self.dir1.x;
-	    if self.dir2.y != F::zero() {
-		t = hit.y/self.dir2.y;
-	    } else {
-		t = hit.z/self.dir2.z;
-	    }
-	} else {
-	    s = hit.y/self.dir1.y;
-	    if self.dir2.x != F::zero() {
-		t = hit.x/self.dir2.x;
-	    } else {
-		t = hit.z/self.dir2.z;
-	    }
-	}
-	let xv = s/xs;
-	let yv = t/ys;
-	
+        if self.dir1.x.non_zero() {
+            s = hit.x / self.dir1.x;
+            if self.dir2.y.non_zero() {
+                t = hit.y / self.dir2.y;
+            } else {
+                t = hit.z / self.dir2.z;
+            }
+        } else {
+            s = hit.y / self.dir1.y;
+            if self.dir2.x.non_zero() {
+                t = hit.x / self.dir2.x;
+            } else {
+                t = hit.z / self.dir2.z;
+            }
+        }
+        let xv = s / xs;
+        let yv = t / ys;
+
         let x = (xv - xv.floor()) > F::HALF;
         let y = (yv - yv.floor()) > F::HALF;
 
         let self_color = if x^y {
-	    Color::black()
-	} else {
-	    Color::white()
-	};
+            Color::black()
+        } else {
+            Color::white()
+        };
 
         let m = hit.vector_to(light.pos);
         let normal = self.dir2.crossed(self.dir1);
