@@ -7,7 +7,7 @@ extern crate log;
 
 use std::fs::File;
 use image::ColorType;
-use image::png::PNGEncoder;
+use image::png::PngEncoder;
 use image::{ImageBuffer};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
@@ -118,7 +118,7 @@ fn main() {
     info!("render complete");
 
     let buffer = File::create("output.png").unwrap();
-    let png = PNGEncoder::new(buffer);
+    let png = PngEncoder::new(buffer);
     png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8).expect("Failed to encode");
 
     //Construct a new ImageBuffer with the specified width and height.
