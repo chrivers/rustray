@@ -3,6 +3,7 @@ use crate::vector::Vector;
 use crate::color::Color;
 use crate::scene::*;
 
+#[derive(Debug)]
 pub struct Light<F: Float>
 {
     pub pos: Vector<F>,

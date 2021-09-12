@@ -9,7 +9,7 @@ use crate::scene::RayTarget;
 use crate::ray::Ray;
 use crate::point::Point;
 
-//#[derive(Clone)]
+#[derive(Debug)]
 pub struct Tracer<'a, F: Float>
 {
     camera: Camera<F>,
