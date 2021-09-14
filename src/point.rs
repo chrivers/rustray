@@ -1,5 +1,10 @@
 use num::Float;
 
+#[macro_export]
+macro_rules! point {
+    ($( $vals:expr ),+) => { Point::new( $($vals),+ ) }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct Point<F: Float>
 {
