@@ -93,7 +93,7 @@ impl<'a, F: Float> Tracer<'a, F>
                     let pixely = py + F::from_u32(ya) / F::from_u32(SAMPLES_Y);
                     if let Some(color) = self._render_pixel(Point::new(pixelx, pixely))
                     {
-                        colors[index] = color;
+                        colors[index] = color.clamped();
                         index += 1;
                     }
                 }
