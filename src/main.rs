@@ -14,6 +14,7 @@ use image::{ImageBuffer};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use std::cmp::max;
+use std::time::Instant;
 
 pub mod traits;
 pub mod color;
@@ -38,7 +39,10 @@ use crate::chessplane::ChessPlane;
 use crate::testobj::TestObject;
 
 fn main() {
-    colog::init();
+    let mut logger = colog::builder();
+    logger.filter(None, LevelFilter::Debug);
+    logger.init();
+
     info!("rustray initialized");
 
     const WIDTH:  usize = 1920;
@@ -93,6 +97,7 @@ fn main() {
         lights,
     );
 
+    let time_a = Instant::now();
 
     let pb = ProgressBar::new(HEIGHT as u64);
     pb.set_style(
@@ -109,6 +114,8 @@ fn main() {
         tracer.generate_span(y as u32)
     }).collect();
 
+    let time_b = Instant::now();
+
     for y in 0..HEIGHT {
         assert_eq!(lines[y].len(), WIDTH as usize);
         for x in 0..WIDTH as usize {
@@ -117,7 +124,11 @@ fn main() {
         }
     }
     pb.finish();
+
+    let time_c = Instant::now();
     info!("render complete");
+    debug!("  render time:  {:.2?} ms", (time_b - time_a).as_micros() as f32 / 1000f32);
+    debug!("  copy time:    {:.2?} ms", (time_c - time_b).as_micros() as f32 / 1000f32);
 
     let buffer = File::create("output.png").unwrap();
     let png = PngEncoder::new(buffer);
