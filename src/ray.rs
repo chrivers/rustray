@@ -14,7 +14,6 @@ pub struct Hit<'a, F: Float>
 {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
-    pub normal: Vector<F>,
     pub uv: Point<F>,
     pub obj: &'a dyn RayTarget<F>,
 }
@@ -36,8 +35,8 @@ impl<F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, normal: Vector<F>, uv: Point<F>, obj: &dyn RayTarget<F>) -> Hit<'_, F>
+    pub fn hit_at(self, ext: F, uv: Point<F>, obj: &dyn RayTarget<F>) -> Hit<'_, F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, normal, uv, obj }
+        Hit { pos: self.extend(ext), dir: self.dir, uv, obj }
     }
 }
