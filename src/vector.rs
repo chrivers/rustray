@@ -129,7 +129,7 @@ impl<F: Float> Vector<F>
         other.x * self.x + other.y * self.y + other.z * self.z
     }
 
-    pub fn crossed(self, other: Vector<F>) -> Vector<F>
+    pub fn cross(self, other: Vector<F>) -> Vector<F>
     {
         Vector
         {

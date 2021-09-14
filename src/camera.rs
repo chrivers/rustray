@@ -40,8 +40,8 @@ impl<F: Float> Camera<F>
     ) -> Camera<F>
     {
         let dir = (lookat - pos).normalized();
-        let u = dir.crossed(Vector::new(F::zero(), F::one(), F::zero()));
-        let v = u.crossed(dir);
+        let u = dir.cross(Vector::new(F::zero(), F::one(), F::zero()));
+        let v = u.cross(dir);
         let u = u.normalized();
         let v = v.normalized();
         let aspect_ratio = F::from_u32(yres as u32) / F::from_u32(xres as u32);
