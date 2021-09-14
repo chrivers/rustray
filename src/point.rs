@@ -14,6 +14,11 @@ impl<F: Float> Point<F>
         Point { x, y }
     }
 
+    pub fn zero() -> Point<F>
+    {
+        Point { x: F::zero(), y: F::zero() }
+    }
+
     pub fn line_to(&self, other: Point<F>) -> Point<F>
     {
         Point
