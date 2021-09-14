@@ -179,4 +179,74 @@ impl<F: Float> Vector<F>
     {
         self.dot(self)
     }
+
+    /* Reflect vector (self) around normal */
+    pub fn reflect(self, normal: &Vector<F>) -> Vector<F>
+    {
+        self - *normal * (F::TWO * self.dot(*normal))
+    }
+
+    /* Refract vector (self) relative to surface normal, according to ior.
+       (Index of Refraction) */
+    pub fn refract(self, normal: &Vector<F>, ior: F) -> Vector<F>
+    {
+        let mut cosi = self.dot(*normal).clamp(-F::one(), F::one());
+        let eta_i;
+        let eta_t;
+        let n;
+        if cosi < F::zero() {
+            eta_i = F::one();
+            eta_t = ior;
+            cosi = -cosi;
+            n = *normal;
+        } else {
+            eta_i = ior;
+            eta_t = F::one();
+            n = -(*normal);
+        }
+
+        let eta = eta_i / eta_t;
+
+        let k = F::one() - eta * eta * (F::one() - cosi * cosi);
+
+        if k < F::zero() {
+            Vector::zero()
+        } else {
+            self * eta + n * (eta * cosi - k.sqrt())
+        }
+    }
+
+    /* Compute the Fresnel coefficient for the relative magnitude of reflection
+     * vs refraction between <self> and <normal>, using specified Index of Refraction.
+     *
+     * https://en.wikipedia.org/wiki/Fresnel_equations
+     */
+    pub fn fresnel(self, normal: &Vector<F>, ior: F) -> F
+    {
+        let mut cos_i = self.dot(*normal).clamp(-F::one(), F::one());
+        let (eta_i, eta_t);
+        if cos_i > F::zero() {
+            eta_i = ior;
+            eta_t = F::one();
+        } else {
+            eta_i = F::one();
+            eta_t = ior;
+        }
+
+        /* Compute sin_t using Snell's law */
+        let sin_t = eta_i / eta_t * (F::zero().max(F::one() - cos_i * cos_i)).sqrt();
+
+        if sin_t >= F::one() {
+            /* Total internal reflection */
+            F::one()
+        } else {
+            /* Reflection and refraction */
+            let cos_t = (F::zero().max(F::one() - sin_t * sin_t)).sqrt();
+            cos_i = cos_i.abs();
+            let r_s = ((eta_t * cos_i) - (eta_i * cos_t)) / ((eta_t * cos_i) + (eta_i * cos_t));
+            let r_p = ((eta_i * cos_i) - (eta_t * cos_t)) / ((eta_i * cos_i) + (eta_t * cos_t));
+            (r_s * r_s  +  r_p * r_p) * F::HALF
+        }
+    }
+
 }
