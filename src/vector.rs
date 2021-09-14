@@ -174,7 +174,8 @@ impl<F: Float> Vector<F>
         }
     }
 
-    pub fn len_squared(self) -> F
+    /* Fast computation of len^2. Useful optimization for e.g. comparing lengths */
+    pub fn len_sqr(self) -> F
     {
         self.dot(self)
     }
