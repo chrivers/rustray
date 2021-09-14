@@ -114,6 +114,11 @@ impl<F: Float> Color<F>
         Color { r, g, b }
     }
 
+    pub fn gray(c: F) -> Color<F>
+    {
+        Color { r: c, g: c, b: c }
+    }
+
     pub fn black() -> Color<F>
     {
         let zero = F::zero();
@@ -142,6 +147,11 @@ impl<F: Float> Color<F>
         let g = Color::clamp(self.g);
         let b = Color::clamp(self.b);
         Color { r, g, b }
+    }
+
+    pub fn blended(&self, other: &Color<F>, pct: F) -> Color<F>
+    {
+        (*self * (F::one() - pct)) + (*other * pct)
     }
 
     pub fn mixed(input: &[Color<F>]) -> Color<F>
