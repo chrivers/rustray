@@ -150,9 +150,9 @@ impl<F: Float> Color<F>
         let clamped = self.clamped();
         let max = F::from_float(255.0);
         [
-            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap(),
-            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap(),
-            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap(),
+            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(255),
+            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(255),
+            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(255),
         ]
     }
 }
