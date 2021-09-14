@@ -75,12 +75,12 @@ impl<F: Float> Ray<F>
             }
         }
 
-        let t = self.intersect_plane(&a, &(*b - *a), &(*c - *a))?;
+        let t = self.intersect_plane(a, &(*b - *a), &(*c - *a))?;
         let hit = self.extend(t);
 
-        let c0 = test_edge(*b - *a, hit - *a, &n)?;
-        let c1 = test_edge(*c - *b, hit - *b, &n)?;
-        let c2 = test_edge(*a - *c, hit - *c, &n)?;
+        let c0 = test_edge(*b - *a, hit - *a, n)?;
+        let c1 = test_edge(*c - *b, hit - *b, n)?;
+        let c2 = test_edge(*a - *c, hit - *c, n)?;
 
         let area2 = n.length();
         let u = c1.length() / area2;
