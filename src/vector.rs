@@ -149,6 +149,11 @@ impl<F: Float> Vector<F>
         }
     }
 
+    pub fn normal_to(self, other: Vector<F>) -> Vector<F>
+    {
+        self.vector_to(other).normalized()
+    }
+
     pub fn length_to(self, other: Vector<F>) -> F
     {
         self.vector_to(other).length()
@@ -167,5 +172,10 @@ impl<F: Float> Vector<F>
             y: self.y * scale,
             z: self.z * scale,
         }
+    }
+
+    pub fn len_squared(self) -> F
+    {
+        self.dot(self)
     }
 }
