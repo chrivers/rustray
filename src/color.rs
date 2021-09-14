@@ -1,5 +1,5 @@
 use crate::traits::Float;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, AddAssign, Sub, Mul, Div};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Color<F: Float>
@@ -20,6 +20,16 @@ impl<F: Float> Add for Color<F>
             g: self.g + other.g,
             b: self.b + other.b,
         }
+    }
+}
+
+impl<F: Float> AddAssign for Color<F>
+{
+    fn add_assign(&mut self, other: Color<F>)
+    {
+        self.r = self.r + other.r;
+        self.g = self.g + other.g;
+        self.b = self.b + other.b;
     }
 }
 
