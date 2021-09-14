@@ -70,3 +70,9 @@ impl<F: Float> Sphere<F>
         Sphere { pos, radius }
     }
 }
+
+impl<F: Float> HasPosition<F> for Sphere<F>
+{
+    fn get_position(&self) -> Vector<F> { self.pos }
+    fn set_position(&mut self, value: Vector<F>) { self.pos = value }
+}
