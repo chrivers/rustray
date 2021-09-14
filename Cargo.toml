@@ -18,3 +18,5 @@ indicatif = { version = "0.16.2", features = ["rayon"] }
 colog = "1.0.0"
 log = "0.4.11"
 rayon = "*"
+obj = { version = "0.10", features = ["genmesh"] }
+genmesh = "0.6"
