@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::fmt::Display;
 use num_traits::float::FloatConst;
+use num::clamp;
 
 pub trait Float : num::Float + FloatConst + num::Signed + Debug + Display + Sync
 {
@@ -11,6 +12,8 @@ pub trait Float : num::Float + FloatConst + num::Signed + Debug + Display + Sync
     fn from_u32(value: u32) -> Self;
     fn from_float(value: f32) -> Self;
     fn non_zero(self) -> bool { self != Self::zero() }
+
+    fn clamp(self, low: Self, high: Self) -> Self { clamp(self, low, high) }
 }
 
 impl Float for f32
