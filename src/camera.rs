@@ -58,12 +58,12 @@ impl<F: Float> Camera<F>
         info!("y_int_vector: {:?}", y_inc_vector);
 
         Camera {
-            pos: pos,
+            pos,
             dir: (viewplane_bottom_left - pos).normalized(),
             hor: x_inc_vector,
             ver: y_inc_vector,
-            xres: xres,
-            yres: yres
+            xres,
+            yres
         }
     }
 
