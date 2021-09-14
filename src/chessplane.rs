@@ -12,7 +12,6 @@ pub struct ChessPlane<F: Float>
     pos: Vector<F>,
     dir1: Vector<F>,
     dir2: Vector<F>,
-    color: Color<F>,
 }
 
 impl<F: Float> RayTarget<F> for ChessPlane<F>
@@ -68,8 +67,8 @@ impl<F: Float> RayTarget<F> for ChessPlane<F>
 
 impl<F: Float> ChessPlane<F>
 {
-    pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, color: Color<F>) -> ChessPlane<F>
+    pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, _color: Color<F>) -> ChessPlane<F>
     {
-        ChessPlane { pos, dir1, dir2, color }
+        ChessPlane { pos, dir1, dir2 }
     }
 }

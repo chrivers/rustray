@@ -9,7 +9,6 @@ use crate::ray::Ray;
 pub struct Sphere<F: Float>
 {
     pos: Vector<F>,
-    color: Color<F>,
     radius: F,
 }
 
@@ -66,8 +65,8 @@ impl<F: Float> RayTarget<F> for Sphere<F>
 
 impl<F: Float> Sphere<F>
 {
-    pub fn new(pos: Vector<F>, color: Color<F>, radius: F) -> Sphere<F>
+    pub fn new(pos: Vector<F>, _color: Color<F>, radius: F) -> Sphere<F>
     {
-        Sphere { pos, color, radius }
+        Sphere { pos, radius }
     }
 }
