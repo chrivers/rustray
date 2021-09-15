@@ -57,13 +57,6 @@ fn main() {
         HEIGHT,
     );
 
-    // let camera = camera::Camera::raw(
-    //     Vector::new(0.0, 10.0, -30.0),
-    //     Vector::new(0.0, 0.0, 10.0),
-    //     Vector::new((WIDTH as f32) / scaling, 0.0, 0.0),
-    //     Vector::new(0.0, (HEIGHT as f32) / scaling, 0.0),
-    // );
-
     let light1 = Light { pos: vec3!(0.0, 2.0, 0.0), color: Color { r: 2.0, g: 0.0, b: 0.0 } };
     let light2 = Light { pos: vec3!(5.0, 2.0, 5.0), color: Color { r: 0.0, g: 2.0, b: 0.0 } };
     let light3 = Light { pos: vec3!(-5.0, 2.0, 5.0), color: Color { r: 0.0, g: 0.0, b: 4.0 } };
