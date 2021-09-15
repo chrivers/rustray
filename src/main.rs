@@ -101,7 +101,6 @@ fn main() {
 
     let mut img = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
 
-    let bar = ProgressBar::new(HEIGHT as u64);
     let lines: Vec<_> = (0..HEIGHT).into_par_iter().map(|y| {
         pb.inc(1);
         tracer.generate_span(y as u32)
