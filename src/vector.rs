@@ -103,6 +103,21 @@ impl<F: Float> Vector<F>
         Vector { x, y, z }
     }
 
+    pub fn identity_x() -> Vector<F>
+    {
+        Vector { x: F::one(), y: F::zero(), z: F::zero() }
+    }
+
+    pub fn identity_y() -> Vector<F>
+    {
+        Vector { x: F::zero(), y: F::one(), z: F::zero() }
+    }
+
+    pub fn identity_z() -> Vector<F>
+    {
+        Vector { x: F::zero(), y: F::one(), z: F::one() }
+    }
+
     pub fn zero() -> Vector<F>
     {
         Vector { x: F::zero(), y: F::zero(), z: F::zero() }
