@@ -39,27 +39,23 @@ impl<F: Float> Camera<F>
         yres: usize
     ) -> Camera<F>
     {
-        let dir = (lookat - pos).normalized();
-        let u = dir.cross(Vector::new(F::zero(), F::one(), F::zero()));
-        let v = u.cross(dir);
-        let u = u.normalized();
-        let v = v.normalized();
-        let aspect_ratio = F::from_u32(yres as u32) / F::from_u32(xres as u32);
-        let viewplane_half_width = (fov / F::from_u32(2)).tan();
-        let viewplane_half_height = aspect_ratio * viewplane_half_width;
-        let viewplane_bottom_left = lookat - (v * viewplane_half_height) - (u * viewplane_half_width);
-        let x_inc_vector = (u * F::TWO * viewplane_half_width)  / F::from_usize(xres);
-        let y_inc_vector = (v * F::TWO * viewplane_half_height) / F::from_usize(yres);
+        let dir = pos.normal_to(lookat);
+        let u = dir.cross(Vector::identity_y()).normalized();
+        let v = u.cross(dir).normalized();
+        let aspect_ratio = F::from_usize(yres) / F::from_usize(xres);
+        let viewplane_width = (fov / F::TWO).tan();
+        let viewplane_height = aspect_ratio * viewplane_width;
+        let x_inc_vector = (u * viewplane_width)  / F::from_usize(xres);
+        let y_inc_vector = (v * viewplane_height) / F::from_usize(yres);
         info!("aspect_ratio: {}", aspect_ratio);
-        info!("vp_half_width: {:.4}", viewplane_half_width);
-        info!("vp_half_height: {:.4}", viewplane_half_height);
-        info!("vp_bottom_left: {:?}", viewplane_bottom_left);
-        info!("x_inc_vector: {:?}", x_inc_vector);
-        info!("y_inc_vector: {:?}", y_inc_vector);
+        info!("vp_width: {:.4}", viewplane_width);
+        info!("vp_height: {:.4}", viewplane_height);
+        info!("x_inc_vector: {:8.4}", x_inc_vector);
+        info!("y_inc_vector: {:8.4}", y_inc_vector);
 
         Camera {
             pos,
-            dir: (viewplane_bottom_left - pos).normalized(),
+            dir: pos.normal_to(lookat),
             hor: x_inc_vector,
             ver: y_inc_vector,
             xres,
