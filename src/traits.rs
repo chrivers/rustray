@@ -11,6 +11,7 @@ pub trait Float : num::Float + FloatConst + num::Signed + Debug + Display + Sync
     const FOUR: Self;
     fn from_i32(value: i32) -> Self;
     fn from_u32(value: u32) -> Self;
+    fn from_usize(value: usize) -> Self;
     fn from_f32(value: f32) -> Self;
     fn non_zero(self) -> bool { self != Self::zero() }
 
@@ -31,6 +32,9 @@ impl Float for f32
     fn from_u32(value: u32) -> Self { value as Self }
 
     #[inline(always)]
+    fn from_usize(value: usize) -> Self { value as Self }
+
+    #[inline(always)]
     fn from_f32(value: f32) -> Self { value as Self }
 }
 
@@ -46,6 +50,9 @@ impl Float for f64
 
     #[inline(always)]
     fn from_u32(value: u32) -> Self { value as Self }
+
+    #[inline(always)]
+    fn from_usize(value: usize) -> Self { value as Self }
 
     #[inline(always)]
     fn from_f32(value: f32) -> Self { value as Self }
