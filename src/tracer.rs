@@ -1,15 +1,13 @@
 use crate::traits::Float;
 use image::{GenericImage, Pixel};
 
-use crate::vector::Vector;
 use crate::light::Light;
 use crate::color::Color;
 use crate::camera::Camera;
-use crate::scene::RayTarget;
-use crate::ray::Ray;
+use crate::scene::{RayTarget, RayTracer};
+use crate::ray::{Ray, Hit};
 use crate::point::Point;
 
-#[derive(Debug)]
 pub struct Tracer<'a, F: Float>
 {
     camera: Camera<F>,
@@ -27,54 +25,8 @@ impl<'a, F: Float> Tracer<'a, F>
     fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
     {
         let ray = self.camera.get_ray(point);
-        let mut dist = F::max_value();
-        let mut hit: Option<Vector<F>> = None;
-        let mut obj: Option<&dyn RayTarget<F>> = None;
-        for curobj in &self.objects
-        {
-            if let Some(curhit) = curobj.ray_hit(&ray)
-            {
-                let curdist = self.camera.length_to(curhit);
-                if curdist < dist
-                {
-                    dist = curdist;
-                    hit = Some(curhit);
-                    obj = Some(*curobj);
-                }
-            }
-        }
 
-        hit?;
-
-        let mut res = Color::black();
-        let obj = obj.unwrap();
-        let hit = hit.unwrap();
-
-        'lights: for light in &self.lights
-        {
-            if cfg!(feature="self_shadowing")
-            {
-                let light_length = light.pos.vector_to(hit).length();
-                let mut hitray = Ray::new(hit, hit.vector_to(light.pos));
-                hitray.pos = hitray.pos + hitray.dir * F::BIAS;
-                for curobj in &self.objects
-                {
-                    // if !cfg!(self_shadowing) && curobj == obj
-                    // {
-                    //     continue
-                    // }
-                    if let Some(curhit) = curobj.ray_hit(&hitray)
-                    {
-                        if hit.vector_to(curhit).length() < light_length
-                        {
-                            continue 'lights;
-                        }
-                    }
-                }
-            }
-            res = res + obj.trace(&hit, light);
-        }
-        Some(res)
+        self.ray_trace(&ray, 0)
     }
 
     pub fn render_pixel(&self, px: F, py: F) -> Option<Color<F>>
@@ -162,4 +114,62 @@ impl<'a, F: Float> Tracer<'a, F>
             self.render_line(y, target)
         }
     }
+}
+
+
+impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
+{
+    fn ray_shadow(&self, hit: &Hit<F>, light: &Light<F>) -> bool
+    {
+        if !cfg!(feature="self_shadowing") {
+            return true
+        }
+
+        let light_length = light.pos.vector_to(hit.pos).len_sqr();
+        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos));
+        hitray.pos = hitray.pos + hitray.dir * F::BIAS;
+        for curobj in &self.objects
+        {
+            if let Some(curhit) = curobj.intersect(&hitray)
+            {
+                if hit.pos.vector_to(curhit.pos).len_sqr() < light_length
+                {
+                    return true
+                }
+            }
+        }
+
+        false
+    }
+
+    fn ray_trace(&self, ray: &Ray<F>, lvl: u32) -> Option<Color<F>>
+    {
+        if lvl > 5 {
+            return None;
+        }
+
+        let mut dist = F::max_value();
+        let mut hit: Option<Hit<F>> = None;
+
+        for curobj in &self.objects
+        {
+            if let Some(curhit) = curobj.intersect(ray)
+            {
+                let curdist = self.camera.length_to(curhit.pos);
+                if curdist < dist
+                {
+                    dist = curdist;
+                    hit = Some(curhit);
+                }
+            }
+        }
+
+        let mut res = Color::black();
+        let hit = hit?;
+
+        res += hit.obj.resolve(&hit, &self.lights, self, lvl);
+
+        Some(res)
+    }
+
 }

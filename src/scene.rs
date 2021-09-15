@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crate::traits::Float;
 use crate::light::Light;
 use crate::ray::{Ray, Hit};
@@ -24,10 +22,10 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait RayTarget<F: Float> : Debug + Sync
+pub trait RayTarget<F: Float> : Sync
 {
-    fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>;
-    fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>;
+    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
+    fn resolve(&self, hit: &Hit<F>, light: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>;
 }
 
 pub trait RayTracer<F: Float> : Sync
