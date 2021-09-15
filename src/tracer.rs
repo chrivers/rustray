@@ -148,7 +148,7 @@ impl<'a, F: Float> Tracer<'a, F>
         (0..xres).map(
             |x| {
                 let px = F::from_i32(x as i32 - xres as i32 / 2);
-                self.render_pixel(px, py).unwrap_or(Color::black())
+                self.render_pixel(px, py).unwrap_or_else(Color::black)
             }
         ).collect()
     }
