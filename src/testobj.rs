@@ -21,7 +21,7 @@ impl<F: Float> RayTarget<F> for TestObject<F>
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>
     {
         let rand = rand::random();
-        if F::from_float(rand) > self.pct {
+        if F::from_f32(rand) > self.pct {
             Some(ray.pos)
         } else {
             None

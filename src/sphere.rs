@@ -28,8 +28,8 @@ impl<F: Float> RayTarget<F> for Sphere<F>
         let dir = ray.pos - self.pos;
 
         let f0 = F::zero();
-        let f2 = F::from_float(2.0);
-        let f4 = F::from_float(4.0);
+        let f2 = F::from_f32(2.0);
+        let f4 = F::from_f32(4.0);
 
         let a = ray.dir.dot(ray.dir);
 
