@@ -108,11 +108,10 @@ fn main() {
 
     let time_b = Instant::now();
 
-    for y in 0..HEIGHT {
-        assert_eq!(lines[y].len(), WIDTH as usize);
-        for x in 0..WIDTH as usize {
-            let colors = lines[y][x].to_array();
-            img.put_pixel(x as u32, y as u32, image::Rgb(colors));
+    for (y, line) in lines.iter().enumerate().take(HEIGHT) {
+        assert_eq!(line.len(), WIDTH);
+        for (x, pixel) in line.iter().enumerate().take(WIDTH) {
+            img.put_pixel(x as u32, y as u32, image::Rgb(pixel.to_array()));
         }
     }
     pb.finish();
