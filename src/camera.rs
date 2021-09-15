@@ -69,7 +69,7 @@ impl<F: Float> Camera<F>
 
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
-        let vpp = self.dir + (self.hor * (point.x - F::from_u32(0))) + (self.ver * (point.y - F::from_u32(0)));
+        let vpp = self.dir + (self.hor * point.x) + (self.ver * point.y);
         Ray::new(self.pos, vpp.normalized())
     }
 
