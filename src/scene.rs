@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use crate::traits::Float;
 use crate::light::Light;
-use crate::ray::Ray;
+use crate::ray::{Ray, Hit};
 use crate::vector::Vector;
 use crate::color::Color;
 
@@ -28,4 +28,10 @@ pub trait RayTarget<F: Float> : Debug + Sync
 {
     fn ray_hit(&self, ray: &Ray<F>) -> Option<Vector<F>>;
     fn trace(&self, hit: &Vector<F>, light: &Light<F>) -> Color<F>;
+}
+
+pub trait RayTracer<F: Float> : Sync
+{
+    fn ray_shadow(&self, hit: &Hit<F>, light: &Light<F>) -> bool;
+    fn ray_trace(&self, ray: &Ray<F>, lvl: u32) -> Option<Color<F>>;
 }
