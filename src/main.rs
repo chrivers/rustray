@@ -1,5 +1,6 @@
 #![allow(unused_variables)]
 #![allow(clippy::many_single_char_names)]
+#![allow(clippy::unnecessary_cast)]
 #![feature(box_syntax)]
 #![feature(destructuring_assignment)]
 #![feature(const_generics_defaults)]
@@ -15,6 +16,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use std::cmp::max;
 use std::time::Instant;
+use log::LevelFilter;
 
 pub mod traits;
 pub mod color;
@@ -29,6 +31,8 @@ pub mod chessplane;
 pub mod light;
 pub mod tracer;
 pub mod testobj;
+pub mod triangle;
+pub mod trianglemesh;
 
 use crate::color::Color;
 use crate::vector::Vector;
@@ -37,6 +41,9 @@ use crate::sphere::Sphere;
 use crate::scene::RayTarget;
 use crate::chessplane::ChessPlane;
 use crate::testobj::TestObject;
+use crate::triangle::Triangle;
+use crate::trianglemesh::TriangleMesh;
+use crate::traits::Float;
 
 fn main() {
     let mut logger = colog::builder();
@@ -45,22 +52,26 @@ fn main() {
 
     info!("rustray initialized");
 
+    type F = f64;
+
     const WIDTH:  usize = 1920;
     const HEIGHT: usize = 1080;
     let scaling = max(WIDTH, HEIGHT) as f32 * 1.5;
 
     let camera = camera::Camera::parametric(
-        Vector::new(5.0, 4.0, -15.0),
-        Vector::new(0.0, 0.0, 10.0),
-        (50.0f32).to_radians(),
+        vec3!(12.0, 8.0, 16.0),
+        vec3!(0.0, 2.0, 0.0),
+        (90.0 as F).to_radians(),
         WIDTH,
         HEIGHT,
     );
 
     let light1 = Light { pos: vec3!(0.0, 2.0, 0.0), color: Color { r: 2.0, g: 0.0, b: 0.0 } };
-    let light2 = Light { pos: vec3!(5.0, 2.0, 5.0), color: Color { r: 0.0, g: 2.0, b: 0.0 } };
-    let light3 = Light { pos: vec3!(-5.0, 2.0, 5.0), color: Color { r: 0.0, g: 0.0, b: 4.0 } };
-    let light4 = Light { pos: vec3!(0.0, 8.0, 0.0), color: Color { r: 0.0, g: 0.0, b: 8.0 } };
+
+    let light1 = Light { pos: vec3!( 1.0, 1.0, 1.0), color: Color { r: 1.0, g: 1.0, b: 1.0 } };
+    let light2 = Light { pos: vec3!( 2.0, 2.0, 7.0), color: Color { r: 2.0, g: 0.0, b: 0.0 } };
+    let light3 = Light { pos: vec3!( 2.0, 7.0, 2.0), color: Color { r: 0.0, g: 2.0, b: 0.0 } };
+    let light4 = Light { pos: vec3!( 7.0, 2.0, 2.0), color: Color { r: 0.0, g: 0.0, b: 2.0 } };
 
     let lights = vec![
         light1,
@@ -69,19 +80,61 @@ fn main() {
         light4,
     ];
 
-    let testobj = TestObject::new(0.99f32);
-    let plane1  = ChessPlane::new(vec3!(0.0,  6.0, 0.0), vec3!(-1.0, 0.0, 0.0), vec3!(0.0, 0.5, -1.0), Color::white());
-    let plane2  = ChessPlane::new(vec3!(0.0,  0.0, 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0,  1.0), Color::white());
-    let sphere1 = Sphere::new(vec3!(0.0, 3.0, 5.0), Color::white(), 1.0);
-    let sphere2 = Sphere::new(vec3!(4.0, 0.0, 1.0), Color::white(), 2.0);
-    let sphere3 = Sphere::new(vec3!(-4.0, 0.0, 9.0), Color::white(), 3.0);
+    let mut reader = File::open("models/teapot.obj").expect("Failed to open model file");
+    let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 3.0, 4.0), F::from_f32(1.0/5.0)).unwrap();
 
-    let objects: Vec<&dyn RayTarget<f32>> = vec![
-        &plane1,
+    let testobj = TestObject::new(0.99);
+    let plane1  = ChessPlane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), Color::white());
+    let plane2  = ChessPlane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), Color::white());
+
+    let plane3  = ChessPlane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
+    let plane4  = ChessPlane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
+
+    let plane5  = ChessPlane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
+    let plane6  = ChessPlane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), Color::white());
+
+    let sphere1 = Sphere::new(vec3!(1.0, 3.0, 5.0), Color::white(), 1.0);
+    let sphere2 = Sphere::new(vec3!(4.0, 1.0, 1.0), Color::white(), 1.0);
+    let sphere3 = Sphere::new(vec3!(2.0, 3.0, 9.0), Color::white(), 1.0);
+    let sphere4 = Sphere::new(vec3!(1.0, 5.0, 4.0), Color::white(), 1.0);
+
+    let sphere5 = Sphere::new(vec3!( 3.0, 3.0, 1.0), Color::white(), 1.0);
+    let sphere6 = Sphere::new(vec3!( 2.0, 2.0, 3.0), Color::white(), 1.0);
+    let sphere7 = Sphere::new(vec3!( 6.0, 6.0, 8.0), Color::white(), 1.0);
+    let sphere8 = Sphere::new(vec3!( 4.0, 4.0, -1.0), Color::white(), 3.0);
+    let sphere9 = Sphere::new(vec3!( 4.0, -1.0, 4.0), Color::white(), 3.0);
+    let sphere10 = Sphere::new(vec3!( -1.0, 4.0, 4.0), Color::white(), 3.0);
+
+    let tri1 = Triangle::new(
+        vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
+        vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
+    );
+
+    let objects: Vec<&dyn RayTarget<F>> = vec![
         &plane2,
-        &sphere1,
-        &sphere2,
-        &sphere3,
+        &plane4,
+        &plane6,
+
+        &plane1,
+        &plane3,
+        &plane5,
+
+        // &sphere1,
+        // &sphere2,
+        // &sphere3,
+        // &sphere4,
+        // &sphere5,
+        // &sphere6,
+        // &sphere7,
+
+        // &sphere8,
+        // &sphere9,
+        // &sphere10,
+
+        // &tri1,
+        &trimesh1,
+        // &trimesh2,
+        // &trimesh3,
     ];
 
     let tracer = tracer::Tracer::new(
