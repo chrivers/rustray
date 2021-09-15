@@ -1,6 +1,8 @@
 use crate::traits::Float;
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
+use std::fmt::{self, Display};
+
 #[macro_export]
 macro_rules! vec3 {
     ($( $vals:expr ),+) => { Vector::new( $($vals),+ ) }
@@ -264,4 +266,17 @@ impl<F: Float> Vector<F>
         }
     }
 
+}
+
+impl<F: Float> std::fmt::Display for Vector<F>
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[")?;
+        Display::fmt(&self.x, f)?;
+        write!(f, ", ")?;
+        Display::fmt(&self.y, f)?;
+        write!(f, ", ")?;
+        Display::fmt(&self.z, f)?;
+        f.write_str("]")
+    }
 }
