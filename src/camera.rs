@@ -48,8 +48,8 @@ impl<F: Float> Camera<F>
         let viewplane_half_width = (fov / F::from_u32(2)).tan();
         let viewplane_half_height = aspect_ratio * viewplane_half_width;
         let viewplane_bottom_left = lookat - (v * viewplane_half_height) - (u * viewplane_half_width);
-        let x_inc_vector = (u * F::from_u32(2) * viewplane_half_width)  / F::from_u32(xres as u32);
-        let y_inc_vector = (v * F::from_u32(2) * viewplane_half_height) / F::from_u32(yres as u32);
+        let x_inc_vector = (u * F::TWO * viewplane_half_width)  / F::from_usize(xres);
+        let y_inc_vector = (v * F::TWO * viewplane_half_height) / F::from_usize(yres);
         info!("aspect_ratio: {}", aspect_ratio);
         info!("vp_half_width: {:.4}", viewplane_half_width);
         info!("vp_half_height: {:.4}", viewplane_half_height);

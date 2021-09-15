@@ -160,7 +160,7 @@ impl<F: Float> Color<F>
             0 => Color::black(),
             n => {
                 let sum = input.iter().fold(Color::black(), |a, &c| a + c);
-                sum / F::from_u32(n as u32)
+                sum / F::from_usize(n)
             }
         }
     }
