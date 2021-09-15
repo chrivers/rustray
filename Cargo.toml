@@ -20,3 +20,4 @@ log = "0.4.11"
 rayon = "*"
 obj = { version = "0.10", features = ["genmesh"] }
 genmesh = "0.6"
+bvh = "0.6"
