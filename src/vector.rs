@@ -1,5 +1,5 @@
 use crate::traits::Float;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
 
 use std::fmt::{self, Display};
 
@@ -27,6 +27,16 @@ impl<F: Float> Add for Vector<F>
             y: self.y + other.y,
             z: self.z + other.z,
         }
+    }
+}
+
+impl<F: Float> AddAssign for Vector<F>
+{
+    fn add_assign(&mut self, other: Vector<F>)
+    {
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
     }
 }
 
