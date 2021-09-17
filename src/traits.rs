@@ -1,9 +1,9 @@
 use std::fmt::Debug;
 use std::fmt::Display;
-use num_traits::float::FloatConst;
-use num::clamp;
+use num_traits::{float::FloatConst,NumAssignOps};
+use num::{clamp, pow};
 
-pub trait Float : num::Float + FloatConst + num::Signed + Debug + Display + Sync
+pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Debug + Display + Sync
 {
     const BIAS: Self;
     const HALF: Self;
