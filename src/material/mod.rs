@@ -38,9 +38,11 @@ mod chessboardxyz;
 mod mirror;
 mod fresnel;
 mod phong;
+mod scaleuv;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
 pub use mirror::Mirror;
 pub use fresnel::Fresnel;
 pub use phong::Phong;
+pub use scaleuv::ScaleUV;
