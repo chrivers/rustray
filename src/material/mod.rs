@@ -37,8 +37,10 @@ mod chessboard;
 mod chessboardxyz;
 mod mirror;
 mod fresnel;
+mod phong;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
 pub use mirror::Mirror;
 pub use fresnel::Fresnel;
+pub use phong::Phong;
