@@ -36,7 +36,9 @@ pub(crate) mod mat_util {
 mod chessboard;
 mod chessboardxyz;
 mod mirror;
+mod fresnel;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
 pub use mirror::Mirror;
+pub use fresnel::Fresnel;
