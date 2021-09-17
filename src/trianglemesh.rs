@@ -2,10 +2,10 @@ use crate::{vec3, point};
 use crate::vector::Vector;
 use crate::traits::Float;
 use crate::scene::*;
-use crate::color::Color;
-use crate::light::Light;
-use crate::ray::{Ray, Hit};
+use crate::ray::{Ray, Hit, Maxel};
 use crate::triangle::Triangle;
+use crate::material::Material;
+use crate::point::Point;
 
 use std::io::Read;
 
@@ -14,17 +14,18 @@ use obj::{ObjData, ObjError};
 use bvh::bvh::BVH;
 use bvh::{Point3, Vector3};
 
-pub struct TriangleMesh<F: Float>
+pub struct TriangleMesh<'a, F: Float>
 {
-    tris: Vec<Triangle<F>>,
+    tris: Vec<Triangle<'a, F>>,
     bvh: BVH,
+    mat: &'a dyn Material<F=F>
 }
 
-impl<F: Float> RayTarget<F> for TriangleMesh<F>
+impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
 {
-    fn resolve(&self, hit: &Hit<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        Color::white()
+        Maxel::zero(self.mat)
     }
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
@@ -71,19 +72,20 @@ fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
           F::from_f32(p[2]))
 }
 
-impl<F: Float> TriangleMesh<F>
+impl<'a, F: Float> TriangleMesh<'a, F>
 {
-    pub fn new(mut tris: Vec<Triangle<F>>) -> TriangleMesh<F>
+    pub fn new(mut tris: Vec<Triangle<'a, F>>, mat: &'a dyn Material<F=F>) -> TriangleMesh<'a, F>
     {
         let bvh = BVH::build(&mut tris);
 
         TriangleMesh {
             tris,
             bvh,
+            mat,
         }
     }
 
-    pub fn load_obj<R: Read>(read: &mut R, pos: Vector<F>, scale: F) -> Result<TriangleMesh<F>, ObjError>
+    pub fn load_obj<R: Read>(read: &mut R, pos: Vector<F>, scale: F, mat: &'a dyn Material<F=F>) -> Result<TriangleMesh<'a, F>, ObjError>
     {
         let obj = ObjData::load_buf(read)?;
 
@@ -104,12 +106,14 @@ impl<F: Float> TriangleMesh<F>
                     a2point(&obj.texture[poly.0[0].1.unwrap()]),
                     a2point(&obj.texture[poly.0[1].1.unwrap()]),
                     a2point(&obj.texture[poly.0[2].1.unwrap()]),
+
+                    mat,
                 );
                 tris.push(tri);
             }
         }
 
-        Ok(TriangleMesh::new(tris))
+        Ok(TriangleMesh::new(tris, mat))
     }
 
 }

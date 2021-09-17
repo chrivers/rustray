@@ -1,6 +1,6 @@
 use crate::traits::Float;
 use crate::light::Light;
-use crate::ray::{Ray, Hit};
+use crate::ray::{Ray, Hit, Maxel};
 use crate::vector::Vector;
 use crate::color::Color;
 
@@ -25,7 +25,7 @@ pub trait HasColor<F: Float>
 pub trait RayTarget<F: Float> : Sync
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
-    fn resolve(&self, hit: &Hit<F>, light: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>;
+    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>;
 }
 
 pub trait RayTracer<F: Float> : Sync

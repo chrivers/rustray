@@ -2,6 +2,8 @@ use crate::traits::Float;
 use crate::vector::Vector;
 use crate::point::Point;
 use crate::scene::RayTarget;
+use crate::material::Material;
+use crate::point;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>
@@ -14,8 +16,15 @@ pub struct Hit<'a, F: Float>
 {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
-    pub uv: Point<F>,
     pub obj: &'a dyn RayTarget<F>,
+}
+
+#[derive(Copy, Clone)]
+pub struct Maxel<'a, F: Float>
+{
+    pub normal: Vector<F>,
+    pub uv: Point<F>,
+    pub mat: &'a dyn Material<F=F>,
 }
 
 impl<F: Float> Ray<F>
@@ -35,9 +44,9 @@ impl<F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, uv: Point<F>, obj: &dyn RayTarget<F>) -> Hit<'_, F>
+    pub fn hit_at(self, ext: F, obj: &dyn RayTarget<F>) -> Hit<F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, uv, obj }
+        Hit { pos: self.extend(ext), dir: self.dir, obj }
     }
 
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
@@ -63,7 +72,7 @@ impl<F: Float> Ray<F>
         }
     }
 
-    pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>, n: &Vector<F>) -> Option<(F, F, F)>
+    pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>, n: &Vector<F>) -> Option<F>
     {
         fn test_edge<F: Float>(edge: Vector<F>, vp: Vector<F>, normal: &Vector<F>) -> Option<Vector<F>>
         {
@@ -78,17 +87,33 @@ impl<F: Float> Ray<F>
         let t = self.intersect_plane(a, &(*b - *a), &(*c - *a))?;
         let hit = self.extend(t);
 
-        let c0 = test_edge(*b - *a, hit - *a, n)?;
-        let c1 = test_edge(*c - *b, hit - *b, n)?;
-        let c2 = test_edge(*a - *c, hit - *c, n)?;
+        test_edge(*b - *a, hit - *a, n)?;
+        test_edge(*c - *b, hit - *b, n)?;
+        test_edge(*a - *c, hit - *c, n)?;
 
-        let area2 = n.length();
-        let u = c1.length() / area2;
-        let v = c2.length() / area2;
-
-        Some((t, u, v))
+        Some(t)
     }
 
+}
+
+/* Maxel */
+
+impl<'a, F: Float> Maxel<'a, F>
+{
+    pub fn from_uv(u: F, v: F, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
+    {
+        Maxel { uv: point!(u, v), normal, mat }
+    }
+
+    pub fn new(uv: Point<F>, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
+    {
+        Maxel { uv, normal, mat }
+    }
+
+    pub fn zero(mat: &'a dyn Material<F=F>) -> Self
+    {
+        Maxel { uv: Point::zero(), normal: Vector::zero(), mat }
+    }
 }
 
 /* Math functions */

@@ -2,13 +2,11 @@ use crate::traits::Float;
 use crate::point::Point;
 use crate::scene::*;
 use crate::vector::Vector;
-use crate::color::Color;
-use crate::light::Light;
-use crate::ray::{Ray, Hit};
-use crate::point::Point;
+use crate::ray::{Ray, Hit, Maxel};
+use crate::material::Material;
 
-#[derive(Clone, Debug)]
-pub struct Triangle<F: Float>
+#[derive(Clone)]
+pub struct Triangle<'a, F: Float>
 {
     a: Vector<F>,
     b: Vector<F>,
@@ -25,13 +23,15 @@ pub struct Triangle<F: Float>
     n: Vector<F>,
 
     ni: usize,
+
+    mat: &'a dyn Material<F=F>
 }
 
 use bvh::aabb::{AABB, Bounded};
 use bvh::bounding_hierarchy::BHShape;
 use bvh::Point3;
 
-impl<F: Float> Bounded for Triangle<F> {
+impl<'a, F: Float> Bounded for Triangle<'a, F> {
 
     fn aabb(&self) -> AABB {
         let min = Point3::new(
@@ -49,7 +49,7 @@ impl<F: Float> Bounded for Triangle<F> {
 
 }
 
-impl<F: Float> BHShape for Triangle<F> {
+impl<'a, F: Float> BHShape for Triangle<'a, F> {
 
     fn set_bh_node_index(&mut self, index: usize) {
         self.ni = index;
@@ -61,7 +61,7 @@ impl<F: Float> BHShape for Triangle<F> {
 
 }
 
-impl<F: Float> Triangle<F> {
+impl<'a, F: Float> Triangle<'a, F> {
 
     fn interpolate_normal(&self, u: F, v: F) -> Vector<F>
     {
@@ -74,51 +74,40 @@ impl<F: Float> Triangle<F> {
         normal.normalized()
     }
 
+    fn interpolate_uv(&self, u: F, v: F) -> Point<F>
+    {
+        let w = F::one() - u - v;
+        (self.ta * u) + (self.tb * v) + (self.tc * w)
+    }
+
 }
 
-impl<F: Float> RayTarget<F> for Triangle<F>
+impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
 {
-    fn resolve(&self, hit: &Hit<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let mut res = Color::black();
+        let c1 = (self.c - self.b).cross(hit.pos - self.b);
+        let c2 = (self.a - self.c).cross(hit.pos - self.c);
+        let area2 = self.n.length();
+        let u = c1.length() / area2;
+        let v = c2.length() / area2;
 
-        let normal = self.interpolate_normal(hit.uv.x, hit.uv.y);
-
-        let d = hit.dir;
-
-        let refl = d.reflect(&normal);
-        let reflection_coeff = d.cos_angle(refl);
-        let c_refl = rt.ray_trace(&Ray::new(hit.pos + refl * F::BIAS, refl), lvl + 1).unwrap_or_else(Color::black);
-
-        let refr = hit.dir.refract(&normal, F::from_f32(1.13));
-        let c_refr = rt.ray_trace(&Ray::new(hit.pos + refr * F::BIAS, refr), lvl + 1).unwrap_or_else(Color::black);
-
-        let fr = hit.dir.fresnel(&normal, F::from_f32(1.13));
-        res += c_refr.blended(&c_refl, fr);
-
-        // for light in lights {
-        //     // if rt.ray_shadow(hit, light) {
-        //     //     continue
-        //     // }
-        //     let m = hit.pos.vector_to(light.pos);
-        //     let light_color = light.color * Color::white();
-        //     let reflection_coeff = normal.cos_angle(m);
-        //     res += light_color * reflection_coeff / m.length().sqrt();
-        // }
-        res
+        let normal = self.interpolate_normal(u, v);
+        let uv = self.interpolate_uv(u, v);
+        Maxel::from_uv(uv.x, uv.y, normal, self.mat)
     }
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let (t, u, v) = ray.intersect_triangle(&self.a, &self.b, &self.c, &self.n)?;
-        Some(ray.hit_at(t, point!(u, v), self))
+        let t = ray.intersect_triangle(&self.a, &self.b, &self.c, &self.n)?;
+        Some(ray.hit_at(t, self))
     }
 
 }
 
-impl<F: Float> Triangle<F>
+impl<'a, F: Float> Triangle<'a, F>
 {
-    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>) -> Triangle<F>
+    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: &'a dyn Material<F=F>) -> Triangle<'a, F>
     {
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
@@ -127,7 +116,8 @@ impl<F: Float> Triangle<F>
             na, nb, nc,
             ta, tb, tc,
             n: ab.cross(ac),
-            ni: 0
+            ni: 0,
+            mat
         }
     }
 }

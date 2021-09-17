@@ -1,38 +1,37 @@
 use crate::traits::Float;
 use crate::scene::*;
-use crate::color::Color;
-use crate::light::Light;
-use crate::ray::{Ray, Hit};
-use crate::point::Point;
+use crate::ray::{Ray, Hit, Maxel};
+use crate::material::Material;
 
-#[derive(Debug)]
-pub struct TestObject<F: Float>
+pub struct TestObject<'a, F: Float>
 {
     pct: F,
+    mat: &'a dyn Material<F=F>
 }
 
-impl<F: Float> RayTarget<F> for TestObject<F>
+impl<'a, F: Float> RayTarget<F> for TestObject<'a, F>
 {
-    fn resolve(&self, _hit: &Hit<F>, _light: &[Light<F>], _rt: &dyn RayTracer<F>, _lvl: u32) -> Color<F>
+    fn resolve(&self, _hit: &Hit<F>) -> Maxel<F>
     {
-        Color::white()
+        Maxel::zero(self.mat)
     }
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let rand = rand::random();
         if F::from_f32(rand) > self.pct {
-            Some(ray.hit_at(F::zero(), Point::zero(), self))
+            Some(ray.hit_at(F::zero(), self))
         } else {
             None
         }
     }
+
 }
 
-impl<F: Float> TestObject<F>
+impl<'a, F: Float> TestObject<'a, F>
 {
-    pub fn new(pct: F) -> TestObject<F>
+    pub fn new(pct: F, mat: &'a dyn Material<F=F>) -> TestObject<'a, F>
     {
-        TestObject { pct }
+        TestObject { pct, mat }
     }
 }

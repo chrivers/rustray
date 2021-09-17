@@ -1,82 +1,53 @@
 use crate::traits::Float;
 use crate::scene::*;
 use crate::vector::Vector;
-use crate::color::Color;
-use crate::light::Light;
-use crate::ray::{Ray, Hit};
-use crate::point::Point;
+use crate::ray::{Ray, Hit, Maxel};
+use crate::material::Material;
 
-#[derive(Debug)]
-pub struct ChessPlane<F: Float>
+pub struct ChessPlane<'a, F: Float>
 {
     pos: Vector<F>,
     dir1: Vector<F>,
     dir2: Vector<F>,
     normal: Vector<F>,
+    mat: &'a dyn Material<F=F>
 }
 
-impl<F: Float> RayTarget<F> for ChessPlane<F>
+impl<'a, F: Float> RayTarget<F> for ChessPlane<'a, F>
 {
-    fn resolve(&self, hit: &Hit<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, _lvl: u32) -> Color<F>
+    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let xs = F::from_f32(2.0);
-        let ys = F::from_f32(2.0);
-
-        let s;
-        let t;
-
+        let (u, v);
         if self.dir1.x.non_zero() {
-            s = hit.pos.x / self.dir1.x;
-            if self.dir2.y.non_zero() {
-                t = hit.pos.y / self.dir2.y;
+            u = hit.pos.x / self.dir1.x;
+            v = if self.dir2.y.non_zero() {
+                hit.pos.y / self.dir2.y
             } else {
-                t = hit.pos.z / self.dir2.z;
+                hit.pos.z / self.dir2.z
             }
         } else {
-            s = hit.pos.y / self.dir1.y;
-            if self.dir2.x.non_zero() {
-                t = hit.pos.x / self.dir2.x;
+            u = hit.pos.y / self.dir1.y;
+            v = if self.dir2.x.non_zero() {
+                hit.pos.x / self.dir2.x
             } else {
-                t = hit.pos.z / self.dir2.z;
+                hit.pos.z / self.dir2.z
             }
         }
-        let xv = s / xs;
-        let yv = t / ys;
-
-        let x = xv.abs().fract() > F::HALF;
-        let y = yv.abs().fract() > F::HALF;
-
-        let self_color = if x^y {
-            Color::black()
-        } else {
-            Color::white()
-        };
-
-        let mut res = Color::black();
-        for light in lights {
-            if rt.ray_shadow(hit, light) {
-                continue
-            }
-            let m = hit.pos.vector_to(light.pos);
-            let light_color = light.color * self_color;
-            let reflection_coeff = self.normal.cos_angle(m);
-            res += light_color * reflection_coeff / m.length();
-        }
-        res
+        Maxel::from_uv(u, v, self.normal, self.mat)
     }
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_plane(&self.pos, &self.dir1, &self.dir2)?;
-        Some(ray.hit_at(t, Point::zero(), self))
+        Some(ray.hit_at(t, self))
     }
 
 }
 
-impl<F: Float> ChessPlane<F>
+impl<'a, F: Float> ChessPlane<'a, F>
 {
-    pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, _color: Color<F>) -> ChessPlane<F>
+    pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, mat: &'a dyn Material<F=F>) -> ChessPlane<'a, F>
     {
-        ChessPlane { pos, dir1, dir2, normal: dir1.cross(dir2) }
+        ChessPlane { pos, dir1, dir2, normal: dir1.cross(dir2), mat }
     }
 }

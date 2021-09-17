@@ -167,7 +167,8 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
         let mut res = Color::black();
         let hit = hit?;
 
-        res += hit.obj.resolve(&hit, &self.lights, self, lvl);
+        let maxel = hit.obj.resolve(&hit);
+        res += maxel.mat.render(&hit, &maxel, &self.lights, self, lvl);
 
         Some(res)
     }
