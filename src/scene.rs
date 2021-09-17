@@ -25,6 +25,10 @@ pub trait HasColor<F: Float>
 pub trait RayTarget<F: Float> : Sync
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
+}
+
+pub trait HitTarget<F: Float> : Sync
+{
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>;
 }
 

@@ -82,7 +82,7 @@ impl<'a, F: Float> Triangle<'a, F> {
 
 }
 
-impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
+impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
@@ -96,7 +96,10 @@ impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
         let uv = self.interpolate_uv(u, v);
         Maxel::from_uv(uv.x, uv.y, normal, self.mat)
     }
+}
 
+impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
+{
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_triangle(&self.a, &self.b, &self.c, &self.n)?;

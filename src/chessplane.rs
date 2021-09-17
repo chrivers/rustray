@@ -13,7 +13,7 @@ pub struct ChessPlane<'a, F: Float>
     mat: &'a dyn Material<F=F>
 }
 
-impl<'a, F: Float> RayTarget<F> for ChessPlane<'a, F>
+impl<'a, F: Float> HitTarget<F> for ChessPlane<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
@@ -35,7 +35,10 @@ impl<'a, F: Float> RayTarget<F> for ChessPlane<'a, F>
         }
         Maxel::from_uv(u, v, self.normal, self.mat)
     }
+}
 
+impl<'a, F: Float> RayTarget<F> for ChessPlane<'a, F>
+{
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_plane(&self.pos, &self.dir1, &self.dir2)?;

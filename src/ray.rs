@@ -1,7 +1,7 @@
 use crate::traits::Float;
 use crate::vector::Vector;
 use crate::point::Point;
-use crate::scene::RayTarget;
+use crate::scene::HitTarget;
 use crate::material::Material;
 use crate::point;
 
@@ -16,7 +16,7 @@ pub struct Hit<'a, F: Float>
 {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
-    pub obj: &'a dyn RayTarget<F>,
+    pub obj: &'a dyn HitTarget<F>,
 }
 
 #[derive(Copy, Clone)]
@@ -44,7 +44,7 @@ impl<F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &dyn RayTarget<F>) -> Hit<F>
+    pub fn hit_at(self, ext: F, obj: &dyn HitTarget<F>) -> Hit<F>
     {
         Hit { pos: self.extend(ext), dir: self.dir, obj }
     }

@@ -11,9 +11,8 @@ pub struct Sphere<'a, F: Float>
     mat: &'a dyn Material<F=F>
 }
 
-impl<'a, F: Float> RayTarget<F> for Sphere<'a, F>
+impl<'a, F: Float> HitTarget<F> for Sphere<'a, F>
 {
-
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         let q = (hit.pos - self.pos).normalized();
@@ -24,7 +23,10 @@ impl<'a, F: Float> RayTarget<F> for Sphere<'a, F>
 
         Maxel::from_uv(u, v, normal, self.mat)
     }
+}
 
+impl<'a, F: Float> RayTarget<F> for Sphere<'a, F>
+{
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_sphere(&self.pos, self.radius2)?;

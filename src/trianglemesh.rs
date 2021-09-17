@@ -21,13 +21,16 @@ pub struct TriangleMesh<'a, F: Float>
     mat: &'a dyn Material<F=F>
 }
 
-impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
+impl<'a, F: Float> HitTarget<F> for TriangleMesh<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         Maxel::zero(self.mat)
     }
+}
 
+impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
+{
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let r = bvh::ray::Ray::new(
