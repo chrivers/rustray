@@ -1,4 +1,4 @@
-use crate::vec3;
+use crate::{vec3, point};
 use crate::vector::Vector;
 use crate::traits::Float;
 use crate::scene::*;
@@ -60,6 +60,10 @@ impl<F: Float> RayTarget<F> for TriangleMesh<F>
     }
 }
 
+fn a2point<F: Float>(p: &[f32; 2]) -> Point<F> {
+    point!(F::from_f32(p[0]),
+           F::from_f32(p[1]))
+}
 
 fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
     vec3!(F::from_f32(p[0]),
@@ -96,6 +100,10 @@ impl<F: Float> TriangleMesh<F>
                     a2vec(&obj.normal[poly.0[0].2.unwrap()]),
                     a2vec(&obj.normal[poly.0[1].2.unwrap()]),
                     a2vec(&obj.normal[poly.0[2].2.unwrap()]),
+
+                    a2point(&obj.texture[poly.0[0].1.unwrap()]),
+                    a2point(&obj.texture[poly.0[1].1.unwrap()]),
+                    a2point(&obj.texture[poly.0[2].1.unwrap()]),
                 );
                 tris.push(tri);
             }

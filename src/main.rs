@@ -35,6 +35,7 @@ pub mod triangle;
 pub mod trianglemesh;
 
 use crate::color::Color;
+use crate::point::Point;
 use crate::vector::Vector;
 use crate::light::Light;
 use crate::sphere::Sphere;
@@ -108,6 +109,7 @@ fn main() {
     let tri1 = Triangle::new(
         vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
         vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
+        point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
     );
 
     let objects: Vec<&dyn RayTarget<F>> = vec![

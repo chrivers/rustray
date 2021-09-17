@@ -1,5 +1,5 @@
-use crate::point;
 use crate::traits::Float;
+use crate::point::Point;
 use crate::scene::*;
 use crate::vector::Vector;
 use crate::color::Color;
@@ -17,6 +17,10 @@ pub struct Triangle<F: Float>
     na: Vector<F>,
     nb: Vector<F>,
     nc: Vector<F>,
+
+    ta: Point<F>,
+    tb: Point<F>,
+    tc: Point<F>,
 
     n: Vector<F>,
 
@@ -114,13 +118,14 @@ impl<F: Float> RayTarget<F> for Triangle<F>
 
 impl<F: Float> Triangle<F>
 {
-    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>) -> Triangle<F>
+    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>) -> Triangle<F>
     {
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
         Triangle {
             a, b, c,
             na, nb, nc,
+            ta, tb, tc,
             n: ab.cross(ac),
             ni: 0
         }
