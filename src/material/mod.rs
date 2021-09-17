@@ -41,6 +41,7 @@ mod phong;
 mod scaleuv;
 mod blend;
 mod texture;
+mod bumpmap;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -50,3 +51,4 @@ pub use phong::Phong;
 pub use scaleuv::ScaleUV;
 pub use blend::Blend;
 pub use texture::Texture;
+pub use bumpmap::Bumpmap;
