@@ -34,5 +34,7 @@ pub(crate) mod mat_util {
 }
 
 mod chessboard;
+mod chessboardxyz;
 
 pub use chessboard::ChessBoard;
+pub use chessboardxyz::ChessBoardXYZ;
