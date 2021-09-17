@@ -29,7 +29,6 @@ pub mod sphere;
 pub mod plane;
 pub mod light;
 pub mod tracer;
-pub mod testobj;
 pub mod triangle;
 pub mod trianglemesh;
 pub mod material;
@@ -41,7 +40,6 @@ use crate::light::Light;
 use crate::sphere::Sphere;
 use crate::scene::RayTarget;
 use crate::plane::Plane;
-use crate::testobj::TestObject;
 use crate::triangle::Triangle;
 use crate::trianglemesh::TriangleMesh;
 use crate::traits::Float;
@@ -107,7 +105,6 @@ fn main() {
     let mut reader = File::open("models/Porsche_911_GT2.obj").expect("Failed to open model file");
     let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 2.0, 6.0), F::from_f32(2.0/1.0), &mat_bmp).unwrap();
 
-    let testobj = TestObject::new(0.99, &mat_white);
     let plane1  = Plane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
     let plane2  = Plane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
 
