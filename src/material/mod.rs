@@ -40,6 +40,7 @@ mod fresnel;
 mod phong;
 mod scaleuv;
 mod blend;
+mod texture;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -48,3 +49,4 @@ pub use fresnel::Fresnel;
 pub use phong::Phong;
 pub use scaleuv::ScaleUV;
 pub use blend::Blend;
+pub use texture::Texture;
