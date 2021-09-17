@@ -27,7 +27,6 @@ pub mod ray;
 pub mod scene;
 pub mod sphere;
 pub mod plane;
-pub mod chessplane;
 pub mod light;
 pub mod tracer;
 pub mod testobj;
@@ -41,7 +40,7 @@ use crate::vector::Vector;
 use crate::light::Light;
 use crate::sphere::Sphere;
 use crate::scene::RayTarget;
-use crate::chessplane::ChessPlane;
+use crate::plane::Plane;
 use crate::testobj::TestObject;
 use crate::triangle::Triangle;
 use crate::trianglemesh::TriangleMesh;
@@ -109,14 +108,14 @@ fn main() {
     let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 2.0, 6.0), F::from_f32(2.0/1.0), &mat_bmp).unwrap();
 
     let testobj = TestObject::new(0.99, &mat_white);
-    let plane1  = ChessPlane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
-    let plane2  = ChessPlane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
+    let plane1  = Plane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
+    let plane2  = Plane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
 
-    let plane3  = ChessPlane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
-    let plane4  = ChessPlane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let plane3  = Plane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let plane4  = Plane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
 
-    let plane5  = ChessPlane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
-    let plane6  = ChessPlane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), &mat_plane);
+    let plane5  = Plane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let plane6  = Plane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), &mat_plane);
 
     let sphere1 = Sphere::new(vec3!(1.0, 3.0, 5.0), 1.0, &mat_sphere);
     let sphere2 = Sphere::new(vec3!(4.0, 1.0, 1.0), 1.0, &mat_sphere);
