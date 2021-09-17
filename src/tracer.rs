@@ -127,7 +127,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
 
         let light_length = light.pos.vector_to(hit.pos).len_sqr();
         let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos));
-        hitray.pos = hitray.pos + hitray.dir * F::BIAS;
+        hitray.pos += hitray.dir * F::BIAS;
         for curobj in &self.objects
         {
             if let Some(curhit) = curobj.intersect(&hitray)
