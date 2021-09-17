@@ -1,4 +1,5 @@
 use num::Float;
+use std::ops::{Add, Mul};
 
 #[macro_export]
 macro_rules! point {
@@ -36,5 +37,32 @@ impl<F: Float> Point<F>
     pub fn pos_det(&self, other: Point<F>) -> bool
     {
         self.x * other.y - self.y * other.x > F::zero()
+    }
+}
+
+impl<F: Float> Mul<F> for Point<F>
+{
+    type Output = Point<F>;
+
+    fn mul(self, other: F) -> Point<F>
+    {
+        Point
+        {
+            x: self.x * other,
+            y: self.y * other,
+        }
+    }
+}
+
+impl<F: Float> Add for Point<F>
+{
+    type Output = Point<F>;
+
+    fn add(self, other: Point<F>) -> Point<F>
+    {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
     }
 }
