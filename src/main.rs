@@ -33,6 +33,7 @@ pub mod tracer;
 pub mod testobj;
 pub mod triangle;
 pub mod trianglemesh;
+pub mod material;
 
 use crate::color::Color;
 use crate::point::Point;
@@ -45,6 +46,7 @@ use crate::testobj::TestObject;
 use crate::triangle::Triangle;
 use crate::trianglemesh::TriangleMesh;
 use crate::traits::Float;
+use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap};
 
 fn main() {
     let mut logger = colog::builder();
@@ -81,35 +83,58 @@ fn main() {
         light4,
     ];
 
-    let mut reader = File::open("models/teapot.obj").expect("Failed to open model file");
-    let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 3.0, 4.0), F::from_f32(1.0/5.0)).unwrap();
+    let mat_mirror: Mirror<F> = Mirror::new(1.0);
+    let mat_white = Color::white();
+    let mat_smooth = Fresnel::new(1.6);
+    let mat_sphere = Fresnel::new(1.9);
 
-    let testobj = TestObject::new(0.99);
-    let plane1  = ChessPlane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), Color::white());
-    let plane2  = ChessPlane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), Color::white());
+    let mat_plane = ChessBoard::new(Phong::black(), Phong::white());
+    let mat_sphere2 = ChessBoard::new(Phong::new(2.0, Color::black()), Color::white());
+    let mat_sphere = ScaleUV::new(2.0, 2.0, Blend::new(mat_sphere2, mat_mirror, 0.8));
 
-    let plane3  = ChessPlane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
-    let plane4  = ChessPlane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
+    let mat_phong = Phong::<F, _>::new(2.0, Color::<F>::white());
 
-    let plane5  = ChessPlane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), Color::white());
-    let plane6  = ChessPlane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), Color::white());
+    let tex0 = image::open("textures/stone-albedo.png").unwrap();
+    let tex1 = image::open("textures/stone-normal.png").unwrap();
+    let mat_tex = Phong::<F, _>::new(2.0, Texture::<F, _>::new(tex0));
+    let mat_bmp = ScaleUV::new(1.0, 1.0, Bumpmap::new(0.05, tex1, mat_tex));
+    // let mat_bmp = ScaleUV::new(2.1, 2.1, Bumpmap::new(1.0, tex1, mat_tex));
+    // let mat_sphere = mat_bmp;
+    // let mat_sphere = Phong::<F, _>::new(mat_tex);
 
-    let sphere1 = Sphere::new(vec3!(1.0, 3.0, 5.0), Color::white(), 1.0);
-    let sphere2 = Sphere::new(vec3!(4.0, 1.0, 1.0), Color::white(), 1.0);
-    let sphere3 = Sphere::new(vec3!(2.0, 3.0, 9.0), Color::white(), 1.0);
-    let sphere4 = Sphere::new(vec3!(1.0, 5.0, 4.0), Color::white(), 1.0);
+    // let mat_plane = mat_tex.clone();
 
-    let sphere5 = Sphere::new(vec3!( 3.0, 3.0, 1.0), Color::white(), 1.0);
-    let sphere6 = Sphere::new(vec3!( 2.0, 2.0, 3.0), Color::white(), 1.0);
-    let sphere7 = Sphere::new(vec3!( 6.0, 6.0, 8.0), Color::white(), 1.0);
-    let sphere8 = Sphere::new(vec3!( 4.0, 4.0, -1.0), Color::white(), 3.0);
-    let sphere9 = Sphere::new(vec3!( 4.0, -1.0, 4.0), Color::white(), 3.0);
-    let sphere10 = Sphere::new(vec3!( -1.0, 4.0, 4.0), Color::white(), 3.0);
+    // let mut reader = File::open("models/teapot.obj").expect("Failed to open model file");
+    let mut reader = File::open("models/Porsche_911_GT2.obj").expect("Failed to open model file");
+    let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 2.0, 6.0), F::from_f32(2.0/1.0), &mat_bmp).unwrap();
+
+    let testobj = TestObject::new(0.99, &mat_white);
+    let plane1  = ChessPlane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
+    let plane2  = ChessPlane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
+
+    let plane3  = ChessPlane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let plane4  = ChessPlane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+
+    let plane5  = ChessPlane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let plane6  = ChessPlane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), &mat_plane);
+
+    let sphere1 = Sphere::new(vec3!(1.0, 3.0, 5.0), 1.0, &mat_sphere);
+    let sphere2 = Sphere::new(vec3!(4.0, 1.0, 1.0), 1.0, &mat_sphere);
+    let sphere3 = Sphere::new(vec3!(2.0, 3.0, 9.0), 1.0, &mat_sphere);
+    let sphere4 = Sphere::new(vec3!(1.0, 5.0, 4.0), 1.0, &mat_sphere);
+
+    let sphere5 = Sphere::new(vec3!( 3.0, 3.0, 1.0), 1.0, &mat_sphere);
+    let sphere6 = Sphere::new(vec3!( 2.0, 2.0, 3.0), 2.0, &mat_sphere);
+    let sphere7 = Sphere::new(vec3!( 6.0, 6.0, 8.0), 1.0, &mat_sphere);
+    let sphere8 = Sphere::new(vec3!( 4.0, 4.0, -1.0), 3.0, &mat_sphere);
+    let sphere9 = Sphere::new(vec3!( 4.0, -1.0, 4.0), 3.0, &mat_sphere);
+    let sphere10 = Sphere::new(vec3!( -1.0, 4.0, 4.0), 3.0, &mat_sphere);
 
     let tri1 = Triangle::new(
         vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
         vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
         point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
+        &mat_white
     );
 
     let objects: Vec<&dyn RayTarget<F>> = vec![
