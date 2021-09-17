@@ -32,3 +32,7 @@ pub(crate) mod mat_util {
 
     pub use super::Material;
 }
+
+mod chessboard;
+
+pub use chessboard::ChessBoard;
