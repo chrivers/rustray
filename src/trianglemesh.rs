@@ -2,7 +2,7 @@ use crate::{vec3, point};
 use crate::vector::Vector;
 use crate::traits::Float;
 use crate::scene::*;
-use crate::ray::{Ray, Hit, Maxel};
+use crate::ray::{Ray, Hit};
 use crate::triangle::Triangle;
 use crate::material::Material;
 use crate::point::Point;
@@ -18,15 +18,6 @@ pub struct TriangleMesh<'a, F: Float>
 {
     tris: Vec<Triangle<'a, F>>,
     bvh: BVH,
-    mat: &'a dyn Material<F=F>
-}
-
-impl<'a, F: Float> HitTarget<F> for TriangleMesh<'a, F>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        Maxel::zero(self.mat)
-    }
 }
 
 impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
@@ -77,14 +68,13 @@ fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
 
 impl<'a, F: Float> TriangleMesh<'a, F>
 {
-    pub fn new(mut tris: Vec<Triangle<'a, F>>, mat: &'a dyn Material<F=F>) -> TriangleMesh<'a, F>
+    pub fn new(mut tris: Vec<Triangle<'a, F>>) -> TriangleMesh<'a, F>
     {
         let bvh = BVH::build(&mut tris);
 
         TriangleMesh {
             tris,
             bvh,
-            mat,
         }
     }
 
@@ -116,7 +106,7 @@ impl<'a, F: Float> TriangleMesh<'a, F>
             }
         }
 
-        Ok(TriangleMesh::new(tris, mat))
+        Ok(TriangleMesh::new(tris))
     }
 
 }
