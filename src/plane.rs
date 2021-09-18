@@ -19,10 +19,8 @@ impl<'a, F: Float> HitTarget<F> for Plane<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let ru = self.u.dot(hit.pos);
-        let rv = self.v.dot(hit.pos);
-        let u = if ru < F::zero() { ru.fract() + F::one() } else { ru.fract() };
-        let v = if rv < F::zero() { rv.fract() + F::one() } else { rv.fract() };
+        let u = self.u.dot(hit.pos);
+        let v = self.v.dot(hit.pos);
         Maxel::from_uv(u, v, self.normal, self.dir1, self.dir2, self.mat)
     }
 }
