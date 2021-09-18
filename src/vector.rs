@@ -201,6 +201,25 @@ impl<F: Float> Vector<F>
         }
     }
 
+    pub fn polar_angles(self) -> (F, F)
+    {
+        let theta = self.x.atan2(self.z);
+        let phi = self.y.acos();
+        (phi, theta)
+    }
+
+    pub fn polar_uv(self) -> (F, F)
+    {
+        let (phi, theta) = self.polar_angles();
+
+        let raw_u = theta / (F::TWO * F::PI());
+
+        let u = raw_u + F::HALF;
+        let v = phi / (F::TWO * F::PI());
+
+        (u, v)
+    }
+
     /* Fast computation of len^2. Useful optimization for e.g. comparing lengths */
     pub fn len_sqr(self) -> F
     {
