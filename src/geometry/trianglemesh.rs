@@ -1,10 +1,8 @@
 use crate::{vec3, point};
-use crate::vector::Vector;
-use crate::traits::Float;
+use crate::math::{Vector, Float, Point};
 use crate::scene::*;
-use crate::ray::{Ray, Hit};
+use crate::math::ray::{Ray, Hit};
 use crate::material::Material;
-use crate::point::Point;
 
 use super::triangle::Triangle;
 

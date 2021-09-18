@@ -18,25 +18,17 @@ use std::cmp::max;
 use std::time::Instant;
 use log::LevelFilter;
 
-pub mod traits;
-pub mod color;
-pub mod vector;
-pub mod point;
-pub mod camera;
-pub mod ray;
+pub mod math;
 pub mod scene;
 pub mod light;
 pub mod tracer;
 pub mod material;
 pub mod geometry;
 
-use crate::color::Color;
-use crate::point::Point;
-use crate::vector::Vector;
+use crate::math::{Color, Point, Vector, Float, Camera};
 use crate::light::Light;
-use crate::geometry::{Sphere,Plane,Triangle,TriangleMesh};
+use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
 use crate::scene::RayTarget;
-use crate::traits::Float;
 use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap};
 
 fn main() {

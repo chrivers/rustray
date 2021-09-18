@@ -1,7 +1,7 @@
-use crate::traits::Float;
-use crate::vector::Vector;
-use crate::ray::Ray;
-use crate::point::Point;
+use super::Float;
+use super::Vector;
+use super::Ray;
+use super::Point;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float>

@@ -1,7 +1,6 @@
-use crate::traits::Float;
+use crate::math::{Vector, Float, Point};
+use crate::math::ray::{Ray, Hit, Maxel};
 use crate::scene::*;
-use crate::vector::Vector;
-use crate::ray::{Ray, Hit, Maxel};
 use crate::material::Material;
 
 pub struct Sphere<'a, F: Float>

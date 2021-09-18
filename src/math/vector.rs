@@ -1,7 +1,7 @@
-use crate::traits::Float;
 use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
-
 use std::fmt::{self, Display};
+
+use super::Float;
 
 #[macro_export]
 macro_rules! vec3 {

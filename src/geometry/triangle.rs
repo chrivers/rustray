@@ -1,8 +1,6 @@
-use crate::traits::Float;
-use crate::point::Point;
+use crate::math::{Vector, Float, Point};
 use crate::scene::*;
-use crate::vector::Vector;
-use crate::ray::{Ray, Hit, Maxel};
+use crate::math::ray::{Ray, Hit, Maxel};
 use crate::material::Material;
 
 #[derive(Clone)]

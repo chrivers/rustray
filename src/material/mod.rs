@@ -1,9 +1,8 @@
-use crate::ray::Maxel;
-use crate::color::Color;
-use crate::Float;
+use crate::math::{Vector, Float, Point, Color};
+use crate::math::ray::{Ray, Hit, Maxel};
+
 use crate::light::Light;
 use crate::scene::RayTracer;
-use crate::ray::Hit;
 
 pub trait Material : Sync
 {
@@ -22,12 +21,10 @@ impl<F: Float> Material for Color<F>
 }
 
 pub(crate) mod mat_util {
-    pub use crate::color::Color;
-    pub use crate::ray::{Ray, Hit, Maxel};
+    pub use crate::math::{Vector, Float, Point, Color};
+    pub use crate::math::ray::{Ray, Hit, Maxel};
     pub use crate::light::Light;
     pub use crate::scene::RayTracer;
-    pub use crate::traits::Float;
-    pub use crate::vector::Vector;
     pub use crate::vec3;
 
     pub use super::Material;
