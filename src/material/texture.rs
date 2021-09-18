@@ -27,8 +27,9 @@ impl<F: Float, I: GenericImageView + Sync> Material for Texture<F, I>
 
     fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
     {
-        let x: u32 = (maxel.uv.x.abs() * F::from_u32(256)).to_u32().unwrap_or(0) % 256;
-        let y: u32 = (maxel.uv.y.abs() * F::from_u32(256)).to_u32().unwrap_or(0) % 256;
+        let (w, h) = self.img.dimensions();
+        let x: u32 = (maxel.uv.x * F::from_u32(w)).to_u32().unwrap_or(0) % w;
+        let y: u32 = (maxel.uv.y * F::from_u32(h)).to_u32().unwrap_or(0) % h;
         let Rgb([r, g, b]) = self.img.get_pixel(x, y).to_rgb();
         Color::new(
             F::from_f32(r.to_f32().unwrap() / 255.0),
