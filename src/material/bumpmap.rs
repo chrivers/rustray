@@ -27,10 +27,11 @@ impl<F: Float, I: GenericImageView + Sync, M: Material<F=F>> Material for Bumpma
 
     fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
     {
-        let x: u32 = (maxel.uv.x.abs() * F::from_u32(256)).to_u32().unwrap_or(0) % 254;
-        let y: u32 = (maxel.uv.y.abs() * F::from_u32(256)).to_u32().unwrap_or(0) % 254;
-        let fx = (maxel.uv.x.abs() * F::from_u32(256)).fract();
-        let fy = (maxel.uv.y.abs() * F::from_u32(256)).fract();
+        let (w, h) = self.img.dimensions();
+        let x: u32 = (maxel.uv.x * F::from_u32(w)).to_u32().unwrap() % (w-1);
+        let y: u32 = (maxel.uv.y * F::from_u32(h)).to_u32().unwrap() % (h-1);
+        let fx = (maxel.uv.x.abs() * F::from_u32(w)).fract();
+        let fy = (maxel.uv.y.abs() * F::from_u32(h)).fract();
         let nfx = F::one() - fx;
         let nfy = F::one() - fy;
         let Rgb([r, g, b]) = self.img.get_pixel(x, y).to_rgb();
