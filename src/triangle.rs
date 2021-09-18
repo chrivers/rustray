@@ -21,6 +21,8 @@ pub struct Triangle<'a, F: Float>
     tc: Point<F>,
 
     n: Vector<F>,
+    ntan1: Vector<F>,
+    ntan2: Vector<F>,
 
     ni: usize,
 
@@ -94,7 +96,7 @@ impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
 
         let normal = self.interpolate_normal(u, v);
         let uv = self.interpolate_uv(u, v);
-        Maxel::from_uv(uv.x, uv.y, normal, self.mat)
+        Maxel::new(uv, normal, self.ntan1, self.ntan2, self.mat)
     }
 }
 
@@ -114,11 +116,22 @@ impl<'a, F: Float> Triangle<'a, F>
     {
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
+
+        let uv_ab = tb - ta;
+        let uv_ac = tc - ta;
+
+        let f = F::one() / (uv_ab.x * uv_ac.y - uv_ac.x * uv_ab.y);
+
+        let ntan1 = ((ab * uv_ac.y) - (ac * uv_ab.y)) * f;
+        let ntan2 = ((ac * uv_ab.x) - (ab * uv_ac.x)) * f;
+
         Triangle {
             a, b, c,
             na, nb, nc,
             ta, tb, tc,
             n: ab.cross(ac),
+            ntan1: ntan1.normalized(),
+            ntan2: ntan2.normalized(),
             ni: 0,
             mat
         }

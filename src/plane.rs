@@ -10,6 +10,8 @@ pub struct Plane<'a, F: Float>
     dir1: Vector<F>,
     dir2: Vector<F>,
     normal: Vector<F>,
+    u: Vector<F>,
+    v: Vector<F>,
     mat: &'a dyn Material<F=F>
 }
 
@@ -17,23 +19,11 @@ impl<'a, F: Float> HitTarget<F> for Plane<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let (u, v);
-        if self.dir1.x.non_zero() {
-            u = hit.pos.x / self.dir1.x;
-            v = if self.dir2.y.non_zero() {
-                hit.pos.y / self.dir2.y
-            } else {
-                hit.pos.z / self.dir2.z
-            }
-        } else {
-            u = hit.pos.y / self.dir1.y;
-            v = if self.dir2.x.non_zero() {
-                hit.pos.x / self.dir2.x
-            } else {
-                hit.pos.z / self.dir2.z
-            }
-        }
-        Maxel::from_uv(u, v, self.normal, self.mat)
+        let ru = self.u.dot(hit.pos);
+        let rv = self.v.dot(hit.pos);
+        let u = if ru < F::zero() { ru.fract() + F::one() } else { ru.fract() };
+        let v = if rv < F::zero() { rv.fract() + F::one() } else { rv.fract() };
+        Maxel::from_uv(u, v, self.normal, self.dir1, self.dir2, self.mat)
     }
 }
 
@@ -49,8 +39,12 @@ impl<'a, F: Float> RayTarget<F> for Plane<'a, F>
 
 impl<'a, F: Float> Plane<'a, F>
 {
-    pub fn new(pos: Vector<F>, dir1: Vector<F>, dir2: Vector<F>, mat: &'a dyn Material<F=F>) -> Plane<'a, F>
+    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: &'a dyn Material<F=F>) -> Plane<'a, F>
     {
-        Plane { pos, dir1, dir2, normal: dir1.cross(dir2), mat }
+        let dir1 = d1.normalized();
+        let dir2 = d2.normalized();
+        let normal = dir1.cross(dir2);
+
+        Plane { pos, dir1, dir2, normal, u: d1, v: d2, mat }
     }
 }
