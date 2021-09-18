@@ -58,20 +58,23 @@ impl<F: Float, I: GenericImageView + Sync, M: Material<F=F>> Material for Bumpma
             F::from_f32(g.to_f32().unwrap() / 255.0),
             F::from_f32(b.to_f32().unwrap() / 255.0)
         );
-        let n =
+        let mut n =
             ((n1 * nfx) + n2 * fx) * nfy +
             ((n3 * nfx) + n4 * fx) * fy;
-        // Color::new(n.x, n.y, n.z)
+        n.x -= F::HALF;
+        n.y -= F::HALF;
+        n.x *= F::TWO;
+        n.y *= F::TWO;
+
         let mut mxl = *maxel;
-        mxl.normal = (n * self.pow).normalized();
-        // mxl.normal = (maxel.normal + n * self.pow).normalized();
-        // info!("{:?}", n.x);
-        // mxl.uv.x += (n.x - F::HALF) * self.pow;
-        // mxl.uv.y += (n.y - F::HALF) * self.pow;
+
+        let nx =
+            mxl.normalu * n.x +
+            mxl.normalv * n.y +
+            mxl.normal  * n.z / (self.pow + F::BIAS);
+
+        mxl.normal = nx.normalized();
+
         self.mat.render(hit, &mxl, lights, rt, lvl)
-        // Color::new(n.x, n.y, n.z)
-        // let refl = (maxel.normal + n * self.pow).normalized();
-        // let c_refl = rt.ray_trace(&Ray::new(hit.pos + refl * F::BIAS, refl), lvl + 1).unwrap_or_else(Color::black);
-        // c_refl
     }
 }
