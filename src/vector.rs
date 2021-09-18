@@ -127,7 +127,7 @@ impl<F: Float> Vector<F>
 
     pub fn identity_z() -> Vector<F>
     {
-        Vector { x: F::zero(), y: F::one(), z: F::one() }
+        Vector { x: F::zero(), y: F::zero(), z: F::one() }
     }
 
     pub fn zero() -> Vector<F>
