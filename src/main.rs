@@ -25,23 +25,17 @@ pub mod point;
 pub mod camera;
 pub mod ray;
 pub mod scene;
-pub mod sphere;
-pub mod plane;
 pub mod light;
 pub mod tracer;
-pub mod triangle;
-pub mod trianglemesh;
 pub mod material;
+pub mod geometry;
 
 use crate::color::Color;
 use crate::point::Point;
 use crate::vector::Vector;
 use crate::light::Light;
-use crate::sphere::Sphere;
+use crate::geometry::{Sphere,Plane,Triangle,TriangleMesh};
 use crate::scene::RayTarget;
-use crate::plane::Plane;
-use crate::triangle::Triangle;
-use crate::trianglemesh::TriangleMesh;
 use crate::traits::Float;
 use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap};
 

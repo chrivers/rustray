@@ -3,9 +3,10 @@ use crate::vector::Vector;
 use crate::traits::Float;
 use crate::scene::*;
 use crate::ray::{Ray, Hit};
-use crate::triangle::Triangle;
 use crate::material::Material;
 use crate::point::Point;
+
+use super::triangle::Triangle;
 
 use std::io::Read;
 
