@@ -1,5 +1,5 @@
 use num::Float;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Sub, Mul};
 
 #[macro_export]
 macro_rules! point {
@@ -63,6 +63,19 @@ impl<F: Float> Add for Point<F>
         Point {
             x: self.x + other.x,
             y: self.y + other.y,
+        }
+    }
+}
+
+impl<F: Float> Sub for Point<F>
+{
+    type Output = Point<F>;
+
+    fn sub(self, other: Point<F>) -> Point<F>
+    {
+        Point {
+            x: self.x - other.x,
+            y: self.y - other.y,
         }
     }
 }
