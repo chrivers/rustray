@@ -49,15 +49,16 @@ impl<F: Float, M: Material<F=F>> Material for Phong<F, M>
                 continue
             }
 
-            let m = hit.pos.vector_to(light.pos);
-            let light_dir = m.normalized();
+            let light_vec = hit.pos.vector_to(light.pos);
+            let light_dir = light_vec.normalized();
             let refl_dir = light_dir.reflect(&maxel.normal);
-            let spec_angle = refl_dir.dot(hit.dir).max(F::zero());
+            let spec_angle = -refl_dir.dot(hit.dir).clamp(F::zero(), F::one());
 
             let self_color = self.mat.render(hit, maxel, lights, rt, lvl);
-            let light_color = light.color * self_color / m.length();
 
-            let lambert = maxel.normal.cos_angle(m);
+            let light_color = attenuate(light.color * self_color, light_vec.length());
+
+            let lambert = maxel.normal.dot(light_dir);
             res += light_color * lambert;
 
             let specular = spec_angle.pow(self.pow);
