@@ -42,6 +42,7 @@ mod scaleuv;
 mod blend;
 mod texture;
 mod bumpmap;
+mod colornormal;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -52,3 +53,4 @@ pub use scaleuv::ScaleUV;
 pub use blend::Blend;
 pub use texture::Texture;
 pub use bumpmap::Bumpmap;
+pub use colornormal::ColorNormal;
