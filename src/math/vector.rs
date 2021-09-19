@@ -3,6 +3,20 @@ use std::fmt::{self, Display};
 
 use super::Float;
 
+/**
+Convenience macro to construct a [`Vector<F>`] from input values.
+
+Shortens
+```
+Vector::new(x, y, z)
+```
+
+ to
+
+```
+vec3!(x, y, z)
+```
+*/
 #[macro_export]
 macro_rules! vec3 {
     ($( $vals:expr ),+) => { Vector::new( $($vals),+ ) }

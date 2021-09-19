@@ -1,6 +1,20 @@
 use num::Float;
 use std::ops::{Add, Sub, Mul};
 
+/**
+Convenience macro to construct a [`Point<F>`] from input values.
+
+Shortens
+```
+Point::new(x, y)
+```
+
+ to
+
+```
+point!(x, y)
+```
+*/
 #[macro_export]
 macro_rules! point {
     ($( $vals:expr ),+) => { Point::new( $($vals),+ ) }
