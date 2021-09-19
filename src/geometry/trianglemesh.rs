@@ -82,28 +82,33 @@ impl<'a, F: Float> TriangleMesh<'a, F>
         let obj = ObjData::load_buf(read)?;
 
         let mut tris: Vec<Triangle<F>> = vec![];
-        for o in &obj.objects[0].groups {
+        for o in &obj.objects {
+            for g in &o.groups {
+                for poly in &g.polys {
+                    for n in 1..(poly.0.len() - 1) {
+                        /* FIXME: .unwrap() is a terrible when loading data from a file */
+                        let tri = Triangle::new (
+                            a2vec(&obj.position[poly.0[0].0]) * scale + pos,
+                            a2vec(&obj.position[poly.0[n].0]) * scale + pos,
+                            a2vec(&obj.position[poly.0[n+1].0]) * scale + pos,
 
-            for poly in &o.polys {
-                /* FIXME: .unwrap() is a terrible when loading data from a file */
-                let tri = Triangle::new (
-                    a2vec(&obj.position[poly.0[0].0]) * scale + pos,
-                    a2vec(&obj.position[poly.0[1].0]) * scale + pos,
-                    a2vec(&obj.position[poly.0[2].0]) * scale + pos,
+                            a2vec(&obj.normal[poly.0[0].2.unwrap()]).normalized(),
+                            a2vec(&obj.normal[poly.0[n].2.unwrap()]).normalized(),
+                            a2vec(&obj.normal[poly.0[n+1].2.unwrap()]).normalized(),
 
-                    a2vec(&obj.normal[poly.0[0].2.unwrap()]),
-                    a2vec(&obj.normal[poly.0[1].2.unwrap()]),
-                    a2vec(&obj.normal[poly.0[2].2.unwrap()]),
+                            a2point(&obj.texture[poly.0[0].1.unwrap()]),
+                            a2point(&obj.texture[poly.0[n].1.unwrap()]),
+                            a2point(&obj.texture[poly.0[n+1].1.unwrap()]),
 
-                    a2point(&obj.texture[poly.0[0].1.unwrap()]),
-                    a2point(&obj.texture[poly.0[1].1.unwrap()]),
-                    a2point(&obj.texture[poly.0[2].1.unwrap()]),
-
-                    mat,
-                );
-                tris.push(tri);
+                            mat,
+                        );
+                        tris.push(tri);
+                    }
+                }
             }
         }
+
+        info!("loaded .obj [index: {}, normal: {}, uv: {}, face: {}]", obj.position.len(), obj.normal.len(), obj.texture.len(), tris.len());
 
         Ok(TriangleMesh::new(tris))
     }
