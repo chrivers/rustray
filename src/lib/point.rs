@@ -1,4 +1,4 @@
-use num::Float;
+use num::Num;
 use std::ops::{Add, Sub, Mul};
 
 /**
@@ -21,13 +21,13 @@ macro_rules! point {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Point<F: Float>
+pub struct Point<F: Num>
 {
     pub x: F,
     pub y: F,
 }
 
-impl<F: Float> Point<F>
+impl<F: Num + Copy> Point<F>
 {
     pub fn new(x: F, y: F) -> Point<F>
     {
@@ -49,7 +49,7 @@ impl<F: Float> Point<F>
     }
 }
 
-impl<F: Float> Mul<F> for Point<F>
+impl<F: Num + Copy> Mul<F> for Point<F>
 {
     type Output = Point<F>;
 
@@ -63,7 +63,7 @@ impl<F: Float> Mul<F> for Point<F>
     }
 }
 
-impl<F: Float> Add for Point<F>
+impl<F: Num> Add for Point<F>
 {
     type Output = Point<F>;
 
@@ -76,7 +76,7 @@ impl<F: Float> Add for Point<F>
     }
 }
 
-impl<F: Float> Sub for Point<F>
+impl<F: Num> Sub for Point<F>
 {
     type Output = Point<F>;
 
