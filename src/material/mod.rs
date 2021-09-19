@@ -1,6 +1,7 @@
 use crate::lib::{Vector, Float, Point, Color};
 use crate::lib::ray::{Ray, Hit, Maxel};
 
+use crate::sampler::Sampler;
 use crate::light::Light;
 use crate::scene::RayTracer;
 
