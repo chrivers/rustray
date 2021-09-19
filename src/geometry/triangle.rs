@@ -3,6 +3,9 @@ use crate::scene::*;
 use crate::math::ray::{Ray, Hit, Maxel};
 use crate::material::Material;
 
+use std::fmt;
+use std::fmt::Display;
+
 #[derive(Clone)]
 pub struct Triangle<'a, F: Float>
 {
@@ -25,6 +28,20 @@ pub struct Triangle<'a, F: Float>
     ni: usize,
 
     mat: &'a dyn Material<F=F>
+}
+
+
+impl<'a, F: Float> std::fmt::Display for Triangle<'a, F>
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Triangle {{ a:")?; Display::fmt(&self.a, f)?;
+        write!(f, ", b:")?;  Display::fmt(&self.b, f)?;
+        write!(f, ", c:")?;  Display::fmt(&self.c, f)?;
+        write!(f, ", na:")?; Display::fmt(&self.na, f)?;
+        write!(f, ", nb:")?; Display::fmt(&self.nb, f)?;
+        write!(f, ", nc:")?; Display::fmt(&self.nc, f)?;
+        f.write_str("}")
+    }
 }
 
 use bvh::aabb::{AABB, Bounded};
