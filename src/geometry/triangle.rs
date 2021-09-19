@@ -84,9 +84,9 @@ impl<'a, F: Float> Triangle<'a, F> {
     {
         let w = F::one() - u - v;
         let normal =
-            self.na * u +
+            self.na * w +
             self.nb * v +
-            self.nc * w;
+            self.nc * u;
 
         normal.normalized()
     }
@@ -94,7 +94,7 @@ impl<'a, F: Float> Triangle<'a, F> {
     fn interpolate_uv(&self, u: F, v: F) -> Point<F>
     {
         let w = F::one() - u - v;
-        (self.ta * u) + (self.tb * v) + (self.tc * w)
+        (self.ta * w) + (self.tb * v) + (self.tc * u)
     }
 
 }
@@ -103,8 +103,8 @@ impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let c1 = (self.c - self.b).cross(hit.pos - self.b);
-        let c2 = (self.a - self.c).cross(hit.pos - self.c);
+        let c1 = (self.b - self.a).cross(hit.pos - self.b);
+        let c2 = (self.c - self.a).cross(hit.pos - self.c);
         let area2 = self.n.length();
         let u = c1.length() / area2;
         let v = c2.length() / area2;
