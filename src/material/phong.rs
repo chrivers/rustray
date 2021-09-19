@@ -46,6 +46,10 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
     fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
     {
         let mut res = Color::black();
+
+        let self_color = self.mat.render(hit, maxel, lights, rt, lvl);
+        let spec_adjust = self.pow.sample(maxel.uv) / F::from_u32(2);
+
         for light in lights {
             if rt.ray_shadow(hit, light) {
                 continue
@@ -56,15 +60,16 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
             let refl_dir = light_dir.reflect(&maxel.normal);
             let spec_angle = -refl_dir.dot(hit.dir).clamp(F::zero(), F::one());
 
-            let self_color = self.mat.render(hit, maxel, lights, rt, lvl);
-
             let light_color = attenuate(light.color * self_color, light_vec.length());
 
             let lambert = maxel.normal.dot(light_dir);
-            res += light_color * lambert;
 
-            let specular = spec_angle.pow(F::from_u32(32));
-            res += light_color * lambert * specular / (self.pow.sample(maxel.uv) / F::from_u32(2))
+            if lambert > F::BIAS {
+                res += light_color * lambert;
+
+                let specular = spec_angle.pow(F::from_u32(32));
+                res += light_color * specular / spec_adjust;
+            }
         }
         res
     }
