@@ -47,11 +47,6 @@ impl<F: Float> Point<F>
             y: other.y - self.y,
         }
     }
-
-    pub fn pos_det(&self, other: Point<F>) -> bool
-    {
-        self.x * other.y - self.y * other.x > F::zero()
-    }
 }
 
 impl<F: Float> Mul<F> for Point<F>
