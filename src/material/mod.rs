@@ -25,6 +25,7 @@ pub(crate) mod mat_util {
     pub use crate::math::ray::{Ray, Hit, Maxel};
     pub use crate::light::Light;
     pub use crate::scene::RayTracer;
+    pub use crate::sampler::Sampler;
     pub use crate::vec3;
 
     pub use super::Material;
