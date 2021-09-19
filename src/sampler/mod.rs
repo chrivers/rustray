@@ -31,3 +31,7 @@ impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
         (1, 1)
     }
 }
+
+pub mod texture1;
+
+pub use texture1::Texture1;
