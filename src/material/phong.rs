@@ -31,8 +31,8 @@ impl<F: Float> Phong<F, Color<F>>
 
 fn attenuate<F: Float>(color: Color<F>, d: F) -> Color<F>
 {
-    let a = F::from_f32(0.1);
-    let b = F::from_f32(0.7);
+    let a = F::from_f32(0.3);
+    let b = F::from_f32(0.2);
     let c = F::from_f32(0.0);
     color / (a + (b + (c * d)) * d)
 }
