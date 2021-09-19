@@ -1,7 +1,4 @@
-use crate::math::{Vector, Float, Point};
-use crate::scene::*;
-use crate::math::ray::{Ray, Hit, Maxel};
-use crate::material::Material;
+use super::geo_util::*;
 
 use std::fmt;
 use std::fmt::Display;

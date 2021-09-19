@@ -1,9 +1,4 @@
-use crate::{vec3, point};
-use crate::math::{Vector, Float, Point};
-use crate::scene::*;
-use crate::math::ray::{Ray, Hit};
-use crate::material::Material;
-
+use super::geo_util::*;
 use super::triangle::Triangle;
 
 use std::io::Read;

@@ -1,5 +1,5 @@
-use crate::math::{Vector, Float, Point, Color};
-use crate::math::ray::{Ray, Hit, Maxel};
+use crate::lib::{Vector, Float, Point, Color};
+use crate::lib::ray::{Ray, Hit, Maxel};
 
 /** Trait for sampling values from datasource (textures, etc)
  */

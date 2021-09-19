@@ -1,7 +1,4 @@
-use crate::math::{Vector, Float, Point};
-use crate::math::ray::{Ray, Hit, Maxel};
-use crate::scene::*;
-use crate::material::Material;
+use super::geo_util::*;
 
 pub struct Sphere<'a, F: Float>
 {

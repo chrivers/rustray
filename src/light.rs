@@ -1,4 +1,4 @@
-use crate::math::{Float, Vector, Color};
+use crate::lib::{Float, Vector, Color};
 use crate::scene::*;
 
 #[derive(Debug)]

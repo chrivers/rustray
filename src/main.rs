@@ -18,7 +18,7 @@ use std::cmp::max;
 use std::time::Instant;
 use log::LevelFilter;
 
-pub mod math;
+pub mod lib;
 pub mod scene;
 pub mod light;
 pub mod tracer;
@@ -26,7 +26,7 @@ pub mod material;
 pub mod geometry;
 pub mod sampler;
 
-use crate::math::{Color, Point, Vector, Float, Camera};
+use crate::lib::{Color, Point, Vector, Float, Camera};
 use crate::light::Light;
 use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
 use crate::scene::RayTarget;

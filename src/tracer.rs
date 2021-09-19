@@ -1,8 +1,8 @@
 use image::{GenericImage, Pixel};
 
 use crate::light::Light;
-use crate::math::{Color, Camera, Point, Float};
-use crate::math::ray::{Ray, Hit};
+use crate::lib::{Color, Camera, Point, Float};
+use crate::lib::ray::{Ray, Hit};
 use crate::scene::{RayTarget, RayTracer};
 
 pub struct Tracer<'a, F: Float>
