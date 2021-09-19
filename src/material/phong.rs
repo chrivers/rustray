@@ -1,22 +1,24 @@
 use super::mat_util::*;
+use std::marker::PhantomData;
 
 #[derive(Copy, Clone)]
-pub struct Phong<F: Float, M: Material>
+pub struct Phong<F: Float, M: Material, S: Sampler<F, F>>
 {
     mat: M,
-    pow: F,
+    pow: S,
+    _p: PhantomData<F>,
 }
 
-impl<F: Float, M: Material> Phong<F, M>
+impl<F: Float, M: Material, S: Sampler<F, F>> Phong<F, M, S>
 {
-    pub fn new(pow: F, mat: M) -> Self
+    pub fn new(pow: S, mat: M) -> Self
     {
-        Self { pow, mat }
+        Self { pow, mat, _p: PhantomData {} }
     }
 
 }
 
-impl<F: Float> Phong<F, Color<F>>
+impl<F: Float> Phong<F, Color<F>, F>
 {
     pub fn white() -> Self
     {
@@ -37,7 +39,7 @@ fn attenuate<F: Float>(color: Color<F>, d: F) -> Color<F>
     color / (a + (b + (c * d)) * d)
 }
 
-impl<F: Float, M: Material<F=F>> Material for Phong<F, M>
+impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
 {
     type F = F;
 
@@ -61,8 +63,8 @@ impl<F: Float, M: Material<F=F>> Material for Phong<F, M>
             let lambert = maxel.normal.dot(light_dir);
             res += light_color * lambert;
 
-            let specular = spec_angle.pow(self.pow);
-            res += light_color * specular;
+            let specular = spec_angle.pow(F::from_u32(32));
+            res += light_color * lambert * specular / (self.pow.sample(maxel.uv) / F::from_u32(2))
         }
         res
     }
