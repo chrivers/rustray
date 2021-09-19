@@ -24,6 +24,7 @@ pub mod light;
 pub mod tracer;
 pub mod material;
 pub mod geometry;
+pub mod sampler;
 
 use crate::math::{Color, Point, Vector, Float, Camera};
 use crate::light::Light;
