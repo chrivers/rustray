@@ -1,4 +1,4 @@
-use super::{Float, Point, Vector, Color};
+use super::{Float, Point, Vector};
 use crate::scene::HitTarget;
 use crate::material::Material;
 use crate::point;

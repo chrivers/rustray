@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use num_traits::ToPrimitive;
 
 use super::samp_util::*;
 

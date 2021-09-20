@@ -1,4 +1,4 @@
-use image::{GenericImageView, DynamicImage, Pixel, Rgb};
+use image::{GenericImageView, DynamicImage, Pixel};
 use num_traits::ToPrimitive;
 
 use super::samp_util::*;

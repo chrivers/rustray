@@ -1,5 +1,4 @@
-use crate::lib::{Vector, Float, Point, Color};
-use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::lib::{Float, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -41,6 +40,8 @@ impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
 }
 
 pub(crate) mod samp_util {
+    /* These are convenience re-imports for modules, so skip warnings */
+    #![allow(unused_imports)]
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point, Color};
     pub use super::Sampler;

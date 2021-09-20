@@ -1,10 +1,6 @@
 use super::mat_util::*;
 
 use std::marker::PhantomData;
-use image::GenericImageView;
-use image::{Pixel, Rgb};
-
-use num_traits::ToPrimitive;
 
 #[derive(Copy, Clone)]
 pub struct Texture<F: Float, S: Sampler<F, Color<F>>>

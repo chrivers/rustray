@@ -1,7 +1,6 @@
-use crate::lib::{Vector, Float, Point, Color};
-use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::lib::{Float, Color};
+use crate::lib::ray::{Hit, Maxel};
 
-use crate::sampler::Sampler;
 use crate::light::Light;
 use crate::scene::RayTracer;
 
@@ -22,6 +21,8 @@ impl<F: Float> Material for Color<F>
 }
 
 pub(crate) mod mat_util {
+    /* These are convenience re-imports for modules, so skip warnings */
+    #![allow(unused_imports)]
     pub use crate::lib::{Vector, Float, Point, Color};
     pub use crate::lib::ray::{Ray, Hit, Maxel};
     pub use crate::light::Light;

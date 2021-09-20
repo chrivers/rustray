@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-use image::GenericImageView;
-use image::{Pixel, Rgb};
+use image::{GenericImageView, Pixel};
 use num_traits::ToPrimitive;
 use image::DynamicImage;
 
