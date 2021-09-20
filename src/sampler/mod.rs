@@ -3,13 +3,16 @@ use crate::lib::ray::{Ray, Hit, Maxel};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
-pub trait Sampler<F: Float, S> : Sync
+pub trait Sampler<F: Float, P> : Sync
 {
     /** Sample a single value at position `uv` */
-    fn sample(&self, uv: Point<F>) -> S;
+    fn sample(&self, uv: Point<F>) -> P;
+
+    /** Read a raw sample value at position `uv` */
+    fn raw_sample(&self, uv: Point<u32>) -> P;
 
     /** Return (`width`, `height`) dimensions of sampler */
-    fn dimensions(&self) -> (usize, usize);
+    fn dimensions(&self) -> (u32, u32);
 }
 
 /**
@@ -26,7 +29,12 @@ impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
         *self
     }
 
-    fn dimensions(&self) -> (usize, usize)
+    fn raw_sample(&self, uv: Point<u32>) -> T
+    {
+        *self
+    }
+
+    fn dimensions(&self) -> (u32, u32)
     {
         (1, 1)
     }

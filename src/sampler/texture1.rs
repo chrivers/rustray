@@ -1,9 +1,7 @@
-use std::marker::PhantomData;
-use image::GenericImageView;
-use image::{Pixel, Rgb};
+use image::{GenericImageView, DynamicImage, Pixel, Rgb};
 use num_traits::ToPrimitive;
 
-use super::{Float, Point, Color, Sampler};
+use super::samp_util::*;
 
 #[derive(Copy, Clone)]
 /**
@@ -34,8 +32,14 @@ impl<F: Float, I: GenericImageView + Sync> Sampler<F, F> for Texture1<I>
         F::from_f32(r.to_f32().unwrap() / 255.0)
     }
 
-    fn dimensions(&self) -> (usize, usize) {
-        let wh = self.img.dimensions();
-        (wh.0 as usize, wh.1 as usize)
+    fn raw_sample(&self, uv: Point<u32>) -> F
+    {
+        let (w, h) = self.img.dimensions();
+        let r = self.img.get_pixel(uv.x % w, uv.y % h).channels()[0];
+        F::from_f32(r.to_f32().unwrap() / 255.0)
+    }
+
+    fn dimensions(&self) -> (u32, u32) {
+        self.img.dimensions()
     }
 }
