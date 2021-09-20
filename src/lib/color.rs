@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Sub, Mul, Div};
 
-use super::Float;
+use crate::lib::float::{Float, Blended};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Color<F: Float>
@@ -150,11 +150,6 @@ impl<F: Float> Color<F>
         Color { r, g, b }
     }
 
-    pub fn blended(&self, other: &Color<F>, pct: F) -> Color<F>
-    {
-        (*self * (F::one() - pct)) + (*other * pct)
-    }
-
     pub fn mixed(input: &[Color<F>]) -> Color<F>
     {
         match input.len() {
@@ -175,5 +170,13 @@ impl<F: Float> Color<F>
             <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(255),
             <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(255),
         ]
+    }
+}
+
+impl<F: Float> Blended<F> for Color<F>
+{
+    fn blended(&self, other: &Color<F>, pct: F) -> Color<F>
+    {
+        (*self * (F::one() - pct)) + (*other * pct)
     }
 }

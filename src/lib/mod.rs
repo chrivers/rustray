@@ -5,7 +5,7 @@ pub mod camera;
 pub mod color;
 pub mod ray;
 
-pub use float::Float;
+pub use float::{Float, Blended};
 pub use point::Point;
 pub use vector::Vector;
 pub use camera::Camera;

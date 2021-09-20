@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use crate::lib::float::Blended;
 use super::samp_util::*;
 
 #[derive(Copy, Clone)]
@@ -25,6 +26,7 @@ where
     P: Sync,
     P: std::ops::Mul<F, Output = P>,
     P: std::ops::Add<Output = P>,
+    P: Blended<F>,
     S: Sampler<F, P>
 {
     fn sample(&self, uv: Point<F>) -> P
@@ -34,18 +36,16 @@ where
         let y: u32 = (uv.y * F::from_u32(h)).to_u32().unwrap_or(0) % (h-1);
         let fx = (uv.x.abs() * F::from_u32(w)).fract();
         let fy = (uv.y.abs() * F::from_u32(h)).fract();
-        let nfx = F::one() - fx;
-        let nfy = F::one() - fy;
 
         let n1 = self.raw_sample(point!(x,   y  ));
         let n2 = self.raw_sample(point!(x+1, y  ));
         let n3 = self.raw_sample(point!(x,   y+1));
         let n4 = self.raw_sample(point!(x+1, y+1));
 
-        let n =
-            ((n1 * nfx) + n2 * fx) * nfy +
-            ((n3 * nfx) + n4 * fx) * fy;
-        n
+        let x1 = n1.blended(&n2, fx);
+        let x2 = n3.blended(&n4, fx);
+
+        x1.blended(&x2, fy)
     }
 
     fn raw_sample(&self, uv: Point<u32>) -> P

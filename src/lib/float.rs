@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use num_traits::{float::FloatConst,NumAssignOps};
 use num::{clamp, pow};
+use std::ops::{Add, Mul};
 
 pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Debug + Display + Sync
 {
@@ -16,6 +17,17 @@ pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + Floa
     fn non_zero(self) -> bool { self != Self::zero() }
 
     fn clamp(self, low: Self, high: Self) -> Self { clamp(self, low, high) }
+}
+
+pub trait Blended<F>
+where
+    F: Float,
+    Self: Mul<F, Output=Self> + Add<Output=Self> + Copy + Sized
+{
+    fn blended(&self, other: &Self, pct: F) -> Self
+    {
+        (*self * (F::one() - pct)) + (*other * pct)
+    }
 }
 
 impl Float for f32
