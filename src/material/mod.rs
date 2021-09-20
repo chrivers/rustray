@@ -7,14 +7,14 @@ use crate::scene::RayTracer;
 pub trait Material : Sync
 {
     type F: Float;
-    fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[Light<Self::F>], rt: &dyn RayTracer<Self::F>, lvl: u32) -> Color<Self::F>;
+    fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[Light<Self::F>], rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
 }
 
 
 impl<F: Float> Material for Color<F>
 {
     type F = F;
-    fn render(&self, _hit: &Hit<F>, _maxel: &Maxel<F>, _light: &[Light<F>], _rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn render(&self, _hit: &Hit<F>, _maxel: &Maxel<F>, _light: &[Light<F>], _rt: &dyn RayTracer<F>) -> Color<F>
     {
         *self
     }

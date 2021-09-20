@@ -20,7 +20,7 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpmap<F
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut n = self.img.sample(maxel.uv);
         n.r -= F::HALF;
@@ -37,6 +37,6 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpmap<F
 
         mxl.normal = nx.normalized();
 
-        self.mat.render(hit, &mxl, lights, rt, lvl)
+        self.mat.render(hit, &mxl, lights, rt)
     }
 }

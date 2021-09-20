@@ -8,6 +8,7 @@ pub struct Ray<F: Float>
 {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
+    pub lvl: u32,
 }
 
 pub struct Hit<'a, F: Float>
@@ -15,6 +16,7 @@ pub struct Hit<'a, F: Float>
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub obj: &'a dyn HitTarget<F>,
+    pub lvl: u32,
 }
 
 #[derive(Copy, Clone)]
@@ -27,11 +29,11 @@ pub struct Maxel<'a, F: Float>
     pub mat: &'a dyn Material<F=F>,
 }
 
-impl<F: Float> Ray<F>
+impl<'a, F: Float> Ray<F>
 {
-    pub fn new(pos: Vector<F>, dir: Vector<F>) -> Ray<F>
+    pub fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Ray<F>
     {
-        Ray { pos, dir }
+        Ray { pos, dir, lvl }
     }
 
     pub fn length_to(self, other: Vector<F>) -> F
@@ -44,9 +46,9 @@ impl<F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &dyn HitTarget<F>) -> Hit<F>
+    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>) -> Hit<'a, F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, obj }
+        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl }
     }
 
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
@@ -94,6 +96,22 @@ impl<F: Float> Ray<F>
         Some(t)
     }
 
+}
+
+/* Hit */
+impl<'a, F: Float> Hit<'a, F>
+{
+    pub fn reflected_ray(&self, normal: &Vector<F>) -> Ray<F>
+    {
+        let refl = self.dir.reflect(&normal);
+        Ray::new(self.pos + refl * F::BIAS, refl, self.lvl + 1)
+    }
+
+    pub fn refracted_ray(&self, normal: &Vector<F>, ior: F) -> Ray<F>
+    {
+        let refr = self.dir.refract(&normal, ior);
+        Ray::new(self.pos + refr * F::BIAS, refr, self.lvl + 1)
+    }
 }
 
 /* Maxel */

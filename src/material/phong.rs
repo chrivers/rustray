@@ -43,11 +43,11 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut res = Color::black();
 
-        let self_color = self.mat.render(hit, maxel, lights, rt, lvl);
+        let self_color = self.mat.render(hit, maxel, lights, rt);
         let spec_adjust = self.pow.sample(maxel.uv) / F::from_u32(2);
 
         for light in lights {

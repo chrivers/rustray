@@ -23,7 +23,7 @@ impl<'a, F: Float> Tracer<'a, F>
     {
         let ray = self.camera.get_ray(point);
 
-        self.ray_trace(&ray, 0)
+        self.ray_trace(&ray)
     }
 
     pub fn render_pixel(&self, px: F, py: F) -> Option<Color<F>>
@@ -123,7 +123,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
         }
 
         let light_length = light.pos.vector_to(hit.pos).len_sqr();
-        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos));
+        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos), 0);
         hitray.pos += hitray.dir * F::BIAS;
         for curobj in &self.objects
         {
@@ -139,9 +139,9 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
         false
     }
 
-    fn ray_trace(&self, ray: &Ray<F>, lvl: u32) -> Option<Color<F>>
+    fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>
     {
-        if lvl > 5 {
+        if ray.lvl > 5 {
             return None;
         }
 
@@ -165,7 +165,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
         let hit = hit?;
 
         let maxel = hit.obj.resolve(&hit);
-        res += maxel.mat.render(&hit, &maxel, &self.lights, self, lvl);
+        res += maxel.mat.render(&hit, &maxel, &self.lights, self);
 
         Some(res)
     }

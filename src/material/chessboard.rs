@@ -20,15 +20,15 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>> Material for ChessBoard<A, B>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>, lvl: u32) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let u = maxel.uv.x.abs().fract() > F::HALF;
         let v = maxel.uv.y.abs().fract() > F::HALF;
 
         if u^v {
-            self.a.render(hit, maxel, light, rt, lvl)
+            self.a.render(hit, maxel, light, rt)
         } else {
-            self.b.render(hit, maxel, light, rt, lvl)
+            self.b.render(hit, maxel, light, rt)
         }
     }
 }

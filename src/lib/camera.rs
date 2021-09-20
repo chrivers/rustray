@@ -66,7 +66,7 @@ impl<F: Float> Camera<F>
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
         let vpp = self.dir + (self.hor * point.x) + (self.ver * point.y);
-        Ray::new(self.pos, vpp.normalized())
+        Ray::new(self.pos, vpp.normalized(), 0)
     }
 
     pub fn size(self) -> (usize, usize)
