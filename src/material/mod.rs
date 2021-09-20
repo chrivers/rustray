@@ -31,6 +31,7 @@ pub(crate) mod mat_util {
     pub use crate::vec3;
 
     pub use super::Material;
+    pub use std::marker::PhantomData;
 }
 
 mod chessboard;
