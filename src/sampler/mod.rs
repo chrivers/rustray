@@ -48,6 +48,8 @@ pub(crate) mod samp_util {
 
 pub mod texture1;
 pub mod texture3;
+pub mod bilinear;
 
 pub use texture1::Texture1;
 pub use texture3::Texture3;
+pub use bilinear::Bilinear;
