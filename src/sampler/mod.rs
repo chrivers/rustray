@@ -32,6 +32,12 @@ impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
     }
 }
 
+pub(crate) mod samp_util {
+    pub use crate::{vec3, point};
+    pub use crate::lib::{Vector, Float, Point, Color};
+    pub use super::Sampler;
+}
+
 pub mod texture1;
 
 pub use texture1::Texture1;
