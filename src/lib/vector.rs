@@ -114,16 +114,6 @@ impl<F: Float> Vector<F>
         self.normalized().dot(other.normalized())
     }
 
-    pub fn scaled(self, scale: F) -> Vector<F>
-    {
-        Vector
-        {
-            x: self.x * scale,
-            y: self.y * scale,
-            z: self.z * scale,
-        }
-    }
-
     pub fn polar_angles(self) -> (F, F)
     {
         let theta = self.x.atan2(self.z);
