@@ -39,13 +39,4 @@ impl<F: Num + Copy> Point<F>
     {
         Point { x: F::zero(), y: F::zero() }
     }
-
-    pub fn line_to(&self, other: Point<F>) -> Point<F>
-    {
-        Point
-        {
-            x: other.x - self.x,
-            y: other.y - self.y,
-        }
-    }
 }
