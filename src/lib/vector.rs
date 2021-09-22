@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
 use std::fmt::{self, Display};
 
 use super::Float;
@@ -65,6 +65,16 @@ impl<F: Float> Sub for Vector<F>
             y: self.y - other.y,
             z: self.z - other.z,
         }
+    }
+}
+
+impl<F: Float> SubAssign for Vector<F>
+{
+    fn sub_assign(&mut self, other: Vector<F>)
+    {
+        self.x -= other.x;
+        self.y -= other.y;
+        self.z -= other.z;
     }
 }
 
