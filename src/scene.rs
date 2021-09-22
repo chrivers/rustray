@@ -32,6 +32,6 @@ pub trait HitTarget<F: Float> : Sync
 
 pub trait RayTracer<F: Float> : Sync
 {
-    fn ray_shadow(&self, hit: &Hit<F>, light: &Light<F>) -> bool;
+    fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
 }

@@ -8,6 +8,10 @@ pub trait Material : Sync
 {
     type F: Float;
     fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[Light<Self::F>], rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
+
+    fn shadow(&self, hit: &Hit<Self::F>, _maxel: &Maxel<Self::F>, _light: &Light<Self::F>, _rt: &dyn RayTracer<Self::F>) -> Option<Color<Self::F>> {
+        None
+    }
 }
 
 

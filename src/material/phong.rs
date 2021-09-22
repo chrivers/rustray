@@ -51,16 +51,14 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
         let spec_adjust = self.pow.sample(maxel.uv) / F::from_u32(2);
 
         for light in lights {
-            if rt.ray_shadow(hit, light) {
-                continue
-            }
+            let light_color = rt.ray_shadow(hit, maxel, light).unwrap_or(light.color);
 
             let light_vec = hit.pos.vector_to(light.pos);
             let light_dir = light_vec.normalized();
             let refl_dir = light_dir.reflect(&maxel.normal);
             let spec_angle = -refl_dir.dot(hit.dir).clamp(F::zero(), F::one());
 
-            let light_color = attenuate(light.color * self_color, light_vec.length());
+            let light_color = attenuate(light_color * self_color, light_vec.length());
 
             let lambert = maxel.normal.dot(light_dir);
 
@@ -72,5 +70,11 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
             }
         }
         res
+    }
+
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    {
+        /* Red shadows, for demonstration */
+        Some(Color::new(F::one(), F::zero(), F::zero()))
     }
 }

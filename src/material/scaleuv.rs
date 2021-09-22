@@ -28,4 +28,9 @@ impl<F: Float, M: Material<F=F>> Material for ScaleUV<F, M>
         smaxel.uv.y *= self.v;
         self.mat.render(hit, &smaxel, lights, rt)
     }
+
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    {
+        self.mat.shadow(hit, maxel, light, rt)
+    }
 }

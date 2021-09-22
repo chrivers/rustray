@@ -39,4 +39,9 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpmap<F
 
         self.mat.render(hit, &mxl, lights, rt)
     }
+
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    {
+        self.mat.shadow(hit, maxel, light, rt)
+    }
 }
