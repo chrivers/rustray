@@ -1,9 +1,7 @@
 use super::geo_util::*;
 use super::triangle::Triangle;
 
-use std::io::Read;
-
-use obj::{ObjData, ObjError};
+use obj::ObjData;
 
 use bvh::bvh::BVH;
 use bvh::{Point3, Vector3};
@@ -72,10 +70,8 @@ impl<'a, F: Float> TriangleMesh<'a, F>
         }
     }
 
-    pub fn load_obj<R: Read>(read: &mut R, pos: Vector<F>, scale: F, mat: &'a dyn Material<F=F>) -> Result<TriangleMesh<'a, F>, ObjError>
+    pub fn load_obj(obj: ObjData, pos: Vector<F>, scale: F, mat: &'a dyn Material<F=F>) -> TriangleMesh<'a, F>
     {
-        let obj = ObjData::load_buf(read)?;
-
         let mut corner = Vector::<F>::new(
             F::from_f32(std::f32::INFINITY),
             F::from_f32(std::f32::INFINITY),
@@ -123,7 +119,7 @@ impl<'a, F: Float> TriangleMesh<'a, F>
 
         info!("loaded .obj [index: {}, normal: {}, uv: {}, face: {}]", obj.position.len(), obj.normal.len(), obj.texture.len(), tris.len());
 
-        Ok(TriangleMesh::new(tris))
+        TriangleMesh::new(tris)
     }
 
 }
