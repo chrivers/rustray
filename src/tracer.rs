@@ -1,7 +1,6 @@
 use image::{GenericImage, Pixel};
 
-use crate::light::Light;
-use crate::lib::{Color, Camera, Point, Float};
+use crate::lib::{Color, Camera, Point, Float, Light};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::scene::{RayTarget, RayTracer};
 

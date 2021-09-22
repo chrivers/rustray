@@ -20,14 +20,12 @@ use log::LevelFilter;
 
 pub mod lib;
 pub mod scene;
-pub mod light;
 pub mod tracer;
 pub mod material;
 pub mod geometry;
 pub mod sampler;
 
-use crate::lib::{Color, Point, Vector, Float, Camera};
-use crate::light::Light;
+use crate::lib::{Color, Point, Vector, Float, Camera, Light};
 use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
 use crate::scene::RayTarget;
 use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap};

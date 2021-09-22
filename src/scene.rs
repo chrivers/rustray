@@ -1,6 +1,5 @@
-use crate::lib::{Float, Vector, Color};
+use crate::lib::{Float, Vector, Color, Light};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::light::Light;
 
 pub trait HasPosition<F: Float>
 {
