@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
+use derive_more::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
 use std::fmt::{self, Display};
 
 use super::Float;
@@ -23,113 +23,12 @@ macro_rules! vec3 {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[derive(Add, Sub, Mul, Div, Neg, AddAssign, SubAssign)]
 pub struct Vector<F: Float>
 {
     pub x: F,
     pub y: F,
     pub z: F,
-}
-
-impl<F: Float> Add for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn add(self, other: Vector<F>) -> Vector<F>
-    {
-        Vector {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-}
-
-impl<F: Float> AddAssign for Vector<F>
-{
-    fn add_assign(&mut self, other: Vector<F>)
-    {
-        self.x += other.x;
-        self.y += other.y;
-        self.z += other.z;
-    }
-}
-
-impl<F: Float> Sub for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn sub(self, other: Vector<F>) -> Vector<F>
-    {
-        Vector {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-}
-
-impl<F: Float> SubAssign for Vector<F>
-{
-    fn sub_assign(&mut self, other: Vector<F>)
-    {
-        self.x -= other.x;
-        self.y -= other.y;
-        self.z -= other.z;
-    }
-}
-
-impl<F: Float> Mul<F> for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn mul(self, other: F) -> Vector<F>
-    {
-        Vector
-        {
-            x: self.x * other,
-            y: self.y * other,
-            z: self.z * other,
-        }
-    }
-}
-
-impl<F: Float> Div<F> for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn div(self, other: F) -> Vector<F> {
-        Vector {
-            x: self.x / other,
-            y: self.y / other,
-            z: self.z / other,
-        }
-    }
-}
-
-
-impl<F: Float> Mul<Vector<F>> for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn mul(self, other: Vector<F>) -> Vector<F>
-    {
-        Vector
-        {
-            x: self.x * other.x,
-            y: self.y * other.y,
-            z: self.z * other.z,
-        }
-    }
-}
-
-impl<F: Float> Neg for Vector<F>
-{
-    type Output = Vector<F>;
-
-    fn neg(self) -> Vector<F>
-    {
-        Self::Output { x: -self.x, y: -self.y, z: -self.z, }
-    }
 }
 
 impl<F: Float> Vector<F>
