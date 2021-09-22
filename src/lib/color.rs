@@ -1,8 +1,10 @@
-use std::ops::{Add, AddAssign, Sub, Mul, Div};
+use derive_more::{Add, AddAssign, Sub};
+use std::ops;
 
 use crate::lib::float::{Float, Blended};
 
 #[derive(Clone, Copy, Debug)]
+#[derive(Add, AddAssign, Sub)]
 pub struct Color<F: Float>
 {
     pub r: F,
@@ -10,45 +12,7 @@ pub struct Color<F: Float>
     pub b: F,
 }
 
-impl<F: Float> Add for Color<F>
-{
-    type Output = Color<F>;
-
-    fn add(self, other: Color<F>) -> Color<F>
-    {
-        Color {
-            r: self.r + other.r,
-            g: self.g + other.g,
-            b: self.b + other.b,
-        }
-    }
-}
-
-impl<F: Float> AddAssign for Color<F>
-{
-    fn add_assign(&mut self, other: Color<F>)
-    {
-        self.r = self.r + other.r;
-        self.g = self.g + other.g;
-        self.b = self.b + other.b;
-    }
-}
-
-impl<F: Float> Sub for Color<F>
-{
-    type Output = Color<F>;
-
-    fn sub(self, other: Color<F>) -> Color<F>
-    {
-        Color {
-            r: self.r - other.r,
-            g: self.g - other.g,
-            b: self.b - other.b,
-        }
-    }
-}
-
-impl<F: Float> Mul<F> for Color<F>
+impl<F: Float> ops::Mul<F> for Color<F>
 {
     type Output = Color<F>;
 
@@ -63,7 +27,7 @@ impl<F: Float> Mul<F> for Color<F>
     }
 }
 
-impl<F: Float> Mul for Color<F>
+impl<F: Float> ops::Mul<Color<F>> for Color<F>
 {
     type Output = Color<F>;
 
@@ -78,7 +42,7 @@ impl<F: Float> Mul for Color<F>
     }
 }
 
-impl<F: Float> Div for Color<F>
+impl<F: Float> ops::Div for Color<F>
 {
     type Output = Color<F>;
 
@@ -93,7 +57,7 @@ impl<F: Float> Div for Color<F>
     }
 }
 
-impl<F: Float> Div<F> for Color<F>
+impl<F: Float> ops::Div<F> for Color<F>
 {
     type Output = Color<F>;
 
