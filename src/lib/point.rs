@@ -1,5 +1,5 @@
 use num::Num;
-use std::ops::{Add, Sub, Mul};
+use derive_more::{Add, Sub, Mul};
 
 /**
 Convenience macro to construct a [`Point<F>`] from input values.
@@ -21,6 +21,7 @@ macro_rules! point {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[derive(Add, Sub, Mul)]
 pub struct Point<F: Num>
 {
     pub x: F,
@@ -45,46 +46,6 @@ impl<F: Num + Copy> Point<F>
         {
             x: other.x - self.x,
             y: other.y - self.y,
-        }
-    }
-}
-
-impl<F: Num + Copy> Mul<F> for Point<F>
-{
-    type Output = Point<F>;
-
-    fn mul(self, other: F) -> Point<F>
-    {
-        Point
-        {
-            x: self.x * other,
-            y: self.y * other,
-        }
-    }
-}
-
-impl<F: Num> Add for Point<F>
-{
-    type Output = Point<F>;
-
-    fn add(self, other: Point<F>) -> Point<F>
-    {
-        Point {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
-
-impl<F: Num> Sub for Point<F>
-{
-    type Output = Point<F>;
-
-    fn sub(self, other: Point<F>) -> Point<F>
-    {
-        Point {
-            x: self.x - other.x,
-            y: self.y - other.y,
         }
     }
 }
