@@ -76,6 +76,24 @@ impl<'a, F: Float> TriangleMesh<'a, F>
     {
         let obj = ObjData::load_buf(read)?;
 
+        let mut corner = Vector::<F>::new(
+            F::from_f32(std::f32::INFINITY),
+            F::from_f32(std::f32::INFINITY),
+            F::from_f32(std::f32::INFINITY)
+        );
+
+        for o in &obj.objects {
+            for g in &o.groups {
+                for poly in &g.polys {
+                    for n in 0..(poly.0.len() - 1) {
+                        corner.x = corner.x.min(F::from_f32(obj.position[poly.0[n].0][0]));
+                        corner.y = corner.y.min(F::from_f32(obj.position[poly.0[n].0][1]));
+                        corner.z = corner.z.min(F::from_f32(obj.position[poly.0[n].0][2]));
+                    }
+                }
+            }
+        }
+
         let mut tris: Vec<Triangle<F>> = vec![];
         for o in &obj.objects {
             for g in &o.groups {
@@ -83,9 +101,9 @@ impl<'a, F: Float> TriangleMesh<'a, F>
                     for n in 1..(poly.0.len() - 1) {
                         /* FIXME: .unwrap() is a terrible when loading data from a file */
                         let tri = Triangle::new (
-                            a2vec(&obj.position[poly.0[0].0]) * scale + pos,
-                            a2vec(&obj.position[poly.0[n].0]) * scale + pos,
-                            a2vec(&obj.position[poly.0[n+1].0]) * scale + pos,
+                            (a2vec(&obj.position[poly.0[0  ].0]) - corner) * scale + pos,
+                            (a2vec(&obj.position[poly.0[n  ].0]) - corner) * scale + pos,
+                            (a2vec(&obj.position[poly.0[n+1].0]) - corner) * scale + pos,
 
                             a2vec(&obj.normal[poly.0[0].2.unwrap()]).normalized(),
                             a2vec(&obj.normal[poly.0[n].2.unwrap()]).normalized(),
