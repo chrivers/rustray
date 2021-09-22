@@ -74,25 +74,47 @@ impl<'a, F: Float> Ray<F>
         }
     }
 
+    /**
+      Implementation of the Möller–Trumbore intersection algorithm, adapted from
+      the reference algorithm on Wikipedia:
+
+      https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
+     */
     pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>, n: &Vector<F>) -> Option<F>
     {
-        fn test_edge<F: Float>(edge: Vector<F>, vp: Vector<F>, normal: &Vector<F>) -> Option<Vector<F>>
-        {
-            let c = edge.cross(vp);
-            if normal.dot(c) < F::zero() {
-                None
-            } else {
-                Some(c)
-            }
+        let edge1 = *b - *a;
+        let edge2 = *c - *a;
+
+        let h = self.dir.cross(edge2);
+        let ae = edge1.dot(h);
+
+        /* This ray is parallel to this triangle. */
+        if ae.abs() < F::BIAS {
+            return None
         }
 
-        let t = self.intersect_plane(a, &(*b - *a), &(*c - *a))?;
-        let hit = self.extend(t);
+        let f = F::one() / ae;
 
-        test_edge(*b - *a, hit - *a, n)?;
-        test_edge(*c - *b, hit - *b, n)?;
-        test_edge(*a - *c, hit - *c, n)?;
+        let s = self.pos - *a;
+        let u = f * s.dot(h);
+        if u < F::zero() || u > F::one() {
+            return None
+        }
 
+        let q = s.cross(edge1);
+        let v = f * self.dir.dot(q);
+        if v < F::zero() || u + v > F::one() {
+            return None
+        }
+
+        /* Compute t to find out where the intersection point is on the line. */
+        let t = f * edge2.dot(q);
+        if t < F::BIAS {
+            /* Line intersection but not a ray intersection. */
+            return None
+        }
+
+        /* ray intersection */
         Some(t)
     }
 
