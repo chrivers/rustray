@@ -58,7 +58,7 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
             let refl_dir = light_dir.reflect(&maxel.normal);
             let spec_angle = -refl_dir.dot(hit.dir).clamp(F::zero(), F::one());
 
-            let light_color = attenuate(light_color * self_color, light_vec.length());
+            let light_color = attenuate(light_color * self_color, light_vec.magnitude());
 
             let lambert = maxel.normal.dot(light_dir);
 

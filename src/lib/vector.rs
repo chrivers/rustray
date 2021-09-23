@@ -43,11 +43,6 @@ impl<F: Float> Vectorx<F> for Vector<F>
         Vector { x: F::zero(), y: F::zero(), z: F::one() }
     }
 
-    fn length(&self) -> F
-    {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
     fn vector_to(self, other: Self) -> Self
     {
         Self
@@ -65,7 +60,7 @@ impl<F: Float> Vectorx<F> for Vector<F>
 
     fn length_to(self, other: Self) -> F
     {
-        self.vector_to(other).length()
+        self.vector_to(other).magnitude()
     }
 
     fn polar_angles(self) -> (F, F)
@@ -84,7 +79,6 @@ where
     fn identity_x() -> Self;
     fn identity_y() -> Self;
     fn identity_z() -> Self;
-    fn length(&self) -> F;
     fn vector_to(self, other: Self) -> Self;
     fn normal_to(self, other: Self) -> Self;
     fn length_to(self, other: Self) -> F;

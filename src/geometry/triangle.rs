@@ -102,9 +102,9 @@ impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
     {
         let c1 = (self.b - self.a).cross(hit.pos - self.b);
         let c2 = (self.c - self.a).cross(hit.pos - self.c);
-        let area2 = self.n.length();
-        let u = c1.length() / area2;
-        let v = c2.length() / area2;
+        let area2 = self.n.magnitude();
+        let u = c1.magnitude() / area2;
+        let v = c2.magnitude() / area2;
 
         let normal = self.interpolate_normal(u, v);
         let uv = self.interpolate_uv(u, v);
