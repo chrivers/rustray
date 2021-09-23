@@ -85,7 +85,7 @@ impl<'a, F: Float> Triangle<'a, F> {
             self.nb * v +
             self.nc * u;
 
-        normal.normalized()
+        normal.normalize()
     }
 
     fn interpolate_uv(&self, u: F, v: F) -> Point<F>
@@ -142,8 +142,8 @@ impl<'a, F: Float> Triangle<'a, F>
             na, nb, nc,
             ta, tb, tc,
             n: ab.cross(ac),
-            ntan1: ntan1.normalized(),
-            ntan2: ntan2.normalized(),
+            ntan1: ntan1.normalize(),
+            ntan2: ntan2.normalize(),
             ni: 0,
             mat
         }

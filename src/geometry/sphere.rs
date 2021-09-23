@@ -13,8 +13,8 @@ impl<'a, F: Float> HitTarget<F> for Sphere<'a, F>
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         let normal = self.pos.normal_to(hit.pos);
-        let normalu = self.dir1.cross(normal).normalized();
-        let normalv = normalu.cross(normal).normalized();
+        let normalu = self.dir1.cross(normal).normalize();
+        let normalv = normalu.cross(normal).normalize();
 
         let (u, v) = normal.polar_uv();
 

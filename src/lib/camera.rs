@@ -2,7 +2,7 @@ use super::Float;
 use super::Vector;
 use super::Ray;
 use super::Point;
-use super::vector::Vectorx;
+use super::vector::{Vectorx, InnerSpace};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float>
@@ -26,7 +26,7 @@ impl<F: Float> Camera<F>
         yres: usize,
     ) -> Camera<F>
     {
-        let dir = (lookat - pos).normalized();
+        let dir = (lookat - pos).normalize();
 
         info!("Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]", pos, dir, hor, ver);
         Camera { pos, dir, hor, ver, xres, yres }
@@ -41,8 +41,8 @@ impl<F: Float> Camera<F>
     ) -> Camera<F>
     {
         let dir = pos.normal_to(lookat);
-        let u = dir.cross(Vector::identity_y()).normalized();
-        let v = u.cross(dir).normalized();
+        let u = dir.cross(Vector::identity_y()).normalize();
+        let v = u.cross(dir).normalize();
         let aspect_ratio = F::from_usize(yres) / F::from_usize(xres);
         let viewplane_width = (fov / F::TWO).tan();
         let viewplane_height = aspect_ratio * viewplane_width;
@@ -67,7 +67,7 @@ impl<F: Float> Camera<F>
     pub fn get_ray(self, point: Point<F>) -> Ray<F>
     {
         let vpp = self.dir + (self.hor * point.x) + (self.ver * point.y);
-        Ray::new(self.pos, vpp.normalized(), 0)
+        Ray::new(self.pos, vpp.normalize(), 0)
     }
 
     pub fn size(self) -> (usize, usize)

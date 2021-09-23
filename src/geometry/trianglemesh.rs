@@ -101,9 +101,9 @@ impl<'a, F: Float> TriangleMesh<'a, F>
                             (a2vec(&obj.position[poly.0[n  ].0]) - corner) * scale + pos,
                             (a2vec(&obj.position[poly.0[n+1].0]) - corner) * scale + pos,
 
-                            a2vec(&obj.normal[poly.0[0].2.unwrap()]).normalized(),
-                            a2vec(&obj.normal[poly.0[n].2.unwrap()]).normalized(),
-                            a2vec(&obj.normal[poly.0[n+1].2.unwrap()]).normalized(),
+                            a2vec(&obj.normal[poly.0[0].2.unwrap()]).normalize(),
+                            a2vec(&obj.normal[poly.0[n].2.unwrap()]).normalize(),
+                            a2vec(&obj.normal[poly.0[n+1].2.unwrap()]).normalize(),
 
                             a2point(&obj.texture[poly.0[0].1.unwrap()]),
                             a2point(&obj.texture[poly.0[n].1.unwrap()]),

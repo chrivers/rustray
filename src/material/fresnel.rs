@@ -22,7 +22,7 @@ impl<F: Float, S: Sampler<F, F>> Material for Fresnel<F, S>
 
     fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let d = hit.dir.normalized();
+        let d = hit.dir.normalize();
 
         let ior = self.ior.sample(maxel.uv);
 

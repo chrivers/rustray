@@ -35,8 +35,8 @@ impl<'a, F: Float> Plane<'a, F>
 {
     pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: &'a dyn Material<F=F>) -> Plane<'a, F>
     {
-        let dir1 = d1.normalized();
-        let dir2 = d2.normalized();
+        let dir1 = d1.normalize();
+        let dir2 = d2.normalize();
         let normal = dir1.cross(dir2);
 
         Plane { pos, dir1, dir2, normal, u: d1, v: d2, mat }

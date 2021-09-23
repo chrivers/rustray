@@ -48,17 +48,6 @@ impl<F: Float> Vectorx<F> for Vector<F>
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    fn normalized(self) -> Self
-    {
-        let l = self.length();
-
-        if l.non_zero() {
-            self / l
-        } else {
-            Self::zero()
-        }
-    }
-
     fn vector_to(self, other: Self) -> Self
     {
         Self
@@ -71,7 +60,7 @@ impl<F: Float> Vectorx<F> for Vector<F>
 
     fn normal_to(self, other: Self) -> Self
     {
-        self.vector_to(other).normalized()
+        self.vector_to(other).normalize()
     }
 
     fn length_to(self, other: Self) -> F
@@ -96,7 +85,6 @@ where
     fn identity_y() -> Self;
     fn identity_z() -> Self;
     fn length(&self) -> F;
-    fn normalized(self) -> Self;
     fn vector_to(self, other: Self) -> Self;
     fn normal_to(self, other: Self) -> Self;
     fn length_to(self, other: Self) -> F;

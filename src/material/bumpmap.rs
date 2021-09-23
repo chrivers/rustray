@@ -35,7 +35,7 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpmap<F
             mxl.normalv * n.g +
             mxl.normal  * n.b / (self.pow + F::BIAS);
 
-        mxl.normal = nx.normalized();
+        mxl.normal = nx.normalize();
 
         self.mat.render(hit, &mxl, lights, rt)
     }

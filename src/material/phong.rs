@@ -54,7 +54,7 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
             let light_color = rt.ray_shadow(hit, maxel, light).unwrap_or(light.color);
 
             let light_vec = hit.pos.vector_to(light.pos);
-            let light_dir = light_vec.normalized();
+            let light_dir = light_vec.normalize();
             let refl_dir = light_dir.reflect(&maxel.normal);
             let spec_angle = -refl_dir.dot(hit.dir).clamp(F::zero(), F::one());
 
