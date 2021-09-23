@@ -25,6 +25,6 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>> Material for Blend<F, A, B>
     {
         let a = self.a.render(hit, maxel, light, rt);
         let b = self.b.render(hit, maxel, light, rt);
-        a.blended(&b, self.pct)
+        a.lerp(b, self.pct)
     }
 }

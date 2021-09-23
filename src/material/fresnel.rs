@@ -34,6 +34,6 @@ impl<F: Float, S: Sampler<F, F>> Material for Fresnel<F, S>
 
         let fr = hit.dir.fresnel(&maxel.normal, ior);
 
-        c_refr.blended(&c_refl, fr)
+        c_refr.lerp(c_refl, fr)
     }
 }

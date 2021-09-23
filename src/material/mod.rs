@@ -26,12 +26,13 @@ impl<F: Float> Material for Color<F>
 pub(crate) mod mat_util {
     /* These are convenience re-imports for modules, so skip warnings */
     #![allow(unused_imports)]
-    pub use crate::lib::{Vector, Float, Point, Color, Blended, Light};
+    pub use crate::lib::{Vector, Float, Point, Color, Light};
     pub use crate::lib::ray::{Ray, Hit, Maxel};
     pub use crate::lib::vector::{Vectorx, InnerSpace};
     pub use crate::scene::RayTracer;
     pub use crate::sampler::Sampler;
     pub use crate::vec3;
+    pub use cgmath::VectorSpace;
 
     pub use super::Material;
     pub use std::marker::PhantomData;

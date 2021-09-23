@@ -1,10 +1,13 @@
-use derive_more::{Add, AddAssign, Sub};
+use derive_more::{Add, AddAssign, Sub, Rem};
 use std::ops;
+use cgmath::VectorSpace;
+use std::iter::Sum;
+use num_traits::Zero;
 
-use crate::lib::float::{Float, Blended};
+use crate::lib::float::Float;
 
 #[derive(Clone, Copy, Debug)]
-#[derive(Add, AddAssign, Sub)]
+#[derive(Add, AddAssign, Sub, Rem)]
 pub struct Color<F: Float>
 {
     pub r: F,
@@ -110,11 +113,8 @@ impl<F: Float> Color<F>
     pub fn mixed(input: &[Color<F>]) -> Color<F>
     {
         match input.len() {
-            0 => Color::black(),
-            n => {
-                let sum = input.iter().fold(Color::black(), |a, &c| a + c);
-                sum / F::from_usize(n)
-            }
+            0 => Color::zero(),
+            n => input.iter().copied().sum::<Color<F>>() / F::from_usize(n)
         }
     }
 
@@ -130,10 +130,28 @@ impl<F: Float> Color<F>
     }
 }
 
-impl<F: Float> Blended<F> for Color<F>
+impl<F: Float> Zero for Color<F>
 {
-    fn blended(&self, other: &Color<F>, pct: F) -> Color<F>
+    fn zero() -> Color<F>
     {
-        (*self * (F::one() - pct)) + (*other * pct)
+        Self::black()
     }
+
+    fn is_zero(&self) -> bool
+    {
+        self.r.is_zero() &&
+        self.g.is_zero() &&
+        self.b.is_zero()
+    }
+}
+
+impl<F: Float> Sum for Color<F> {
+    fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
+        iter.fold(Color::zero(), |a, ref c| a + *c)
+    }
+}
+
+impl<F: Float> VectorSpace for Color<F>
+{
+    type Scalar = F;
 }

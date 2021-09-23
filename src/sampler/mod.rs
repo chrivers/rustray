@@ -45,6 +45,7 @@ pub(crate) mod samp_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point, Color};
     pub use super::Sampler;
+    pub use cgmath::VectorSpace;
 }
 
 pub mod texture1;

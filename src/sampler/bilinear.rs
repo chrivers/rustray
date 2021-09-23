@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-use crate::lib::float::Blended;
 use super::samp_util::*;
 
 #[derive(Copy, Clone)]
@@ -26,7 +25,7 @@ where
     P: Sync,
     P: std::ops::Mul<F, Output = P>,
     P: std::ops::Add<Output = P>,
-    P: Blended<F>,
+    P: VectorSpace<Scalar=F>,
     S: Sampler<F, P>
 {
     fn sample(&self, uv: Point<F>) -> P
@@ -42,10 +41,10 @@ where
         let n3 = self.raw_sample(point!(x,   y+1));
         let n4 = self.raw_sample(point!(x+1, y+1));
 
-        let x1 = n1.blended(&n2, fx);
-        let x2 = n3.blended(&n4, fx);
+        let x1 = n1.lerp(n2, fx);
+        let x2 = n3.lerp(n4, fx);
 
-        x1.blended(&x2, fy)
+        x1.lerp(x2, fy)
     }
 
     fn raw_sample(&self, uv: Point<u32>) -> P
