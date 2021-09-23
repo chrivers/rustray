@@ -115,6 +115,128 @@ impl<'a, F: Float> Ray<F>
         Some(t)
     }
 
+    /*
+    Implementation of the "new algorithm" for segment/triangle intersection,
+    adapted from the paper:
+
+      "A robust segment/triangle intersection algorithm for interference
+      tests. Efficiency study" - by Jiménez, Segura, Feito.
+
+    (this version considers only front faces)
+     */
+    pub fn intersect_triangle2(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>, n: &Vector<F>) -> Option<F>
+    {
+        let scale = F::from_f32(1024.0);
+        let q1 = self.pos;
+        let q2 = self.pos + self.dir * scale;
+        let a = q1 - v3;
+        let b = v1 - v3;
+        let c = v2 - v3;
+        let w1 = b.cross(c);
+        let w = a.dot(w1);
+
+        let s;
+        let t;
+        let u;
+
+        if w > F::BIAS {
+            let d = q2 - v3;
+            s = d.dot(w1);
+            if s > F::BIAS { return None }
+            let w2 = a.cross(d);
+            t = w2.dot(c);
+            if t < -F::BIAS { return None }
+            u = -w2.dot(b);
+            if u < -F::BIAS { return None }
+            if w < s + t + u { return None }
+        } else if w < -F::BIAS {
+            return None
+        } else {
+            let d = q2 - v3;
+            s = d.dot(w1);
+            if s > F::BIAS {
+                return None
+            } else if s < -F::BIAS {
+                let w2 = d.cross(a);
+                t = w2.dot(c);
+                if t > F::BIAS { return None }
+                u = -w2.dot(b);
+                if u > F::BIAS { return None }
+                if -s > t + u { return None }
+            } else {
+                return None
+            }
+        }
+
+        // let alpha = tt * t;
+        // let beta = tt * u;
+        Some((scale * w) / (w - s))
+    }
+
+    /*
+    Implementation of the "new algorithm" for segment/triangle intersection,
+    adapted from the paper:
+
+      "A robust segment/triangle intersection algorithm for interference
+      tests. Efficiency study" - by Jiménez, Segura, Feito.
+
+    (this version considers both front and back faces)
+     */
+    pub fn intersect_triangle3(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>, n: &Vector<F>) -> Option<F>
+    {
+        let scale = F::from_f32(1024.0);
+        let q1 = self.pos;
+        let q2 = self.pos + self.dir * scale;
+        let a = q1 - v3;
+        let b = v1 - v3;
+        let c = v2 - v3;
+        let w1 = b.cross(c);
+        let w = a.dot(w1);
+        let d = q2 - v3;
+        let s = d.dot(w1);
+
+        let t;
+        let u;
+
+        if w > F::BIAS {
+            if s > F::BIAS { return None }
+            let w2 = a.cross(d);
+            t = w2.dot(c);
+            if t < -F::BIAS { return None }
+            u = -w2.dot(b);
+            if u < -F::BIAS { return None }
+            if w < s + t + u { return None }
+        } else if w < -F::BIAS {
+            if s < -F::BIAS { return None }
+            let w2 = a.cross(d);
+            t = w2.dot(c);
+            if t > F::BIAS { return None }
+            u = -w2.dot(b);
+            if u > F::BIAS { return None }
+            if w > s + t + u { return None }
+        } else {
+            if s > F::BIAS {
+                let w2 = d.cross(a);
+                t = w2.dot(c);
+                if t < -F::BIAS { return None }
+                u = -w2.dot(b);
+                if u < -F::BIAS { return None }
+                if -s < t + u { return None }
+            } else if s < -F::BIAS {
+                let w2 = d.cross(a);
+                t = w2.dot(c);
+                if t > F::BIAS { return None }
+                u = -w2.dot(b);
+                if u > F::BIAS { return None }
+                if -s > t + u { return None }
+            } else {
+                return None
+            }
+        }
+
+        Some((scale * w) / (w - s))
+    }
+
 }
 
 /* Hit */
