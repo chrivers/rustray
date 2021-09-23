@@ -2,7 +2,7 @@ use image::{GenericImage, Pixel};
 
 use crate::lib::{Color, Camera, Point, Float, Light};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::lib::vector::{Vectorx, InnerSpace};
+use crate::lib::vector::{Vectorx, MetricSpace};
 use crate::scene::{RayTarget, RayTracer};
 
 pub struct Tracer<'a, F: Float>
@@ -118,14 +118,14 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>) -> Option<Color<F>>
     {
-        let light_length = light.pos.vector_to(hit.pos).magnitude2();
+        let light_length = light.pos.distance2(hit.pos);
         let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos), 0);
         hitray.pos += hitray.dir * F::BIAS;
         for curobj in &self.objects
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
-                if hit.pos.vector_to(curhit.pos).magnitude2() < light_length
+                if hit.pos.distance2(curhit.pos) < light_length
                 {
                     return maxel.mat.shadow(hit, maxel, light, self)
                 }
