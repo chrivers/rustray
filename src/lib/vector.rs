@@ -59,16 +59,6 @@ impl<F: Float> Vectorx<F> for Vector<F>
         }
     }
 
-    fn cross(self, other: Self) -> Self
-    {
-        Vector
-        {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x
-        }
-    }
-
     fn vector_to(self, other: Self) -> Self
     {
         Self
@@ -112,7 +102,6 @@ where
     fn identity_z() -> Self;
     fn length(&self) -> F;
     fn normalized(self) -> Self;
-    fn cross(self, other: Self) -> Self;
     fn vector_to(self, other: Self) -> Self;
     fn normal_to(self, other: Self) -> Self;
     fn length_to(self, other: Self) -> F;
