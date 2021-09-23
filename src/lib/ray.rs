@@ -38,11 +38,6 @@ impl<'a, F: Float> Ray<F>
         Ray { pos, dir, lvl }
     }
 
-    pub fn length_to(self, other: Vector<F>) -> F
-    {
-        self.dir.cross(self.pos.vector_to(other)).magnitude() / self.dir.magnitude()
-    }
-
     pub fn extend(self, scale: F) -> Vector<F>
     {
         self.pos + self.dir * scale
