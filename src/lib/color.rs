@@ -81,29 +81,22 @@ impl<F: Float> Color<F>
 
     pub fn gray(c: F) -> Color<F>
     {
-        Color { r: c, g: c, b: c }
+        Self::new(c, c, c)
     }
 
     pub fn black() -> Color<F>
     {
-        let zero = F::zero();
-        Color { r: zero, g: zero, b: zero }
+        Self::gray(F::zero())
     }
 
     pub fn white() -> Color<F>
     {
-        let one = F::one();
-        Color { r: one, g: one, b: one }
+        Self::gray(F::one())
     }
 
     fn clamp(n: F) -> F
     {
-        match n
-        {
-            n if n < F::zero() => F::zero(),
-            n if n > F::one() => F::one(),
-            n => n,
-        }
+        n.max(F::zero()).min(F::one())
     }
 
     pub fn clamped(self) -> Color<F>
