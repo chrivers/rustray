@@ -1,5 +1,3 @@
-use derive_more::{Add, AddAssign, Sub, SubAssign, Mul, Div, Neg};
-use std::fmt::{self, Display};
 
 use super::Float;
 
@@ -210,15 +208,3 @@ impl<F: Float> Vector<F>
 
 }
 
-impl<F: Float> std::fmt::Display for Vector<F>
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[")?;
-        Display::fmt(&self.x, f)?;
-        write!(f, ", ")?;
-        Display::fmt(&self.y, f)?;
-        write!(f, ", ")?;
-        Display::fmt(&self.z, f)?;
-        f.write_str("]")
-    }
-}

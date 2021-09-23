@@ -50,8 +50,8 @@ impl<F: Float> Camera<F>
         info!("aspect_ratio: {}", aspect_ratio);
         info!("vp_width: {:.4}", viewplane_width);
         info!("vp_height: {:.4}", viewplane_height);
-        info!("x_inc_vector: {:8.4}", x_inc_vector);
-        info!("y_inc_vector: {:8.4}", y_inc_vector);
+        info!("x_inc_vector: {:8.4?}", x_inc_vector);
+        info!("y_inc_vector: {:8.4?}", y_inc_vector);
 
         Camera {
             pos,

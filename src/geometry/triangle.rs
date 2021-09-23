@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 use std::fmt;
-use std::fmt::Display;
+use std::fmt::Debug;
 
 #[derive(Clone)]
 pub struct Triangle<'a, F: Float>
@@ -31,12 +31,12 @@ pub struct Triangle<'a, F: Float>
 impl<'a, F: Float> std::fmt::Display for Triangle<'a, F>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Triangle {{ a:")?; Display::fmt(&self.a, f)?;
-        write!(f, ", b:")?;  Display::fmt(&self.b, f)?;
-        write!(f, ", c:")?;  Display::fmt(&self.c, f)?;
-        write!(f, ", na:")?; Display::fmt(&self.na, f)?;
-        write!(f, ", nb:")?; Display::fmt(&self.nb, f)?;
-        write!(f, ", nc:")?; Display::fmt(&self.nc, f)?;
+        write!(f, "Triangle {{ a:")?; Debug::fmt(&self.a, f)?;
+        write!(f, ", b:")?;  Debug::fmt(&self.b, f)?;
+        write!(f, ", c:")?;  Debug::fmt(&self.c, f)?;
+        write!(f, ", na:")?; Debug::fmt(&self.na, f)?;
+        write!(f, ", nb:")?; Debug::fmt(&self.nb, f)?;
+        write!(f, ", nc:")?; Debug::fmt(&self.nc, f)?;
         f.write_str("}")
     }
 }
