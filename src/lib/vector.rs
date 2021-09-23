@@ -1,7 +1,7 @@
 use cgmath;
 use num_traits::Zero;
 
-pub use cgmath::InnerSpace;
+pub use cgmath::{InnerSpace, MetricSpace};
 
 use super::Float;
 
@@ -58,11 +58,6 @@ impl<F: Float> Vectorx<F> for Vector<F>
         self.vector_to(other).normalize()
     }
 
-    fn length_to(self, other: Self) -> F
-    {
-        self.vector_to(other).magnitude()
-    }
-
     fn polar_angles(self) -> (F, F)
     {
         let theta = self.x.atan2(self.z);
@@ -81,7 +76,6 @@ where
     fn identity_z() -> Self;
     fn vector_to(self, other: Self) -> Self;
     fn normal_to(self, other: Self) -> Self;
-    fn length_to(self, other: Self) -> F;
     fn polar_angles(self) -> (F, F);
 
     fn polar_uv(self) -> (F, F)

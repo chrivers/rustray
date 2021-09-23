@@ -35,7 +35,7 @@ impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
         for t in &aabbs {
             if let Some(curhit) = t.intersect(ray)
             {
-                let curdist = ray.pos.length_to(curhit.pos);
+                let curdist = ray.pos.distance(curhit.pos);
                 if curdist < dist
                 {
                     dist = curdist;

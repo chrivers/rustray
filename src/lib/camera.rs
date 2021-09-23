@@ -2,7 +2,7 @@ use super::Float;
 use super::Vector;
 use super::Ray;
 use super::Point;
-use super::vector::{Vectorx, InnerSpace};
+use super::vector::{Vectorx, InnerSpace, MetricSpace};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float>
@@ -77,6 +77,6 @@ impl<F: Float> Camera<F>
 
     pub fn length_to(self, pos: Vector<F>) -> F
     {
-        pos.length_to(self.pos)
+        pos.distance(self.pos)
     }
 }
