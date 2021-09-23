@@ -1,3 +1,7 @@
+use cgmath;
+use num_traits::Zero;
+
+pub use cgmath::InnerSpace;
 
 use super::Float;
 
@@ -20,48 +24,31 @@ macro_rules! vec3 {
     ($( $vals:expr ),+) => { Vector::new( $($vals),+ ) }
 }
 
-#[derive(Clone, Copy, Debug)]
-#[derive(Add, Sub, Mul, Div, Neg, AddAssign, SubAssign)]
-pub struct Vector<F: Float>
-{
-    pub x: F,
-    pub y: F,
-    pub z: F,
-}
+pub type Vector<F> = cgmath::Vector3<F>;
 
-impl<F: Float> Vector<F>
+impl<F: Float> Vectorx<F> for Vector<F>
 {
-    pub fn new(x: F, y: F, z: F) -> Vector<F>
-    {
-        Vector { x, y, z }
-    }
-
-    pub fn identity_x() -> Vector<F>
+    fn identity_x() -> Vector<F>
     {
         Vector { x: F::one(), y: F::zero(), z: F::zero() }
     }
 
-    pub fn identity_y() -> Vector<F>
+    fn identity_y() -> Vector<F>
     {
         Vector { x: F::zero(), y: F::one(), z: F::zero() }
     }
 
-    pub fn identity_z() -> Vector<F>
+    fn identity_z() -> Vector<F>
     {
         Vector { x: F::zero(), y: F::zero(), z: F::one() }
     }
 
-    pub fn zero() -> Vector<F>
-    {
-        Vector { x: F::zero(), y: F::zero(), z: F::zero() }
-    }
-
-    pub fn length(&self) -> F
+    fn length(&self) -> F
     {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn normalized(self) -> Vector<F>
+    fn normalized(self) -> Self
     {
         let l = self.length();
 
@@ -72,12 +59,7 @@ impl<F: Float> Vector<F>
         }
     }
 
-    pub fn dot(self, other: Vector<F>) -> F
-    {
-        other.x * self.x + other.y * self.y + other.z * self.z
-    }
-
-    pub fn cross(self, other: Vector<F>) -> Vector<F>
+    fn cross(self, other: Self) -> Self
     {
         Vector
         {
@@ -87,9 +69,9 @@ impl<F: Float> Vector<F>
         }
     }
 
-    pub fn vector_to(self, other: Vector<F>) -> Vector<F>
+    fn vector_to(self, other: Self) -> Self
     {
-        Vector
+        Self
         {
             x: other.x - self.x,
             y: other.y - self.y,
@@ -97,29 +79,47 @@ impl<F: Float> Vector<F>
         }
     }
 
-    pub fn normal_to(self, other: Vector<F>) -> Vector<F>
+    fn normal_to(self, other: Self) -> Self
     {
         self.vector_to(other).normalized()
     }
 
-    pub fn length_to(self, other: Vector<F>) -> F
+    fn length_to(self, other: Self) -> F
     {
         self.vector_to(other).length()
     }
 
-    pub fn cos_angle(self, other: Vector<F>) -> F
+    fn cos_angle(self, other: Vector<F>) -> F
     {
         self.normalized().dot(other.normalized())
     }
 
-    pub fn polar_angles(self) -> (F, F)
+    fn polar_angles(self) -> (F, F)
     {
         let theta = self.x.atan2(self.z);
         let phi = self.y.acos();
         (phi, theta)
     }
+}
 
-    pub fn polar_uv(self) -> (F, F)
+
+pub trait Vectorx<F: Float> : InnerSpace<Scalar=F> + Zero
+where
+    Self: Sized + std::ops::Neg<Output=Self>
+{
+    fn identity_x() -> Self;
+    fn identity_y() -> Self;
+    fn identity_z() -> Self;
+    fn length(&self) -> F;
+    fn normalized(self) -> Self;
+    fn cross(self, other: Self) -> Self;
+    fn vector_to(self, other: Self) -> Self;
+    fn normal_to(self, other: Self) -> Self;
+    fn length_to(self, other: Self) -> F;
+    fn cos_angle(self, other: Vector<F>) -> F;
+    fn polar_angles(self) -> (F, F);
+
+    fn polar_uv(self) -> (F, F)
     {
         let (phi, theta) = self.polar_angles();
 
@@ -132,20 +132,20 @@ impl<F: Float> Vector<F>
     }
 
     /* Fast computation of len^2. Useful optimization for e.g. comparing lengths */
-    pub fn len_sqr(self) -> F
+    fn len_sqr(self) -> F
     {
         self.dot(self)
     }
 
     /* Reflect vector (self) around normal */
-    pub fn reflect(self, normal: &Vector<F>) -> Vector<F>
+    fn reflect(self, normal: &Self) -> Self
     {
         self - *normal * (F::TWO * self.dot(*normal))
     }
 
     /* Refract vector (self) relative to surface normal, according to ior.
        (Index of Refraction) */
-    pub fn refract(self, normal: &Vector<F>, ior: F) -> Vector<F>
+    fn refract(self, normal: &Self, ior: F) -> Self
     {
         let mut cosi = self.dot(*normal).clamp(-F::one(), F::one());
         let eta_i;
@@ -167,7 +167,7 @@ impl<F: Float> Vector<F>
         let k = F::one() - eta * eta * (F::one() - cosi * cosi);
 
         if k < F::zero() {
-            Vector::zero()
+            Self::zero()
         } else {
             self * eta + n * (eta * cosi - k.sqrt())
         }
@@ -178,7 +178,7 @@ impl<F: Float> Vector<F>
      *
      * https://en.wikipedia.org/wiki/Fresnel_equations
      */
-    pub fn fresnel(self, normal: &Vector<F>, ior: F) -> F
+    fn fresnel(self, normal: &Self, ior: F) -> F
     {
         let mut cos_i = self.dot(*normal).clamp(-F::one(), F::one());
         let (eta_i, eta_t);
@@ -207,4 +207,3 @@ impl<F: Float> Vector<F>
     }
 
 }
-

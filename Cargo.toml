@@ -22,3 +22,4 @@ obj = { version = "0.10", features = ["genmesh"] }
 genmesh = "0.6"
 bvh = "0.6"
 derive_more = "0.99"
+cgmath = "0.18"

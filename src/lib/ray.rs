@@ -2,6 +2,8 @@ use super::{Float, Point, Vector};
 use crate::scene::HitTarget;
 use crate::material::Material;
 use crate::point;
+use super::vector::{Vectorx, InnerSpace};
+use num_traits::Zero;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>

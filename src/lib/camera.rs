@@ -2,6 +2,7 @@ use super::Float;
 use super::Vector;
 use super::Ray;
 use super::Point;
+use super::vector::Vectorx;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float>

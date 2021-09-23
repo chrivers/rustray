@@ -2,6 +2,7 @@ use image::{GenericImage, Pixel};
 
 use crate::lib::{Color, Camera, Point, Float, Light};
 use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::lib::vector::Vectorx;
 use crate::scene::{RayTarget, RayTracer};
 
 pub struct Tracer<'a, F: Float>

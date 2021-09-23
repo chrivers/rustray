@@ -31,6 +31,15 @@ checksum = "08abcc3b4e9339e33a3d0a5ed15d84a687350c05689d825e0f6655eef9e76a94"
 
 [[package]]
 name = "approx"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f2a05fd1bd10b2527e20a2cd32d8873d115b8b39fe219ee25f42a8aca6ba278"
+dependencies = [
+ "num-traits 0.2.14",
+]
+
+[[package]]
+name = "approx"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "072df7202e63b127ab55acfe16ce97013d5b97bf160489336d3f1840fd78e99e"
@@ -102,6 +111,16 @@ dependencies = [
  "mint",
  "num-traits 0.1.43",
  "rand 0.4.6",
+]
+
+[[package]]
+name = "cgmath"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a98d30140e3296250832bbaaff83b27dcd6fa3cc70fb6f1f3e5c9c0023b5317"
+dependencies = [
+ "approx 0.4.0",
+ "num-traits 0.2.14",
 ]
 
 [[package]]
@@ -264,7 +283,7 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "093d52460513e54346e440eadad05a799378654001d7c3a384c3d1e59b5f1e9f"
 dependencies = [
- "cgmath",
+ "cgmath 0.16.1",
  "mint",
 ]
 
@@ -711,6 +730,7 @@ name = "rustray"
 version = "0.1.0"
 dependencies = [
  "bvh",
+ "cgmath 0.18.0",
  "colog",
  "derive_more",
  "genmesh",

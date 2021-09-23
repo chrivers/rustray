@@ -2,6 +2,7 @@ pub(crate) mod geo_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point};
     pub use crate::lib::ray::{Ray, Hit, Maxel};
+    pub use crate::lib::vector::{Vectorx, InnerSpace};
     pub use crate::scene::*;
     pub use crate::material::Material;
 }
