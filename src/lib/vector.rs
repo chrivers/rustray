@@ -43,21 +43,6 @@ impl<F: Float> Vectorx<F> for Vector<F>
         Vector { x: F::zero(), y: F::zero(), z: F::one() }
     }
 
-    fn vector_to(self, other: Self) -> Self
-    {
-        Self
-        {
-            x: other.x - self.x,
-            y: other.y - self.y,
-            z: other.z - self.z
-        }
-    }
-
-    fn normal_to(self, other: Self) -> Self
-    {
-        self.vector_to(other).normalize()
-    }
-
     fn polar_angles(self) -> (F, F)
     {
         let theta = self.x.atan2(self.z);
@@ -74,8 +59,19 @@ where
     fn identity_x() -> Self;
     fn identity_y() -> Self;
     fn identity_z() -> Self;
-    fn vector_to(self, other: Self) -> Self;
-    fn normal_to(self, other: Self) -> Self;
+
+    #[inline]
+    fn vector_to(self, other: Self) -> Self
+    {
+        other - self
+    }
+
+    #[inline]
+    fn normal_to(self, other: Self) -> Self
+    {
+        self.vector_to(other).normalize()
+    }
+
     fn polar_angles(self) -> (F, F);
 
     fn polar_uv(self) -> (F, F)
