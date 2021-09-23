@@ -56,7 +56,7 @@ impl<'a, F: Float> Ray<F>
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
     {
         let l = self.pos - *pos;
-        let a = self.dir.len_sqr();
+        let a = self.dir.magnitude2();
         let b = F::TWO * l.dot(self.dir);
         let c = l.dot(l) - radius2;
 

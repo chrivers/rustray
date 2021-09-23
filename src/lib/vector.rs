@@ -96,12 +96,6 @@ where
         (u, v)
     }
 
-    /* Fast computation of len^2. Useful optimization for e.g. comparing lengths */
-    fn len_sqr(self) -> F
-    {
-        self.dot(self)
-    }
-
     /* Reflect vector (self) around normal */
     fn reflect(self, normal: &Self) -> Self
     {
