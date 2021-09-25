@@ -52,5 +52,6 @@ pub(crate) mod samp_util {
 pub mod texture1;
 pub mod texture3;
 pub mod bilinear;
+pub mod transform;
 
 pub use bilinear::Bilinear;
