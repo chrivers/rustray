@@ -2,7 +2,7 @@ use image::{GenericImage, Pixel};
 
 use crate::lib::{Color, Camera, Point, Float, Light};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::lib::vector::{Vectorx, MetricSpace};
+use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
 use crate::scene::{RayTarget, RayTracer};
 
 pub struct Tracer<'a, F: Float>
@@ -121,17 +121,25 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
         let light_length = light.pos.distance2(hit.pos);
         let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos), 0);
         hitray.pos += hitray.dir * F::BIAS;
+
+        let mut hits: Vec<_> = vec![];
         for curobj in &self.objects
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
-                if hit.pos.distance2(curhit.pos) < light_length
-                {
-                    return maxel.mat.shadow(hit, maxel, light, self)
+                if hit.pos.distance2(curhit.pos) < light_length {
+                    hits.push(curhit)
                 }
             }
         }
 
+        hits.sort_by(|a, b| (a.pos - light.pos).magnitude2().partial_cmp(&(b.pos - light.pos).magnitude2()).unwrap_or(std::cmp::Ordering::Equal) );
+
+        for hit in hits {
+            if let Some(col) = maxel.mat.shadow(&hit, maxel, light, self) {
+                return Some(col)
+            }
+        }
         None
     }
 
