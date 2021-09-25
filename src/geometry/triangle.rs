@@ -24,7 +24,7 @@ pub struct Triangle<'a, F: Float>
 
     ni: usize,
 
-    mat: &'a dyn Material<F=F>
+    mat: &'a dyn Material<F=F>,
 }
 
 
