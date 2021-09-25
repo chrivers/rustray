@@ -25,7 +25,7 @@ where
     P: Sync,
     P: std::ops::Mul<F, Output = P>,
     P: std::ops::Add<Output = P>,
-    P: VectorSpace<Scalar=F>,
+    P: Lerp<Ratio=F>,
     S: Sampler<F, P>
 {
     fn sample(&self, uv: Point<F>) -> P
