@@ -44,6 +44,7 @@ pub(crate) mod samp_util {
     #![allow(unused_imports)]
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point, Color};
+    pub use crate::lib::float::Lerp;
     pub use super::Sampler;
     pub use cgmath::VectorSpace;
 }

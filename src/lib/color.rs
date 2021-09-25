@@ -4,7 +4,7 @@ use cgmath::VectorSpace;
 use std::iter::Sum;
 use num_traits::Zero;
 
-use crate::lib::float::Float;
+use crate::lib::float::{Float, Lerp};
 
 #[derive(Clone, Copy, Debug)]
 #[derive(Add, AddAssign, Sub, Rem)]
@@ -154,4 +154,8 @@ impl<F: Float> Sum for Color<F> {
 impl<F: Float> VectorSpace for Color<F>
 {
     type Scalar = F;
+}
+
+impl<F: Float> Lerp for Color<F> {
+    type Ratio = F;
 }

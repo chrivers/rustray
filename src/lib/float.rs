@@ -2,8 +2,9 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use num_traits::{float::FloatConst,NumAssignOps};
 use num::{clamp, pow};
+use std::ops::{Add, Sub, Mul};
 
-pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Debug + Display + Sync
+pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Lerp + Debug + Display + Sync
 {
     const BIAS: Self;
     const HALF: Self;
@@ -16,6 +17,28 @@ pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + Floa
     fn non_zero(self) -> bool { self != Self::zero() }
 
     fn clamp(self, low: Self, high: Self) -> Self { clamp(self, low, high) }
+}
+
+pub trait Lerp
+where
+    Self: Add<Output=Self>
+    + Sub<Output=Self>
+    + Mul<Self::Ratio, Output=Self>
+    + Sized + Copy
+{
+    type Ratio: Float;
+
+    #[inline]
+    fn lerp(self, other: Self, amount: Self::Ratio) -> Self {
+        self + ((other - self) * amount)
+    }
+}
+
+impl Lerp for f32 {
+    type Ratio = Self;
+}
+impl Lerp for f64 {
+    type Ratio = Self;
 }
 
 impl Float for f32
