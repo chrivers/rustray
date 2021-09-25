@@ -1,6 +1,22 @@
 use std::marker::PhantomData;
 
+use image::DynamicImage;
 use super::samp_util::*;
+
+pub trait BilinearSampler<F: Float, P: Sync>
+where
+    Self: Sampler<F, P> + Sized
+{
+    fn bilinear(self) -> Bilinear<F, P, Self> {
+        Bilinear::new(self)
+    }
+}
+
+impl<F: Float, P: Sync> BilinearSampler<F, P> for image::DynamicImage
+where
+    DynamicImage: Sampler<F, P>
+{
+}
 
 #[derive(Copy, Clone)]
 

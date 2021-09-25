@@ -54,4 +54,4 @@ pub mod texture3;
 pub mod bilinear;
 pub mod transform;
 
-pub use bilinear::Bilinear;
+pub use bilinear::{Bilinear, BilinearSampler};
