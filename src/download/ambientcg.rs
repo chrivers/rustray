@@ -38,7 +38,7 @@ impl ACGDownloader
 {
     pub fn new(root: PathBuf, qual: ACGQuality) -> Self
     {
-        Self { root: root, qual }
+        Self { root, qual }
     }
 
     pub fn fullname(&self, name: &str) -> PathBuf
