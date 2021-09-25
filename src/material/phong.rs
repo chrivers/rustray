@@ -78,3 +78,10 @@ impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> Material
         self.mat.as_ref().shadow(hit, maxel, light, rt)
     }
 }
+
+impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> AsRef<Phong<F, M, MR, S>> for Phong<F, M, MR, S>
+{
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
