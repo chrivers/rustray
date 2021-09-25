@@ -23,3 +23,6 @@ genmesh = "0.6"
 bvh = "0.6"
 derive_more = "0.99"
 cgmath = "0.18"
+zip = "0.5"
+thiserror = "1"
+reqwest = { version = "0.11", features = ["blocking"] }
