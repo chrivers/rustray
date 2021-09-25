@@ -77,7 +77,7 @@ impl<'a, F: Float> Ray<F>
 
       https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
      */
-    pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>, n: &Vector<F>) -> Option<F>
+    pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>) -> Option<F>
     {
         let edge1 = *b - *a;
         let edge2 = *c - *a;
@@ -124,7 +124,7 @@ impl<'a, F: Float> Ray<F>
 
     (this version considers only front faces)
      */
-    pub fn intersect_triangle2(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>, n: &Vector<F>) -> Option<F>
+    pub fn intersect_triangle2(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>) -> Option<F>
     {
         let scale = F::from_f32(1024.0);
         let q1 = self.pos;
@@ -182,7 +182,7 @@ impl<'a, F: Float> Ray<F>
 
     (this version considers both front and back faces)
      */
-    pub fn intersect_triangle3(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>, n: &Vector<F>) -> Option<F>
+    pub fn intersect_triangle3(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>) -> Option<F>
     {
         let scale = F::from_f32(1024.0);
         let q1 = self.pos;
