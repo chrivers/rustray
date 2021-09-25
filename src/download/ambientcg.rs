@@ -62,13 +62,12 @@ impl TextureDownloader for ACGDownloader
 
     fn download(&self, name: &str) -> Result<PathBuf, Error>
     {
-        let zipname = self.filename(name);
         let path = self.fullname(name);
-
         if path.exists() {
             return Ok(path)
         }
-        let target = format!("https://ambientcg.com/get?file={}", zipname);
+
+        let target = format!("https://ambientcg.com/get?file={}", self.filename(name));
         let response = reqwest::blocking::get(target)?;
 
         let mut file = File::create(&path)?;
