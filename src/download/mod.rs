@@ -7,3 +7,6 @@ pub trait TextureDownloader
     fn download(&self, name: &str) -> Result<PathBuf, Error>;
     fn cached(&self, name: &str) -> bool;
 }
+
+pub mod ambientcg;
+pub use ambientcg::{ACGDownloader, ACGQuality};
