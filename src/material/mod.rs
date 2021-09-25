@@ -58,7 +58,7 @@ pub use fresnel::Fresnel;
 pub use phong::Phong;
 pub use scaleuv::ScaleUV;
 pub use blend::Blend;
-pub use texture::Texture;
+pub use texture::{Texture, TextureSampler};
 pub use bumpmap::Bumpmap;
 pub use colornormal::ColorNormal;
 pub use coloruv::ColorUV;
