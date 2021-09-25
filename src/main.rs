@@ -24,6 +24,7 @@ pub mod tracer;
 pub mod material;
 pub mod geometry;
 pub mod sampler;
+pub mod download;
 
 use crate::lib::{Color, Point, Vector, Float, Camera, Light};
 use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
