@@ -159,3 +159,10 @@ impl<F: Float> VectorSpace for Color<F>
 impl<F: Float> Lerp for Color<F> {
     type Ratio = F;
 }
+
+impl<F: Float> AsRef<Color<F>> for Color<F>
+{
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}

@@ -26,3 +26,10 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material for Texture<F, S>
         self.img.sample(maxel.uv)
     }
 }
+
+impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Texture<F, S>> for Texture<F, S>
+{
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
