@@ -2,6 +2,20 @@ use super::mat_util::*;
 
 use std::marker::PhantomData;
 
+pub trait TextureSampler<F: Float>
+where
+    Self: Sampler<F, Color<F>> + Sized
+{
+    fn texture(self) -> Texture<F, Self> {
+        Texture::new(self)
+    }
+}
+
+impl<F: Float, T: Sampler<F, Color<F>>> TextureSampler<F> for T
+{
+
+}
+
 #[derive(Copy, Clone)]
 pub struct Texture<F: Float, S: Sampler<F, Color<F>>>
 {
