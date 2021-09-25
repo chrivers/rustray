@@ -49,6 +49,7 @@ mod texture;
 mod bumpmap;
 mod colornormal;
 mod coloruv;
+mod matte;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -61,3 +62,4 @@ pub use texture::Texture;
 pub use bumpmap::Bumpmap;
 pub use colornormal::ColorNormal;
 pub use coloruv::ColorUV;
+pub use matte::Matte;
