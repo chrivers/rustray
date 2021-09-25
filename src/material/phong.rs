@@ -74,7 +74,6 @@ impl<F: Float, M: Material<F=F>, S: Sampler<F, F>> Material for Phong<F, M, S>
 
     fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
-        /* Red shadows, for demonstration */
-        Some(Color::new(F::one(), F::zero(), F::zero()))
+        self.mat.shadow(hit, maxel, light, rt)
     }
 }
