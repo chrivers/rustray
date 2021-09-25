@@ -52,18 +52,19 @@ fn main() {
         HEIGHT,
     );
 
-    let light1 = Light { pos: vec3!(0.0, 2.0, 0.0), color: Color { r: 2.0, g: 0.0, b: 0.0 } };
-
-    let light1 = Light { pos: vec3!( 1.0, 1.0, 1.0), color: Color { r: 1.0, g: 1.0, b: 1.0 } };
-    let light2 = Light { pos: vec3!( 2.0, 2.0, 7.0), color: Color { r: 2.0, g: 0.0, b: 0.0 } };
-    let light3 = Light { pos: vec3!( 2.0, 7.0, 2.0), color: Color { r: 0.0, g: 2.0, b: 0.0 } };
-    let light4 = Light { pos: vec3!( 7.0, 2.0, 2.0), color: Color { r: 0.0, g: 0.0, b: 2.0 } };
+    let (h, l) = (0.8, 0.2);
+    let light1 = Light { pos: vec3!( 2.0, 2.0, 2.0 ), color: Color { r: h, g: h, b: h } };
+    let light2 = Light { pos: vec3!( 2.0, 2.0, 7.0 ), color: Color { r: h, g: l, b: l } };
+    let light3 = Light { pos: vec3!( 2.0, 7.0, 2.0 ), color: Color { r: l, g: h, b: l } };
+    let light4 = Light { pos: vec3!( 7.0, 2.0, 2.0 ), color: Color { r: l, g: l, b: h } };
+    let light5 = Light { pos: vec3!( 5.0, 5.0, 5.0 ), color: Color { r: h, g: h, b: h } };
 
     let lights = vec![
         light1,
         light2,
         light3,
         light4,
+        light5,
     ];
 
     let mat_mirror: Mirror<F> = Mirror::new(1.0);
