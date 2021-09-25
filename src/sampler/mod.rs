@@ -23,12 +23,12 @@ texture sampler.
 */
 impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
 {
-    fn sample(&self, uv: Point<F>) -> T
+    fn sample(&self, _uv: Point<F>) -> T
     {
         *self
     }
 
-    fn raw_sample(&self, uv: Point<u32>) -> T
+    fn raw_sample(&self, _uv: Point<u32>) -> T
     {
         *self
     }

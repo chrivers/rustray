@@ -20,7 +20,7 @@ impl<F: Float, S: Sampler<F, F>> Material for Fresnel<F, S>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, _light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let d = hit.dir.normalize();
 
