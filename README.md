@@ -28,8 +28,21 @@ After rustray has run, take a look at `output.png`
 xdg-open output.png
 ```
 
-Principles
-----------
+Programming rustray scenes
+==========================
+
+Basic types
+-----------
+
+All of rustray features user-selectable floating-point number type. This is
+reflected in the api, with names such as `Point<F>`, `Vector<F>`, `Color<F>`,
+etc.
+
+The `<F>` in these type names have to implement the `Float` trait. This trait is
+already implemented for the standard `f32` and `f64` types.
+
+Tracer
+------
 
 The main starting point for rustray is the `Tracer`. It is supplied with:
 
@@ -47,19 +60,33 @@ let tracer = tracer::Tracer::new(
 );
 ```
 
-After this setup, the tracer is ready to generate output:
+After this setup, the tracer is ready to generate output. See `src/main.rs` for
+a practical example.
 
-```rust
-// for example, render whole image:
-let img = ...;
-let output = tracer.render_image(&img);
+Objects
+-------
 
-// or, render specific line:
-let y = ...;
-let line = tracer.generate_span(y);
-```
+The parameter `objects` is a list of things that all implement `RayTarget<F>`
 
-See `src/main.rs` for a practical example.
+Each `RayTarget<F>` can test itself for intersection with a ray. If so, they
+return a `Hit<F>` describing the hit point where the intersection took place,
+and the direction of the ray.
+
+The next step is to resolve the material properties at this point. In addition
+to the intersection point, and ray direction, the `Hit<F>` struct also contains
+a `HitTarget<F>` reference.
+
+The `HitTarget<F>` can compute material properties at the hit point, such as
+texture coordinates, surface normals, etc. Calling `resolve(...)` returns a
+`Maxel<F>` ("Material Pixel").
+
+The `Maxel<F>` depends on the geometry being hit, but is unrelated to the
+desired material simulation.
+
+To get a color contribution from a Maxel, we call `render(...)` on the
+referenced `Material`.
+
+Thus, the pipeline is `Ray -> Hit -> Maxel -> Color`.
 
 Demo images
 -----------
