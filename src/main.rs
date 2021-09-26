@@ -9,14 +9,17 @@
 extern crate log;
 
 use std::fs::File;
-use image::ColorType;
+use std::io::{Read, Seek, Cursor};
+
+use image::{ColorType, DynamicImage, ImageBuffer, ImageFormat};
 use image::png::PngEncoder;
-use image::{ImageBuffer};
+
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
-use std::cmp::max;
 use std::time::Instant;
 use log::LevelFilter;
+use obj::ObjData;
+use zip::ZipArchive;
 
 pub mod lib;
 pub mod scene;
@@ -26,12 +29,18 @@ pub mod geometry;
 pub mod sampler;
 pub mod download;
 
-use crate::lib::{Color, Point, Vector, Float, Camera, Light};
+use crate::lib::{Color, Point, Vector, Float, Camera, Light, Error};
 use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
 use crate::scene::RayTarget;
-use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap};
+#[allow(unused_imports)]
+use crate::sampler::{Sampler, Bilinear, BilinearSampler};
+#[allow(unused_imports)]
+use crate::material::{ChessBoard, Mirror, Fresnel, Phong, ScaleUV, Blend, Texture, Bumpmap, ColorNormal, ColorUV, Matte, TextureSampler};
+use crate::download::TextureDownloader;
+use crate::download::{ACGDownloader, ACGQuality};
 
-fn main() {
+fn main() -> Result<(), Error>
+{
     let mut logger = colog::builder();
     logger.filter(None, LevelFilter::Debug);
     logger.init();
@@ -68,39 +77,58 @@ fn main() {
         light5,
     ];
 
-    let mat_mirror: Mirror<F> = Mirror::new(1.0);
-    let mat_white = Color::white();
-    let mat_smooth = Fresnel::new(1.6);
-    let mat_sphere = Fresnel::new(1.9);
+    fn load_zip_tex<T: Read + Seek>(arch: &mut ZipArchive<T>, name: &str, format: ImageFormat) -> Result<DynamicImage, Error>
+    {
+        info!("  - {}", name);
+        let mut file = arch.by_name(name)?;
+        let mut data = vec![0u8; file.size().try_into().unwrap()];
+        let sz = file.read_exact(&mut data).unwrap();
+        let imgdata: Cursor<&[u8]> = Cursor::new(&data);
 
-    let mat_plane = ChessBoard::new(Phong::black(), Phong::white());
-    let mat_sphere2 = ChessBoard::new(Phong::new(2.0, Color::black()), Color::white());
-    let mat_sphere = ScaleUV::new(2.0, 2.0, Blend::new(mat_sphere2, mat_mirror, 0.8));
+        extern crate image;
+        Ok(image::load(imgdata, format)?)
+    }
 
-    let mat_phong = Phong::<F, _>::new(2.0, Color::<F>::white());
+    fn load_tex3(dl: &ACGDownloader, name: &str) -> Result<(DynamicImage, DynamicImage, DynamicImage, Result<DynamicImage, Error>), Error>
+    {
+        info!("Loading texture archive [{}]", name);
+        let zipfile = File::open(dl.download(name)?)?;
+        let mut archive = zip::ZipArchive::new(zipfile)?;
+        Ok((
+            load_zip_tex(&mut archive, &format!("{}_1K_Color.png", name), ImageFormat::Png)?,
+            load_zip_tex(&mut archive, &format!("{}_1K_NormalDX.png", name), ImageFormat::Png)?,
+            load_zip_tex(&mut archive, &format!("{}_1K_Roughness.png", name), ImageFormat::Png)?,
+            load_zip_tex(&mut archive, &format!("{}_1K_Metalness.png", name), ImageFormat::Png),
+        ))
+    }
 
-    let tex0 = image::open("textures/stone-albedo.png").unwrap();
-    let tex1 = image::open("textures/stone-normal.png").unwrap();
-    let mat_tex = Phong::<F, _>::new(2.0, Texture::<F, _>::new(tex0));
-    let mat_bmp = ScaleUV::new(1.0, 1.0, Bumpmap::new(0.05, tex1, mat_tex));
-    // let mat_bmp = ScaleUV::new(2.1, 2.1, Bumpmap::new(1.0, tex1, mat_tex));
-    // let mat_sphere = mat_bmp;
-    // let mat_sphere = Phong::<F, _>::new(mat_tex);
+    let dl = ACGDownloader::new("textures/download".into(), ACGQuality::PNG_1K)?;
 
-    // let mat_plane = mat_tex.clone();
+    let (tex0a, tex0b, tex0r, tex0m) = load_tex3(&dl, "WoodFloor008")?;
+    let (tex1a, tex1b, tex1r, tex1m) = load_tex3(&dl, "WoodFloor006")?;
+    let (tex2a, tex2b, tex2r, tex2m) = load_tex3(&dl, "Wood069")?;
 
-    // let mut reader = File::open("models/teapot.obj").expect("Failed to open model file");
-    let mut reader = File::open("models/Porsche_911_GT2.obj").expect("Failed to open model file");
-    let trimesh1 = TriangleMesh::load_obj(&mut reader, vec3!(4.0, 2.0, 6.0), F::from_f32(2.0/1.0), &mat_bmp).unwrap();
+    let mat_sphere = Fresnel::new(1.6);
+    let mat_white  = Phong::white();
 
-    let plane1  = Plane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
-    let plane2  = Plane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), &mat_plane);
+    let mat_plane = ChessBoard::new(
+        Bumpmap::new(0.5, tex0b.bilinear(), Phong::new(tex0r, tex0a.bilinear().texture())),
+        Bumpmap::new(0.5, tex1b.bilinear(), Phong::new(tex1r, tex1a.bilinear().texture())));
 
-    let plane3  = Plane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
-    let plane4  = Plane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
+    let mat_bmp2 = Bumpmap::new(0.5, tex2b.bilinear(), Phong::new(tex2r.clone(), tex2a.bilinear().texture()));
 
-    let plane5  = Plane::new(vec3!(   0.0,  20.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, 1.0), &mat_plane);
-    let plane6  = Plane::new(vec3!(   0.0, - 0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 0.0, -1.0), &mat_plane);
+    let reader = File::open("models/teapot.obj").expect("Failed to open model file");
+    let obj = ObjData::load_buf(reader).unwrap();
+    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/6.0), &mat_bmp2);
+
+    let plane1  = Plane::new(vec3!(  0.0,  0.0,   20.0), vec3!( -1.0, 0.0, 0.0), vec3!( 0.0, 1.0,  0.0), &mat_plane);
+    let plane2  = Plane::new(vec3!(  0.0,  0.0,  - 0.0), vec3!(  1.0, 0.0, 0.0), vec3!( 0.0, 1.0,  0.0), &mat_plane);
+
+    let plane3  = Plane::new(vec3!(  20.0,  0.0,   0.0), vec3!( 0.0, -1.0, 0.0), vec3!(0.0, 0.0,  1.0), &mat_plane);
+    let plane4  = Plane::new(vec3!( - 0.0,  0.0,   0.0), vec3!( 0.0,  1.0, 0.0), vec3!(0.0, 0.0,  1.0), &mat_plane);
+
+    let plane5  = Plane::new(vec3!(   0.0,  20.0,  0.0), vec3!(  0.0, 0.0,-1.0), vec3!(1.0, 0.0,  0.0), &mat_plane);
+    let plane6  = Plane::new(vec3!(   0.0, - 0.0,  0.0), vec3!(  0.0, 0.0, 1.0), vec3!(1.0, 0.0,  0.0), &mat_plane);
 
     let sphere1 = Sphere::new(vec3!(1.0, 3.0, 5.0), 1.0, &mat_sphere);
     let sphere2 = Sphere::new(vec3!(4.0, 1.0, 1.0), 1.0, &mat_sphere);
@@ -114,9 +142,18 @@ fn main() {
     let sphere9 = Sphere::new(vec3!( 4.0, -1.0, 4.0), 3.0, &mat_sphere);
     let sphere10 = Sphere::new(vec3!( -1.0, 4.0, 4.0), 3.0, &mat_sphere);
 
+    let sphere11 = Sphere::new(vec3!( 3.0, 3.0, 3.0), 2.0, &mat_sphere);
+
     let tri1 = Triangle::new(
-        vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
-        vec3!(3.0, 1.0, 1.0), vec3!(1.0, 5.0, 1.0), vec3!(1.0, 1.0, 7.0),
+        vec3!(1.0, 0.0, 3.0), vec3!(5.0, 5.0, 3.0), vec3!(5.0, 0.0, 3.0),
+        vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0),
+        point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
+        &mat_white
+    );
+
+    let tri2 = Triangle::new(
+        vec3!(5.0, 5.0, 3.0), vec3!(1.0, 5.0, 3.0), vec3!(1.0, 0.0, 3.0),
+        vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0),
         point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
         &mat_white
     );
@@ -141,8 +178,10 @@ fn main() {
         // &sphere8,
         // &sphere9,
         // &sphere10,
+        // &sphere11,
 
         // &tri1,
+        // &tri2,
         &trimesh1,
         // &trimesh2,
         // &trimesh3,
@@ -188,4 +227,6 @@ fn main() {
     let buffer = File::create("output.png").unwrap();
     let png = PngEncoder::new(buffer);
     png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8).expect("Failed to encode");
+
+    Ok(())
 }
