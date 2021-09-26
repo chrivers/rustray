@@ -3,6 +3,7 @@
 #![feature(box_syntax)]
 #![feature(destructuring_assignment)]
 #![feature(const_generics_defaults)]
+#![feature(const_fn_trait_bound)]
 
 #[macro_use]
 extern crate log;
