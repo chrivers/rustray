@@ -1,6 +1,5 @@
 #![allow(unused_variables)]
 #![allow(clippy::many_single_char_names)]
-#![allow(clippy::unnecessary_cast)]
 #![feature(box_syntax)]
 #![feature(destructuring_assignment)]
 #![feature(const_generics_defaults)]
