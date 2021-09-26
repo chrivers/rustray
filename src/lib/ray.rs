@@ -214,24 +214,22 @@ impl<'a, F: Float> Ray<F>
             u = -w2.dot(b);
             if u > F::BIAS { return None }
             if w > s + t + u { return None }
+        } else if s > F::BIAS {
+            let w2 = d.cross(a);
+            t = w2.dot(c);
+            if t < -F::BIAS { return None }
+            u = -w2.dot(b);
+            if u < -F::BIAS { return None }
+            if -s < t + u { return None }
+        } else if s < -F::BIAS {
+            let w2 = d.cross(a);
+            t = w2.dot(c);
+            if t > F::BIAS { return None }
+            u = -w2.dot(b);
+            if u > F::BIAS { return None }
+            if -s > t + u { return None }
         } else {
-            if s > F::BIAS {
-                let w2 = d.cross(a);
-                t = w2.dot(c);
-                if t < -F::BIAS { return None }
-                u = -w2.dot(b);
-                if u < -F::BIAS { return None }
-                if -s < t + u { return None }
-            } else if s < -F::BIAS {
-                let w2 = d.cross(a);
-                t = w2.dot(c);
-                if t > F::BIAS { return None }
-                u = -w2.dot(b);
-                if u > F::BIAS { return None }
-                if -s > t + u { return None }
-            } else {
-                return None
-            }
+            return None
         }
 
         Some((scale * w) / (w - s))
