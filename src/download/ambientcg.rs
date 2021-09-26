@@ -36,9 +36,10 @@ pub struct ACGDownloader
 
 impl ACGDownloader
 {
-    pub fn new(root: PathBuf, qual: ACGQuality) -> Self
+    pub fn new(root: PathBuf, qual: ACGQuality) -> Result<Self, Error>
     {
-        Self { root, qual }
+        std::fs::create_dir_all(&root)?;
+        Ok(Self { root, qual })
     }
 
     pub fn fullname(&self, name: &str) -> PathBuf
