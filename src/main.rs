@@ -40,13 +40,14 @@ fn main() {
 
     type F = f64;
 
-    const WIDTH:  usize = 1920;
-    const HEIGHT: usize = 1080;
-    let scaling = max(WIDTH, HEIGHT) as f32 * 1.5;
+    // const WIDTH:  usize = 1920;
+    // const HEIGHT: usize = 1080;
+    const WIDTH:  usize = 2560;
+    const HEIGHT: usize = 1440;
 
-    let camera = camera::Camera::parametric(
-        vec3!(12.0, 8.0, 16.0),
-        vec3!(0.0, 2.0, 0.0),
+    let camera = Camera::parametric(
+        vec3!(10.0, 4.5, 10.0),
+        vec3!(0.0, 1.0, 0.0),
         (90.0 as F).to_radians(),
         WIDTH,
         HEIGHT,
