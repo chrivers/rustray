@@ -124,6 +124,7 @@ impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
 
 impl<'a, F: Float> Triangle<'a, F>
 {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: &'a dyn Material<F=F>) -> Triangle<'a, F>
     {
         let ab = a.vector_to(b);
