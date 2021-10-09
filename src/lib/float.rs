@@ -4,7 +4,9 @@ use num_traits::{float::FloatConst,NumAssignOps};
 use num::{clamp, pow};
 use std::ops::{Add, Sub, Mul};
 
-pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Lerp + Debug + Display + Sync
+use cgmath::{RelativeEq, AbsDiffEq, UlpsEq};
+
+pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Lerp + Debug + Display + Send + Sync + RelativeEq + AbsDiffEq<Epsilon = Self> + UlpsEq
 {
     const BIAS: Self;
     const ZERO: Self;
