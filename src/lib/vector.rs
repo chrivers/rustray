@@ -1,7 +1,7 @@
 use cgmath;
 use num_traits::Zero;
 
-pub use cgmath::{InnerSpace, MetricSpace};
+pub use cgmath::{InnerSpace, MetricSpace, EuclideanSpace, Transform, Point3, Matrix4};
 
 use super::Float;
 
@@ -49,6 +49,11 @@ impl<F: Float> Vectorx<F> for Vector<F>
         let phi = self.y.acos();
         (phi, theta)
     }
+
+    fn xfrm(&self, xfrm: &Matrix4<F>) -> Self
+    {
+        xfrm.transform_point(Point3::from_vec(*self)).to_vec()
+    }
 }
 
 
@@ -59,6 +64,7 @@ where
     fn identity_x() -> Self;
     fn identity_y() -> Self;
     fn identity_z() -> Self;
+    fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
 
     #[inline]
     fn vector_to(self, other: Self) -> Self
