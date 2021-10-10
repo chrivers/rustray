@@ -70,6 +70,7 @@ mod colornormal;
 mod coloruv;
 mod matte;
 mod smart;
+mod triblend;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -84,3 +85,4 @@ pub use colornormal::ColorNormal;
 pub use coloruv::ColorUV;
 pub use matte::Matte;
 pub use smart::Smart;
+pub use triblend::Triblend;
