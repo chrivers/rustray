@@ -47,10 +47,18 @@ where
     fn sample(&self, uv: Point<F>) -> P
     {
         let (w, h) = self.dimensions();
-        let x: u32 = (uv.x * F::from_u32(w)).to_u32().unwrap_or(0) % (w-1);
-        let y: u32 = (uv.y * F::from_u32(h)).to_u32().unwrap_or(0) % (h-1);
-        let fx = (uv.x.abs() * F::from_u32(w)).fract();
-        let fy = (uv.y.abs() * F::from_u32(h)).fract();
+
+        /* Raw (x, y) coordinates */
+        let rx = (uv.x * F::from_u32(w) - F::ONE / F::from_u32(w/2)).max(F::ZERO).min(F::from_u32(w-1));
+        let ry = (uv.y * F::from_u32(h) - F::ONE / F::from_u32(h/2)).max(F::ZERO).min(F::from_u32(h-1));
+
+        /* Integer coordinate part */
+        let x  = rx.trunc().to_u32().unwrap_or(0);
+        let y  = ry.trunc().to_u32().unwrap_or(0);
+
+        /* Fractional coordinate part */
+        let fx = rx.fract();
+        let fy = ry.fract();
 
         let n1 = self.raw_sample(point!(x,   y  ));
         let n2 = self.raw_sample(point!(x+1, y  ));
