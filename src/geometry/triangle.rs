@@ -125,7 +125,7 @@ impl<F: Float, M: Material<F=F> + Clone> RayTarget<F> for Triangle<F, M>
 impl<F: Float, M: Material<F=F>> Triangle<F, M>
 {
     #[allow(clippy::too_many_arguments)]
-    pub fn new<'a>(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: M) -> Self
+    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: M) -> Self
     {
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
