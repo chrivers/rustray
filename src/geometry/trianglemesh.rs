@@ -73,10 +73,10 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
 
     pub fn load_obj<'a>(obj: ObjData, pos: Vector<F>, scale: F, mat: M) -> Self
     {
-        let mut corner = Vector::<F>::new(
-            F::from_f32(std::f32::INFINITY),
-            F::from_f32(std::f32::INFINITY),
-            F::from_f32(std::f32::INFINITY)
+        let mut corner = Vector::new(
+            F::max_value(),
+            F::max_value(),
+            F::max_value()
         );
 
         for o in &obj.objects {
