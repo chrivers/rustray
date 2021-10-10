@@ -2,25 +2,23 @@ use super::mat_util::*;
 use rand::Rng;
 
 #[derive(Copy, Clone)]
-pub struct Matte<F: Float, M: Material, MR: AsRef<M> + Sync, S: Sampler<F, F>>
+pub struct Matte<F: Float, S: Sampler<F, F>, M: Material<F=F>>
 {
-    rays: u32, // Number of rays to average over
-    src: S,    // Surface Roughness Coefficient
-    mat: MR,   // Underlying material
-    _p: PhantomData<F>,
-    _m: PhantomData<M>,
+    rays: u32, /* Number of rays to average over */
+    src: S,    /* Surface Roughness Coefficient */
+    mat: M,    /* Underlying material */
 }
 
-impl<F: Float, M: Material, MR: AsRef<M> + Sync, S: Sampler<F, F>> Matte<F, M, MR, S>
+impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Matte<F, S, M>
 {
-    pub fn new(src: S, rays: u32, mat: MR) -> Self
+    pub fn new(src: S, rays: u32, mat: M) -> Self
     {
-        Self { src, rays, mat, _p: PhantomData {}, _m: PhantomData {} }
+        Self { src, rays, mat }
     }
 
 }
 
-impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> Material for Matte<F, M, MR, S>
+impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Matte<F, S, M>
 where
     rand::distributions::Standard: rand::distributions::Distribution<F>
 {
@@ -43,13 +41,13 @@ where
                     maxel.normalv * ry)
                 .normalize();
 
-            col += self.mat.as_ref().render(hit, &mxl, light, rt);
+            col += self.mat.render(hit, &mxl, light, rt);
         }
         col / F::from_u32(self.rays)
     }
 
     fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
-        self.mat.as_ref().shadow(hit, maxel, light, rt)
+        self.mat.shadow(hit, maxel, light, rt)
     }
 }
