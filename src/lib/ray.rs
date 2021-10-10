@@ -5,6 +5,8 @@ use crate::point;
 use super::vector::{Vectorx, InnerSpace};
 use num_traits::Zero;
 
+use cgmath::{Point3, Matrix4, Transform, EuclideanSpace};
+
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>
 {
@@ -47,6 +49,16 @@ impl<'a, F: Float> Ray<F>
     pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>, nml: Option<Vector<F>>) -> Hit<'a, F>
     {
         Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl, nml }
+    }
+
+    pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>>
+    {
+        let inv = xfrm.inverse_transform()?;
+        Some(Self {
+            pos: inv.transform_point(Point3::from_vec(self.pos)).to_vec(),
+            dir: inv.transform_vector(self.dir),
+            lvl: self.lvl,
+        })
     }
 
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
