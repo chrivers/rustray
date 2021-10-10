@@ -55,7 +55,7 @@ self as their value.
 This is useful to make e.g. a [`Float`] or [`Color<F>`] a viable substitute for a real
 texture sampler.
 */
-impl<F: Float, T: Sync + Copy> Sampler<F, T> for T
+impl<F: Float, T: Send + Sync + Copy> Sampler<F, T> for T
 {
     fn sample(&self, _uv: Point<F>) -> T
     {
