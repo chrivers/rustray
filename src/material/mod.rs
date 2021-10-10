@@ -69,6 +69,7 @@ mod bumpmap;
 mod colornormal;
 mod coloruv;
 mod matte;
+mod smart;
 
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
@@ -82,3 +83,4 @@ pub use bumpmap::Bumpmap;
 pub use colornormal::ColorNormal;
 pub use coloruv::ColorUV;
 pub use matte::Matte;
+pub use smart::Smart;
