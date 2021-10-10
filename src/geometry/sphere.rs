@@ -28,7 +28,7 @@ impl<'a, F: Float> RayTarget<F> for Sphere<'a, F>
     {
         let t = ray.intersect_sphere(&self.pos, self.radius2)?;
 
-        Some(ray.hit_at(t, self))
+        Some(ray.hit_at(t, self, None))
     }
 
 }

@@ -117,7 +117,7 @@ impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_triangle(&self.a, &self.b, &self.c)?;
-        Some(ray.hit_at(t, self))
+        Some(ray.hit_at(t, self, None))
     }
 
 }

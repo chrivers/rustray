@@ -18,6 +18,7 @@ pub struct Hit<'a, F: Float>
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub obj: &'a dyn HitTarget<F>,
+    pub nml: Option<Vector<F>>,
     pub lvl: u32,
 }
 
@@ -43,9 +44,9 @@ impl<'a, F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>) -> Hit<'a, F>
+    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>, nml: Option<Vector<F>>) -> Hit<'a, F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl }
+        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl, nml }
     }
 
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
