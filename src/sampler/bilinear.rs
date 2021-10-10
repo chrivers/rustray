@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use image::DynamicImage;
 use super::samp_util::*;
 
-pub trait BilinearSampler<F: Float, P: Sync>
+pub trait BilinearSampler<F: Float, P: Pixel>
 where
     Self: Sampler<F, P> + Sized
 {
@@ -12,7 +12,7 @@ where
     }
 }
 
-impl<F: Float, P: Sync> BilinearSampler<F, P> for image::DynamicImage
+impl<F: Float, P: Pixel> BilinearSampler<F, P> for image::DynamicImage
 where
     DynamicImage: Sampler<F, P>
 {
@@ -20,14 +20,14 @@ where
 
 #[derive(Copy, Clone)]
 
-pub struct Bilinear<F: Float, P: Sync, S: Sampler<F, P>>
+pub struct Bilinear<F: Float, P: Pixel, S: Sampler<F, P>>
 {
     samp: S,
     _p0: PhantomData<F>,
     _p1: PhantomData<P>,
 }
 
-impl<F: Float, P: Sync, S: Sampler<F, P>> Bilinear<F, P, S>
+impl<F: Float, P: Pixel, S: Sampler<F, P>> Bilinear<F, P, S>
 {
     pub fn new(samp: S) -> Self
     {
@@ -38,7 +38,7 @@ impl<F: Float, P: Sync, S: Sampler<F, P>> Bilinear<F, P, S>
 impl<F, P, S> Sampler<F, P> for Bilinear<F, P, S>
 where
     F: Float,
-    P: Sync,
+    P: Pixel,
     P: std::ops::Mul<F, Output = P>,
     P: std::ops::Add<Output = P>,
     P: Lerp<Ratio=F>,

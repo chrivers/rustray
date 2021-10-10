@@ -2,7 +2,7 @@ use crate::lib::{Float, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
-pub trait Sampler<F: Float, P> : Sync
+pub trait Sampler<F: Float, P> : Send + Sync
 {
     /** Sample a single value at position `uv` */
     fn sample(&self, uv: Point<F>) -> P;
@@ -13,6 +13,11 @@ pub trait Sampler<F: Float, P> : Sync
     /** Return (`width`, `height`) dimensions of sampler */
     fn dimensions(&self) -> (u32, u32);
 }
+
+pub trait Pixel: Send + Sync
+{
+}
+
 
 /**
 Blanket implementation: [`Sync`] + [`Copy`] types can sample themselves, returning
@@ -45,7 +50,8 @@ pub(crate) mod samp_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point, Color};
     pub use crate::lib::float::Lerp;
-    pub use super::Sampler;
+    pub use super::{Sampler, Pixel};
+
     pub use cgmath::VectorSpace;
 }
 

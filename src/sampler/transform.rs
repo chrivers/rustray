@@ -2,7 +2,7 @@ use super::samp_util::*;
 
 #[derive(Copy, Clone)]
 
-pub struct Adjust<F: Float, P: Sync, S: Sampler<F, P>>
+pub struct Adjust<F: Float, P: Pixel, S: Sampler<F, P>>
 {
     s: F, // scale
     o: F, // offset
@@ -10,7 +10,7 @@ pub struct Adjust<F: Float, P: Sync, S: Sampler<F, P>>
     _p1: PhantomData<P>,
 }
 
-impl<F: Float, P: Sync, S: Sampler<F, P>> Adjust<F, P, S>
+impl<F: Float, P: Pixel, S: Sampler<F, P>> Adjust<F, P, S>
 {
     pub fn new(s: F, o: F, samp: S) -> Self
     {
@@ -21,7 +21,7 @@ impl<F: Float, P: Sync, S: Sampler<F, P>> Adjust<F, P, S>
 impl<F, P, S> Sampler<F, P> for Adjust<F, P, S>
 where
     F: Float,
-    P: Sync,
+    P: Pixel,
     P: std::ops::Mul<F, Output = P>,
     P: std::ops::Add<F, Output = P>,
     P: Lerp<Ratio=F>,
