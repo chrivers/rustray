@@ -1,0 +1,241 @@
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+COMMENT = _{
+      ( "//" ~ (not_newline+) ) | ( "/*" ~ (!"*/" ~ ANY)* ~ "*/" )
+}
+
+VERSION = { "0.9" | "1.0" }
+START = _{ "SBT-raytracer" ~ VERSION }
+
+int = {
+    ASCII_DIGIT+
+}
+
+num = {
+    ( "-" | "+" )?
+    ~ (ASCII_DIGIT*)
+    ~ ("." ~ ASCII_DIGIT*)?
+    ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
+}
+
+bool = {
+      "true" | "false"
+}
+
+not_newline = _{ !( "\n" ) ~ ANY }
+
+val4 = { "(" ~ num ~ "," ~ num ~ "," ~ num ~ "," ~ num ~ ")" }
+val3 = { "(" ~ num ~ "," ~ num ~ "," ~ num ~ ")" }
+val2 = { "(" ~ num ~ "," ~ num ~ ")" }
+val1 = { num }
+
+int3 = { "(" ~ int ~ "," ~ int ~ "," ~ int ~ ")" }
+
+color                 = { ("color" | "colour")          ~ "=" ~ val3 ~ ";"? }
+position              = { "position"                    ~ "=" ~ val3 ~ ";"? }
+viewdir               = { "viewdir"                     ~ "=" ~ val3 ~ ";"? }
+updir                 = { "updir"                       ~ "=" ~ val3 ~ ";"? }
+look_at               = { "look_at"                     ~ "=" ~ val3 ~ ";"? }
+width                 = { "width"                       ~ "=" ~ val1 ~ ";"? }
+height                = { "height"                      ~ "=" ~ val1 ~ ";"? }
+direction             = { "direction"                   ~ "=" ~ val3 ~ ";"? }
+aspectratio           = { "aspectratio"                 ~ "=" ~ val1 ~ ";"? }
+fov                   = { "fov"                         ~ "=" ~ val1 ~ ";"? }
+range                 = { "range"                       ~ "=" ~ val1 ~ ";"? }
+capped                = { "capped"                      ~ "=" ~ bool ~ ";"? }
+top_radius            = { "top_radius"                  ~ "=" ~ val1 ~ ";"? }
+bottom_radius         = { "bottom_radius"               ~ "=" ~ val1 ~ ";"? }
+create_proxy_geometry = { "create_proxy_geometry"       ~ "=" ~ bool ~ ";"? }
+coeff0                = { "constant_attenuation_coeff"  ~ "=" ~ val1 ~ ";"? }
+coeff1                = { "linear_attenuation_coeff"    ~ "=" ~ val1 ~ ";"? }
+coeff2                = { "quadratic_attenuation_coeff" ~ "=" ~ val1 ~ ";"? }
+
+light_value = _{
+      color
+    | direction
+    | position
+    | range
+    | coeff0
+    | coeff1
+    | coeff2
+    | updir
+    | width
+    | height
+    | create_proxy_geometry
+}
+
+ambient_light     = { "ambient_light"     ~ "{" ~ (light_value*) ~ "}" }
+directional_light = { "directional_light" ~ "{" ~ (light_value*) ~ "}" }
+point_light       = { "point_light"       ~ "{" ~ (light_value*) ~ "}" }
+spot_light        = { "spot_light"        ~ "{" ~ (light_value*) ~ "}" }
+area_light        = { "area_light"        ~ "{" ~ (light_value*) ~ "}" }
+
+camera = {
+      "camera" ~ "{" ~ (
+          position
+        | viewdir
+        | aspectratio
+        | updir
+        | look_at
+        | fov
+    )* ~ "}"
+}
+
+rotate = {
+      "rotate" ~
+      "(" ~
+      num ~ "," ~
+      num ~ "," ~
+      num ~ "," ~
+      num ~ "," ~
+      statement ~
+      ")"
+}
+
+translate = {
+      "translate" ~
+      "(" ~
+      num ~ "," ~
+      num ~ "," ~
+      num ~ "," ~
+      statement ~
+      ")"
+}
+
+transform = {
+      "transform" ~ "(" ~
+      val4 ~ "," ~
+      val4 ~ "," ~
+      val4 ~ "," ~
+      val4 ~ "," ~
+      statement ~
+      ")"
+}
+
+scale = {
+      "scale" ~
+      "(" ~
+      num ~ "," ~
+      (num ~ "," ~ num ~ ",")? ~
+      statement ~
+      ")"
+}
+
+char = {
+    !("\"" | "\\") ~ ANY
+    | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+    | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+}
+inner = @{ char* }
+string = ${ "\"" ~ inner ~ "\"" }
+
+map        = { "map"        ~ "(" ~ string ~ ")" }
+name       = { "name"       ~ "=" ~ string ~ ";"}
+points     = { "points"     ~ "=" ~ "(" ~ (val3 ~ ("," ~ val3)*)? ~ ")" ~ ";"}
+normals    = { "normals"    ~ "=" ~ "(" ~ (val3 ~ ("," ~ val3)*)? ~ ")" ~ ";"}
+texture_uv = { "texture_uv" ~ "=" ~ "(" ~ (val2 ~ ("," ~ val2)*)? ~ ")" ~ ";"}
+faces      = { "faces"      ~ "=" ~ "(" ~ (int3 ~ ("," ~ int3)*)? ~ ")" ~ ";"}
+
+sampler3   = { val3 | map }
+
+mat_diffuse      = {"diffuse"      ~ "=" ~ sampler3 ~ ";"?}
+mat_specular     = {"specular"     ~ "=" ~ sampler3 ~ ";"?}
+mat_reflective   = {"reflective"   ~ "=" ~ sampler3 ~ ";"?}
+mat_ambient      = {"ambient"      ~ "=" ~ sampler3 ~ ";"?}
+mat_transmissive = {"transmissive" ~ "=" ~ (val3 | map) ~ ";"?}
+mat_emissive     = {"emissive"     ~ "=" ~ (val3 | map) ~ ";"?}
+mat_shininess    = {"shininess"    ~ "=" ~ num          ~ ";"?}
+mat_index        = {"index"        ~ "=" ~ num          ~ ";"?}
+// mat_name      = {"name"         ~ "=" ~ string       ~ ";"?}
+mat_glossiness   = {"glossiness"   ~ "=" ~ val1         ~ ";"?}
+
+material_prop = _{
+      mat_diffuse
+    | mat_specular
+    | mat_reflective
+    | mat_ambient
+    | mat_transmissive
+    | mat_emissive
+    | mat_shininess
+    | mat_index
+    | mat_glossiness
+    | name
+}
+
+material_spec = { "material" ~ "=" ~ "{" ~ material_prop* ~ "}" ~ ";"? }
+
+material_ref = _{
+      material_spec
+    | name
+    | ("material" ~ "=" ~ string ~ ";"? )
+}
+
+material = {
+      "{" ~ material_prop* ~ "}"
+}
+
+materials = {
+      "materials" ~ "=" ~ "(" ~
+      ((material ~ ",")* ~ material)? ~
+      ")" ~ ";"?
+}
+
+polymesh_ref = _{
+      material_ref
+    | name
+    | points
+    | normals
+    | texture_uv
+    | materials
+    | faces
+    | ( "gennormals" ~ ";" )
+}
+
+cylinder_ref = _{
+      material_ref
+    | capped
+}
+
+cone_ref = _{
+      material_ref
+    | height
+    | top_radius
+    | bottom_radius
+    | capped
+}
+
+geo_cyl = { "cylinder" ~ "{" ~ cylinder_ref* ~ "}" }
+geo_box = { "box"      ~ "{" ~ material_ref* ~ "}" }
+geo_sph = { "sphere"   ~ "{" ~ material_ref* ~ "}" }
+geo_sqr = { "square"   ~ "{" ~ material_ref* ~ "}" }
+geo_con = { "cone"     ~ "{" ~ cone_ref*     ~ "}" }
+geo_plm = { "polymesh" ~ "{" ~ polymesh_ref* ~ "}" }
+
+geo = _{
+      geo_box
+    | geo_cyl
+    | geo_sph
+    | geo_sqr
+    | geo_plm
+    | geo_con
+
+    | scale
+    | translate
+    | transform
+    | rotate
+}
+
+light = _{
+      ambient_light
+    | directional_light
+    | point_light
+    | spot_light
+    | area_light
+}
+
+material_obj = { "material" ~ "="? ~ "{" ~ material_prop* ~ "}" }
+
+statement = _{
+      ";" | light | camera | geo | material_obj
+}
+
+program = { SOI ~ START ~ statement* ~ EOI }
