@@ -26,7 +26,7 @@ impl<'a, F: Float> Tracer<'a, F>
         self.ray_trace(&ray)
     }
 
-    pub fn render_pixel(&self, px: F, py: F) -> Option<Color<F>>
+    pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Option<Color<F>>
     {
         if cfg!(feature="antialias")
         {
@@ -38,8 +38,8 @@ impl<'a, F: Float> Tracer<'a, F>
             {
                 for ya in 0..SAMPLES_Y
                 {
-                    let pixelx = px + F::from_u32(xa) / F::from_u32(SAMPLES_X);
-                    let pixely = py + F::from_u32(ya) / F::from_u32(SAMPLES_Y);
+                    let pixelx = px + F::from_u32(xa) / (F::from_u32(SAMPLES_X) * fx);
+                    let pixely = py + F::from_u32(ya) / (F::from_u32(SAMPLES_Y) * fy);
                     if let Some(color) = self._render_pixel(Point::new(pixelx, pixely))
                     {
                         colors[index] = color.clamped();
@@ -62,11 +62,13 @@ impl<'a, F: Float> Tracer<'a, F>
               P: Pixel<Subpixel=u8>
     {
         let (xres, yres) = self.camera.size();
-        let py = F::from_i32(-(y as i32) + yres as i32 / 2);
+        let fx = F::from_usize(xres);
+        let fy = F::from_usize(yres);
+        let py = F::from_u32(y);
         for x in 0..target.width()
         {
-            let px = F::from_i32(x as i32 - xres as i32 / 2);
-            let color = self.render_pixel(px, py);
+            let px = F::from_u32(x);
+            let color = self.render_pixel(px / fx, py / fy, fx, fy);
             if let Some(color) = color
             {
                 let chans = color.to_array();
@@ -93,11 +95,13 @@ impl<'a, F: Float> Tracer<'a, F>
     pub fn generate_span(&self, y: u32) -> Vec<Color<F>>
     {
         let (xres, yres) = self.camera.size();
-        let py = F::from_i32(-(y as i32) + yres as i32 / 2);
+        let fx = F::from_usize(xres);
+        let fy = F::from_usize(yres);
+        let py = F::from_u32(y);
         (0..xres).map(
             |x| {
-                let px = F::from_i32(x as i32 - xres as i32 / 2);
-                self.render_pixel(px, py).unwrap_or_else(Color::black)
+                let px = F::from_usize(x);
+                self.render_pixel(px/fx, py/fy, fx, fy).unwrap_or_else(Color::black)
             }
         ).collect()
     }
