@@ -3,6 +3,7 @@ use super::Vector;
 use super::Ray;
 use super::Point;
 use super::vector::{Vectorx, InnerSpace, MetricSpace};
+use cgmath::{Deg, Angle};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float>
@@ -35,19 +36,33 @@ impl<F: Float> Camera<F>
     pub fn parametric(
         pos: Vector<F>,
         lookat: Vector<F>,
+        updir: Vector<F>,
         fov: F,
         xres: usize,
         yres: usize
     ) -> Camera<F>
     {
-        let dir = pos.normal_to(lookat);
-        let u = dir.cross(Vector::identity_y()).normalize();
+        Self::build(pos, lookat - pos, updir, fov, xres, yres, None)
+    }
+
+    pub fn build(
+        pos: Vector<F>,
+        viewdir: Vector<F>,
+        updir: Vector<F>,
+        fov: F,
+        xres: usize,
+        yres: usize,
+        aspect: Option<F>,
+    ) -> Camera<F>
+    {
+        let dir = viewdir.normalize();
+        let u = dir.cross(updir).normalize();
         let v = u.cross(dir).normalize();
-        let aspect_ratio = F::from_usize(yres) / F::from_usize(xres);
-        let viewplane_width = (fov / F::TWO).tan();
-        let viewplane_height = aspect_ratio * viewplane_width;
-        let x_inc_vector = (u * viewplane_width)  / F::from_usize(xres);
-        let y_inc_vector = (v * viewplane_height) / F::from_usize(yres);
+        let aspect_ratio = aspect.unwrap_or_else(|| F::from_usize(xres) / F::from_usize(yres));
+        let viewplane_height = Deg(fov / F::TWO).tan() * F::TWO;
+        let viewplane_width = aspect_ratio * viewplane_height;
+        let x_inc_vector = u * viewplane_width;
+        let y_inc_vector = v * viewplane_height;
         info!("aspect_ratio: {}", aspect_ratio);
         info!("vp_width: {:.4}", viewplane_width);
         info!("vp_height: {:.4}", viewplane_height);
@@ -56,11 +71,11 @@ impl<F: Float> Camera<F>
 
         Camera {
             pos,
-            dir: pos.normal_to(lookat),
+            dir,
             hor: x_inc_vector,
             ver: y_inc_vector,
             xres,
-            yres
+            yres,
         }
     }
 
