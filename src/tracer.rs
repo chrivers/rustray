@@ -8,13 +8,13 @@ use crate::scene::{RayTarget, RayTracer, Light};
 pub struct Tracer<F: Float>
 {
     camera: Camera<F>,
-    objects: Vec<&'a dyn RayTarget<F>>,
+    objects: Vec<Box<dyn RayTarget<F>>>,
     lights: Vec<Box<dyn Light<F>>>,
 }
 
-impl<'a, F: Float> Tracer<'a, F>
+impl<F: Float> Tracer<F>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<&dyn RayTarget<F>>, lights: Vec<Box<dyn Light<F>>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<Box<dyn RayTarget<F>>>, lights: Vec<Box<dyn Light<F>>>) -> Tracer<F>
     {
         Tracer { camera, objects, lights }
     }
@@ -118,7 +118,7 @@ impl<'a, F: Float> Tracer<'a, F>
 }
 
 
-impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
+impl<F: Float> RayTracer<F> for Tracer<F>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
