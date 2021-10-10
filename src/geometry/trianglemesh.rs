@@ -6,13 +6,13 @@ use obj::ObjData;
 use bvh::bvh::BVH;
 use bvh::{Point3, Vector3};
 
-pub struct TriangleMesh<'a, F: Float>
+pub struct TriangleMesh<F: Float, M: Material<F=F>>
 {
-    tris: Vec<Triangle<'a, F>>,
+    tris: Vec<Triangle<F, M>>,
     bvh: BVH,
 }
 
-impl<'a, F: Float> RayTarget<F> for TriangleMesh<'a, F>
+impl<F: Float, M: Material<F=F> + Clone> RayTarget<F> for TriangleMesh<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
@@ -58,9 +58,9 @@ fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
           F::from_f32(p[2]))
 }
 
-impl<'a, F: Float> TriangleMesh<'a, F>
+impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
 {
-    pub fn new(mut tris: Vec<Triangle<'a, F>>) -> TriangleMesh<'a, F>
+    pub fn new(mut tris: Vec<Triangle<F, M>>) -> Self
     {
         let bvh = BVH::build(&mut tris);
 
@@ -70,7 +70,7 @@ impl<'a, F: Float> TriangleMesh<'a, F>
         }
     }
 
-    pub fn load_obj(obj: ObjData, pos: Vector<F>, scale: F, mat: &'a dyn Material<F=F>) -> TriangleMesh<'a, F>
+    pub fn load_obj<'a>(obj: ObjData, pos: Vector<F>, scale: F, mat: M) -> Self
     {
         let mut corner = Vector::<F>::new(
             F::from_f32(std::f32::INFINITY),
@@ -90,7 +90,7 @@ impl<'a, F: Float> TriangleMesh<'a, F>
             }
         }
 
-        let mut tris: Vec<Triangle<F>> = vec![];
+        let mut tris: Vec<Triangle<F, M>> = vec![];
         for o in &obj.objects {
             for g in &o.groups {
                 for poly in &g.polys {
@@ -109,7 +109,7 @@ impl<'a, F: Float> TriangleMesh<'a, F>
                             a2point(&obj.texture[poly.0[n].1.unwrap()]),
                             a2point(&obj.texture[poly.0[n+1].1.unwrap()]),
 
-                            mat,
+                            mat.clone(),
                         );
                         tris.push(tri);
                     }

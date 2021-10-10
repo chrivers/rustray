@@ -1,6 +1,6 @@
 use super::geo_util::*;
 
-pub struct Plane<'a, F: Float>
+pub struct Plane<F: Float, M: Material<F=F>>
 {
     pos: Vector<F>,
     dir1: Vector<F>,
@@ -8,20 +8,20 @@ pub struct Plane<'a, F: Float>
     normal: Vector<F>,
     u: Vector<F>,
     v: Vector<F>,
-    mat: &'a dyn Material<F=F>
+    mat: M,
 }
 
-impl<'a, F: Float> HitTarget<F> for Plane<'a, F>
+impl<F: Float, M: Material<F=F>> HitTarget<F> for Plane<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         let u = self.u.dot(hit.pos);
         let v = self.v.dot(hit.pos);
-        Maxel::from_uv(u, v, self.normal, self.dir1, self.dir2, self.mat)
+        Maxel::from_uv(u, v, self.normal, self.dir1, self.dir2, &self.mat)
     }
 }
 
-impl<'a, F: Float> RayTarget<F> for Plane<'a, F>
+impl<F: Float, M: Material<F=F>> RayTarget<F> for Plane<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
@@ -31,9 +31,9 @@ impl<'a, F: Float> RayTarget<F> for Plane<'a, F>
 
 }
 
-impl<'a, F: Float> Plane<'a, F>
+impl<F: Float, M: Material<F=F>> Plane<F, M>
 {
-    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: &'a dyn Material<F=F>) -> Plane<'a, F>
+    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Plane<F, M>
     {
         let dir1 = d1.normalize();
         let dir2 = d2.normalize();

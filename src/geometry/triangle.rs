@@ -4,7 +4,7 @@ use std::fmt;
 use std::fmt::Debug;
 
 #[derive(Clone)]
-pub struct Triangle<'a, F: Float>
+pub struct Triangle<F: Float, M: Material<F=F>>
 {
     a: Vector<F>,
     b: Vector<F>,
@@ -24,11 +24,11 @@ pub struct Triangle<'a, F: Float>
 
     ni: usize,
 
-    mat: &'a dyn Material<F=F>,
+    mat: M,
 }
 
 
-impl<'a, F: Float> std::fmt::Display for Triangle<'a, F>
+impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Triangle {{ a:")?; Debug::fmt(&self.a, f)?;
@@ -45,7 +45,7 @@ use bvh::aabb::{AABB, Bounded};
 use bvh::bounding_hierarchy::BHShape;
 use bvh::Point3;
 
-impl<'a, F: Float> Bounded for Triangle<'a, F> {
+impl<F: Float, M: Material<F=F>> Bounded for Triangle<F, M> {
 
     fn aabb(&self) -> AABB {
         let min = Point3::new(
@@ -63,7 +63,7 @@ impl<'a, F: Float> Bounded for Triangle<'a, F> {
 
 }
 
-impl<'a, F: Float> BHShape for Triangle<'a, F> {
+impl<F: Float, M: Material<F=F>> BHShape for Triangle<F, M> {
 
     fn set_bh_node_index(&mut self, index: usize) {
         self.ni = index;
@@ -75,7 +75,7 @@ impl<'a, F: Float> BHShape for Triangle<'a, F> {
 
 }
 
-impl<'a, F: Float> Triangle<'a, F> {
+impl<F: Float, M: Material<F=F>> Triangle<F, M> {
 
     fn interpolate_normal(&self, u: F, v: F) -> Vector<F>
     {
@@ -96,7 +96,7 @@ impl<'a, F: Float> Triangle<'a, F> {
 
 }
 
-impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
+impl<F: Float, M: Material<F=F> + Clone> HitTarget<F> for Triangle<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
@@ -108,11 +108,11 @@ impl<'a, F: Float> HitTarget<F> for Triangle<'a, F>
 
         let normal = self.interpolate_normal(u, v);
         let uv = self.interpolate_uv(u, v);
-        Maxel::new(uv, normal, self.ntan1, self.ntan2, self.mat)
+        Maxel::new(uv, normal, self.ntan1, self.ntan2, &self.mat)
     }
 }
 
-impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
+impl<F: Float, M: Material<F=F> + Clone> RayTarget<F> for Triangle<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
@@ -122,10 +122,10 @@ impl<'a, F: Float> RayTarget<F> for Triangle<'a, F>
 
 }
 
-impl<'a, F: Float> Triangle<'a, F>
+impl<F: Float, M: Material<F=F>> Triangle<F, M>
 {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: &'a dyn Material<F=F>) -> Triangle<'a, F>
+    pub fn new<'a>(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: M) -> Self
     {
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
@@ -146,7 +146,7 @@ impl<'a, F: Float> Triangle<'a, F>
             ntan1: ntan1.normalize(),
             ntan2: ntan2.normalize(),
             ni: 0,
-            mat
+            mat,
         }
     }
 }
