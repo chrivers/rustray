@@ -14,9 +14,34 @@ pub trait Sampler<F: Float, P> : Send + Sync
 
     /** Return (`width`, `height`) dimensions of sampler */
     fn dimensions(&self) -> (u32, u32);
+
+    fn dynsampler<'a>(self) -> DynSampler<'a, F, P>
+    where
+        Self: Sized + 'a
+    {
+        Arc::new(Box::new(self) as Box<dyn Sampler<F, P> + 'a>)
+    }
 }
 
 pub type DynSampler<'a, F, P> = Arc<Box<dyn Sampler<F, P> + 'a>>;
+
+impl<F: Float, P> Sampler<F, P> for Arc<Box<dyn Sampler<F, P>>>
+{
+    fn sample(&self, uv: Point<F>) -> P
+    {
+        (**self.as_ref()).sample(uv)
+    }
+
+    fn raw_sample(&self, uv: Point<u32>) -> P
+    {
+        (**self.as_ref()).raw_sample(uv)
+    }
+
+    fn dimensions(&self) -> (u32, u32)
+    {
+        (**self.as_ref()).dimensions()
+    }
+}
 
 pub trait Pixel: Send + Sync
 {
