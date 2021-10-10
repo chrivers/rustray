@@ -2,13 +2,55 @@ use crate::lib::{Float, Vector, Color};
 use crate::scene::*;
 
 #[derive(Debug)]
-pub struct Light<F: Float>
+pub struct PointLight<F: Float>
 {
+    pub a: F,
+    pub b: F,
+    pub c: F,
     pub pos: Vector<F>,
     pub color: Color<F>,
 }
 
-impl<F: Float> HasPosition<F> for Light<F>
+#[derive(Debug)]
+pub struct DirectionalLight<F: Float>
+{
+    pub dir: Vector<F>,
+    pub color: Color<F>,
+}
+
+impl<F: Float> Light<F> for PointLight<F> {
+
+    fn get_color(&self) -> Color<F>
+    {
+        self.color
+    }
+
+    fn attenuate(&self, color: Color<F>, d: F) -> Color<F>
+    {
+        color / (F::ONE + self.a + (self.b * d) + (self.c * d * d))
+    }
+
+}
+
+impl<F: Float> Light<F> for DirectionalLight<F> {
+    fn get_color(&self) -> Color<F>
+    {
+        self.color
+    }
+
+    fn attenuate(&self, color: Color<F>, d: F) -> Color<F>
+    {
+        color
+    }
+}
+
+impl<F: Float> HasPosition<F> for DirectionalLight<F>
+{
+    fn get_position(&self) -> Vector<F> { self.dir * F::from_f32(-100000.0) }
+    fn set_position(&mut self, value: Vector<F>) {  }
+}
+
+impl<F: Float> HasPosition<F> for PointLight<F>
 {
     fn get_position(&self) -> Vector<F> { self.pos }
     fn set_position(&mut self, value: Vector<F>) { self.pos = value }

@@ -1,20 +1,20 @@
 use image::{GenericImage, Pixel};
 
-use crate::lib::{Color, Camera, Point, Float, Light};
+use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
-use crate::scene::{RayTarget, RayTracer};
+use crate::scene::{RayTarget, RayTracer, Light};
 
-pub struct Tracer<'a, F: Float>
+pub struct Tracer<F: Float>
 {
     camera: Camera<F>,
     objects: Vec<&'a dyn RayTarget<F>>,
-    lights: Vec<Light<F>>,
+    lights: Vec<Box<dyn Light<F>>>,
 }
 
 impl<'a, F: Float> Tracer<'a, F>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<&dyn RayTarget<F>>, lights: Vec<Light<F>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<&dyn RayTarget<F>>, lights: Vec<Box<dyn Light<F>>>) -> Tracer<F>
     {
         Tracer { camera, objects, lights }
     }
@@ -116,10 +116,11 @@ impl<'a, F: Float> Tracer<'a, F>
 
 impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
 {
-    fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>) -> Option<Color<F>>
+    fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        let light_length = light.pos.distance2(hit.pos);
-        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light.pos), 0);
+        let light_pos = light.get_position();
+        let light_length = light_pos.distance2(hit.pos);
+        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), 0);
         hitray.pos += hitray.dir * F::BIAS;
 
         let mut hits: Vec<_> = vec![];
@@ -133,7 +134,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
             }
         }
 
-        hits.sort_by(|a, b| (a.pos - light.pos).magnitude2().partial_cmp(&(b.pos - light.pos).magnitude2()).unwrap_or(std::cmp::Ordering::Equal) );
+        hits.sort_by(|a, b| (a.pos - light_pos).magnitude2().partial_cmp(&(b.pos - light_pos).magnitude2()).unwrap_or(std::cmp::Ordering::Equal) );
 
         for hit in hits {
             if let Some(col) = maxel.mat.shadow(&hit, maxel, light, self) {
@@ -165,13 +166,14 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F>
             }
         }
 
-        let mut res = Color::black();
         let hit = hit?;
 
         let maxel = hit.obj.resolve(&hit);
-        res += maxel.mat.render(&hit, &maxel, &self.lights, self);
 
-        Some(res)
+        // /* converting to box-less lights: */
+        // let lights = &self.lights.iter().map(|x| &**x).collect::<Vec<&dyn Light<F>>>();
+
+        Some(maxel.mat.render(&hit, &maxel, &self.lights, self))
     }
 
 }

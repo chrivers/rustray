@@ -26,7 +26,7 @@ where
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut rng = rand::thread_rng();
         let mut col = Color::<F>::black();
@@ -48,7 +48,7 @@ where
         col / F::from_u32(self.rays)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
         self.mat.as_ref().shadow(hit, maxel, light, rt)
     }

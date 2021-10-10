@@ -13,5 +13,5 @@ pub use vector::Vector;
 pub use camera::Camera;
 pub use color::Color;
 pub use ray::Ray;
-pub use light::Light;
+pub use light::{PointLight, DirectionalLight};
 pub use result::Error;

@@ -21,7 +21,7 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M> + Sync> M
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut n = self.img.sample(maxel.uv);
         n.r -= F::HALF;
@@ -41,7 +41,7 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M> + Sync> M
         self.mat.as_ref().render(hit, &mxl, lights, rt)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
         self.mat.as_ref().shadow(hit, maxel, light, rt)
     }
