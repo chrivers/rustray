@@ -62,6 +62,7 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
 {
     pub fn new(mut tris: Vec<Triangle<F, M>>) -> Self
     {
+        debug!("building bvh for {} triangles..", tris.len());
         let bvh = BVH::build(&mut tris);
 
         TriangleMesh {
