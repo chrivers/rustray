@@ -21,10 +21,10 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>> Material for Blend<F, A, B>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let a = self.a.render(hit, maxel, light, rt);
-        let b = self.b.render(hit, maxel, light, rt);
+        let a = self.a.render(hit, maxel, lights, rt);
+        let b = self.b.render(hit, maxel, lights, rt);
         a.lerp(b, self.pct)
     }
 }
