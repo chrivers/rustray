@@ -75,8 +75,8 @@ impl<F: Float> Camera<F>
         (self.xres, self.yres)
     }
 
-    pub fn length_to(self, pos: Vector<F>) -> F
+    pub fn distance2(self, pos: Vector<F>) -> F
     {
-        pos.distance(self.pos)
+        self.pos.distance2(pos)
     }
 }
