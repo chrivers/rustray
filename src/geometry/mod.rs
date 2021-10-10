@@ -5,6 +5,8 @@ pub(crate) mod geo_util {
     pub use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
     pub use crate::scene::*;
     pub use crate::material::Material;
+
+    pub use cgmath::{Matrix4, Transform};
 }
 
 pub mod sphere;
