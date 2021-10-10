@@ -1,23 +1,22 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone)]
-pub struct Bumpmap<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M>>
+pub struct Bumpmap<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>>
 {
     pow: F,
     img: S,
-    mat: MR,
-    _m: PhantomData<M>,
+    mat: M,
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M>> Bumpmap<F, S, M, MR>
+impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Bumpmap<F, S, M>
 {
-    pub fn new(pow: F, img: S, mat: MR) -> Self
+    pub fn new(pow: F, img: S, mat: M) -> Self
     {
-        Self { pow, img, mat, _m: PhantomData {} }
+        Self { pow, img, mat }
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M> + Sync> Material for Bumpmap<F, S, M, MR>
+impl<'a, F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpmap<F, S, M>
 {
     type F = F;
 
@@ -38,18 +37,11 @@ impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M> + Sync> M
 
         mxl.normal = nx.normalize();
 
-        self.mat.as_ref().render(hit, &mxl, lights, rt)
+        self.mat.render(hit, &mxl, lights, rt)
     }
 
     fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
-        self.mat.as_ref().shadow(hit, maxel, light, rt)
-    }
-}
-
-impl<F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>, MR: AsRef<M> + Sync> AsRef<Bumpmap<F, S, M, MR>> for Bumpmap<F, S, M, MR>
-{
-    fn as_ref(&self) -> &Self {
-        self
+        self.mat.shadow(hit, maxel, light, rt)
     }
 }
