@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::lib::{Float, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
@@ -13,6 +15,8 @@ pub trait Sampler<F: Float, P> : Send + Sync
     /** Return (`width`, `height`) dimensions of sampler */
     fn dimensions(&self) -> (u32, u32);
 }
+
+pub type DynSampler<'a, F, P> = Arc<Box<dyn Sampler<F, P> + 'a>>;
 
 pub trait Pixel: Send + Sync
 {
