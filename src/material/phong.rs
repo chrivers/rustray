@@ -2,24 +2,21 @@ use super::mat_util::*;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone)]
-pub struct Phong<F: Float, M: Material, MR: AsRef<M> + Sync, S: Sampler<F, F>>
+pub struct Phong<F: Float, S: Sampler<F, F>, M: Material<F=F>>
 {
-    mat: MR,
     pow: S,
-    _m: PhantomData<M>,
-    _p: PhantomData<F>,
+    mat: M,
 }
 
-impl<F: Float, M: Material, MR: AsRef<M> + Sync, S: Sampler<F, F>> Phong<F, M, MR, S>
+impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Phong<F, S, M>
 {
-    pub fn new(pow: S, mat: MR) -> Self
+    pub fn new(pow: S, mat: M) -> Self
     {
-        Self { pow, mat, _m: PhantomData {}, _p: PhantomData {} }
+        Self { pow, mat }
     }
-
 }
 
-impl<F: Float> Phong<F, Color<F>, Color<F>, F>
+impl<F: Float> Phong<F, F, Color<F>>
 {
     pub fn white() -> Self
     {
@@ -32,7 +29,7 @@ impl<F: Float> Phong<F, Color<F>, Color<F>, F>
     }
 }
 
-impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> Material for Phong<F, M, MR, S>
+impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
 {
     type F = F;
 
@@ -40,7 +37,7 @@ impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> Material
     {
         let mut res = Color::black();
 
-        let self_color = self.mat.as_ref().render(hit, maxel, lights, rt);
+        let self_color = self.mat.render(hit, maxel, lights, rt);
         let spec_adjust = self.pow.sample(maxel.uv) / F::from_u32(2);
 
         for light in lights {
@@ -67,13 +64,6 @@ impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> Material
 
     fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
-        self.mat.as_ref().shadow(hit, maxel, light, rt)
-    }
-}
-
-impl<F: Float, M: Material<F=F>, MR: AsRef<M> + Sync, S: Sampler<F, F>> AsRef<Phong<F, M, MR, S>> for Phong<F, M, MR, S>
-{
-    fn as_ref(&self) -> &Self {
-        self
+        self.mat.shadow(hit, maxel, light, rt)
     }
 }
