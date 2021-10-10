@@ -30,17 +30,17 @@ impl<F: Float> Vectorx<F> for Vector<F>
 {
     fn identity_x() -> Vector<F>
     {
-        Vector { x: F::one(), y: F::zero(), z: F::zero() }
+        Vector { x: F::ONE, y: F::ZERO, z: F::ZERO }
     }
 
     fn identity_y() -> Vector<F>
     {
-        Vector { x: F::zero(), y: F::one(), z: F::zero() }
+        Vector { x: F::ZERO, y: F::ONE, z: F::ZERO }
     }
 
     fn identity_z() -> Vector<F>
     {
-        Vector { x: F::zero(), y: F::zero(), z: F::one() }
+        Vector { x: F::ZERO, y: F::ZERO, z: F::ONE }
     }
 
     fn polar_angles(self) -> (F, F)
@@ -102,26 +102,26 @@ where
        (Index of Refraction) */
     fn refract(self, normal: &Self, ior: F) -> Self
     {
-        let mut cosi = self.dot(*normal).clamp(-F::one(), F::one());
+        let mut cosi = self.dot(*normal).clamp(-F::ONE, F::ONE);
         let eta_i;
         let eta_t;
         let n;
-        if cosi < F::zero() {
-            eta_i = F::one();
+        if cosi < F::ZERO {
+            eta_i = F::ONE;
             eta_t = ior;
             cosi = -cosi;
             n = *normal;
         } else {
             eta_i = ior;
-            eta_t = F::one();
+            eta_t = F::ONE;
             n = -(*normal);
         }
 
         let eta = eta_i / eta_t;
 
-        let k = F::one() - eta * eta * (F::one() - cosi * cosi);
+        let k = F::ONE - eta * eta * (F::ONE - cosi * cosi);
 
-        if k < F::zero() {
+        if k < F::ZERO {
             Self::zero()
         } else {
             self * eta + n * (eta * cosi - k.sqrt())
@@ -135,25 +135,25 @@ where
      */
     fn fresnel(self, normal: &Self, ior: F) -> F
     {
-        let mut cos_i = self.dot(*normal).clamp(-F::one(), F::one());
+        let mut cos_i = self.dot(*normal).clamp(-F::ONE, F::ONE);
         let (eta_i, eta_t);
-        if cos_i > F::zero() {
+        if cos_i > F::ZERO {
             eta_i = ior;
-            eta_t = F::one();
+            eta_t = F::ONE;
         } else {
-            eta_i = F::one();
+            eta_i = F::ONE;
             eta_t = ior;
         }
 
         /* Compute sin_t using Snell's law */
-        let sin_t = eta_i / eta_t * (F::zero().max(F::one() - cos_i * cos_i)).sqrt();
+        let sin_t = eta_i / eta_t * (F::ZERO.max(F::ONE - cos_i * cos_i)).sqrt();
 
-        if sin_t >= F::one() {
+        if sin_t >= F::ONE {
             /* Total internal reflection */
-            F::one()
+            F::ONE
         } else {
             /* Reflection and refraction */
-            let cos_t = (F::zero().max(F::one() - sin_t * sin_t)).sqrt();
+            let cos_t = (F::ZERO.max(F::ONE - sin_t * sin_t)).sqrt();
             cos_i = cos_i.abs();
             let r_s = ((eta_t * cos_i) - (eta_i * cos_t)) / ((eta_t * cos_i) + (eta_i * cos_t));
             let r_p = ((eta_i * cos_i) - (eta_t * cos_t)) / ((eta_i * cos_i) + (eta_t * cos_t));

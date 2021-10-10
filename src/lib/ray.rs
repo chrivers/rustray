@@ -103,17 +103,17 @@ impl<'a, F: Float> Ray<F>
             return None
         }
 
-        let f = F::one() / ae;
+        let f = F::ONE / ae;
 
         let s = self.pos - *a;
         let u = f * s.dot(h);
-        if u < F::zero() || u > F::one() {
+        if u < F::ZERO || u > F::ONE {
             return None
         }
 
         let q = s.cross(edge1);
         let v = f * self.dir.dot(q);
-        if v < F::zero() || u + v > F::one() {
+        if v < F::ZERO || u + v > F::ONE {
             return None
         }
 
@@ -292,12 +292,12 @@ fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
 {
     let discr = b * b - F::FOUR * a * c;
 
-    if discr < F::zero() {
+    if discr < F::ZERO {
         return None
     }
 
     let t = {
-        let q = if b > F::zero() {
+        let q = if b > F::ZERO {
             -F::HALF * (b + discr.sqrt())
         } else {
             -F::HALF * (b - discr.sqrt())
@@ -307,7 +307,7 @@ fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
         t0.min(t1)
     };
 
-    if t >= F::zero() {
+    if t >= F::ZERO {
         Some(t)
     } else {
         None

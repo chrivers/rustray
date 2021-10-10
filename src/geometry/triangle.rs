@@ -79,7 +79,7 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M> {
 
     fn interpolate_normal(&self, u: F, v: F) -> Vector<F>
     {
-        let w = F::one() - u - v;
+        let w = F::ONE - u - v;
         let normal =
             self.na * w +
             self.nb * v +
@@ -90,7 +90,7 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M> {
 
     fn interpolate_uv(&self, u: F, v: F) -> Point<F>
     {
-        let w = F::one() - u - v;
+        let w = F::ONE - u - v;
         (self.ta * w) + (self.tb * v) + (self.tc * u)
     }
 
@@ -133,7 +133,7 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
         let uv_ab = tb - ta;
         let uv_ac = tc - ta;
 
-        let f = F::one() / (uv_ab.x * uv_ac.y - uv_ac.x * uv_ab.y);
+        let f = F::ONE / (uv_ab.x * uv_ac.y - uv_ac.x * uv_ab.y);
 
         let ntan1 = ((ab * uv_ac.y) - (ac * uv_ab.y)) * f;
         let ntan2 = ((ac * uv_ab.x) - (ab * uv_ac.x)) * f;
