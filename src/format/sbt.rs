@@ -11,7 +11,7 @@ use pest_derive::Parser;
 
 use crate::geometry::{Sphere, Cylinder, Triangle, TriangleMesh};
 use crate::lib::{RResult, Error::ParseError};
-use crate::material::{Phong, Smart};
+use crate::material::{Phong, Smart, Triblend};
 use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point, vec3};
 
 #[derive(Parser)]
@@ -317,4 +317,106 @@ where
 
         Ok(box TriangleMesh::new(tris))
     }
+
+    pub fn parse_geo_plm<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+         F: 'static
+    {
+        let body = p.into_inner();
+        let mut mat = Phong::white().dynamic();
+        let mut tris = vec![];
+        let mut points = vec![];
+        let mut faces = vec![];
+        let mut normals = vec![];
+        let mut texture_uvs = vec![];
+        let mut materials: Vec<DynMaterial<F>> = vec![];
+        // let mut material_names: HashMap<&str, &DynMaterial<F>> = HashMap::new();
+
+        for rule in body {
+            match rule.as_rule() {
+                Rule::material_spec => {
+                    mat = SbtParser::parse_material(rule, resdir)?
+                },
+
+                Rule::points => for f in rule.into_inner() {
+                    // info!("point: {:?}", f);
+                    points.push(SbtParser::parse_val3b(f).xfrm(&xfrm))
+                    /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
+                }
+                Rule::faces => for f in rule.into_inner() {
+                    // info!("face: {:?}", f);
+                    faces.push(SbtParser::<F>::parse_int3(f))
+                }
+                Rule::normals => for f in rule.into_inner() {
+                    info!("norm: {:?}", f);
+                    // normals.push(parse_val3b(f));
+                    normals.push(xfrm.transform_vector(SbtParser::parse_val3b(f)));
+                }
+                Rule::materials => for f in rule.into_inner() {
+                    // info!("material: {:#?}", f);
+                    materials.push(SbtParser::parse_material(f, resdir)?);
+                }
+                Rule::texture_uv => for f in rule.into_inner() {
+                    // info!("face: {:?}", f);
+                    texture_uvs.push(SbtParser::parse_val2(f));
+                }
+                other => error!("unsupported: {:?}", other)
+            }
+        }
+
+        info!("building..");
+
+        if normals.is_empty() {
+            normals = points.iter().map(|_| Vector::zero()).collect();
+            for face in &faces {
+                let ab = points[face[0]] - points[face[1]];
+                let ac = points[face[0]] - points[face[2]];
+                let n = ab.cross(ac);
+                normals[face[0]] += n;
+                normals[face[1]] += n;
+                normals[face[2]] += n;
+            }
+        }
+
+        info!("building2..");
+
+        for face in faces.iter() {
+            let m = if !materials.is_empty() {
+                Triblend::new(
+                    materials[face[0]].clone(),
+                    materials[face[1]].clone(),
+                    materials[face[2]].clone(),
+                ).dynamic()
+            } else {
+                mat.clone()
+            };
+
+            let (uv1, uv2, uv3) = if !texture_uvs.is_empty() {
+                (
+                    texture_uvs[face[0]],
+                    texture_uvs[face[1]],
+                    texture_uvs[face[2]],
+                )
+            } else {
+                let z = Point::zero();
+                (z, z, z)
+            };
+            tris.push(
+                Triangle::new(
+                    points[face[0]],
+                    points[face[1]],
+                    points[face[2]],
+                    normals[face[0]].normalize(),
+                    normals[face[1]].normalize(),
+                    normals[face[2]].normalize(),
+                    uv1, uv2, uv3,
+                    m
+                )
+            );
+        }
+
+        Ok(box TriangleMesh::new(tris))
+    }
+
+
 }
