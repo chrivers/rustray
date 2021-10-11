@@ -599,7 +599,7 @@ where
             Rule::geo_plm => Self::parse_geo_plm(p, xfrm, version, resdir),
             Rule::geo_con => Self::parse_geo_con(p, xfrm, version, resdir),
 
-            _ => { error!("  {:?}", p.as_rule()); Err(ParseError()) },
+            _ => { error!("unimplemented: {:?}", p.as_rule()); Err(ParseError()) },
         }
     }
 
@@ -613,6 +613,7 @@ where
         for r in p {
             match r.as_rule() {
                 Rule::VERSION => version = SbtVersion::from_str(r.as_str())?,
+                Rule::EOI     => break,
 
                 Rule::camera            => cameras.push(Self::parse_camera(r, width, height)?),
                 Rule::directional_light => lights.push(Box::new(Self::parse_directional_light(r)?)),
@@ -627,27 +628,7 @@ where
                 Rule::ambient_light     => warn!("unimplemented: ambient_light"),
                 Rule::material_obj      => warn!("unimplemented: material_obj"),
 
-                rule @ (
-                    Rule::translate |
-                    Rule::rotate |
-                    Rule::scale |
-                    Rule::transform |
-                    Rule::geo_cyl |
-                    Rule::geo_box |
-                    Rule::geo_sph |
-                    Rule::geo_sqr |
-                    Rule::geo_con |
-                    Rule::geo_plm) => {
-                    if let Ok(obj) = Self::parse_statement(r, Matrix4::identity(), version, resdir) {
-                        objects.push(obj);
-                    } else {
-                        error!("failed to parse [{:?}] block", rule);
-                    }
-                }
-
-                Rule::EOI => break,
-
-                other => warn!("unsupported: {:?}", other),
+                stmt => objects.push(Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
             }
         }
         Ok((cameras, objects, lights))
