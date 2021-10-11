@@ -583,6 +583,29 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
+    pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+        F: 'static
+    {
+        let body = p.into_inner();
+        let mut it: Vec<Pair<Rule>> = body.collect();
+
+        let x2 = match it.len() {
+            2 => {
+                let a = Self::parse_num1(it.remove(0));
+                Matrix4::from_scale(a)
+            }
+            4 => {
+                let a = Self::parse_num1(it.remove(0));
+                let b = Self::parse_num1(it.remove(0));
+                let c = Self::parse_num1(it.remove(0));
+                Matrix4::from_nonuniform_scale(a, b, c)
+            }
+            _ => return Err(ParseError()),
+        };
+        Self::parse_statement(it.remove(0), xfrm * x2, version, resdir)
+    }
+
     pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     where
         F: 'static
@@ -592,25 +615,7 @@ where
             Rule::translate => Self::parse_translate(p, xfrm, version, resdir),
             Rule::rotate    => Self::parse_rotate(p, xfrm, version, resdir),
             Rule::transform => Self::parse_transform(p, xfrm, version, resdir),
-            Rule::scale     => {
-                let body = p.into_inner();
-                let mut it: Vec<Pair<Rule>> = body.collect();
-
-                let x2 = match it.len() {
-                    2 => {
-                        let a = Self::parse_num1(it.remove(0));
-                        Matrix4::from_scale(a)
-                    }
-                    4 => {
-                        let a = Self::parse_num1(it.remove(0));
-                        let b = Self::parse_num1(it.remove(0));
-                        let c = Self::parse_num1(it.remove(0));
-                        Matrix4::from_nonuniform_scale(a, b, c)
-                    }
-                    _ => return Err(ParseError()),
-                };
-                Self::parse_statement(it.remove(0), xfrm * x2, version, resdir)
-            }
+            Rule::scale     => Self::parse_scale(p, xfrm, version, resdir),
             Rule::geo_cyl => Self::parse_geo_cyl(p, xfrm, version, resdir),
             Rule::geo_sph => Self::parse_geo_sph(p, xfrm, version, resdir),
             Rule::geo_box => Self::parse_geo_box(p, xfrm, version, resdir),
