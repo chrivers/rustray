@@ -8,7 +8,7 @@ use pest::iterators::Pair;
 use pest_derive::Parser;
 
 use crate::lib::{RResult, Error::ParseError};
-use crate::{Vector, Point, Float, point};
+use crate::{Vector, Point, Float, Color, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -83,5 +83,14 @@ where
             |x| x.as_str().trim().parse().unwrap_or(F::ZERO)
         ).collect::<Vec<F>>();
         Vector4::new(v[0], v[1], v[2], v[3])
+    }
+
+    pub fn parse_color(p: Pair<Rule>) -> Color<F>
+    {
+        let m = p.into_inner().next().unwrap().into_inner();
+        let v = m.map(
+            |x| x.as_str().trim().parse().unwrap_or(F::ZERO)
+        ).collect::<Vec<F>>();
+        Color::new(v[0], v[1], v[2])
     }
 }
