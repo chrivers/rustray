@@ -54,7 +54,6 @@ impl<F: Float, M: Material<F=F>> RayTarget<F> for Cone<F, M>
         }
 
         let beta_squared = beta * beta;
-        let gamma_squared = gamma * gamma;
 
         fn good_root<F: Float>(root: &Vector<F>, height: F) -> bool
         {
