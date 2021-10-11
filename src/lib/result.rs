@@ -21,3 +21,5 @@ pub enum Error
     #[error("parse error")]
     ParseError()
 }
+
+pub type RResult<F> = Result<F, Error>;
