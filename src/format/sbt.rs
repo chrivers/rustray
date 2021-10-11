@@ -541,21 +541,25 @@ where
         Ok(res)
     }
 
+    pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+        F: 'static
+    {
+        let mut body = p.into_inner();
+        let a = Self::parse_num1(body.next().unwrap());
+        let b = Self::parse_num1(body.next().unwrap());
+        let c = Self::parse_num1(body.next().unwrap());
+        let x2 = Matrix4::from_translation(Vector3::new(a, b, c));
+        Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
+    }
+
     pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     where
         F: 'static
     {
         /* info!("-- statement: {:?} {:.4?}", p.as_rule(), xfrm); */
         match p.as_rule() {
-            /* Self::parse_translate(), */
-            Rule::translate => {
-                let mut body = p.into_inner();
-                let a = Self::parse_num1(body.next().unwrap());
-                let b = Self::parse_num1(body.next().unwrap());
-                let c = Self::parse_num1(body.next().unwrap());
-                let x2 = Matrix4::from_translation(Vector3::new(a, b, c));
-                Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
-            }
+            Rule::translate => Self::parse_translate(p, xfrm, version, resdir),
 
             Rule::rotate    => {
                 let mut body = p.into_inner();
