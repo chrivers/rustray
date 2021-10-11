@@ -224,9 +224,9 @@ fn main() -> Result<(), Error>
     debug!("  render time:  {:.2?} ms", (time_b - time_a).as_micros() as f32 / 1000f32);
     debug!("  copy time:    {:.2?} ms", (time_c - time_b).as_micros() as f32 / 1000f32);
 
-    let buffer = File::create("output.png").unwrap();
+    let buffer = File::create("output.png")?;
     let png = PngEncoder::new(buffer);
-    png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8).expect("Failed to encode");
+    png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?;
 
     Ok(())
 }
