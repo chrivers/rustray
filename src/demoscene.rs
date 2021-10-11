@@ -89,7 +89,7 @@ where
         Bumpmap::new(0.5.into(), tex0b.bilinear(), Phong::new(tex0r, tex0a.bilinear().texture())),
         Bumpmap::new(0.5.into(), tex1b.bilinear(), Phong::new(tex1r, tex1a.bilinear().texture()))).dynamic();
 
-    let mat_bmp2 = Bumpmap::new(0.5.into(), tex2b.bilinear(), Phong::new(tex2r.clone(), tex2a.bilinear().texture())).dynamic();
+    let mat_bmp2 = Bumpmap::new(0.5.into(), tex2b.bilinear(), Phong::new(tex2r, tex2a.bilinear().texture())).dynamic();
 
     time.set("objload");
     let reader = File::open("models/teapot.obj").expect("Failed to open model file");
