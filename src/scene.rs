@@ -1,4 +1,4 @@
-use crate::lib::{Float, Vector, Color};
+use crate::lib::{Float, Vector, Color, Camera};
 use crate::lib::ray::{Ray, Hit, Maxel};
 
 pub trait HasPosition<F: Float>
@@ -48,3 +48,12 @@ impl<F: Float> RayTarget<F> for Box<dyn RayTarget<F>>
         self.as_ref().intersect(ray)
     }
 }
+
+pub struct Scene<F: Float, T: RayTarget<F>, L: Light<F>>
+{
+    pub cameras: Vec<Camera<F>>,
+    pub objects: Vec<T>,
+    pub lights: Vec<L>,
+}
+
+pub type BoxScene<F> = Scene<F, Box<dyn RayTarget<F>>, Box<dyn Light<F>>>;
