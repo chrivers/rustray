@@ -11,6 +11,7 @@ use pest_derive::Parser;
 
 use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
 use crate::lib::{RResult, Error::ParseError};
+use crate::lib::{PointLight};
 use crate::material::{Phong, Smart, Triblend};
 use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point, vec3};
 
@@ -443,5 +444,30 @@ where
 
         info!("Cone(h={}, t={}, b={}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
         Ok(box Cone::new(height, top_r, bot_r, capped, xfrm, mat))
+    }
+
+    /* Light types */
+
+    pub fn parse_point_light(p: Pair<Rule>) -> RResult<PointLight<F>>
+    {
+        let mut pos: RResult<Vector<F>> = Err(ParseError());
+        let mut color: RResult<Vector<F>> = Err(ParseError());
+        let mut a = F::ZERO;
+        let mut b = F::ZERO;
+        let mut c = F::ONE;
+        for q in p.into_inner() {
+            match q.as_rule() {
+                Rule::position => pos   = Ok(Self::parse_val3(q)),
+                Rule::color    => color = Ok(Self::parse_val3(q)),
+                Rule::coeff0   => a     = Self::parse_val1(q)?,
+                Rule::coeff1   => b     = Self::parse_val1(q)?,
+                Rule::coeff2   => c     = Self::parse_val1(q)?,
+                _ => { error!("{}", q) },
+            }
+        }
+        let pos = pos?;
+        let color = color?;
+        let color = Color::new(color.x, color.y, color.z);
+        Ok(PointLight { a, b, c, pos, color })
     }
 }
