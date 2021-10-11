@@ -203,7 +203,7 @@ where
 
         for rule in body {
             match rule.as_rule() {
-                Rule::material_spec => mat = SbtParser::parse_material(rule, resdir)?,
+                Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
                 Rule::name => {},
                 other => error!("unsupported: {:?}", other)
             }
@@ -224,7 +224,7 @@ where
 
         for rule in body {
             match rule.as_rule() {
-                Rule::material_spec => mat = SbtParser::parse_material(rule, resdir)?,
+                Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
                 other => error!("unsupported: {:?}", other)
             }
         }
@@ -282,7 +282,7 @@ where
 
         for rule in body {
             match rule.as_rule() {
-                Rule::material_spec => mat = SbtParser::parse_material(rule, resdir)?,
+                Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
                 other => error!("unsupported: {:?}", other)
             }
         }
@@ -335,30 +335,30 @@ where
         for rule in body {
             match rule.as_rule() {
                 Rule::material_spec => {
-                    mat = SbtParser::parse_material(rule, resdir)?
+                    mat = Self::parse_material(rule, resdir)?
                 },
 
                 Rule::points => for f in rule.into_inner() {
                     // info!("point: {:?}", f);
-                    points.push(SbtParser::parse_val3b(f).xfrm(&xfrm))
+                    points.push(Self::parse_val3b(f).xfrm(&xfrm))
                     /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                 }
                 Rule::faces => for f in rule.into_inner() {
                     // info!("face: {:?}", f);
-                    faces.push(SbtParser::<F>::parse_int3(f))
+                    faces.push(Self::parse_int3(f))
                 }
                 Rule::normals => for f in rule.into_inner() {
                     info!("norm: {:?}", f);
                     // normals.push(parse_val3b(f));
-                    normals.push(xfrm.transform_vector(SbtParser::parse_val3b(f)));
+                    normals.push(xfrm.transform_vector(Self::parse_val3b(f)));
                 }
                 Rule::materials => for f in rule.into_inner() {
                     // info!("material: {:#?}", f);
-                    materials.push(SbtParser::parse_material(f, resdir)?);
+                    materials.push(Self::parse_material(f, resdir)?);
                 }
                 Rule::texture_uv => for f in rule.into_inner() {
                     // info!("face: {:?}", f);
-                    texture_uvs.push(SbtParser::parse_val2(f));
+                    texture_uvs.push(Self::parse_val2(f));
                 }
                 other => error!("unsupported: {:?}", other)
             }
@@ -431,11 +431,11 @@ where
 
         for rule in body {
             match rule.as_rule() {
-                Rule::material_spec => mat    = SbtParser::parse_material(rule, resdir)?,
-                Rule::height        => height = SbtParser::parse_val1(rule)?,
-                Rule::top_radius    => top_r  = SbtParser::parse_val1(rule)?,
-                Rule::bottom_radius => bot_r  = SbtParser::parse_val1(rule)?,
-                Rule::capped        => capped = SbtParser::<F>::parse_bool(rule),
+                Rule::material_spec => mat    = Self::parse_material(rule, resdir)?,
+                Rule::height        => height = Self::parse_val1(rule)?,
+                Rule::top_radius    => top_r  = Self::parse_val1(rule)?,
+                Rule::bottom_radius => bot_r  = Self::parse_val1(rule)?,
+                Rule::capped        => capped = Self::parse_bool(rule),
                 Rule::material_ref => {},
                 other => error!("unsupported: {:?}", other)
             }
