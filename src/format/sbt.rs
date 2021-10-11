@@ -42,7 +42,7 @@ impl FromStr for SbtVersion {
 
 impl<F> SbtParser<F>
 where
-    F: Float + FromStr,
+    F: Float + FromStr + 'static,
 {
     /* Primitive types */
 
@@ -141,8 +141,6 @@ where
     }
 
     pub fn parse_material<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<'a, F>>
-    where
-         F: 'static
     {
         let mut diff = Color::black().dynsampler();
         let mut spec = Color::black().dynsampler();
@@ -225,9 +223,7 @@ where
 
     /* Geometry types */
 
-    pub fn parse_geo_cyl<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -244,9 +240,7 @@ where
         Ok(box Cylinder::new(xfrm, capped, mat))
     }
 
-    pub fn parse_geo_sph<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -265,9 +259,7 @@ where
         Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
     }
 
-    pub fn parse_geo_box<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -323,9 +315,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_sqr<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -368,9 +358,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_plm<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -468,9 +456,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_con<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-         F: 'static
+    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -542,8 +528,6 @@ where
     }
 
     pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-        F: 'static
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -554,8 +538,6 @@ where
     }
 
     pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-        F: 'static
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -567,8 +549,6 @@ where
     }
 
     pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-        F: 'static
     {
         let mut body = p.into_inner();
         let a = Self::parse_val4(body.next().unwrap());
@@ -584,8 +564,6 @@ where
     }
 
     pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-        F: 'static
     {
         let body = p.into_inner();
         let mut it: Vec<Pair<Rule>> = body.collect();
@@ -607,8 +585,6 @@ where
     }
 
     pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
-    where
-        F: 'static
     {
         /* info!("-- statement: {:?} {:.4?}", p.as_rule(), xfrm); */
         match p.as_rule() {
