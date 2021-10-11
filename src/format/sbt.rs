@@ -10,6 +10,7 @@ use pest::iterators::Pair;
 use pest_derive::Parser;
 
 use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
+use crate::lib::{Camera};
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
 use crate::material::{Phong, Smart, Triblend};
@@ -172,6 +173,54 @@ where
         }
 
         Ok(Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).dynamic())
+    }
+
+    pub fn parse_camera(p: Pair<Rule>, width: usize, height: usize) -> RResult<Camera<F>>
+    {
+        let mut position: Vector<F> = Vector::zero();
+        let mut viewdir: Option<Vector<F>> = None;
+        let mut updir: Vector<F> = Vector::unit_y();
+        let mut look_at: RResult<Vector<F>> = Err(ParseError());
+        let mut aspectratio: Option<F> = None;
+        let mut fov: F = F::from_u32(55);
+        for q in p.into_inner() {
+            match q.as_rule() {
+                Rule::position    => position = SbtParser::parse_val3(q),
+                Rule::viewdir     => viewdir = Some(SbtParser::parse_val3(q)),
+                Rule::aspectratio => aspectratio = Some(SbtParser::parse_val1(q)?),
+                Rule::updir       => updir = SbtParser::parse_val3(q),
+                Rule::fov         => fov = SbtParser::parse_val1(q)?,
+                Rule::look_at     => look_at = Ok(SbtParser::parse_val3(q)),
+                _ => { error!("{}", q) },
+            }
+        }
+
+        if viewdir.is_none() && look_at.is_ok() {
+            viewdir = Some(look_at? - position);
+        }
+        if viewdir.is_none() {
+            viewdir = Some(-Vector::unit_z())
+        }
+
+        info!("Camera:");
+        info!("  updir: {:?}", updir);
+        info!("  position: {:?}", position);
+        info!("  viewdir: {:?}", viewdir);
+        info!("  aspectratio: {:?}", aspectratio);
+        info!("  updir: {:?}", updir);
+        info!("  fov: {:?}", fov);
+
+        Ok(
+            Camera::build(
+                position,
+                viewdir.unwrap(),
+                updir,
+                fov,
+                width,
+                height,
+                aspectratio,
+            )
+        )
     }
 
     /* Geometry types */
