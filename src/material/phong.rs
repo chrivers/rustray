@@ -33,7 +33,7 @@ impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut res = Color::black();
 

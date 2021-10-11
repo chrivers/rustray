@@ -20,7 +20,7 @@ impl<'a, F: Float, S: Sampler<F, Color<F>>, M: Material<F=F>> Material for Bumpm
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut n = self.img.sample(maxel.uv);
         n.r -= F::HALF;

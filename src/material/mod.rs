@@ -8,7 +8,7 @@ use crate::scene::{RayTracer, Light};
 pub trait Material : Send + Sync
 {
     type F: Float;
-    fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[Box<dyn Light<Self::F>>], rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
+    fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[&dyn Light<Self::F>], rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
 
     fn shadow(&self, _hit: &Hit<Self::F>, _maxel: &Maxel<Self::F>, _light: &dyn Light<Self::F>, _rt: &dyn RayTracer<Self::F>) -> Option<Color<Self::F>> {
         Some(Color::<Self::F>::black())
@@ -27,7 +27,7 @@ pub type DynMaterial<'a, F> = Arc<Box<dyn Material<F=F> + 'a>>;
 impl<F: Float> Material for Color<F>
 {
     type F = F;
-    fn render(&self, _hit: &Hit<F>, _maxel: &Maxel<F>, _light: &[Box<dyn Light<F>>], _rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, _hit: &Hit<F>, _maxel: &Maxel<F>, _light: &[&dyn Light<F>], _rt: &dyn RayTracer<F>) -> Color<F>
     {
         *self
     }
@@ -36,7 +36,7 @@ impl<F: Float> Material for Color<F>
 impl<F: Float> Material for Arc<Box<dyn Material<F=F>>>
 {
     type F = F;
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         self.as_ref().render(hit, maxel, light, rt)
     }

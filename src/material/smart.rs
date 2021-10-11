@@ -54,7 +54,7 @@ where
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let diff_color = self.kd.sample(maxel.uv);
         let spec_color = self.ks.sample(maxel.uv);
@@ -98,7 +98,7 @@ where
         res
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _light: &dyn Light<F>, _rt: &dyn RayTracer<F>) -> Option<Color<F>>
     {
         let sha = self.kt.sample(maxel.uv);
 

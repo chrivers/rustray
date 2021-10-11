@@ -21,7 +21,7 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>, C: Material<F=F>> Material fo
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[Box<dyn Light<F>>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let a = self.a.render(hit, maxel, lights, rt);
         let b = self.b.render(hit, maxel, lights, rt);

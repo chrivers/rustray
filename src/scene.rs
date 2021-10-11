@@ -40,3 +40,11 @@ pub trait RayTracer<F: Float> : Sync
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
 }
+
+impl<F: Float> RayTarget<F> for Box<dyn RayTarget<F>>
+{
+    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    {
+        self.as_ref().intersect(ray)
+    }
+}
