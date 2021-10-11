@@ -468,6 +468,8 @@ where
         let pos = pos?;
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
-        Ok(PointLight { a, b, c, pos, color })
+        let res = PointLight { a, b, c, pos, color };
+        info!("{:?}", res);
+        Ok(res)
     }
 }
