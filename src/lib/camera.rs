@@ -2,7 +2,7 @@ use super::Float;
 use super::Vector;
 use super::Ray;
 use super::Point;
-use super::vector::{Vectorx, InnerSpace, MetricSpace};
+use super::vector::{InnerSpace, MetricSpace};
 use cgmath::{Deg, Angle};
 
 #[derive(Clone, Copy, Debug)]
