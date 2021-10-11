@@ -566,6 +566,23 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
+    pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+        F: 'static
+    {
+        let mut body = p.into_inner();
+        let a = Self::parse_val4(body.next().unwrap());
+        let b = Self::parse_val4(body.next().unwrap());
+        let c = Self::parse_val4(body.next().unwrap());
+        let d = Self::parse_val4(body.next().unwrap());
+        let x2 = Matrix4::from_cols(a, b, c, d);
+        let x2 = match version {
+            SbtVersion::Sbt0_9 => x2.transpose(),
+            SbtVersion::Sbt1_0 => x2,
+        };
+        Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
+    }
+
     pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     where
         F: 'static
@@ -574,20 +591,7 @@ where
         match p.as_rule() {
             Rule::translate => Self::parse_translate(p, xfrm, version, resdir),
             Rule::rotate    => Self::parse_rotate(p, xfrm, version, resdir),
-
-            Rule::transform => {
-                let mut body = p.into_inner();
-                let a = Self::parse_val4(body.next().unwrap());
-                let b = Self::parse_val4(body.next().unwrap());
-                let c = Self::parse_val4(body.next().unwrap());
-                let d = Self::parse_val4(body.next().unwrap());
-                let x2 = Matrix4::from_cols(a, b, c, d);
-                let x2 = match version {
-                    SbtVersion::Sbt0_9 => x2.transpose(),
-                    SbtVersion::Sbt1_0 => x2,
-                };
-                Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
-            }
+            Rule::transform => Self::parse_transform(p, xfrm, version, resdir),
             Rule::scale     => {
                 let body = p.into_inner();
                 let mut it: Vec<Pair<Rule>> = body.collect();
