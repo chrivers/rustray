@@ -9,7 +9,8 @@ use pest::iterators::Pair;
 use pest_derive::Parser;
 
 use crate::lib::{RResult, Error::ParseError};
-use crate::{Vector, Point, Float, Color, Sampler, DynSampler, BilinearSampler, point};
+use crate::material::Smart;
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -133,6 +134,41 @@ where
             }
             other => Err(ParseError())
         }
+    }
+
+    pub fn parse_material<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<'a, F>>
+    where
+         F: 'static
+    {
+        let mut diff = Color::black().dynsampler();
+        let mut spec = Color::black().dynsampler();
+        let mut refl = None;
+        let mut _ambi = Color::black().dynsampler();
+        let mut tran = Color::black();
+        let mut emis = Color::black();
+        let mut shi = F::ONE;
+        let mut idx = F::ZERO;
+        let mut _gls = F::ZERO;
+        for q in p.into_inner() {
+            match q.as_rule() {
+                Rule::mat_diffuse      => diff = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_specular     => spec = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_reflective   => refl = Some(Self::parse_sampler3(q, resdir)?),
+                Rule::mat_ambient      => _ambi = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_transmissive => tran = Self::parse_color(q),
+                Rule::mat_emissive     => emis = Self::parse_color(q),
+                Rule::mat_shininess    => shi  = Self::parse_val1(q)?,
+                Rule::mat_index        => idx  = Self::parse_val1(q)?,
+                Rule::mat_glossiness   => _gls = Self::parse_val1(q)?,
+                Rule::name             => {},
+                other => {
+                    error!("Unknown material prop: {:?}", other);
+                    return Err(ParseError())
+                }
+            }
+        }
+
+        Ok(Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).dynamic())
     }
 
 }
