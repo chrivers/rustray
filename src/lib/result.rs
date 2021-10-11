@@ -16,6 +16,9 @@ pub enum Error
     ZipError(#[from] zip::result::ZipError),
 
     #[error(transparent)]
+    ObjError(#[from] obj::ObjError),
+
+    #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 
     #[error("parse error")]
