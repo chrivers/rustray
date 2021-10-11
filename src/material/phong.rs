@@ -1,5 +1,4 @@
 use super::mat_util::*;
-use std::marker::PhantomData;
 
 #[derive(Copy, Clone)]
 pub struct Phong<F: Float, S: Sampler<F, F>, M: Material<F=F>>

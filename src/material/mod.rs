@@ -51,10 +51,12 @@ pub(crate) mod mat_util {
     pub use crate::scene::{RayTracer, Light};
     pub use crate::sampler::Sampler;
     pub use crate::vec3;
+    pub use crate::material::{Material, DynMaterial};
+
     pub use cgmath::VectorSpace;
 
-    pub use super::{Material, DynMaterial};
     pub use std::marker::PhantomData;
+    use num_traits::Zero;
 }
 
 mod chessboard;

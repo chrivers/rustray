@@ -1,7 +1,4 @@
 use super::mat_util::*;
-use std::marker::PhantomData;
-
-use std::sync::Arc;
 
 use num_traits::Zero;
 
