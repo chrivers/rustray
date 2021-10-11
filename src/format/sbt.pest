@@ -238,4 +238,4 @@ statement = _{
       ";" | light | camera | geo | material_obj
 }
 
-program = { SOI ~ START ~ statement* ~ EOI }
+program = _{ SOI ~ START ~ statement* ~ EOI }
