@@ -134,10 +134,10 @@ where
                         Ok(Color::new(v[0], v[1], v[2]).dynsampler())
                     }
                     // "unimplemented: {:?}"
-                    other => Err(ParseError())
+                    _ => Err(ParseError())
                 }
             }
-            other => Err(ParseError())
+            _ => Err(ParseError())
         }
     }
 
@@ -629,7 +629,7 @@ where
                 Rule::ambient_light     => warn!("unimplemented: ambient_light"),
                 Rule::material_obj      => warn!("unimplemented: material_obj"),
 
-                stmt => objects.push(Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
+                _ => objects.push(Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
             }
         }
         Ok(Scene { cameras, objects, lights })
