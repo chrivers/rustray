@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::str::FromStr;
 use std::marker::PhantomData;
+use std::path::Path;
 
 use cgmath::Vector4;
 
@@ -8,7 +9,7 @@ use pest::iterators::Pair;
 use pest_derive::Parser;
 
 use crate::lib::{RResult, Error::ParseError};
-use crate::{Vector, Point, Float, Color, point};
+use crate::{Vector, Point, Float, Color, Sampler, DynSampler, BilinearSampler, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -38,6 +39,8 @@ impl<F> SbtParser<F>
 where
     F: Float + FromStr,
 {
+    /* Primitive types */
+
     pub fn parse_bool(p: Pair<Rule>) -> bool {
         match p.into_inner().next().map(|p| p.as_str()) {
             Some("false") => false,
@@ -100,4 +103,36 @@ where
         ).collect::<Vec<F>>();
         Color::new(v[0], v[1], v[2])
     }
+
+    /* Composite types */
+
+    pub fn parse_sampler3<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<'a, F, Color<F>>>
+    where
+        F: 'a
+    {
+        let ps = p.into_inner().next().unwrap();
+        match ps.as_rule() {
+            Rule::sampler3 => {
+                let q = ps.into_inner().next().unwrap();
+                match q.as_rule() {
+                    Rule::map => {
+                        let s = q.into_inner().as_str();
+                        let name = &s[1..s.len()-1];
+                        Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
+                    },
+                    Rule::val3 => {
+                        let m = q.into_inner();
+                        let v = m.map(
+                            |x| x.as_str().trim().parse().unwrap_or(F::ZERO)
+                        ).collect::<Vec<F>>();
+                        Ok(Color::new(v[0], v[1], v[2]).dynsampler())
+                    }
+                    // "unimplemented: {:?}"
+                    other => Err(ParseError())
+                }
+            }
+            other => Err(ParseError())
+        }
+    }
+
 }
