@@ -9,7 +9,7 @@ use num_traits::Zero;
 use pest::iterators::Pair;
 use pest_derive::Parser;
 
-use crate::geometry::{Sphere, Cylinder, Triangle, TriangleMesh};
+use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
 use crate::lib::{RResult, Error::ParseError};
 use crate::material::{Phong, Smart, Triblend};
 use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point, vec3};
@@ -418,5 +418,30 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
+    pub fn parse_geo_con<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+         F: 'static
+    {
+        let body = p.into_inner();
+        let mut mat = Phong::white().dynamic();
+        let mut height = F::BIAS;
+        let mut top_r = F::BIAS;
+        let mut bot_r = F::BIAS;
+        let mut capped = false;
 
+        for rule in body {
+            match rule.as_rule() {
+                Rule::material_spec => mat    = SbtParser::parse_material(rule, resdir)?,
+                Rule::height        => height = SbtParser::parse_val1(rule)?,
+                Rule::top_radius    => top_r  = SbtParser::parse_val1(rule)?,
+                Rule::bottom_radius => bot_r  = SbtParser::parse_val1(rule)?,
+                Rule::capped        => capped = SbtParser::<F>::parse_bool(rule),
+                Rule::material_ref => {},
+                other => error!("unsupported: {:?}", other)
+            }
+        }
+
+        info!("Cone(h={}, t={}, b={}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
+        Ok(box Cone::new(height, top_r, bot_r, capped, xfrm, mat))
+    }
 }
