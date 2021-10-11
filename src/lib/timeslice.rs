@@ -25,7 +25,7 @@ impl TimeSlice
                 self.map.insert(self.name, dur);
             },
             Some(ref mut d) => {
-                **d = **d + dur
+                **d += dur
             }
         }
         self.name = new;
@@ -38,7 +38,7 @@ impl TimeSlice
 
     pub fn get(&self, key: &'static str) -> Option<Duration>
     {
-        self.map.get(key).map(|x| *x)
+        self.map.get(key).copied()
     }
 
     pub fn show(&self)
