@@ -183,12 +183,12 @@ where
         let mut fov: F = F::from_u32(55);
         for q in p.into_inner() {
             match q.as_rule() {
-                Rule::position    => position = SbtParser::parse_val3(q),
-                Rule::viewdir     => viewdir = Some(SbtParser::parse_val3(q)),
-                Rule::aspectratio => aspectratio = Some(SbtParser::parse_val1(q)?),
-                Rule::updir       => updir = SbtParser::parse_val3(q),
-                Rule::fov         => fov = SbtParser::parse_val1(q)?,
-                Rule::look_at     => look_at = Ok(SbtParser::parse_val3(q)),
+                Rule::position    => position = Self::parse_val3(q),
+                Rule::viewdir     => viewdir = Some(Self::parse_val3(q)),
+                Rule::aspectratio => aspectratio = Some(Self::parse_val1(q)?),
+                Rule::updir       => updir = Self::parse_val3(q),
+                Rule::fov         => fov = Self::parse_val1(q)?,
+                Rule::look_at     => look_at = Ok(Self::parse_val3(q)),
                 _ => { error!("{}", q) },
             }
         }
@@ -514,8 +514,8 @@ where
         let mut color: RResult<Vector<F>> = Err(ParseError());
         for q in p.into_inner() {
             match q.as_rule() {
-                Rule::direction => direction = Ok(SbtParser::parse_val3(q)),
-                Rule::color     => color     = Ok(SbtParser::parse_val3(q)),
+                Rule::direction => direction = Ok(Self::parse_val3(q)),
+                Rule::color     => color     = Ok(Self::parse_val3(q)),
                 _ => { error!("{}", q) },
             }
         }
