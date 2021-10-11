@@ -224,7 +224,7 @@ where
 
     /* Geometry types */
 
-    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -241,7 +241,7 @@ where
         Ok(box Cylinder::new(xfrm, capped, mat))
     }
 
-    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -260,7 +260,7 @@ where
         Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
     }
 
-    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -316,7 +316,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -359,7 +359,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -457,7 +457,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -593,12 +593,12 @@ where
             Rule::rotate    => Self::parse_rotate(p, xfrm, version, resdir),
             Rule::transform => Self::parse_transform(p, xfrm, version, resdir),
             Rule::scale     => Self::parse_scale(p, xfrm, version, resdir),
-            Rule::geo_cyl => Self::parse_geo_cyl(p, xfrm, version, resdir),
-            Rule::geo_sph => Self::parse_geo_sph(p, xfrm, version, resdir),
-            Rule::geo_box => Self::parse_geo_box(p, xfrm, version, resdir),
-            Rule::geo_sqr => Self::parse_geo_sqr(p, xfrm, version, resdir),
-            Rule::geo_plm => Self::parse_geo_plm(p, xfrm, version, resdir),
-            Rule::geo_con => Self::parse_geo_con(p, xfrm, version, resdir),
+            Rule::geo_cyl => Self::parse_geo_cyl(p, xfrm, resdir),
+            Rule::geo_sph => Self::parse_geo_sph(p, xfrm, resdir),
+            Rule::geo_box => Self::parse_geo_box(p, xfrm, resdir),
+            Rule::geo_sqr => Self::parse_geo_sqr(p, xfrm, resdir),
+            Rule::geo_plm => Self::parse_geo_plm(p, xfrm, resdir),
+            Rule::geo_con => Self::parse_geo_con(p, xfrm, resdir),
 
             _ => { error!("unimplemented: {:?}", p.as_rule()); Err(ParseError()) },
         }
