@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use std::fs::File;
 use std::io::{Read, Seek, Cursor};
 use zip::ZipArchive;
