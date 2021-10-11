@@ -38,7 +38,7 @@ impl<F: Float> Light<F> for DirectionalLight<F> {
         self.color
     }
 
-    fn attenuate(&self, color: Color<F>, d: F) -> Color<F>
+    fn attenuate(&self, color: Color<F>, _: F) -> Color<F>
     {
         color
     }
@@ -47,7 +47,7 @@ impl<F: Float> Light<F> for DirectionalLight<F> {
 impl<F: Float> HasPosition<F> for DirectionalLight<F>
 {
     fn get_position(&self) -> Vector<F> { self.dir * F::from_f32(-100000.0) }
-    fn set_position(&mut self, value: Vector<F>) {  }
+    fn set_position(&mut self, _: Vector<F>) {  }
 }
 
 impl<F: Float> HasPosition<F> for PointLight<F>
