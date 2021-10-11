@@ -5,18 +5,19 @@ use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
 use crate::scene::{RayTarget, RayTracer, Light};
 
-pub struct Tracer<F: Float>
+pub struct Tracer<'a, F: Float, T: RayTarget<F>>
 {
     camera: Camera<F>,
-    objects: Vec<Box<dyn RayTarget<F>>>,
-    lights: Vec<Box<dyn Light<F>>>,
+    objects: Vec<T>,
+    lights: Vec<&'a dyn Light<F>>,
 }
 
-impl<F: Float> Tracer<F>
+impl<'a, F: Float, T: RayTarget<F>> Tracer<'a, F, T>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<Box<dyn RayTarget<F>>>, lights: Vec<Box<dyn Light<F>>>) -> Tracer<F>
+    pub fn new(camera: Camera<F>, objects: Vec<T>, lights: &'a [impl Light<F>]) -> Self
     {
-        Tracer { camera, objects, lights }
+        let lights = lights.iter().map(|x| (x as &dyn Light<F>)).collect();
+        Self { camera, objects, lights }
     }
 
     fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
@@ -118,7 +119,7 @@ impl<F: Float> Tracer<F>
 }
 
 
-impl<F: Float> RayTracer<F> for Tracer<F>
+impl<'a, F: Float, T: RayTarget<F>> RayTracer<F> for Tracer<'a, F, T>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
@@ -173,9 +174,6 @@ impl<F: Float> RayTracer<F> for Tracer<F>
         let hit = hit?;
 
         let maxel = hit.obj.resolve(&hit);
-
-        // /* converting to box-less lights: */
-        // let lights = &self.lights.iter().map(|x| &**x).collect::<Vec<&dyn Light<F>>>();
 
         Some(maxel.mat.render(&hit, &maxel, &self.lights, self))
     }
