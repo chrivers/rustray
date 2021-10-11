@@ -11,7 +11,7 @@ use pest_derive::Parser;
 
 use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
 use crate::lib::{RResult, Error::ParseError};
-use crate::lib::{PointLight};
+use crate::lib::{PointLight, DirectionalLight};
 use crate::material::{Phong, Smart, Triblend};
 use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point, vec3};
 
@@ -472,4 +472,24 @@ where
         info!("{:?}", res);
         Ok(res)
     }
+
+    pub fn parse_directional_light(p: Pair<Rule>) -> RResult<DirectionalLight<F>>
+    {
+        let mut direction: RResult<Vector<F>> = Err(ParseError());
+        let mut color: RResult<Vector<F>> = Err(ParseError());
+        for q in p.into_inner() {
+            match q.as_rule() {
+                Rule::direction => direction = Ok(SbtParser::parse_val3(q)),
+                Rule::color     => color     = Ok(SbtParser::parse_val3(q)),
+                _ => { error!("{}", q) },
+            }
+        }
+        let dir = direction?;
+        let color = color?;
+        let color = Color::new(color.x, color.y, color.z);
+        let res = DirectionalLight { dir, color };
+        info!("{:?}", res);
+        Ok(res)
+    }
+
 }
