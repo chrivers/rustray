@@ -3,15 +3,16 @@ use std::str::FromStr;
 use std::marker::PhantomData;
 use std::path::Path;
 
-use cgmath::{Vector4, Matrix4};
+use cgmath::{Vector3, Vector4, Matrix4, InnerSpace};
+use num_traits::Zero;
 
 use pest::iterators::Pair;
 use pest_derive::Parser;
 
-use crate::geometry::{Cylinder};
+use crate::geometry::{Sphere, Cylinder};
 use crate::lib::{RResult, Error::ParseError};
 use crate::material::{Phong, Smart};
-use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, point};
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -191,6 +192,27 @@ where
         }
         info!("Cylinder(capped={})", capped);
         Ok(box Cylinder::new(xfrm, capped, mat))
+    }
+
+    pub fn parse_geo_sph<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+         F: 'static
+    {
+        let body = p.into_inner();
+        let mut mat = Phong::white().dynamic();
+
+        for rule in body {
+            match rule.as_rule() {
+                Rule::material_spec => mat = SbtParser::parse_material(rule, resdir)?,
+                Rule::name => {},
+                other => error!("unsupported: {:?}", other)
+            }
+        }
+        let edge = Vector3::unit_z().xfrm(&xfrm);
+        let pos = Vector3::zero().xfrm(&xfrm);
+
+        info!("Sphere({:.4?}, {:.4?})", pos, (pos - edge).magnitude());
+        Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
     }
 
 }
