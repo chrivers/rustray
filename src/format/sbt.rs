@@ -553,6 +553,19 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
+    pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+        F: 'static
+    {
+        let mut body = p.into_inner();
+        let a = Self::parse_num1(body.next().unwrap());
+        let b = Self::parse_num1(body.next().unwrap());
+        let c = Self::parse_num1(body.next().unwrap());
+        let d = Self::parse_num1(body.next().unwrap());
+        let x2 = Matrix4::from_axis_angle(Vector3::new(a, b, c).normalize(), Rad(d));
+        Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
+    }
+
     pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
     where
         F: 'static
@@ -560,16 +573,8 @@ where
         /* info!("-- statement: {:?} {:.4?}", p.as_rule(), xfrm); */
         match p.as_rule() {
             Rule::translate => Self::parse_translate(p, xfrm, version, resdir),
+            Rule::rotate    => Self::parse_rotate(p, xfrm, version, resdir),
 
-            Rule::rotate    => {
-                let mut body = p.into_inner();
-                let a = Self::parse_num1(body.next().unwrap());
-                let b = Self::parse_num1(body.next().unwrap());
-                let c = Self::parse_num1(body.next().unwrap());
-                let d = Self::parse_num1(body.next().unwrap());
-                let x2 = Matrix4::from_axis_angle(Vector3::new(a, b, c).normalize(), Rad(d));
-                Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
-            }
             Rule::transform => {
                 let mut body = p.into_inner();
                 let a = Self::parse_val4(body.next().unwrap());
