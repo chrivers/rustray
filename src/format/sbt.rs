@@ -3,10 +3,10 @@ use std::str::FromStr;
 use std::marker::PhantomData;
 use std::path::Path;
 
-use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Transform, Rad, Matrix};
+use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Transform, Rad, Matrix, SquareMatrix};
 use num_traits::Zero;
 
-use pest::iterators::Pair;
+use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
 use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
@@ -14,7 +14,7 @@ use crate::lib::{Camera};
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
 use crate::material::{Phong, Smart, Triblend};
-use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, point, vec3};
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, Light, point, vec3};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -602,4 +602,55 @@ where
             _ => { error!("  {:?}", p.as_rule()); Err(ParseError()) },
         }
     }
+
+    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: usize, height: usize) -> RResult<(Vec<Camera<F>>, Vec<Box<dyn RayTarget<F>>>, Vec<Box<dyn Light<F>>>)>
+    {
+        let mut cameras = vec![];
+        let mut objects: Vec<Box<dyn RayTarget<F>>> = vec![];
+        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
+        let mut version: SbtVersion = SbtVersion::Sbt1_0;
+
+        for r in p {
+            match r.as_rule() {
+                Rule::VERSION => version = SbtVersion::from_str(r.as_str())?,
+
+                Rule::camera            => cameras.push(Self::parse_camera(r, width, height)?),
+                Rule::directional_light => lights.push(Box::new(Self::parse_directional_light(r)?)),
+                Rule::point_light       => lights.push(Box::new(Self::parse_point_light(r)?)),
+
+                Rule::area_light => {
+                    warn!("Simulating area_light using point_light");
+                    lights.push(Box::new(Self::parse_point_light(r)?))
+                }
+
+                Rule::spot_light        => warn!("unimplemented: spot_light"),
+                Rule::ambient_light     => warn!("unimplemented: ambient_light"),
+                Rule::material_obj      => warn!("unimplemented: material_obj"),
+
+                rule @ (
+                    Rule::translate |
+                    Rule::rotate |
+                    Rule::scale |
+                    Rule::transform |
+                    Rule::geo_cyl |
+                    Rule::geo_box |
+                    Rule::geo_sph |
+                    Rule::geo_sqr |
+                    Rule::geo_con |
+                    Rule::geo_plm) => {
+                    if let Ok(obj) = Self::parse_statement(r, Matrix4::identity(), version, resdir) {
+                        objects.push(obj);
+                    } else {
+                        error!("failed to parse [{:?}] block", rule);
+                    }
+                }
+
+                Rule::EOI => break,
+
+                other => warn!("unsupported: {:?}", other),
+            }
+        }
+        Ok((cameras, objects, lights))
+    }
+
 }
