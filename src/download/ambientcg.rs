@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use reqwest;
 
 use super::TextureDownloader;
-use crate::lib::Error;
+use crate::lib::RResult;
 
 #[allow(non_camel_case_types)]
 pub enum ACGQuality
@@ -36,7 +36,7 @@ pub struct ACGDownloader
 
 impl ACGDownloader
 {
-    pub fn new(root: PathBuf, qual: ACGQuality) -> Result<Self, Error>
+    pub fn new(root: PathBuf, qual: ACGQuality) -> RResult<Self>
     {
         std::fs::create_dir_all(&root)?;
         Ok(Self { root, qual })
@@ -61,7 +61,7 @@ impl TextureDownloader for ACGDownloader
         self.fullname(name).exists()
     }
 
-    fn download(&self, name: &str) -> Result<PathBuf, Error>
+    fn download(&self, name: &str) -> RResult<PathBuf>
     {
         let path = self.fullname(name);
         if path.exists() {

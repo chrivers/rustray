@@ -1,10 +1,10 @@
-use super::Error;
+use crate::lib::RResult;
 use std::path::PathBuf;
 
 pub trait TextureDownloader
 {
     fn filename(&self, name: &str) -> String;
-    fn download(&self, name: &str) -> Result<PathBuf, Error>;
+    fn download(&self, name: &str) -> RResult<PathBuf>;
     fn cached(&self, name: &str) -> bool;
 }
 

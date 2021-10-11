@@ -14,4 +14,4 @@ pub use camera::Camera;
 pub use color::Color;
 pub use ray::Ray;
 pub use light::{PointLight, DirectionalLight};
-pub use result::Error;
+pub use result::{RResult, Error};
