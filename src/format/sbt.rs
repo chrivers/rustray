@@ -39,6 +39,14 @@ where
     F: Float + FromStr,
     <F as FromStr>::Err: Debug
 {
+    pub fn parse_bool(p: Pair<Rule>) -> bool {
+        match p.into_inner().next().map(|p| p.as_str()) {
+            Some("false") => false,
+            Some("true") => true,
+            _ => panic!("internal parser error"),
+        }
+    }
+
     pub fn parse_num1(m: Pair<Rule>) -> F {
         m.as_str().parse().unwrap_or(F::ZERO)
     }
