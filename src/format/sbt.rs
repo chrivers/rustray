@@ -37,7 +37,6 @@ impl FromStr for SbtVersion {
 impl<F> SbtParser<F>
 where
     F: Float + FromStr,
-    <F as FromStr>::Err: Debug
 {
     pub fn parse_bool(p: Pair<Rule>) -> bool {
         match p.into_inner().next().map(|p| p.as_str()) {
