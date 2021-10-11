@@ -13,6 +13,7 @@ use crate::geometry::{Sphere, Cylinder, Cone, Triangle, TriangleMesh};
 use crate::lib::{Camera};
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
+use crate::scene::{Scene, BoxScene};
 use crate::material::{Phong, Smart, Triblend};
 use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, Light, point, vec3};
 
@@ -603,7 +604,7 @@ where
         }
     }
 
-    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: usize, height: usize) -> RResult<(Vec<Camera<F>>, Vec<Box<dyn RayTarget<F>>>, Vec<Box<dyn Light<F>>>)>
+    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: usize, height: usize) -> RResult<BoxScene<F>>
     {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn RayTarget<F>>> = vec![];
@@ -631,7 +632,7 @@ where
                 stmt => objects.push(Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
             }
         }
-        Ok((cameras, objects, lights))
+        Ok(Scene { cameras, objects, lights })
     }
 
 }
