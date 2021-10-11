@@ -3,14 +3,15 @@ use std::str::FromStr;
 use std::marker::PhantomData;
 use std::path::Path;
 
-use cgmath::Vector4;
+use cgmath::{Vector4, Matrix4};
 
 use pest::iterators::Pair;
 use pest_derive::Parser;
 
+use crate::geometry::{Cylinder};
 use crate::lib::{RResult, Error::ParseError};
-use crate::material::Smart;
-use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, point};
+use crate::material::{Phong, Smart};
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -169,6 +170,27 @@ where
         }
 
         Ok(Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).dynamic())
+    }
+
+    /* Geometry types */
+
+    pub fn parse_geo_cyl<'a>(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    where
+         F: 'static
+    {
+        let body = p.into_inner();
+        let mut mat = Phong::white().dynamic();
+        let mut capped = true;
+
+        for rule in body {
+            match rule.as_rule() {
+                Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
+                Rule::capped        => capped = Self::parse_bool(rule),
+                other => error!("unsupported: {:?}", other)
+            }
+        }
+        info!("Cylinder(capped={})", capped);
+        Ok(box Cylinder::new(xfrm, capped, mat))
     }
 
 }
