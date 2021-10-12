@@ -66,6 +66,16 @@ impl<F: Float> Vectorx<F> for Vector<F>
         (phi, theta)
     }
 
+    fn min(&self, other: &Self) -> Self
+    {
+        vec3!(self.x.min(other.x), self.y.min(other.y), self.z.min(other.z))
+    }
+
+    fn max(&self, other: &Self) -> Self
+    {
+        vec3!(self.x.max(other.x), self.y.max(other.y), self.z.max(other.z))
+    }
+
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self
     {
         xfrm.transform_point(Point3::from_vec(*self)).to_vec()
@@ -80,6 +90,8 @@ where
     fn identity_x() -> Self;
     fn identity_y() -> Self;
     fn identity_z() -> Self;
+    fn min(&self, other: &Self) -> Self;
+    fn max(&self, other: &Self) -> Self;
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
     fn into_point3(self) -> bvh::Point3;
     fn into_vector3(self) -> bvh::Vector3;
