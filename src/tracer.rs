@@ -1,3 +1,4 @@
+use crate::point;
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
@@ -21,13 +22,6 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         Self { scene, camera, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)) }
     }
 
-    fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
-    {
-        let ray = self.camera.get_ray(point);
-
-        self.ray_trace(&ray)
-    }
-
     pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Color<F>
     {
         let mut colors = Color::black();
@@ -39,7 +33,8 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
             for ya in 0..self.sy
             {
                 let pixely = py + F::from_u32(ya) / (fsy * fy);
-                if let Some(color) = self._render_pixel(Point::new(pixelx, pixely)) {
+                let ray = self.camera.get_ray(point!(pixelx, pixely));
+                if let Some(color) = self.ray_trace(&ray) {
                     colors += color.clamped()
                 } else {
                     colors += self.background
