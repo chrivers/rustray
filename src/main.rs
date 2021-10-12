@@ -10,6 +10,7 @@ extern crate log;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::env;
 
 use image::{ColorType, ImageBuffer};
 use image::png::PngEncoder;
@@ -61,11 +62,11 @@ fn main() -> RResult<()>
 
     type F = f32;
 
-    let name = std::env::args().last().unwrap();
+    let name = env::args().last().unwrap();
     let path = Path::new(&name);
     info!("---------- {:?} ----------", path);
     let resdir = path.parent().unwrap();
-    let mut file = std::fs::File::open(path)?;
+    let mut file = File::open(path)?;
     let mut data = String::new();
     file.read_to_string(&mut data)?;
 
