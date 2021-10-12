@@ -103,7 +103,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, 
         {
             if let Some(curhit) = curobj.intersect(ray)
             {
-                let curdist = self.camera.distance2(curhit.pos);
+                let curdist = ray.pos.distance2(curhit.pos);
                 if curdist < dist
                 {
                     dist = curdist;
