@@ -81,7 +81,7 @@ fn main() -> RResult<()>
 
     info!("Loaded scene\ncams={}\nobjs={}\nlights={}", scene.cameras.len(), scene.objects.len(), scene.lights.len());
 
-    let img = draw_image(&mut time, Tracer::new(&scene, &scene.cameras[0]))?;
+    let img = draw_image(&mut time, Tracer::new(&scene, &scene.cameras[0]), WIDTH, HEIGHT)?;
 
     time.set("write");
     save_image("output.png", img)?;
@@ -111,14 +111,14 @@ fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<
 {
     let buffer = File::create(name)?;
     let png = PngEncoder::new(buffer);
-    Ok(png.encode(img.inner(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?)
+    Ok(png.encode(img.inner(), img.width(), img.height(), ColorType::Rgb8)?)
 }
 
-fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
 {
-    let pb = pbar::init(HEIGHT as u64);
+    let pb = pbar::init(height as u64);
 
-    let mut img = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
+    let mut img = ImageBuffer::new(width, height);
 
     time.set("render");
 
