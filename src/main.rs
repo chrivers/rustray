@@ -12,10 +12,9 @@ use std::io::Read;
 use std::path::Path;
 use std::env;
 
-use image::{ColorType, ImageBuffer};
+use image::{ColorType, ImageBuffer, GenericImageView};
 use image::png::PngEncoder;
 
-use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use log::LevelFilter;
 use pest::Parser;
@@ -79,22 +78,47 @@ fn main() -> RResult<()>
     /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
     info!("Loaded scene\ncams={}\nobjs={}\nlights={}", scene.cameras.len(), scene.objects.len(), scene.lights.len());
-    draw_image(time, Tracer::new(&scene, &scene.cameras[0]))
+
+    let img = draw_image(&mut time, Tracer::new(&scene, &scene.cameras[0]))?;
+
+    time.set("write");
+    save_image("output.png", img)?;
+
+    info!("render complete");
+    time.stop();
+    time.show();
+    Ok(())
 }
 
+mod pbar {
+    use indicatif::{ProgressBar, ProgressStyle};
 
-fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(mut time: TimeSlice, tracer: Tracer<F, T, L>) -> RResult<()>
+    pub fn init(range: u64) -> ProgressBar
+    {
+        let pb = ProgressBar::new(range);
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})")
+                .progress_chars("*>-")
+        );
+        pb
+    }
+}
+
+fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<()>
 {
-    time.set("render");
+    let buffer = File::create(name)?;
+    let png = PngEncoder::new(buffer);
+    Ok(png.encode(&img.inner(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?)
+}
 
-    let pb = ProgressBar::new(HEIGHT as u64);
-    pb.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})")
-            .progress_chars("*>-")
-    );
+fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>) -> RResult<ImageBuffer<image::Rgb<u8>, Vec<u8>>>
+{
+    let pb = pbar::init(HEIGHT as u64);
 
     let mut img = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
+
+    time.set("render");
 
     let lines: Vec<_> = (0..HEIGHT).into_par_iter().map(|y| {
         pb.inc(1);
@@ -103,23 +127,12 @@ fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(mut time: TimeSlice, trace
 
     time.set("copy");
 
-    for (y, line) in lines.iter().enumerate().take(HEIGHT) {
-        assert_eq!(line.len(), WIDTH);
-        for (x, pixel) in line.iter().enumerate().take(WIDTH) {
+    for (y, line) in lines.iter().enumerate() {
+        for (x, pixel) in line.iter().enumerate() {
             img.put_pixel(x as u32, y as u32, image::Rgb(pixel.to_array()));
         }
     }
     pb.finish();
 
-    time.set("write");
-
-    let buffer = File::create("output.png")?;
-    let png = PngEncoder::new(buffer);
-    png.encode(&img.into_raw(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?;
-
-    info!("render complete");
-    time.stop();
-    time.show();
-
-    Ok(())
+    Ok(img)
 }
