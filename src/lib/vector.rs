@@ -43,6 +43,22 @@ impl<F: Float> Vectorx<F> for Vector<F>
         Vector { x: F::ZERO, y: F::ZERO, z: F::ONE }
     }
 
+    fn into_point3(self) -> bvh::Point3 {
+        bvh::Point3::new(
+            self.x.to_f32().unwrap_or_default(),
+            self.y.to_f32().unwrap_or_default(),
+            self.z.to_f32().unwrap_or_default(),
+        )
+    }
+
+    fn into_vector3(self) -> bvh::Vector3 {
+        bvh::Vector3::new(
+            self.x.to_f32().unwrap_or_default(),
+            self.y.to_f32().unwrap_or_default(),
+            self.z.to_f32().unwrap_or_default(),
+        )
+    }
+
     fn polar_angles(self) -> (F, F)
     {
         let theta = self.x.atan2(self.z);
@@ -65,6 +81,8 @@ where
     fn identity_y() -> Self;
     fn identity_z() -> Self;
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
+    fn into_point3(self) -> bvh::Point3;
+    fn into_vector3(self) -> bvh::Vector3;
 
     #[inline]
     fn vector_to(self, other: Self) -> Self
