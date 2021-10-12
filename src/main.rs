@@ -109,7 +109,7 @@ fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<
 {
     let buffer = File::create(name)?;
     let png = PngEncoder::new(buffer);
-    Ok(png.encode(&img.inner(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?)
+    Ok(png.encode(img.inner(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?)
 }
 
 fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>) -> RResult<ImageBuffer<image::Rgb<u8>, Vec<u8>>>
