@@ -12,6 +12,8 @@ use std::io::Read;
 use std::path::Path;
 use std::env;
 
+use indicatif::ParallelProgressIterator;
+
 use image::{ColorType, ImageBuffer, GenericImageView};
 use image::png::PngEncoder;
 
@@ -120,9 +122,8 @@ fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, trac
 
     time.set("render");
 
-    let lines: Vec<_> = (0..HEIGHT).into_par_iter().map(|y| {
-        pb.inc(1);
-        tracer.generate_span(y as u32)
+    let lines: Vec<_> = (0..height).into_par_iter().progress_with(pb).map(|y| {
+        tracer.generate_span(y)
     }).collect();
 
     time.set("copy");
@@ -132,7 +133,6 @@ fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, trac
             img.put_pixel(x as u32, y as u32, image::Rgb(pixel.to_array()));
         }
     }
-    pb.finish();
 
     Ok(img)
 }
