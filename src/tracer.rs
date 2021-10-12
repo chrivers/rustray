@@ -1,5 +1,3 @@
-use image::{GenericImage, Pixel};
-
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
@@ -51,38 +49,6 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         colors / (fsx * fsy)
     }
 
-    fn _render_line<I, P>(&self, y: u32, output_line: u32, target: &mut I)
-        where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>
-    {
-        let (xres, yres) = self.camera.size();
-        let fx = F::from_usize(xres);
-        let fy = F::from_usize(yres);
-        let py = F::from_u32(y);
-        for x in 0..target.width()
-        {
-            let px = F::from_u32(x);
-            let color = self.render_pixel(px / fx, py / fy, fx, fy);
-            let chans = color.to_array();
-            let pixel = P::from_slice(&chans);
-            target.put_pixel(x, output_line, *pixel);
-        }
-    }
-
-    pub fn render_line<I, P>(&self, y: u32, target: &mut I)
-        where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>
-    {
-        self._render_line(y, y, target)
-    }
-
-    pub fn render_span<I, P>(&self, y: u32, target: &mut I)
-        where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>
-    {
-        self._render_line(y, 0, target)
-    }
-
     pub fn generate_span(&self, y: u32) -> Vec<Color<F>>
     {
         let (xres, yres) = self.camera.size();
@@ -95,16 +61,6 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
                 self.render_pixel(px/fx, py/fy, fx, fy)
             }
         ).collect()
-    }
-
-    pub fn render_image<I, P>(&self, target: &mut I)
-        where I: GenericImage<Pixel=P>,
-              P: Pixel<Subpixel=u8>
-    {
-        for y in 0..target.height()
-        {
-            self.render_line(y, target)
-        }
     }
 }
 
