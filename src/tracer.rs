@@ -47,12 +47,12 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
     pub fn generate_span(&self, y: u32) -> Vec<Color<F>>
     {
         let (xres, yres) = self.camera.size();
-        let fx = F::from_usize(xres);
-        let fy = F::from_usize(yres);
+        let fx = F::from_u32(xres);
+        let fy = F::from_u32(yres);
         let py = F::from_u32(y);
         (0..xres).map(
             |x| {
-                let px = F::from_usize(x);
+                let px = F::from_u32(x);
                 self.render_pixel(px/fx, py/fy, fx, fy)
             }
         ).collect()

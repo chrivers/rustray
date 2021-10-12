@@ -12,8 +12,8 @@ pub struct Camera<F: Float>
     dir: Vector<F>,
     hor: Vector<F>,
     ver: Vector<F>,
-    xres: usize,
-    yres: usize,
+    xres: u32,
+    yres: u32,
 }
 
 impl<F: Float> Camera<F>
@@ -23,8 +23,8 @@ impl<F: Float> Camera<F>
         lookat: Vector<F>,
         hor: Vector<F>,
         ver: Vector<F>,
-        xres: usize,
-        yres: usize,
+        xres: u32,
+        yres: u32,
     ) -> Camera<F>
     {
         let dir = (lookat - pos).normalize();
@@ -38,8 +38,8 @@ impl<F: Float> Camera<F>
         lookat: Vector<F>,
         updir: Vector<F>,
         fov: F,
-        xres: usize,
-        yres: usize
+        xres: u32,
+        yres: u32
     ) -> Camera<F>
     {
         Self::build(pos, lookat - pos, updir, fov, xres, yres, None)
@@ -50,15 +50,15 @@ impl<F: Float> Camera<F>
         viewdir: Vector<F>,
         updir: Vector<F>,
         fov: F,
-        xres: usize,
-        yres: usize,
+        xres: u32,
+        yres: u32,
         aspect: Option<F>,
     ) -> Camera<F>
     {
         let dir = viewdir.normalize();
         let u = dir.cross(updir).normalize();
         let v = u.cross(dir).normalize();
-        let aspect_ratio = aspect.unwrap_or_else(|| F::from_usize(xres) / F::from_usize(yres));
+        let aspect_ratio = aspect.unwrap_or_else(|| F::from_u32(xres) / F::from_u32(yres));
         let viewplane_height = Deg(fov / F::TWO).tan() * F::TWO;
         let viewplane_width = aspect_ratio * viewplane_height;
         let x_inc_vector = u * viewplane_width;
@@ -87,7 +87,7 @@ impl<F: Float> Camera<F>
         Ray::new(self.pos, vpp.normalize(), 0)
     }
 
-    pub fn size(self) -> (usize, usize)
+    pub fn size(self) -> (u32, u32)
     {
         (self.xres, self.yres)
     }

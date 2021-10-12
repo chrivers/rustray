@@ -174,7 +174,7 @@ where
         Ok(Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).dynamic())
     }
 
-    pub fn parse_camera(p: Pair<Rule>, width: usize, height: usize) -> RResult<Camera<F>>
+    pub fn parse_camera(p: Pair<Rule>, width: u32, height: u32) -> RResult<Camera<F>>
     {
         let mut position: Vector<F> = Vector::zero();
         let mut viewdir: Option<Vector<F>> = None;
@@ -604,7 +604,7 @@ where
         }
     }
 
-    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: usize, height: usize) -> RResult<BoxScene<F>>
+    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<F>>
     {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn RayTarget<F>>> = vec![];

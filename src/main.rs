@@ -48,8 +48,8 @@ use crate::format::sbt::{SbtParser, Rule};
 #[allow(unused_imports)]
 use crate::tracer::Tracer;
 
-const WIDTH:  usize = 1440;
-const HEIGHT: usize = 1440;
+const WIDTH:  u32 = 1440;
+const HEIGHT: u32 = 1440;
 
 fn main() -> RResult<()>
 {
