@@ -3,21 +3,21 @@ use image::{GenericImage, Pixel};
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
-use crate::scene::{RayTarget, RayTracer, Light};
+use crate::scene::{RayTarget, RayTracer, Light, Scene};
 
-pub struct Tracer<'a, F: Float, T: RayTarget<F>>
+pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
 {
-    camera: Camera<F>,
-    objects: Vec<T>,
+    scene: &'a Scene<F, T, L>,
+    camera: &'a Camera<F>,
     lights: Vec<&'a dyn Light<F>>,
 }
 
-impl<'a, F: Float, T: RayTarget<F>> Tracer<'a, F, T>
+impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
 {
-    pub fn new(camera: Camera<F>, objects: Vec<T>, lights: &'a [impl Light<F>]) -> Self
+    pub fn new(scene: &'a Scene<F, T, L>, camera: &'a Camera<F>) -> Self
     {
-        let lights = lights.iter().map(|x| (x as &dyn Light<F>)).collect();
-        Self { camera, objects, lights }
+        let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
+        Self { scene, camera, lights }
     }
 
     fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
@@ -119,7 +119,7 @@ impl<'a, F: Float, T: RayTarget<F>> Tracer<'a, F, T>
 }
 
 
-impl<'a, F: Float, T: RayTarget<F>> RayTracer<F> for Tracer<'a, F, T>
+impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T, L>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
@@ -129,7 +129,7 @@ impl<'a, F: Float, T: RayTarget<F>> RayTracer<F> for Tracer<'a, F, T>
         hitray.pos += hitray.dir * F::BIAS;
 
         let mut hits: Vec<_> = vec![];
-        for curobj in &self.objects
+        for curobj in &self.scene.objects
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
@@ -158,7 +158,7 @@ impl<'a, F: Float, T: RayTarget<F>> RayTracer<F> for Tracer<'a, F, T>
         let mut dist = F::max_value();
         let mut hit: Option<Hit<F>> = None;
 
-        for curobj in &self.objects
+        for curobj in &self.scene.objects
         {
             if let Some(curhit) = curobj.intersect(ray)
             {

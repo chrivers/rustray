@@ -78,11 +78,11 @@ fn main() -> RResult<()>
     /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
     info!("Loaded scene\ncams={}\nobjs={}\nlights={}", scene.cameras.len(), scene.objects.len(), scene.lights.len());
-    draw_image(time, Tracer::new(scene.cameras[0], scene.objects, &scene.lights))
+    draw_image(time, Tracer::new(&scene, &scene.cameras[0]))
 }
 
 
-fn draw_image<F: Float, T: RayTarget<F>>(mut time: TimeSlice, tracer: Tracer<F, T>) -> RResult<()>
+fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(mut time: TimeSlice, tracer: Tracer<F, T, L>) -> RResult<()>
 {
     time.set("render");
 
