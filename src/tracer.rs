@@ -10,6 +10,9 @@ pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
     scene: &'a Scene<F, T, L>,
     camera: &'a Camera<F>,
     lights: Vec<&'a dyn Light<F>>,
+    sx: u32,
+    sy: u32,
+    background: Color<F>,
 }
 
 impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
@@ -17,7 +20,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
     pub fn new(scene: &'a Scene<F, T, L>, camera: &'a Camera<F>) -> Self
     {
         let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
-        Self { scene, camera, lights }
+        Self { scene, camera, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)) }
     }
 
     fn _render_pixel(&self, point: Point<F>) -> Option<Color<F>>
@@ -29,33 +32,23 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
 
     pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Option<Color<F>>
     {
-        if cfg!(feature="antialias")
+        let mut colors = Color::black();
+        let fsx = F::from_u32(self.sx);
+        let fsy = F::from_u32(self.sy);
+        for xa in 0..self.sx
         {
-            const SAMPLES_X: u32 = 2;
-            const SAMPLES_Y: u32 = 2;
-            let mut colors = [Color::black(); (SAMPLES_X * SAMPLES_Y) as usize];
-            let mut index = 0;
-            for xa in 0..SAMPLES_X
+            let pixelx = px + F::from_u32(xa) / (fsx * fx);
+            for ya in 0..self.sy
             {
-                for ya in 0..SAMPLES_Y
-                {
-                    let pixelx = px + F::from_u32(xa) / (F::from_u32(SAMPLES_X) * fx);
-                    let pixely = py + F::from_u32(ya) / (F::from_u32(SAMPLES_Y) * fy);
-                    if let Some(color) = self._render_pixel(Point::new(pixelx, pixely))
-                    {
-                        colors[index] = color.clamped();
-                        index += 1;
-                    }
+                let pixely = py + F::from_u32(ya) / (fsy * fy);
+                if let Some(color) = self._render_pixel(Point::new(pixelx, pixely)) {
+                    colors += color.clamped()
+                } else {
+                    colors += self.background
                 }
             }
-            if index > 0 {
-                Some(Color::mixed(&colors))
-            } else {
-                Some(Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)))
-            }
-        } else {
-            self._render_pixel(Point::new(px, py))
         }
+        Some(colors / (fsx * fsy))
     }
 
     fn _render_line<I, P>(&self, y: u32, output_line: u32, target: &mut I)
