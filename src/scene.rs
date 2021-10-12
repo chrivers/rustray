@@ -1,5 +1,6 @@
 use crate::lib::{Float, Vector, Color, Camera};
 use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::geometry::Geometry;
 
 pub trait HasPosition<F: Float>
 {
@@ -19,11 +20,6 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait RayTarget<F: Float> : Sync
-{
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
-}
-
 pub trait HitTarget<F: Float> : Sync
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>;
@@ -41,7 +37,7 @@ pub trait RayTracer<F: Float> : Sync
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
 }
 
-impl<F: Float> RayTarget<F> for Box<dyn RayTarget<F>>
+impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
@@ -49,11 +45,11 @@ impl<F: Float> RayTarget<F> for Box<dyn RayTarget<F>>
     }
 }
 
-pub struct Scene<F: Float, T: RayTarget<F>, L: Light<F>>
+pub struct Scene<F: Float, T: Geometry<F>, L: Light<F>>
 {
     pub cameras: Vec<Camera<F>>,
     pub objects: Vec<T>,
     pub lights: Vec<L>,
 }
 
-pub type BoxScene<F> = Scene<F, Box<dyn RayTarget<F>>, Box<dyn Light<F>>>;
+pub type BoxScene<F> = Scene<F, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;

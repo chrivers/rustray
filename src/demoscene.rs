@@ -6,12 +6,12 @@ use obj::ObjData;
 
 use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
 use crate::lib::vector::Vectorx;
-use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh};
+use crate::geometry::{Geometry, Sphere, Plane, Triangle, TriangleMesh};
 use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
 use crate::sampler::{BilinearSampler};
 
-use crate::scene::{RayTarget, Light, Scene, BoxScene};
+use crate::scene::{Light, Scene, BoxScene};
 
 use crate::{point, vec3};
 
@@ -134,7 +134,7 @@ where
         mat_white
     );
 
-    let objects: Vec<Box<dyn RayTarget<F>>> = vec![
+    let objects: Vec<Box<dyn Geometry<F>>> = vec![
         box plane2,
         box plane4,
         box plane6,

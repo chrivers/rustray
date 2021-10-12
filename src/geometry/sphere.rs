@@ -22,7 +22,7 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Sphere<F, M>
     }
 }
 
-impl<F: Float, M: Material<F=F>> RayTarget<F> for Sphere<F, M>
+impl<F: Float, M: Material<F=F>> Geometry<F> for Sphere<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {

@@ -15,7 +15,7 @@ use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
 use crate::scene::{Scene, BoxScene};
 use crate::material::{Phong, Smart, Triblend};
-use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, RayTarget, Vectorx, Light, point, vec3};
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, Geometry, Vectorx, Light, point, vec3};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -224,7 +224,7 @@ where
 
     /* Geometry types */
 
-    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -241,7 +241,7 @@ where
         Ok(box Cylinder::new(xfrm, capped, mat))
     }
 
-    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -260,7 +260,7 @@ where
         Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
     }
 
-    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -316,7 +316,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -359,7 +359,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -457,7 +457,7 @@ where
         Ok(box TriangleMesh::new(tris))
     }
 
-    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -528,7 +528,7 @@ where
         Ok(res)
     }
 
-    pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -538,7 +538,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -549,7 +549,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_val4(body.next().unwrap());
@@ -564,7 +564,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         let body = p.into_inner();
         let mut it: Vec<Pair<Rule>> = body.collect();
@@ -585,7 +585,7 @@ where
         Self::parse_statement(it.remove(0), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn RayTarget<F>>>
+    pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn Geometry<F>>>
     {
         /* info!("-- statement: {:?} {:.4?}", p.as_rule(), xfrm); */
         match p.as_rule() {
@@ -607,7 +607,7 @@ where
     pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<F>>
     {
         let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn RayTarget<F>>> = vec![];
+        let mut objects: Vec<Box<dyn Geometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut version: SbtVersion = SbtVersion::Sbt1_0;
 

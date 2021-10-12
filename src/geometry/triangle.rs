@@ -112,7 +112,7 @@ impl<F: Float, M: Material<F=F> + Clone> HitTarget<F> for Triangle<F, M>
     }
 }
 
-impl<F: Float, M: Material<F=F> + Clone> RayTarget<F> for Triangle<F, M>
+impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {

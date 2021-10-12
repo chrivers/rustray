@@ -2,9 +2,10 @@ use crate::point;
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::lib::vector::{Vectorx, MetricSpace};
-use crate::scene::{RayTarget, RayTracer, Light, Scene};
+use crate::geometry::Geometry;
+use crate::scene::{RayTracer, Light, Scene};
 
-pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
+pub struct Tracer<'a, F: Float, T: Geometry<F>, L: Light<F>>
 {
     scene: &'a Scene<F, T, L>,
     lights: Vec<&'a dyn Light<F>>,
@@ -14,7 +15,7 @@ pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
     maxlvl: u32,
 }
 
-impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
+impl<'a, F: Float, T: Geometry<F>, L: Light<F>> Tracer<'a, F, T, L>
 {
     pub fn new(scene: &'a Scene<F, T, L>) -> Self
     {
@@ -65,7 +66,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
 }
 
 
-impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T, L>
+impl<'a, F: Float, T: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T, L>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {

@@ -25,7 +25,7 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Cone<F, M>
     }
 }
 
-impl<F: Float, M: Material<F=F>> RayTarget<F> for Cone<F, M>
+impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
 {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */

@@ -47,7 +47,7 @@ Tracer
 The main starting point for rustray is the `Tracer`. It is supplied with:
 
  - A virtual camera (`Camera<F>`)
- - A list of objects in the scene (`RayTarget<F>`)
+ - A list of objects in the scene (`Geometry<F>`)
  - A list of lights (`Light<F>`)
 
 like so:
@@ -66,9 +66,9 @@ a practical example.
 Objects
 -------
 
-The parameter `objects` is a list of things that all implement `RayTarget<F>`
+The parameter `objects` is a list of things that all implement `Geometry<F>`
 
-Each `RayTarget<F>` can test itself for intersection with a ray. If so, they
+Each `Geometry<F>` can test itself for intersection with a ray. If so, they
 return a `Hit<F>` describing the hit point where the intersection took place,
 and the direction of the ray.
 

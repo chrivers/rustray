@@ -1,3 +1,11 @@
+use crate::lib::Float;
+use crate::lib::ray::{Ray, Hit};
+
+pub trait Geometry<F: Float> : Sync
+{
+    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
+}
+
 pub(crate) mod geo_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point};
@@ -5,6 +13,7 @@ pub(crate) mod geo_util {
     pub use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
     pub use crate::scene::*;
     pub use crate::material::Material;
+    pub use super::Geometry;
 
     pub use cgmath::{Matrix4, Transform};
 }

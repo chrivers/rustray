@@ -36,9 +36,9 @@ use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeS
 #[allow(unused_imports)]
 use crate::lib::vector::Vectorx;
 #[allow(unused_imports)]
-use crate::geometry::{Sphere, Plane, Triangle, TriangleMesh, Cone, Cylinder};
+use crate::geometry::{Geometry, Sphere, Plane, Triangle, TriangleMesh, Cone, Cylinder};
 #[allow(unused_imports)]
-use crate::scene::{RayTarget, Light, Scene, BoxScene};
+use crate::scene::{Light, Scene, BoxScene};
 #[allow(unused_imports)]
 use crate::sampler::{Sampler, Bilinear, BilinearSampler, DynSampler};
 #[allow(unused_imports)]
@@ -114,7 +114,7 @@ fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<
     Ok(png.encode(img.inner(), img.width(), img.height(), ColorType::Rgb8)?)
 }
 
-fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+fn draw_image<F: Float, T: Geometry<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
 {
     let pb = pbar::init(height as u64);
 

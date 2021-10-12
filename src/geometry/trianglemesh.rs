@@ -12,7 +12,7 @@ pub struct TriangleMesh<F: Float, M: Material<F=F>>
     bvh: BVH,
 }
 
-impl<F: Float, M: Material<F=F> + Clone> RayTarget<F> for TriangleMesh<F, M>
+impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
