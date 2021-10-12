@@ -1,7 +1,7 @@
 use crate::point;
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
+use crate::lib::vector::{Vectorx, MetricSpace};
 use crate::scene::{RayTarget, RayTracer, Light, Scene};
 
 pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
@@ -69,29 +69,26 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, 
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
         let light_pos = light.get_position();
-        let light_length = light_pos.distance2(hit.pos);
-        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), 0);
+        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), hit.lvl);
         hitray.pos += hitray.dir * F::BIAS;
 
-        let mut hits: Vec<_> = vec![];
+        let mut best_length = light_pos.distance2(hit.pos);
+        let mut best_color = None;
+
         for curobj in &self.scene.objects
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
-                if hit.pos.distance2(curhit.pos) < light_length {
-                    hits.push(curhit)
+                let cur_length = hit.pos.distance2(curhit.pos);
+                if cur_length < best_length {
+                    if let Some(color) = maxel.mat.shadow(&hit, maxel, light, self) {
+                        best_color = Some(color);
+                        best_length = cur_length;
+                    }
                 }
             }
         }
-
-        hits.sort_by(|a, b| (a.pos - light_pos).magnitude2().partial_cmp(&(b.pos - light_pos).magnitude2()).unwrap_or(std::cmp::Ordering::Equal) );
-
-        for hit in hits {
-            if let Some(col) = maxel.mat.shadow(&hit, maxel, light, self) {
-                return Some(col)
-            }
-        }
-        None
+        best_color
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>
