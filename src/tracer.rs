@@ -30,7 +30,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         self.ray_trace(&ray)
     }
 
-    pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Option<Color<F>>
+    pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Color<F>
     {
         let mut colors = Color::black();
         let fsx = F::from_u32(self.sx);
@@ -48,7 +48,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
                 }
             }
         }
-        Some(colors / (fsx * fsy))
+        colors / (fsx * fsy)
     }
 
     fn _render_line<I, P>(&self, y: u32, output_line: u32, target: &mut I)
@@ -63,12 +63,9 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         {
             let px = F::from_u32(x);
             let color = self.render_pixel(px / fx, py / fy, fx, fy);
-            if let Some(color) = color
-            {
-                let chans = color.to_array();
-                let pixel = P::from_slice(&chans);
-                target.put_pixel(x, output_line, *pixel);
-            }
+            let chans = color.to_array();
+            let pixel = P::from_slice(&chans);
+            target.put_pixel(x, output_line, *pixel);
         }
     }
 
@@ -95,7 +92,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         (0..xres).map(
             |x| {
                 let px = F::from_usize(x);
-                self.render_pixel(px/fx, py/fy, fx, fy).unwrap_or_else(Color::black)
+                self.render_pixel(px/fx, py/fy, fx, fy)
             }
         ).collect()
     }
