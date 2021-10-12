@@ -14,7 +14,7 @@ use std::env;
 
 use indicatif::ParallelProgressIterator;
 
-use image::{ColorType, ImageBuffer, GenericImageView};
+use image::{Rgb, ColorType, ImageBuffer, GenericImageView};
 use image::png::PngEncoder;
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
@@ -114,7 +114,7 @@ fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<
     Ok(png.encode(img.inner(), WIDTH as u32, HEIGHT as u32, ColorType::Rgb8)?)
 }
 
-fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>) -> RResult<ImageBuffer<image::Rgb<u8>, Vec<u8>>>
+fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, T, L>) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
 {
     let pb = pbar::init(HEIGHT as u64);
 
