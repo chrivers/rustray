@@ -26,7 +26,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Plane<F, M>
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
         let t = ray.intersect_plane(&self.pos, &self.dir1, &self.dir2)?;
-        Some(ray.hit_at(t, self, None))
+        Some(ray.hit_at(t, self))
     }
 
 }

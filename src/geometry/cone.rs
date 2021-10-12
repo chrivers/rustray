@@ -146,7 +146,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             return None
         }
 
-        Some(ray.hit_at(root, self, Some(self.xfrm.transform_vector(normal).normalize())))
+        Some(ray.hit_at(root, self).with_normal(self.xfrm.transform_vector(normal).normalize()))
     }
 
 }

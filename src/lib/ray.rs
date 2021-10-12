@@ -21,6 +21,7 @@ pub struct Hit<'a, F: Float>
     pub dir: Vector<F>,
     pub obj: &'a dyn HitTarget<F>,
     pub nml: Option<Vector<F>>,
+    pub uv:  Option<Point<F>>,
     pub lvl: u32,
 }
 
@@ -46,9 +47,9 @@ impl<'a, F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>, nml: Option<Vector<F>>) -> Hit<'a, F>
+    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>) -> Hit<'a, F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl, nml }
+        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl, nml: None, uv: None }
     }
 
     pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>>
@@ -282,6 +283,16 @@ impl<'a, F: Float> Hit<'a, F>
     {
         let refr = self.dir.refract(normal, ior);
         Ray::new(self.pos + refr * F::BIAS, refr, self.lvl + 1)
+    }
+
+    pub fn with_normal(self, nml: Vector<F>) -> Self
+    {
+        Self { nml: Some(nml), ..self }
+    }
+
+    pub fn with_uv(self, uv: Point<F>) -> Self
+    {
+        Self { uv: Some(uv), ..self }
     }
 }
 

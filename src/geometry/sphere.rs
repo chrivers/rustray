@@ -28,7 +28,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Sphere<F, M>
     {
         let t = ray.intersect_sphere(&self.pos, self.radius2)?;
 
-        Some(ray.hit_at(t, self, None))
+        Some(ray.hit_at(t, self))
     }
 
 }

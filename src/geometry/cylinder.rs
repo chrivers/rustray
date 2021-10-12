@@ -149,15 +149,15 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
             if let Some((t1, n1)) = isect_caps(&r) {
                 if let Some((t2, n2)) = body {
                     if t2 < t1 {
-                        return Some(ray.hit_at(t2, self, Some(self.xfrm.transform_vector(n2).normalize())))
+                        return Some(ray.hit_at(t2, self).with_normal(self.xfrm.transform_vector(n2).normalize()))
                     }
                 }
-                return Some(ray.hit_at(t1, self, Some(self.xfrm.transform_vector(n1).normalize())))
+                return Some(ray.hit_at(t1, self).with_normal(self.xfrm.transform_vector(n1).normalize()))
             }
         }
 
         if let Some((t2, n2)) = body {
-            Some(ray.hit_at(t2, self, Some(self.xfrm.transform_vector(n2).normalize())))
+            Some(ray.hit_at(t2, self).with_normal(self.xfrm.transform_vector(n2).normalize()))
         } else {
             None
         }
