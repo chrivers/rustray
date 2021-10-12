@@ -7,7 +7,6 @@ use crate::scene::{RayTarget, RayTracer, Light, Scene};
 pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
 {
     scene: &'a Scene<F, T, L>,
-    camera: &'a Camera<F>,
     lights: Vec<&'a dyn Light<F>>,
     sx: u32,
     sy: u32,
@@ -16,13 +15,13 @@ pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
 
 impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
 {
-    pub fn new(scene: &'a Scene<F, T, L>, camera: &'a Camera<F>) -> Self
+    pub fn new(scene: &'a Scene<F, T, L>) -> Self
     {
         let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
-        Self { scene, camera, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)) }
+        Self { scene, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)) }
     }
 
-    pub fn render_pixel(&self, px: F, py: F, fx: F, fy: F) -> Color<F>
+    pub fn render_pixel(&self, camera: &Camera<F>, px: F, py: F, fx: F, fy: F) -> Color<F>
     {
         let mut colors = Color::black();
         let fsx = F::from_u32(self.sx);
@@ -33,7 +32,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
             for ya in 0..self.sy
             {
                 let pixely = py + F::from_u32(ya) / (fsy * fy);
-                let ray = self.camera.get_ray(point!(pixelx, pixely));
+                let ray = camera.get_ray(point!(pixelx, pixely));
                 if let Some(color) = self.ray_trace(&ray) {
                     colors += color.clamped()
                 } else {
@@ -44,18 +43,23 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
         colors / (fsx * fsy)
     }
 
-    pub fn generate_span(&self, y: u32) -> Vec<Color<F>>
+    pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> Vec<Color<F>>
     {
-        let (xres, yres) = self.camera.size();
+        let (xres, yres) = camera.size();
         let fx = F::from_u32(xres);
         let fy = F::from_u32(yres);
         let py = F::from_u32(y);
         (0..xres).map(
             |x| {
                 let px = F::from_u32(x);
-                self.render_pixel(px/fx, py/fy, fx, fy)
+                self.render_pixel(camera, px/fx, py/fy, fx, fy)
             }
         ).collect()
+    }
+
+    pub fn scene(&self) -> &Scene<F, T, L>
+    {
+        &self.scene
     }
 }
 

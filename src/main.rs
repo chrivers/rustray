@@ -81,7 +81,7 @@ fn main() -> RResult<()>
 
     info!("Loaded scene\ncams={}\nobjs={}\nlights={}", scene.cameras.len(), scene.objects.len(), scene.lights.len());
 
-    let img = draw_image(&mut time, Tracer::new(&scene, &scene.cameras[0]), WIDTH, HEIGHT)?;
+    let img = draw_image(&mut time, Tracer::new(&scene), WIDTH, HEIGHT)?;
 
     time.set("write");
     save_image("output.png", img)?;
@@ -122,8 +122,10 @@ fn draw_image<F: Float, T: RayTarget<F>, L: Light<F>>(time: &mut TimeSlice, trac
 
     time.set("render");
 
+    let camera = &tracer.scene().cameras[0];
+
     let lines: Vec<_> = (0..height).into_par_iter().progress_with(pb).map(|y| {
-        tracer.generate_span(y)
+        tracer.generate_span(camera, y)
     }).collect();
 
     time.set("copy");
