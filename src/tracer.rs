@@ -11,6 +11,7 @@ pub struct Tracer<'a, F: Float, T: RayTarget<F>, L: Light<F>>
     sx: u32,
     sy: u32,
     background: Color<F>,
+    maxlvl: u32,
 }
 
 impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
@@ -18,7 +19,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> Tracer<'a, F, T, L>
     pub fn new(scene: &'a Scene<F, T, L>) -> Self
     {
         let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
-        Self { scene, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)) }
+        Self { scene, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)), maxlvl: 5 }
     }
 
     pub fn render_pixel(&self, camera: &Camera<F>, px: F, py: F, fx: F, fy: F) -> Color<F>
@@ -93,7 +94,7 @@ impl<'a, F: Float, T: RayTarget<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, 
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>
     {
-        if ray.lvl > 5 {
+        if ray.lvl > self.maxlvl {
             return None;
         }
 
