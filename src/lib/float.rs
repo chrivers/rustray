@@ -47,7 +47,7 @@ impl Lerp for f64 {
 
 impl Float for f32
 {
-    const BIAS: Self = 1e-4;
+    const BIAS: Self = 1e-6;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
     const ONE:  Self = 1.0;
@@ -69,7 +69,7 @@ impl Float for f32
 
 impl Float for f64
 {
-    const BIAS: Self = 1e-10;
+    const BIAS: Self = 1e-9;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
     const ONE:  Self = 1.0;
