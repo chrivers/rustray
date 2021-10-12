@@ -250,6 +250,25 @@ impl<'a, F: Float> Ray<F>
 
 }
 
+impl<F: Float> Into<bvh::ray::Ray> for Ray<F>
+{
+    fn into(self) -> bvh::ray::Ray
+    {
+        bvh::ray::Ray::new(
+            self.pos.into_vector3(),
+            self.dir.into_vector3(),
+        )
+    }
+}
+
+impl<F: Float> Into<bvh::ray::Ray> for &Ray<F>
+{
+    fn into(self) -> bvh::ray::Ray
+    {
+        (*self).into()
+    }
+}
+
 /* Hit */
 impl<'a, F: Float> Hit<'a, F>
 {
