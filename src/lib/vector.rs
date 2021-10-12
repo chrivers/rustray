@@ -21,7 +21,7 @@ vec3!(x, y, z)
 */
 #[macro_export]
 macro_rules! vec3 {
-    ($( $vals:expr ),+) => { Vector::new( $($vals.into()),+ ) }
+    ($( $vals:expr ),+ $(,)?) => { Vector::new( $($vals.into()),+ ) }
 }
 
 pub type Vector<F> = cgmath::Vector3<F>;
