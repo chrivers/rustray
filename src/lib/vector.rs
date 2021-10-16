@@ -80,6 +80,11 @@ impl<F: Float> Vectorx<F> for Vector<F>
     {
         xfrm.transform_point(Point3::from_vec(*self)).to_vec()
     }
+
+    fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self
+    {
+        xfrm.transform_vector(*self).normalize()
+    }
 }
 
 
@@ -93,6 +98,7 @@ where
     fn min(&self, other: &Self) -> Self;
     fn max(&self, other: &Self) -> Self;
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
+    fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self;
     fn into_point3(self) -> bvh::Point3;
     fn into_vector3(self) -> bvh::Vector3;
 
