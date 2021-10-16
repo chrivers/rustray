@@ -8,9 +8,9 @@ use cgmath::{RelativeEq, AbsDiffEq, UlpsEq};
 
 pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Lerp + Debug + Display + Send + Sync + RelativeEq + AbsDiffEq<Epsilon = Self> + UlpsEq
 {
-    const BIAS: Self;
-    const BIAS2:Self;
-    const BIAS3:Self;
+    const BIAS: Self; // Basic offset to account for numerical imprecision
+    const BIAS2:Self; // Used for shadow rays
+    const BIAS3:Self; // Used for reflected/refracted rays
     const ZERO: Self;
     const HALF: Self;
     const ONE:  Self;
@@ -49,7 +49,7 @@ impl Lerp for f64 {
 
 impl Float for f32
 {
-    const BIAS: Self = 1e-6;
+    const BIAS: Self = 1e-7;
     const BIAS2:Self = 1e-5;
     const BIAS3:Self = 1e-3;
     const ZERO: Self = 0.0;
