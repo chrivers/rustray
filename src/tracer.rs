@@ -72,7 +72,7 @@ impl<'a, F: Float, T: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T
     {
         let light_pos = light.get_position();
         let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), hit.lvl);
-        hitray.pos += hitray.dir * F::BIAS;
+        hitray.pos += hitray.dir * F::BIAS2;
 
         let mut best_length = light_pos.distance2(hit.pos);
         let mut best_color = None;
