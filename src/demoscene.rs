@@ -9,7 +9,7 @@ use crate::lib::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh};
 use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
-use crate::sampler::{BilinearSampler};
+use crate::sampler::{BilinearSampler, NormalMap};
 
 use crate::scene::{Light, Scene, BoxScene};
 
@@ -87,10 +87,10 @@ where
     let mat_white  = Phong::white().dynamic();
 
     let mat_plane = ChessBoard::new(
-        Bumpmap::new(0.5.into(), tex0b.bilinear(), Phong::new(tex0r, tex0a.bilinear().texture())),
-        Bumpmap::new(0.5.into(), tex1b.bilinear(), Phong::new(tex1r, tex1a.bilinear().texture()))).dynamic();
+        Bumpmap::new(0.5.into(), NormalMap::new(tex0b.bilinear()), Phong::new(tex0r, tex0a.bilinear().texture())),
+        Bumpmap::new(0.5.into(), NormalMap::new(tex1b.bilinear()), Phong::new(tex1r, tex1a.bilinear().texture()))).dynamic();
 
-    let mat_bmp2 = Bumpmap::new(0.5.into(), tex2b.bilinear(), Phong::new(tex2r, tex2a.bilinear().texture())).dynamic();
+    let mat_bmp2 = Bumpmap::new(0.5.into(), NormalMap::new(tex2b.bilinear()), Phong::new(tex2r, tex2a.bilinear().texture())).dynamic();
 
     time.set("objload");
     let reader = File::open("models/teapot.obj").expect("Failed to open model file");
