@@ -390,15 +390,8 @@ where
         info!("building..");
 
         if normals.is_empty() {
-            normals = points.iter().map(|_| Vector::zero()).collect();
-            for face in &faces {
-                let ab = points[face[0]] - points[face[1]];
-                let ac = points[face[0]] - points[face[2]];
-                let n = ab.cross(ac);
-                normals[face[0]] += n;
-                normals[face[1]] += n;
-                normals[face[2]] += n;
-            }
+            normals = face_normals(&faces, &points);
+            /* normals = smooth_normals(&faces, &points); */
         }
 
         info!("building2..");
