@@ -3,6 +3,7 @@ use super::geo_util::*;
 pub struct Cylinder<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
+    ifrm: Matrix4<F>,
     capped: bool,
     mat: M,
     ni: usize,
@@ -31,7 +32,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.inverse_transform(&self.xfrm)?;
+        let r = ray.transform(&self.ifrm)?;
 
         fn isect_body<F: Float>(r: &Ray<F>, capped: bool) -> Option<(F, Vector<F>)>
         {
@@ -174,6 +175,7 @@ impl<F: Float, M: Material<F=F>> Cylinder<F, M>
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Cylinder<F, M>
     {
         let aabb = build_aabb_ranged(&xfrm, [-F::ONE, F::ONE], [-F::ONE, F::ONE], [F::ZERO, F::ONE]);
-        Cylinder { xfrm, capped, mat, aabb, ni: 0 }
+        let ifrm = xfrm.inverse_transform().unwrap();
+        Cylinder { xfrm, ifrm, capped, mat, aabb, ni: 0 }
     }
 }

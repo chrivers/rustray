@@ -3,6 +3,7 @@ use super::geo_util::*;
 pub struct Square<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
+    ifrm: Matrix4<F>,
     mat: M,
     aabb: AABB,
     ni: usize,
@@ -28,7 +29,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Square<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.inverse_transform(&self.xfrm)?;
+        let r = ray.transform(&self.ifrm)?;
 
         if r.dir.z == F::ZERO {
             return None
@@ -70,6 +71,7 @@ impl<F: Float, M: Material<F=F>> Square<F, M>
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Square<F, M>
     {
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::ZERO);
-        Square { xfrm, mat, aabb, ni: 0 }
+        let ifrm = xfrm.inverse_transform().unwrap();
+        Square { xfrm, ifrm, mat, aabb, ni: 0 }
     }
 }

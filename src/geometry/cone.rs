@@ -8,6 +8,7 @@ pub struct Cone<F: Float, M: Material<F=F>>
     capped: bool,
     mat: M,
     xfrm: Matrix4<F>,
+    ifrm: Matrix4<F>,
     aabb: AABB,
     ni: usize,
 }
@@ -35,7 +36,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.inverse_transform(&self.xfrm)?;
+        let r = ray.transform(&self.ifrm)?;
 
         let bot_r = self.bot_r.abs().max(F::BIAS);
         let top_r = self.top_r.abs().max(F::BIAS);
@@ -161,6 +162,7 @@ impl<F: Float, M: Material<F=F>> Cone<F, M>
     {
         let m = bot_r.max(top_r);
         let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
-        Cone { height, top_r, bot_r, capped, mat, xfrm, aabb, ni: 0 }
+        let ifrm = xfrm.inverse_transform().unwrap();
+        Cone { height, top_r, bot_r, capped, mat, xfrm, ifrm, aabb, ni: 0 }
     }
 }

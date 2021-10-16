@@ -3,6 +3,7 @@ use super::geo_util::*;
 pub struct Cube<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
+    ifrm: Matrix4<F>,
     mat: M,
     aabb: AABB,
     ni: usize,
@@ -28,7 +29,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.inverse_transform(&self.xfrm)?;
+        let r = ray.transform(&self.ifrm)?;
 
         let p = r.pos;
         let d = r.dir;
@@ -94,6 +95,7 @@ impl<F: Float, M: Material<F=F>> Cube<F, M>
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Cube<F, M>
     {
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);
-        Cube { xfrm, mat, aabb, ni: 0 }
+        let ifrm = xfrm.inverse_transform().unwrap();
+        Cube { xfrm, ifrm, mat, aabb, ni: 0 }
     }
 }

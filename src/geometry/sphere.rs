@@ -4,6 +4,7 @@ use num_traits::Zero;
 pub struct Sphere<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
+    ifrm: Matrix4<F>,
     mat: M,
     aabb: AABB,
     ni: usize,
@@ -30,7 +31,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Sphere<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.inverse_transform(&self.xfrm)?;
+        let r = ray.transform(&self.ifrm)?;
 
         let result = r.intersect_sphere(&Vector::zero(), F::ONE)?;
         let normal = r.extend(result);
@@ -48,7 +49,8 @@ impl<F: Float, M: Material<F=F>> Sphere<F, M>
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Sphere<F, M>
     {
         let aabb = build_aabb_symmetric(&xfrm, F::ONE, F::ONE, F::ONE);
-        Sphere { xfrm, mat, aabb, ni: 0 }
+        let ifrm = xfrm.inverse_transform().unwrap();
+        Sphere { xfrm, ifrm, mat, aabb, ni: 0 }
     }
 
     pub fn place(pos: Vector<F>, radius: F, mat: M) -> Sphere<F, M>
