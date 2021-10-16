@@ -6,6 +6,26 @@ pub struct Sphere<F: Float, M: Material<F=F>>
     dir1: Vector<F>,
     radius2: F,
     mat: M,
+    aabb: AABB,
+    ni: usize,
+}
+
+impl<F: Float, M: Material<F=F>> Bounded for Sphere<F, M>
+{
+    fn aabb(&self) -> AABB {
+        self.aabb
+    }
+}
+
+impl<F: Float, M: Material<F=F>> BHShape for Sphere<F, M>
+{
+    fn set_bh_node_index(&mut self, index: usize) {
+        self.ni = index;
+    }
+
+    fn bh_node_index(&self) -> usize {
+        self.ni
+    }
 }
 
 impl<F: Float, M: Material<F=F>> HitTarget<F> for Sphere<F, M>
@@ -37,7 +57,11 @@ impl<F: Float, M: Material<F=F>> Sphere<F, M>
 {
     pub fn new(pos: Vector<F>, radius: F, mat: M) -> Sphere<F, M>
     {
-        Sphere { pos, radius2: radius * radius, mat, dir1: Vector::identity_y() }
+        let mut aabb: AABB = AABB::empty();
+        let rad = vec3!(radius, radius, radius);
+        aabb.grow_mut(&(pos - rad).into_point3());
+        aabb.grow_mut(&(pos + rad).into_point3());
+        Sphere { pos, radius2: radius * radius, mat, dir1: Vector::identity_y(), aabb, ni: 0 }
     }
 }
 
