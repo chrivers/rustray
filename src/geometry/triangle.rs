@@ -28,6 +28,7 @@ pub struct Triangle<F: Float, M: Material<F=F>>
     mat: M,
 }
 
+aabb_impl_fm!(Triangle<F, M>);
 
 impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
 {
@@ -40,26 +41,6 @@ impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
         write!(f, ", nc:")?; Debug::fmt(&self.nc, f)?;
         f.write_str("}")
     }
-}
-
-impl<F: Float, M: Material<F=F>> Bounded for Triangle<F, M> {
-
-    fn aabb(&self) -> AABB {
-        self.aabb
-    }
-
-}
-
-impl<F: Float, M: Material<F=F>> BHShape for Triangle<F, M> {
-
-    fn set_bh_node_index(&mut self, index: usize) {
-        self.ni = index;
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.ni
-    }
-
 }
 
 impl<F: Float, M: Material<F=F>> Triangle<F, M> {

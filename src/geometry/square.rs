@@ -8,23 +8,7 @@ pub struct Square<F: Float, M: Material<F=F>>
     ni: usize,
 }
 
-impl<F: Float, M: Material<F=F>> Bounded for Square<F, M>
-{
-    fn aabb(&self) -> AABB {
-        self.aabb
-    }
-}
-
-impl<F: Float, M: Material<F=F>> BHShape for Square<F, M>
-{
-    fn set_bh_node_index(&mut self, index: usize) {
-        self.ni = index;
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.ni
-    }
-}
+aabb_impl_fm!(Square<F, M>);
 
 impl<F: Float, M: Material<F=F>> HitTarget<F> for Square<F, M>
 {

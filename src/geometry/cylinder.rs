@@ -9,23 +9,7 @@ pub struct Cylinder<F: Float, M: Material<F=F>>
     aabb: AABB,
 }
 
-impl<F: Float, M: Material<F=F>> Bounded for Cylinder<F, M>
-{
-    fn aabb(&self) -> AABB {
-        self.aabb
-    }
-}
-
-impl<F: Float, M: Material<F=F>> BHShape for Cylinder<F, M>
-{
-    fn set_bh_node_index(&mut self, index: usize) {
-        self.ni = index;
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.ni
-    }
-}
+aabb_impl_fm!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F=F>> HitTarget<F> for Cylinder<F, M>
 {

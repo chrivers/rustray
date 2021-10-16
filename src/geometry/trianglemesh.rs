@@ -13,25 +13,7 @@ pub struct TriangleMesh<F: Float, M: Material<F=F>>
     ni: usize,
 }
 
-impl<F: Float, M: Material<F=F>> Bounded for TriangleMesh<F, M> {
-
-    fn aabb(&self) -> AABB {
-        self.aabb
-    }
-
-}
-
-impl<F: Float, M: Material<F=F>> BHShape for TriangleMesh<F, M> {
-
-    fn set_bh_node_index(&mut self, index: usize) {
-        self.ni = index;
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.ni
-    }
-
-}
+aabb_impl_fm!(TriangleMesh<F, M>);
 
 impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {

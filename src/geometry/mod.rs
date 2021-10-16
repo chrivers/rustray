@@ -2,6 +2,11 @@ use crate::lib::Float;
 use crate::lib::ray::{Ray, Hit};
 use bvh::aabb::{AABB, Bounded};
 use bvh::bounding_hierarchy::BHShape;
+use crate::lib::Vector;
+use crate::lib::vector::Vectorx;
+use crate::vec3;
+use crate::lib::point::Point;
+use cgmath::Matrix4;
 
 pub trait Geometry<F: Float> : Sync
 {
@@ -49,6 +54,30 @@ where
     G: Geometry<F>,
     Self: BHShape + Bounded
 {
+}
+
+macro_rules! aabb_impl_fm {
+    ( $t:ty ) =>
+    {
+        impl<F: Float, M: Material<F=F>> Bounded for $t
+        {
+            fn aabb(&self) -> AABB { self.aabb }
+        }
+
+        impl<F: Float, M: Material<F=F>> BHShape for $t
+        {
+            fn set_bh_node_index(&mut self, index: usize)
+            {
+                self.ni = index;
+            }
+
+            fn bh_node_index(&self) -> usize
+            {
+                self.ni
+            }
+        }
+
+    }
 }
 
 pub(crate) mod geo_util {
