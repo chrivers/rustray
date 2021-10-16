@@ -73,6 +73,7 @@ pub mod triangle;
 pub mod trianglemesh;
 pub mod cylinder;
 pub mod cone;
+pub mod cube;
 pub mod square;
 
 pub use sphere::Sphere;
@@ -81,4 +82,5 @@ pub use triangle::Triangle;
 pub use trianglemesh::TriangleMesh;
 pub use cylinder::Cylinder;
 pub use cone::Cone;
+pub use cube::Cube;
 pub use square::Square;
