@@ -55,9 +55,14 @@ impl<'a, F: Float> Ray<F>
     pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>>
     {
         let inv = xfrm.inverse_transform()?;
+        self.transform(&inv)
+    }
+
+    pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>>
+    {
         Some(Self {
-            pos: inv.transform_point(Point3::from_vec(self.pos)).to_vec(),
-            dir: inv.transform_vector(self.dir),
+            pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
+            dir: xfrm.transform_vector(self.dir),
             lvl: self.lvl,
         })
     }
