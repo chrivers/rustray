@@ -10,7 +10,8 @@ pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + Floa
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
     const BIAS2:Self; // Used for shadow rays
-    const BIAS3:Self; // Used for reflected/refracted rays
+    const BIAS3:Self; // Used for reflected rays
+    const BIAS4:Self; // Used for refracted rays
     const ZERO: Self;
     const HALF: Self;
     const ONE:  Self;
@@ -50,8 +51,9 @@ impl Lerp for f64 {
 impl Float for f32
 {
     const BIAS: Self = 1e-7;
-    const BIAS2:Self = 1e-5;
-    const BIAS3:Self = 1e-3;
+    const BIAS2:Self = 1e-6;
+    const BIAS3:Self = 1e-5;
+    const BIAS4:Self = 1e-3;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
     const ONE:  Self = 1.0;
@@ -76,6 +78,7 @@ impl Float for f64
     const BIAS: Self = 1e-10;
     const BIAS2:Self = 1e-8;
     const BIAS3:Self = 1e-8;
+    const BIAS4:Self = 1e-8;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
     const ONE:  Self = 1.0;

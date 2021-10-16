@@ -287,7 +287,7 @@ impl<'a, F: Float> Hit<'a, F>
     pub fn refracted_ray(&self, normal: &Vector<F>, ior: F) -> Ray<F>
     {
         let refr = self.dir.refract(normal, ior);
-        Ray::new(self.pos + refr * F::BIAS3, refr, self.lvl + 1)
+        Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
     }
 
     pub fn with_normal(self, nml: Vector<F>) -> Self
