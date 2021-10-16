@@ -90,7 +90,9 @@ pub mod bilinear;
 pub mod transform;
 pub mod perlin;
 pub mod heightnormal;
+pub mod normalmap;
 
 pub use bilinear::{Bilinear, BilinearSampler};
 pub use perlin::Perlin;
 pub use heightnormal::HeightNormal;
+pub use normalmap::NormalMap;
