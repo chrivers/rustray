@@ -256,7 +256,7 @@ where
         let edge = Vector3::unit_z().xfrm(&xfrm);
         let pos = Vector3::zero().xfrm(&xfrm);
 
-        info!("Sphere({:.4?}, {:.4?})", pos, (pos - edge).magnitude());
+        info!("Sphere({:7.4?}, {:7.4?})", pos, (pos - edge).magnitude());
         Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
     }
 
@@ -478,7 +478,7 @@ where
             }
         }
 
-        info!("Cone(h={}, t={}, b={}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
+        info!("Cone(h={:.3}, t={:.3}, b={:.3}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
         Ok(box Cone::new(height, top_r, bot_r, capped, xfrm, mat))
     }
 
@@ -505,7 +505,7 @@ where
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
         let res = PointLight { a, b, c, pos, color };
-        info!("{:?}", res);
+        info!("{:7.3?}", res);
         Ok(res)
     }
 
@@ -524,7 +524,7 @@ where
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
         let res = DirectionalLight { dir, color };
-        info!("{:?}", res);
+        info!("{:7.3?}", res);
         Ok(res)
     }
 
