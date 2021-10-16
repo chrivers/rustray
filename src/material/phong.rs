@@ -44,18 +44,17 @@ impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
 
             let light_vec = hit.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
-            let refl_dir = light_dir.reflect(&maxel.normal);
-            let spec_angle = -refl_dir.dot(hit.dir).clamp(F::ZERO, F::ONE);
-
-            let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
 
             let lambert = maxel.normal.dot(light_dir);
 
-            if lambert > F::BIAS {
+            if lambert > F::ZERO {
+                let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
                 res += light_color * lambert;
 
-                let specular = spec_angle.pow(F::from_u32(32));
-                res += light_color * specular / spec_adjust;
+                let refl_dir = light_dir.reflect(&maxel.normal);
+                let spec_angle = refl_dir.dot(hit.dir).clamp(F::ZERO, F::ONE);
+                let specular = spec_angle.pow(spec_adjust);
+                res += light_color * specular;
             }
         }
         res
