@@ -88,5 +88,7 @@ pub mod texture1;
 pub mod texture3;
 pub mod bilinear;
 pub mod transform;
+pub mod heightnormal;
 
 pub use bilinear::{Bilinear, BilinearSampler};
+pub use heightnormal::HeightNormal;
