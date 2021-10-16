@@ -60,7 +60,7 @@ pub(crate) mod geo_util {
     pub use crate::material::Material;
     pub use super::Geometry;
 
-    pub use cgmath::{Matrix4, Transform};
+    pub use cgmath::{Matrix4, Transform, SquareMatrix};
 
     pub use bvh::aabb::{AABB, Bounded};
     pub use bvh::bounding_hierarchy::BHShape;

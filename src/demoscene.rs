@@ -106,19 +106,19 @@ where
     let plane5   = Plane::new(vec3!( 0.0, 20.0,  0.0), vec3!( 0.0, 0.0,-1.0), vec3!(1.0, 0.0, 0.0), mat_plane.clone());
     let plane6   = Plane::new(vec3!( 0.0,  0.0,  0.0), vec3!( 0.0, 0.0, 1.0), vec3!(1.0, 0.0, 0.0), mat_plane.clone());
 
-    let sphere1  = Sphere::new(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
-    let sphere2  = Sphere::new(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere.clone());
-    let sphere3  = Sphere::new(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere.clone());
-    let sphere4  = Sphere::new(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere.clone());
+    let sphere1  = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
+    let sphere2  = Sphere::place(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere.clone());
+    let sphere3  = Sphere::place(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere.clone());
+    let sphere4  = Sphere::place(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere.clone());
 
-    let sphere5  = Sphere::new(vec3!( 3.0, 3.0, 1.0),  1.0.into(), mat_sphere.clone());
-    let sphere6  = Sphere::new(vec3!( 2.0, 2.0, 3.0),  2.0.into(), mat_sphere.clone());
-    let sphere7  = Sphere::new(vec3!( 6.0, 6.0, 8.0),  1.0.into(), mat_sphere.clone());
-    let sphere8  = Sphere::new(vec3!( 4.0, 4.0, -1.0), 3.0.into(), mat_sphere.clone());
-    let sphere9  = Sphere::new(vec3!( 4.0, -1.0, 4.0), 3.0.into(), mat_sphere.clone());
-    let sphere10 = Sphere::new(vec3!( -1.0, 4.0, 4.0), 3.0.into(), mat_sphere.clone());
+    let sphere5  = Sphere::place(vec3!( 3.0, 3.0, 1.0),  1.0.into(), mat_sphere.clone());
+    let sphere6  = Sphere::place(vec3!( 2.0, 2.0, 3.0),  2.0.into(), mat_sphere.clone());
+    let sphere7  = Sphere::place(vec3!( 6.0, 6.0, 8.0),  1.0.into(), mat_sphere.clone());
+    let sphere8  = Sphere::place(vec3!( 4.0, 4.0, -1.0), 3.0.into(), mat_sphere.clone());
+    let sphere9  = Sphere::place(vec3!( 4.0, -1.0, 4.0), 3.0.into(), mat_sphere.clone());
+    let sphere10 = Sphere::place(vec3!( -1.0, 4.0, 4.0), 3.0.into(), mat_sphere.clone());
 
-    let sphere11 = Sphere::new(vec3!( 3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
+    let sphere11 = Sphere::place(vec3!( 3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
 
     let tri1 = Triangle::new(
         vec3!(1.0, 0.0, 3.0), vec3!(5.0, 5.0, 3.0), vec3!(5.0, 0.0, 3.0),
