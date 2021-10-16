@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::marker::PhantomData;
 use std::path::Path;
+use std::collections::HashMap;
 
 use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Transform, Rad, Matrix, SquareMatrix};
 use num_traits::Zero;
@@ -40,6 +41,56 @@ impl FromStr for SbtVersion {
         }
     }
 }
+
+fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64)
+{
+    (
+        p.x.to_f64().unwrap().to_bits(),
+        p.y.to_f64().unwrap().to_bits(),
+        p.z.to_f64().unwrap().to_bits(),
+    )
+}
+
+pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>>
+{
+    let mut normals = vec![Vector::zero(); points.len()];
+    /* Single-face normals */
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] += n;
+        normals[face[1]] += n;
+        normals[face[2]] += n;
+    }
+    normals
+}
+
+pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>>
+{
+    /* Vertex-smoothed normals */
+    let mut norms: HashMap<(u64, u64, u64), Vector<F>> = HashMap::new();
+    let mut normals = vec![Vector::zero(); points.len()];
+
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] = n;
+        normals[face[1]] = n;
+        normals[face[2]] = n;
+        *norms.entry(hash(points[face[0]])).or_insert(Vector::zero()) += n;
+        *norms.entry(hash(points[face[1]])).or_insert(Vector::zero()) += n;
+        *norms.entry(hash(points[face[2]])).or_insert(Vector::zero()) += n;
+    }
+    for face in faces {
+        normals[face[0]] = norms[&hash(points[face[0]])];
+        normals[face[1]] = norms[&hash(points[face[1]])];
+        normals[face[2]] = norms[&hash(points[face[2]])];
+    }
+    normals
+}
+
 
 impl<F> SbtParser<F>
 where
