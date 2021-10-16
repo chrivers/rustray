@@ -22,6 +22,7 @@ pub struct Triangle<F: Float, M: Material<F=F>>
     ntan1: Vector<F>,
     ntan2: Vector<F>,
 
+    aabb: AABB,
     ni: usize,
 
     mat: M,
@@ -41,24 +42,10 @@ impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
     }
 }
 
-use bvh::aabb::{AABB, Bounded};
-use bvh::bounding_hierarchy::BHShape;
-use bvh::Point3;
-
 impl<F: Float, M: Material<F=F>> Bounded for Triangle<F, M> {
 
     fn aabb(&self) -> AABB {
-        let min = Point3::new(
-            self.a.x.min(self.b.x.min(self.c.x)).to_f32().unwrap(),
-            self.a.y.min(self.b.y.min(self.c.y)).to_f32().unwrap(),
-            self.a.z.min(self.b.z.min(self.c.z)).to_f32().unwrap(),
-        );
-        let max = Point3::new(
-            self.a.x.max(self.b.x.max(self.c.x)).to_f32().unwrap(),
-            self.a.y.max(self.b.y.max(self.c.y)).to_f32().unwrap(),
-            self.a.z.max(self.b.z.max(self.c.z)).to_f32().unwrap(),
-        );
-        AABB::with_bounds(min, max)
+        self.aabb
     }
 
 }
@@ -127,6 +114,11 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
     #[allow(clippy::too_many_arguments)]
     pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: M) -> Self
     {
+        let mut aabb = AABB::empty();
+        aabb.grow_mut(&(a.into_point3()));
+        aabb.grow_mut(&(b.into_point3()));
+        aabb.grow_mut(&(c.into_point3()));
+
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
 
@@ -146,6 +138,7 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
             ntan1: ntan1.normalize(),
             ntan2: ntan2.normalize(),
             ni: 0,
+            aabb,
             mat,
         }
     }
