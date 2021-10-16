@@ -3,6 +3,7 @@ use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::geometry::{Geometry, FiniteGeometry};
 
 use cgmath::MetricSpace;
+use bvh::bvh::BVH;
 
 pub trait HasPosition<F: Float>
 {
@@ -45,6 +46,49 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
     pub objects: Vec<B>,
     pub geometry: Vec<G>,
     pub lights: Vec<L>,
+    pub bvh: BVH,
 }
 
 pub type BoxScene<F> = Scene<F, Box<dyn FiniteGeometry<F>>, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
+
+impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L>
+{
+    pub fn new(cameras: Vec<Camera<F>>, mut objects: Vec<B>, geometry: Vec<G>, lights: Vec<L>) -> Self {
+        let bvh = BVH::build(&mut objects);
+        Self { cameras, objects, geometry, lights, bvh }
+    }
+
+    pub fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    {
+        let r = ray.into();
+        let aabbs = self.bvh.traverse(&r, &self.objects);
+
+        let mut dist = F::max_value();
+        let mut hit: Option<Hit<F>> = None;
+
+        for g in &self.geometry {
+            if let Some(curhit) = g.intersect(ray)
+            {
+                let curdist = ray.pos.distance2(curhit.pos);
+                if curdist < dist
+                {
+                    dist = curdist;
+                    hit = Some(curhit);
+                }
+            }
+        }
+
+        for t in &aabbs {
+            if let Some(curhit) = t.intersect(ray)
+            {
+                let curdist = ray.pos.distance2(curhit.pos);
+                if curdist < dist
+                {
+                    dist = curdist;
+                    hit = Some(curhit);
+                }
+            }
+        }
+        hit
+    }
+}
