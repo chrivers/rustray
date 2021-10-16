@@ -1,13 +1,14 @@
 use crate::point;
 use crate::lib::{Color, Camera, Point, Float};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::lib::vector::{Vectorx, MetricSpace};
-use crate::geometry::Geometry;
+use crate::lib::vector::Vectorx;
+use crate::geometry::{Geometry, FiniteGeometry};
 use crate::scene::{RayTracer, Light, Scene};
+use cgmath::MetricSpace;
 
-pub struct Tracer<'a, F: Float, T: Geometry<F>, L: Light<F>>
+pub struct Tracer<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
 {
-    scene: &'a Scene<F, T, L>,
+    scene: &'a Scene<F, B, G, L>,
     lights: Vec<&'a dyn Light<F>>,
     sx: u32,
     sy: u32,
@@ -15,9 +16,9 @@ pub struct Tracer<'a, F: Float, T: Geometry<F>, L: Light<F>>
     maxlvl: u32,
 }
 
-impl<'a, F: Float, T: Geometry<F>, L: Light<F>> Tracer<'a, F, T, L>
+impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a, F, B, G, L>
 {
-    pub fn new(scene: &'a Scene<F, T, L>) -> Self
+    pub fn new(scene: &'a Scene<F, B, G, L>) -> Self
     {
         let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
         Self { scene, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)), maxlvl: 5 }
@@ -59,25 +60,27 @@ impl<'a, F: Float, T: Geometry<F>, L: Light<F>> Tracer<'a, F, T, L>
         ).collect()
     }
 
-    pub fn scene(&self) -> &Scene<F, T, L>
+    pub fn scene(&self) -> &Scene<F, B, G, L>
     {
         &self.scene
     }
 }
 
 
-impl<'a, F: Float, T: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T, L>
+impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, B, G, L>
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
         let light_pos = light.get_position();
-        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), hit.lvl);
+        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), hit.lvl + 1);
         hitray.pos += hitray.dir * F::BIAS2;
 
         let mut best_length = light_pos.distance2(hit.pos);
         let mut best_color = None;
 
-        for curobj in &self.scene.objects
+        let r = hitray.into();
+
+        for curobj in &self.scene.bvh.traverse(&r, &self.scene.objects)
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
@@ -99,23 +102,7 @@ impl<'a, F: Float, T: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, T
             return None;
         }
 
-        let mut dist = F::max_value();
-        let mut hit: Option<Hit<F>> = None;
-
-        for curobj in &self.scene.objects
-        {
-            if let Some(curhit) = curobj.intersect(ray)
-            {
-                let curdist = ray.pos.distance2(curhit.pos);
-                if curdist < dist
-                {
-                    dist = curdist;
-                    hit = Some(curhit);
-                }
-            }
-        }
-
-        let hit = hit?;
+        let hit = self.scene.intersect(ray)?;
 
         let maxel = hit.obj.resolve(&hit);
 
