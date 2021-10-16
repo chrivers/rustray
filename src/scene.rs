@@ -1,6 +1,8 @@
 use crate::lib::{Float, Vector, Color, Camera};
 use crate::lib::ray::{Ray, Hit, Maxel};
-use crate::geometry::Geometry;
+use crate::geometry::{Geometry, FiniteGeometry};
+
+use cgmath::MetricSpace;
 
 pub trait HasPosition<F: Float>
 {
@@ -37,19 +39,12 @@ pub trait RayTracer<F: Float> : Sync
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
 }
 
-impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
-{
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
-    {
-        self.as_ref().intersect(ray)
-    }
-}
-
-pub struct Scene<F: Float, T: Geometry<F>, L: Light<F>>
+pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
 {
     pub cameras: Vec<Camera<F>>,
-    pub objects: Vec<T>,
+    pub objects: Vec<B>,
+    pub geometry: Vec<G>,
     pub lights: Vec<L>,
 }
 
-pub type BoxScene<F> = Scene<F, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
+pub type BoxScene<F> = Scene<F, Box<dyn FiniteGeometry<F>>, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
