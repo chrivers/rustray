@@ -9,7 +9,7 @@ use num_traits::Zero;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Triangle, TriangleMesh};
+use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Square, Triangle, TriangleMesh};
 use crate::lib::{Camera};
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
@@ -328,35 +328,8 @@ where
             }
         }
 
-        // (a, b) | (b, b)
-        //        |
-        // -------+--------
-        //        |
-        // (a, a) | (b, a)
-
-        let (a, b) = (-F::HALF, F::HALF);
-        let t = [
-            vec3!(a, a, F::ZERO),
-            vec3!(a, b, F::ZERO),
-            vec3!(b, a, F::ZERO),
-            vec3!(b, b, F::ZERO),
-        ].map(|p| p.xfrm(&xfrm) );
-
-        let uv = [
-            point!(F::ZERO, F::ONE),
-            point!(F::ZERO, F::ZERO),
-            point!(F::ONE, F::ONE),
-            point!(F::ONE, F::ZERO),
-        ];
-
-        let normal = xfrm.transform_vector(Vector::unit_z()).normalize();
-
-        let tris = vec![
-            Triangle::new(t[0], t[1], t[3], normal, normal, normal, uv[0], uv[1], uv[3], mat.clone()),
-            Triangle::new(t[0], t[3], t[2], normal, normal, normal, uv[0], uv[3], uv[2], mat.clone()),
-        ];
-
-        Ok(box TriangleMesh::new(tris))
+        info!("Square(xfrm={:7.4?})", xfrm);
+        Ok(box Square::new(xfrm, mat))
     }
 
     pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
