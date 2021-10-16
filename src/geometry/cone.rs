@@ -8,6 +8,26 @@ pub struct Cone<F: Float, M: Material<F=F>>
     capped: bool,
     mat: M,
     xfrm: Matrix4<F>,
+    aabb: AABB,
+    ni: usize,
+}
+
+impl<F: Float, M: Material<F=F>> Bounded for Cone<F, M>
+{
+    fn aabb(&self) -> AABB {
+        self.aabb
+    }
+}
+
+impl<F: Float, M: Material<F=F>> BHShape for Cone<F, M>
+{
+    fn set_bh_node_index(&mut self, index: usize) {
+        self.ni = index;
+    }
+
+    fn bh_node_index(&self) -> usize {
+        self.ni
+    }
 }
 
 impl<F: Float, M: Material<F=F>> HitTarget<F> for Cone<F, M>
@@ -155,6 +175,22 @@ impl<F: Float, M: Material<F=F>> Cone<F, M>
 {
     pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Cone<F, M>
     {
-        Cone { height, top_r, bot_r, capped, mat, xfrm }
+        let m = bot_r.max(top_r);
+        let points = [
+            vec3!( m,  m,  F::ZERO),
+            vec3!( m, -m,  F::ZERO),
+            vec3!(-m,  m,  F::ZERO),
+            vec3!(-m, -m,  F::ZERO),
+            vec3!( m,  m,  height),
+            vec3!( m, -m,  height),
+            vec3!(-m,  m,  height),
+            vec3!(-m, -m,  height),
+        ];
+        let mut aabb: AABB = AABB::empty();
+        for point in &points {
+            let p = point.xfrm(&xfrm);
+            aabb.grow_mut(&p.into_point3());
+        }
+        Cone { height, top_r, bot_r, capped, mat, xfrm, aabb, ni: 0 }
     }
 }
