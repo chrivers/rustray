@@ -9,7 +9,7 @@ use num_traits::Zero;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Square, Triangle, TriangleMesh};
+use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Cube, Square, Triangle, TriangleMesh};
 use crate::lib::{Camera};
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
@@ -272,48 +272,8 @@ where
             }
         }
 
-        let (a, b) = (-F::HALF, F::HALF);
-        let p = [
-            vec3!(a, a, a),
-            vec3!(a, a, b),
-            vec3!(a, b, a),
-            vec3!(a, b, b),
-            vec3!(b, a, a),
-            vec3!(b, a, b),
-            vec3!(b, b, a),
-            vec3!(b, b, b),
-        ].map(|p| p.xfrm(&xfrm) );
-
-        let uv = [
-            point!(F::ZERO, F::ONE),
-            point!(F::ZERO, F::ZERO),
-            point!(F::ONE, F::ZERO),
-            point!(F::ONE, F::ONE),
-        ];
-
-        let t = [
-            p[1], p[5], p[7], p[3], // Front face
-            p[0], p[2], p[6], p[4], // Back face
-            p[2], p[3], p[7], p[6], // Top face
-            p[0], p[4], p[5], p[1], // Bottom face
-            p[4], p[6], p[7], p[5], // Right face
-            p[0], p[1], p[3], p[2], // Left face
-        ];
-
-        let n = [
-            Vector::unit_z(), -Vector::unit_z(),
-            Vector::unit_y(), -Vector::unit_y(),
-            Vector::unit_x(), -Vector::unit_x(),
-        ].map(|p| xfrm.transform_vector(p).normalize() );
-
-        let mut tris = vec![];
-
-        for x in (0..(t.len()-1)).step_by(4) {
-            tris.push(Triangle::new(t[x], t[x+1], t[x+2], n[x/4], n[x/4], n[x/4], uv[0], uv[1], uv[2], mat.clone()));
-            tris.push(Triangle::new(t[x], t[x+2], t[x+3], n[x/4], n[x/4], n[x/4], uv[0], uv[2], uv[3], mat.clone()));
-        }
-
-        Ok(box TriangleMesh::new(tris))
+        info!("Cube(xfrm={:7.4?})", xfrm);
+        Ok(box Cube::new(xfrm, mat))
     }
 
     pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
