@@ -47,21 +47,7 @@ impl<F: Float, M: Material<F=F>> Sphere<F, M>
 {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Sphere<F, M>
     {
-        let points = [
-            vec3!( F::ONE,  F::ONE, -F::ONE),
-            vec3!( F::ONE,  F::ONE,  F::ONE),
-            vec3!( F::ONE, -F::ONE, -F::ONE),
-            vec3!( F::ONE, -F::ONE,  F::ONE),
-            vec3!(-F::ONE,  F::ONE, -F::ONE),
-            vec3!(-F::ONE,  F::ONE,  F::ONE),
-            vec3!(-F::ONE, -F::ONE, -F::ONE),
-            vec3!(-F::ONE, -F::ONE,  F::ONE),
-        ];
-        let mut aabb: AABB = AABB::empty();
-        for point in &points {
-            let p = point.xfrm(&xfrm);
-            aabb.grow_mut(&p.into_point3());
-        }
+        let aabb = build_aabb_symmetric(&xfrm, F::ONE, F::ONE, F::ONE);
         Sphere { xfrm, mat, aabb, ni: 0 }
     }
 

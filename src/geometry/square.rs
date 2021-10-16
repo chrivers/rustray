@@ -69,18 +69,7 @@ impl<F: Float, M: Material<F=F>> Square<F, M>
 {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Square<F, M>
     {
-        /* Transform all corner points, expand aabb with each result */
-        let points = [
-            vec3!( F::HALF,  F::HALF,  F::ZERO),
-            vec3!( F::HALF, -F::HALF,  F::ZERO),
-            vec3!(-F::HALF,  F::HALF,  F::ZERO),
-            vec3!(-F::HALF, -F::HALF,  F::ZERO),
-        ];
-        let mut aabb: AABB = AABB::empty();
-        for point in &points {
-            let p = point.xfrm(&xfrm);
-            aabb.grow_mut(&p.into_point3());
-        }
+        let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::ZERO);
         Square { xfrm, mat, aabb, ni: 0 }
     }
 }

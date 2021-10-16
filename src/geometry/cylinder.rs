@@ -173,21 +173,7 @@ impl<F: Float, M: Material<F=F>> Cylinder<F, M>
 {
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Cylinder<F, M>
     {
-        let points = [
-            vec3!( F::ONE,  F::ONE,  F::ZERO),
-            vec3!( F::ONE, -F::ONE,  F::ZERO),
-            vec3!(-F::ONE,  F::ONE,  F::ZERO),
-            vec3!(-F::ONE, -F::ONE,  F::ZERO),
-            vec3!( F::ONE,  F::ONE,  F::ONE),
-            vec3!( F::ONE, -F::ONE,  F::ONE),
-            vec3!(-F::ONE,  F::ONE,  F::ONE),
-            vec3!(-F::ONE, -F::ONE,  F::ONE),
-        ];
-        let mut aabb: AABB = AABB::empty();
-        for point in &points {
-            let p = point.xfrm(&xfrm);
-            aabb.grow_mut(&p.into_point3());
-        }
+        let aabb = build_aabb_ranged(&xfrm, [-F::ONE, F::ONE], [-F::ONE, F::ONE], [F::ZERO, F::ONE]);
         Cylinder { xfrm, capped, mat, aabb, ni: 0 }
     }
 }

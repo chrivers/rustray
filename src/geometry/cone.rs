@@ -160,21 +160,7 @@ impl<F: Float, M: Material<F=F>> Cone<F, M>
     pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Cone<F, M>
     {
         let m = bot_r.max(top_r);
-        let points = [
-            vec3!( m,  m,  F::ZERO),
-            vec3!( m, -m,  F::ZERO),
-            vec3!(-m,  m,  F::ZERO),
-            vec3!(-m, -m,  F::ZERO),
-            vec3!( m,  m,  height),
-            vec3!( m, -m,  height),
-            vec3!(-m,  m,  height),
-            vec3!(-m, -m,  height),
-        ];
-        let mut aabb: AABB = AABB::empty();
-        for point in &points {
-            let p = point.xfrm(&xfrm);
-            aabb.grow_mut(&p.into_point3());
-        }
+        let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
         Cone { height, top_r, bot_r, capped, mat, xfrm, aabb, ni: 0 }
     }
 }
