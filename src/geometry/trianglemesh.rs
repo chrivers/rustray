@@ -4,12 +4,33 @@ use super::triangle::Triangle;
 use obj::ObjData;
 
 use bvh::bvh::BVH;
-use bvh::{Point3, Vector3};
 
 pub struct TriangleMesh<F: Float, M: Material<F=F>>
 {
     tris: Vec<Triangle<F, M>>,
     bvh: BVH,
+    aabb: AABB,
+    ni: usize,
+}
+
+impl<F: Float, M: Material<F=F>> Bounded for TriangleMesh<F, M> {
+
+    fn aabb(&self) -> AABB {
+        self.aabb
+    }
+
+}
+
+impl<F: Float, M: Material<F=F>> BHShape for TriangleMesh<F, M> {
+
+    fn set_bh_node_index(&mut self, index: usize) {
+        self.ni = index;
+    }
+
+    fn bh_node_index(&self) -> usize {
+        self.ni
+    }
+
 }
 
 impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
@@ -63,11 +84,19 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
     pub fn new(mut tris: Vec<Triangle<F, M>>) -> Self
     {
         debug!("building bvh for {} triangles..", tris.len());
+
+        let mut aabb = AABB::empty();
+        for tri in &tris {
+            aabb.join_mut(&tri.aabb());
+        }
+
         let bvh = BVH::build(&mut tris);
 
         TriangleMesh {
             tris,
             bvh,
+            aabb,
+            ni: 0,
         }
     }
 
