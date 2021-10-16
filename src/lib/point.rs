@@ -17,7 +17,7 @@ point!(x, y)
 */
 #[macro_export]
 macro_rules! point {
-    ($( $vals:expr ),+) => { Point::new( $($vals.into()),+ ) }
+    ($( $vals:expr ),+ $(,)?) => { Point::new( $($vals.into()),+ ) }
 }
 
 #[derive(Clone, Copy, Debug)]
