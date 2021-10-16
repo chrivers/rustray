@@ -304,11 +304,9 @@ where
                 other => error!("unsupported: {:?}", other)
             }
         }
-        let edge = Vector3::unit_z().xfrm(&xfrm);
-        let pos = Vector3::zero().xfrm(&xfrm);
 
-        info!("Sphere({:7.4?}, {:7.4?})", pos, (pos - edge).magnitude());
-        Ok(box Sphere::new(pos, (pos - edge).magnitude(), mat))
+        info!("Sphere(xfrm={:7.4?})", xfrm);
+        Ok(box Sphere::new(xfrm, mat))
     }
 
     pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
