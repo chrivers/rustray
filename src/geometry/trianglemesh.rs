@@ -37,18 +37,7 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = bvh::ray::Ray::new(
-            Point3::new(
-                ray.pos.x.to_f32()?,
-                ray.pos.y.to_f32()?,
-                ray.pos.z.to_f32()?,
-            ),
-            Vector3::new(
-                ray.dir.x.to_f32()?,
-                ray.dir.y.to_f32()?,
-                ray.dir.z.to_f32()?,
-            )
-        );
+        let r = ray.into();
         let aabbs = self.bvh.traverse(&r, &self.tris);
 
         let mut dist = F::max_value();
