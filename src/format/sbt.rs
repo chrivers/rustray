@@ -371,8 +371,7 @@ where
                     faces.push(Self::parse_int3(f))
                 }
                 Rule::normals => for f in rule.into_inner() {
-                    info!("norm: {:?}", f);
-                    // normals.push(parse_val3b(f));
+                    // info!("norm: {:?}", f);
                     normals.push(xfrm.transform_vector(Self::parse_val3b(f)));
                 }
                 Rule::materials => for f in rule.into_inner() {
@@ -387,14 +386,10 @@ where
             }
         }
 
-        info!("building..");
-
         if normals.is_empty() {
             normals = face_normals(&faces, &points);
             /* normals = smooth_normals(&faces, &points); */
         }
-
-        info!("building2..");
 
         for face in faces.iter() {
             let m = if !materials.is_empty() {
@@ -431,6 +426,7 @@ where
             );
         }
 
+        info!("TriangleMesh(tris={})", tris.len());
         Ok(box TriangleMesh::new(tris))
     }
 
