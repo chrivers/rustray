@@ -5,6 +5,26 @@ pub struct Cylinder<F: Float, M: Material<F=F>>
     xfrm: Matrix4<F>,
     capped: bool,
     mat: M,
+    ni: usize,
+    aabb: AABB,
+}
+
+impl<F: Float, M: Material<F=F>> Bounded for Cylinder<F, M>
+{
+    fn aabb(&self) -> AABB {
+        self.aabb
+    }
+}
+
+impl<F: Float, M: Material<F=F>> BHShape for Cylinder<F, M>
+{
+    fn set_bh_node_index(&mut self, index: usize) {
+        self.ni = index;
+    }
+
+    fn bh_node_index(&self) -> usize {
+        self.ni
+    }
 }
 
 impl<F: Float, M: Material<F=F>> HitTarget<F> for Cylinder<F, M>
@@ -169,6 +189,21 @@ impl<F: Float, M: Material<F=F>> Cylinder<F, M>
 {
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Cylinder<F, M>
     {
-        Cylinder { xfrm, capped, mat }
+        let points = [
+            vec3!( F::ONE,  F::ONE,  F::ZERO),
+            vec3!( F::ONE, -F::ONE,  F::ZERO),
+            vec3!(-F::ONE,  F::ONE,  F::ZERO),
+            vec3!(-F::ONE, -F::ONE,  F::ZERO),
+            vec3!( F::ONE,  F::ONE,  F::ONE),
+            vec3!( F::ONE, -F::ONE,  F::ONE),
+            vec3!(-F::ONE,  F::ONE,  F::ONE),
+            vec3!(-F::ONE, -F::ONE,  F::ONE),
+        ];
+        let mut aabb: AABB = AABB::empty();
+        for point in &points {
+            let p = point.xfrm(&xfrm);
+            aabb.grow_mut(&p.into_point3());
+        }
+        Cylinder { xfrm, capped, mat, aabb, ni: 0 }
     }
 }
