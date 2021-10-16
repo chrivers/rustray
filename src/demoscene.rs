@@ -6,7 +6,7 @@ use obj::ObjData;
 
 use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
 use crate::lib::vector::Vectorx;
-use crate::geometry::{Geometry, Sphere, Plane, Triangle, TriangleMesh};
+use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh};
 use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
 use crate::sampler::{BilinearSampler};
@@ -134,7 +134,7 @@ where
         mat_white
     );
 
-    let objects: Vec<Box<dyn Geometry<F>>> = vec![
+    let geometry: Vec<Box<dyn Geometry<F>>> = vec![
         box plane2,
         box plane4,
         box plane6,
@@ -142,7 +142,9 @@ where
         // box plane1,
         // box plane3,
         // box plane5,
+    ];
 
+    let objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![
         // box sphere1,
         // box sphere2,
         // box sphere3,
@@ -163,5 +165,5 @@ where
         // box trimesh3,
     ];
 
-    Ok(Scene { cameras, objects, lights })
+    Ok(Scene::new(cameras, objects, geometry, lights))
 }
