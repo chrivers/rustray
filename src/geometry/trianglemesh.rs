@@ -45,7 +45,7 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
         for t in &aabbs {
             if let Some(curhit) = t.intersect(ray)
             {
-                let curdist = ray.pos.distance(curhit.pos);
+                let curdist = ray.pos.distance2(curhit.pos);
                 if curdist < dist
                 {
                     dist = curdist;
