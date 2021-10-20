@@ -16,7 +16,7 @@ impl<F: Float, T: Sampler<F, Color<F>>> TextureSampler<F> for T
 
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Texture<F: Float, S: Sampler<F, Color<F>>>
 {
     _f: PhantomData<F>,

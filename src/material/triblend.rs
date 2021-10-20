@@ -1,6 +1,6 @@
 use super::mat_util::*;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Triblend<F: Float, A: Material, B: Material, C: Material>
 {
     a: A,

@@ -1,6 +1,6 @@
 use super::mat_util::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct ColorUV<F: Float>
 {
     scale: F,

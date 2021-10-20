@@ -1,6 +1,6 @@
 use super::mat_util::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Fresnel<F: Float, S: Sampler<F, F>>
 {
     ior: S,

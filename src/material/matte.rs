@@ -1,7 +1,7 @@
 use super::mat_util::*;
 use rand::Rng;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Matte<F: Float, S: Sampler<F, F>, M: Material<F=F>>
 {
     rays: u32, /* Number of rays to average over */

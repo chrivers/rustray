@@ -1,11 +1,12 @@
 use std::sync::Arc;
+use std::fmt::Debug;
 
 use crate::lib::{Float, Color};
 use crate::lib::ray::{Hit, Maxel};
 
 use crate::scene::{RayTracer, Light};
 
-pub trait Material : Send + Sync
+pub trait Material : Debug + Send + Sync
 {
     type F: Float;
     fn render(&self, hit: &Hit<Self::F>, maxel: &Maxel<Self::F>, light: &[&dyn Light<Self::F>], rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;

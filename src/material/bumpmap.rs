@@ -1,6 +1,6 @@
 use super::mat_util::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Bumpmap<F: Float, S: Sampler<F, Vector<F>>, M: Material<F=F>>
 {
     pow: F,
