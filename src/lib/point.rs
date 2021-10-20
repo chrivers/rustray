@@ -1,3 +1,5 @@
+use crate::lib::Float;
+use std::convert::From;
 use num::Num;
 use derive_more::{Add, Sub, Mul};
 
@@ -38,5 +40,12 @@ impl<F: Num + Copy> Point<F>
     pub fn zero() -> Point<F>
     {
         Point { x: F::zero(), y: F::zero() }
+    }
+}
+
+impl<F: Float> From<(F, F)> for Point<F>
+{
+    fn from(val: (F, F)) -> Self {
+        Point::new(val.0, val.1)
     }
 }
