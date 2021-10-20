@@ -435,7 +435,7 @@ where
         let mut height = F::BIAS;
         let mut top_r = F::BIAS;
         let mut bot_r = F::BIAS;
-        let mut capped = false;
+        let mut capped = true;
 
         for rule in body {
             match rule.as_rule() {
