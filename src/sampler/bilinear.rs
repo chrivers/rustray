@@ -18,8 +18,7 @@ where
 {
 }
 
-#[derive(Copy, Clone)]
-
+#[derive(Copy, Clone, Debug)]
 pub struct Bilinear<F: Float, P: Pixel, S: Sampler<F, P>>
 {
     samp: S,

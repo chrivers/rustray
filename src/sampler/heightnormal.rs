@@ -3,6 +3,7 @@ use super::samp_util::*;
 use num_traits::ToPrimitive;
 use cgmath::InnerSpace;
 
+#[derive(Copy, Clone, Debug)]
 pub struct HeightNormal<F: Float, S: Sampler<F, F>>
 {
     delta: F,

@@ -1,7 +1,6 @@
 use super::samp_util::*;
 
-#[derive(Copy, Clone)]
-
+#[derive(Copy, Clone, Debug)]
 pub struct Adjust<F: Float, P: Pixel, S: Sampler<F, P>>
 {
     s: F, // scale

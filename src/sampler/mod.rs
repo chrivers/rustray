@@ -1,10 +1,11 @@
+use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::lib::{Float, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
-pub trait Sampler<F: Float, P> : Send + Sync
+pub trait Sampler<F: Float, P> : Debug + Send + Sync
 {
     /** Sample a single value at position `uv` */
     fn sample(&self, uv: Point<F>) -> P;
@@ -43,7 +44,7 @@ impl<F: Float, P> Sampler<F, P> for Arc<Box<dyn Sampler<F, P>>>
     }
 }
 
-pub trait Pixel: Send + Sync
+pub trait Pixel: Debug + Send + Sync
 {
 }
 
@@ -55,7 +56,7 @@ self as their value.
 This is useful to make e.g. a [`Float`] or [`Color<F>`] a viable substitute for a real
 texture sampler.
 */
-impl<F: Float, T: Send + Sync + Copy> Sampler<F, T> for T
+impl<F: Float, T: Debug + Send + Sync + Copy> Sampler<F, T> for T
 {
     fn sample(&self, _uv: Point<F>) -> T
     {

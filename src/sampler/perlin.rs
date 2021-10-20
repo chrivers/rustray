@@ -1,5 +1,8 @@
 use super::samp_util::*;
 
+use std::fmt::Debug;
+use std::fmt;
+
 use num_traits::ToPrimitive;
 
 use perlin2d::PerlinNoise2D;
@@ -9,6 +12,15 @@ pub struct Perlin
     w: u32,
     h: u32,
     pn: PerlinNoise2D,
+}
+
+impl Debug for Perlin
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Perlin {{ w:")?; Debug::fmt(&self.w, f)?;
+        write!(f, ", h:")?;  Debug::fmt(&self.h, f)?;
+        f.write_str("}")
+    }
 }
 
 impl Perlin
