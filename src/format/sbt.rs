@@ -113,7 +113,7 @@ where
     pub fn parse_val1(p: Pair<Rule>) -> RResult<F>
     {
         let mut m = p.into_inner();
-        m.next().unwrap().as_str().trim().parse().or(Err(ParseError()))
+        m.next().unwrap().as_str().trim().parse().or(Err(ParseError("val1")))
     }
 
     pub fn parse_val2(p: Pair<Rule>) -> Point<F> {
@@ -185,10 +185,10 @@ where
                         Ok(Color::new(v[0], v[1], v[2]).dynsampler())
                     }
                     // "unimplemented: {:?}"
-                    _ => Err(ParseError())
+                    _ => Err(ParseError("sampler3"))
                 }
             }
-            _ => Err(ParseError())
+            _ => Err(ParseError("sampler3"))
         }
     }
 
@@ -217,7 +217,7 @@ where
                 Rule::name             => {},
                 other => {
                     error!("Unknown material prop: {:?}", other);
-                    return Err(ParseError())
+                    return Err(ParseError("material"))
                 }
             }
         }
@@ -230,7 +230,7 @@ where
         let mut position: Vector<F> = Vector::zero();
         let mut viewdir: Option<Vector<F>> = None;
         let mut updir: Vector<F> = Vector::unit_y();
-        let mut look_at: RResult<Vector<F>> = Err(ParseError());
+        let mut look_at: RResult<Vector<F>> = Err(ParseError("look_at"));
         let mut aspectratio: Option<F> = None;
         let mut fov: F = F::from_u32(55);
         for q in p.into_inner() {
@@ -457,8 +457,8 @@ where
 
     pub fn parse_point_light(p: Pair<Rule>) -> RResult<PointLight<F>>
     {
-        let mut pos: RResult<Vector<F>> = Err(ParseError());
-        let mut color: RResult<Vector<F>> = Err(ParseError());
+        let mut pos: RResult<Vector<F>> = Err(ParseError("missing position"));
+        let mut color: RResult<Vector<F>> = Err(ParseError("missing color"));
         let mut a = F::ZERO;
         let mut b = F::ZERO;
         let mut c = F::ONE;
@@ -482,8 +482,8 @@ where
 
     pub fn parse_directional_light(p: Pair<Rule>) -> RResult<DirectionalLight<F>>
     {
-        let mut direction: RResult<Vector<F>> = Err(ParseError());
-        let mut color: RResult<Vector<F>> = Err(ParseError());
+        let mut direction: RResult<Vector<F>> = Err(ParseError("missing direction"));
+        let mut color: RResult<Vector<F>> = Err(ParseError("missing color"));
         for q in p.into_inner() {
             match q.as_rule() {
                 Rule::direction => direction = Ok(Self::parse_val3(q)),
@@ -551,7 +551,7 @@ where
                 let c = Self::parse_num1(it.remove(0));
                 Matrix4::from_nonuniform_scale(a, b, c)
             }
-            _ => return Err(ParseError()),
+            _ => return Err(ParseError("invalid scale")),
         };
         Self::parse_statement(it.remove(0), xfrm * x2, version, resdir)
     }
@@ -571,7 +571,7 @@ where
             Rule::geo_plm => Self::parse_geo_plm(p, xfrm, resdir),
             Rule::geo_con => Self::parse_geo_con(p, xfrm, resdir),
 
-            _ => { error!("unimplemented: {:?}", p.as_rule()); Err(ParseError()) },
+            _ => { error!("unimplemented: {:?}", p.as_rule()); Err(ParseError("statement")) },
         }
     }
 

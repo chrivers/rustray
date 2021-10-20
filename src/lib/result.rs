@@ -22,7 +22,7 @@ pub enum Error
     Reqwest(#[from] reqwest::Error),
 
     #[error("parse error")]
-    ParseError()
+    ParseError(&'static str)
 }
 
 pub type RResult<F> = Result<F, Error>;
