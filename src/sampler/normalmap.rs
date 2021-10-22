@@ -1,8 +1,5 @@
 use super::samp_util::*;
 
-use num_traits::ToPrimitive;
-use cgmath::InnerSpace;
-
 #[derive(Copy, Clone, Debug)]
 pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>>
 {

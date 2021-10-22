@@ -82,7 +82,7 @@ pub(crate) mod samp_util {
     pub use crate::lib::float::Lerp;
     pub use super::{Sampler, Pixel};
 
-    pub use cgmath::VectorSpace;
+    pub use cgmath::{VectorSpace, InnerSpace};
 }
 
 pub mod texture1;
