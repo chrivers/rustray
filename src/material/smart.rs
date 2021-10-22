@@ -95,7 +95,7 @@ where
         res
     }
 
-    fn shadow(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _light: &dyn Light<F>, _rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>>
     {
         let sha = self.kt.sample(maxel.uv);
 

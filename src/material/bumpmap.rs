@@ -37,8 +37,8 @@ impl<'a, F: Float, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F
         self.mat.render(hit, &mxl, lights, rt)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light, rt)
+        self.mat.shadow(hit, maxel, light)
     }
 }

@@ -86,7 +86,7 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
             {
                 let cur_length = hit.pos.distance2(curhit.pos);
                 if cur_length < best_length {
-                    if let Some(color) = maxel.mat.shadow(&hit, maxel, light, self) {
+                    if let Some(color) = maxel.mat.shadow(hit, maxel, light) {
                         best_color = Some(color);
                         best_length = cur_length;
                     }

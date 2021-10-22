@@ -60,8 +60,8 @@ impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
         res
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>, rt: &dyn RayTracer<F>) -> Option<Color<F>>
+    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light, rt)
+        self.mat.shadow(hit, maxel, light)
     }
 }
