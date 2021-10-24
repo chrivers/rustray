@@ -21,10 +21,7 @@ impl<F: Float> Material for ColorNormal<F>
 
     fn render(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _lights: &[&dyn Light<F>], _rt: &dyn RayTracer<F>) -> Color<F>
     {
-        Color::new(
-            maxel.normal.x,
-            maxel.normal.y,
-            maxel.normal.z,
-        ) * self.scale
+        let n = maxel.normal;
+        Color::new(n.x, n.y, n.z) * self.scale
     }
 }
