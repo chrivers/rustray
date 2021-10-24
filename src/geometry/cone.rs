@@ -1,5 +1,6 @@
 use super::geo_util::*;
 
+#[derive(Debug)]
 pub struct Cone<F: Float, M: Material<F=F>>
 {
     height: F,
@@ -9,8 +10,7 @@ pub struct Cone<F: Float, M: Material<F=F>>
     mat: M,
     xfrm: Matrix4<F>,
     ifrm: Matrix4<F>,
-    aabb: AABB,
-    ni: usize,
+    aabb: Aabb,
 }
 
 aabb_impl_fm!(Cone<F, M>);
@@ -163,6 +163,6 @@ impl<F: Float, M: Material<F=F>> Cone<F, M>
         let m = bot_r.max(top_r);
         let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
         let ifrm = xfrm.inverse_transform().unwrap();
-        Cone { height, top_r, bot_r, capped, mat, xfrm, ifrm, aabb, ni: 0 }
+        Cone { height, top_r, bot_r, capped, mat, xfrm, ifrm, aabb }
     }
 }

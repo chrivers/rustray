@@ -3,14 +3,16 @@ use super::triangle::Triangle;
 
 use obj::ObjData;
 
-use bvh::bvh::BVH;
+use rtbvh::{Bvh, Builder};
+use std::num::NonZeroUsize;
+use rtbvh::{SpatialTriangle};
 
+#[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F=F>>
 {
-    tris: Vec<Triangle<F, M>>,
-    bvh: BVH,
-    aabb: AABB,
-    ni: usize,
+    pub tris: Vec<Triangle<F, M>>,
+    bvh: Bvh,
+    aabb: Aabb,
 }
 
 aabb_impl_fm!(TriangleMesh<F, M>);
@@ -19,13 +21,12 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.into();
-        let aabbs = self.bvh.traverse(&r, &self.tris);
+        let mut r: rtbvh::Ray = ray.into();
 
         let mut dist = F::max_value();
         let mut hit: Option<Hit<F>> = None;
-        for t in &aabbs {
-            if let Some(curhit) = t.intersect(ray)
+        for (t, _) in self.bvh.traverse_iter(&mut r, &self.tris) {
+            if let Some(curhit) = Geometry::intersect(t, ray)
             {
                 let curdist = ray.pos.distance2(curhit.pos);
                 if curdist < dist
@@ -52,22 +53,33 @@ fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
 
 impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
 {
-    pub fn new(mut tris: Vec<Triangle<F, M>>) -> Self
+    pub fn new(tris: Vec<Triangle<F, M>>) -> Self
     {
         debug!("building bvh for {} triangles..", tris.len());
 
-        let mut aabb = AABB::empty();
+        let mut aabb = Aabb::empty();
         for tri in &tris {
-            aabb.join_mut(&tri.aabb());
+            aabb.grow_bb(&tri.aabb());
         }
 
-        let bvh = BVH::build(&mut tris);
+        let aabbs = tris
+            .iter()
+            .map(|t| t.aabb())
+            .collect::<Vec<rtbvh::Aabb>>();
+
+        let bvh = Builder {
+            aabbs: Some(aabbs.as_slice()),
+            primitives: tris.as_slice(),
+            primitives_per_leaf: NonZeroUsize::new(16),
+        }
+        /* .construct_spatial_sah().unwrap(); */
+        .construct_binned_sah().unwrap();
+        /* .construct_locally_ordered_clustered().unwrap(); */
 
         TriangleMesh {
             tris,
             bvh,
             aabb,
-            ni: 0,
         }
     }
 

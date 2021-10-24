@@ -1,13 +1,13 @@
 use super::geo_util::*;
 use num_traits::Zero;
 
+#[derive(Debug)]
 pub struct Sphere<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
     ifrm: Matrix4<F>,
     mat: M,
-    aabb: AABB,
-    ni: usize,
+    aabb: Aabb,
 }
 
 aabb_impl_fm!(Sphere<F, M>);
@@ -50,7 +50,7 @@ impl<F: Float, M: Material<F=F>> Sphere<F, M>
     {
         let aabb = build_aabb_symmetric(&xfrm, F::ONE, F::ONE, F::ONE);
         let ifrm = xfrm.inverse_transform().unwrap();
-        Sphere { xfrm, ifrm, mat, aabb, ni: 0 }
+        Sphere { xfrm, ifrm, mat, aabb }
     }
 
     pub fn place(pos: Vector<F>, radius: F, mat: M) -> Sphere<F, M>

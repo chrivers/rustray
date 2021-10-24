@@ -72,20 +72,19 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
         let light_pos = light.get_position();
-        let mut hitray = Ray::new(hit.pos, hit.pos.vector_to(light_pos), hit.lvl + 1);
-        hitray.pos += hitray.dir * F::BIAS2;
+        let hitray = Ray::new(hit.pos, hit.pos.normal_to(light_pos), hit.lvl + 1);
 
         let mut best_length = light_pos.distance2(hit.pos);
         let mut best_color = None;
 
-        let r = hitray.into();
+        let mut r = hitray.into();
 
-        for curobj in &self.scene.bvh.traverse(&r, &self.scene.objects)
+        for (curobj, _ray) in self.scene.bvh.traverse_iter(&mut r, &self.scene.objects)
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
                 let cur_length = hit.pos.distance2(curhit.pos);
-                if cur_length < best_length {
+                if cur_length > F::BIAS && cur_length < best_length {
                     if let Some(color) = maxel.mat.shadow(hit, maxel, light) {
                         best_color = Some(color);
                         best_length = cur_length;

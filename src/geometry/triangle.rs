@@ -3,7 +3,9 @@ use super::geo_util::*;
 use std::fmt;
 use std::fmt::Debug;
 
-#[derive(Clone)]
+use rtbvh::SpatialTriangle;
+
+#[derive(Clone, Debug)]
 pub struct Triangle<F: Float, M: Material<F=F>>
 {
     a: Vector<F>,
@@ -22,10 +24,22 @@ pub struct Triangle<F: Float, M: Material<F=F>>
     ntan1: Vector<F>,
     ntan2: Vector<F>,
 
-    aabb: AABB,
-    ni: usize,
+    aabb: Aabb,
 
     mat: M,
+}
+
+impl<F: Float, M: Material<F=F>> SpatialTriangle for Triangle<F, M>
+{
+    fn vertex0(&self) -> Vec3 {
+        self.a.into_vector3()
+    }
+    fn vertex1(&self) -> Vec3 {
+        self.b.into_vector3()
+    }
+    fn vertex2(&self) -> Vec3 {
+        self.c.into_vector3()
+    }
 }
 
 aabb_impl_fm!(Triangle<F, M>);
@@ -95,10 +109,10 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
     #[allow(clippy::too_many_arguments)]
     pub fn new(a: Vector<F>, b: Vector<F>, c: Vector<F>, na: Vector<F>, nb: Vector<F>, nc: Vector<F>, ta: Point<F>, tb: Point<F>, tc: Point<F>, mat: M) -> Self
     {
-        let mut aabb = AABB::empty();
-        aabb.grow_mut(&(a.into_point3()));
-        aabb.grow_mut(&(b.into_point3()));
-        aabb.grow_mut(&(c.into_point3()));
+        let mut aabb = Aabb::empty();
+        aabb.grow(a.into_vector3());
+        aabb.grow(b.into_vector3());
+        aabb.grow(c.into_vector3());
 
         let ab = a.vector_to(b);
         let ac = a.vector_to(c);
@@ -118,7 +132,6 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
             n: ab.cross(ac),
             ntan1: ntan1.normalize(),
             ntan2: ntan2.normalize(),
-            ni: 0,
             aabb,
             mat,
         }

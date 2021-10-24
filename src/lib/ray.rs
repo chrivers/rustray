@@ -256,22 +256,20 @@ impl<'a, F: Float> Ray<F>
 
 }
 
-impl<F: Float> Into<bvh::ray::Ray> for Ray<F>
+impl<F: Float> From<Ray<F>> for rtbvh::Ray
 {
-    fn into(self) -> bvh::ray::Ray
-    {
-        bvh::ray::Ray::new(
-            self.pos.into_vector3(),
-            self.dir.into_vector3(),
+    fn from(ray: Ray<F>) -> Self {
+        Self::new(
+            ray.pos.into_vector3(),
+            ray.dir.into_vector3()
         )
     }
 }
 
-impl<F: Float> Into<bvh::ray::Ray> for &Ray<F>
+impl<F: Float> From<&Ray<F>> for rtbvh::Ray
 {
-    fn into(self) -> bvh::ray::Ray
-    {
-        (*self).into()
+    fn from(ray: &Ray<F>) -> Self {
+        From::from(*ray)
     }
 }
 

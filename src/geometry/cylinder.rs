@@ -1,13 +1,13 @@
 use super::geo_util::*;
 
+#[derive(Debug)]
 pub struct Cylinder<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
     ifrm: Matrix4<F>,
     capped: bool,
     mat: M,
-    ni: usize,
-    aabb: AABB,
+    aabb: Aabb,
 }
 
 aabb_impl_fm!(Cylinder<F, M>);
@@ -176,6 +176,6 @@ impl<F: Float, M: Material<F=F>> Cylinder<F, M>
     {
         let aabb = build_aabb_ranged(&xfrm, [-F::ONE, F::ONE], [-F::ONE, F::ONE], [F::ZERO, F::ONE]);
         let ifrm = xfrm.inverse_transform().unwrap();
-        Cylinder { xfrm, ifrm, capped, mat, aabb, ni: 0 }
+        Cylinder { xfrm, ifrm, capped, mat, aabb }
     }
 }

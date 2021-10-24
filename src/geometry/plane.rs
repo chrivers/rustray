@@ -1,5 +1,6 @@
 use super::geo_util::*;
 
+#[derive(Clone, Copy, Debug)]
 pub struct Plane<F: Float, M: Material<F=F>>
 {
     pos: Vector<F>,

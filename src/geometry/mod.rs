@@ -1,19 +1,21 @@
 use crate::lib::Float;
 use crate::lib::ray::{Ray, Hit};
-use bvh::aabb::{AABB, Bounded};
-use bvh::bounding_hierarchy::BHShape;
 use crate::lib::Vector;
 use crate::lib::vector::Vectorx;
 use crate::vec3;
-use crate::lib::point::Point;
+
 use cgmath::Matrix4;
+
+use rtbvh::Primitive;
+use rtbvh::Aabb;
+use glam::Vec3;
 
 pub trait Geometry<F: Float> : Sync
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
 }
 
-pub trait FiniteGeometry<F: Float> : Geometry<F> + BHShape {}
+pub trait FiniteGeometry<F: Float> : Geometry<F> + rtbvh::Primitive {}
 
 impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
 {
@@ -31,47 +33,40 @@ impl<F: Float> Geometry<F> for Box<dyn FiniteGeometry<F>>
     }
 }
 
-impl<F: Float> Bounded for Box<dyn FiniteGeometry<F>>
+impl<F: Float> Primitive for Box<dyn FiniteGeometry<F>>
 {
-    fn aabb(&self) -> AABB {
+    fn center(&self) -> Vec3 {
+        self.as_ref().center()
+    }
+
+    fn aabb(&self) -> Aabb {
         self.as_ref().aabb()
-    }
-}
-
-impl<F: Float> BHShape for Box<dyn FiniteGeometry<F>>
-{
-    fn set_bh_node_index(&mut self, index: usize) {
-        self.as_mut().set_bh_node_index(index)
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.as_ref().bh_node_index()
     }
 }
 
 impl<F: Float, G> FiniteGeometry<F> for G
 where
-    G: Geometry<F>,
-    Self: BHShape + Bounded
+    G: Geometry<F> + Send,
+    Self: rtbvh::Primitive
 {
 }
 
-pub fn build_aabb_ranged<F: Float>(xfrm: &Matrix4<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> AABB
+pub fn build_aabb_ranged<F: Float>(xfrm: &Matrix4<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb
 {
     /* Transform all corner points, expand aabb with each result */
-    let mut aabb: AABB = AABB::empty();
+    let mut aabb = Aabb::empty();
     for px in x {
         for py in y {
             for pz in z {
-                let p = vec3!(px, py, pz).xfrm(&xfrm);
-                aabb.grow_mut(&p.into_point3());
+                let p = vec3!(px, py, pz).xfrm(xfrm).into_f32();
+                aabb.grow(p.into_vector3());
             }
         }
     }
     aabb
 }
 
-pub fn build_aabb_symmetric<F: Float>(xfrm: &Matrix4<F>, x: F, y: F, z: F) -> AABB
+pub fn build_aabb_symmetric<F: Float>(xfrm: &Matrix4<F>, x: F, y: F, z: F) -> Aabb
 {
     build_aabb_ranged(xfrm, [-x, x], [-y, y], [-z, z])
 }
@@ -79,24 +74,16 @@ pub fn build_aabb_symmetric<F: Float>(xfrm: &Matrix4<F>, x: F, y: F, z: F) -> AA
 macro_rules! aabb_impl_fm {
     ( $t:ty ) =>
     {
-        impl<F: Float, M: Material<F=F>> Bounded for $t
+        impl<F: Float, M: Material<F=F>> Primitive for $t
         {
-            fn aabb(&self) -> AABB { self.aabb }
-        }
-
-        impl<F: Float, M: Material<F=F>> BHShape for $t
-        {
-            fn set_bh_node_index(&mut self, index: usize)
-            {
-                self.ni = index;
+            fn center(&self) -> Vec3 {
+                self.aabb.center()
             }
 
-            fn bh_node_index(&self) -> usize
-            {
-                self.ni
+            fn aabb(&self) -> Aabb {
+                self.aabb
             }
         }
-
     }
 }
 
@@ -112,9 +99,11 @@ pub(crate) mod geo_util {
 
     pub use cgmath::{Matrix4, Transform, SquareMatrix};
 
-    pub use bvh::aabb::{AABB, Bounded};
-    pub use bvh::bounding_hierarchy::BHShape;
-    pub use bvh::Point3;
+    pub use num_traits::Zero;
+
+    pub use rtbvh::Primitive;
+    pub use rtbvh::Aabb;
+    pub use glam::Vec3;
 }
 
 pub mod sphere;

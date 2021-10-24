@@ -1,12 +1,12 @@
 use super::geo_util::*;
 
+#[derive(Debug)]
 pub struct Square<F: Float, M: Material<F=F>>
 {
     xfrm: Matrix4<F>,
     ifrm: Matrix4<F>,
     mat: M,
-    aabb: AABB,
-    ni: usize,
+    aabb: Aabb,
 }
 
 aabb_impl_fm!(Square<F, M>);
@@ -72,6 +72,6 @@ impl<F: Float, M: Material<F=F>> Square<F, M>
     {
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::ZERO);
         let ifrm = xfrm.inverse_transform().unwrap();
-        Square { xfrm, ifrm, mat, aabb, ni: 0 }
+        Square { xfrm, ifrm, mat, aabb }
     }
 }

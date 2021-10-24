@@ -43,20 +43,36 @@ impl<F: Float> Vectorx<F> for Vector<F>
         Vector { x: F::ZERO, y: F::ZERO, z: F::ONE }
     }
 
-    fn into_point3(self) -> bvh::Point3 {
-        bvh::Point3::new(
+    fn from_f32(val: Vector<f32>) -> Self {
+        Self {
+            x: F::from_f32(val[0]),
+            y: F::from_f32(val[1]),
+            z: F::from_f32(val[2]),
+        }
+    }
+
+    fn into_f32(self) -> Vector<f32> {
+        Vector::new(
             self.x.to_f32().unwrap_or_default(),
             self.y.to_f32().unwrap_or_default(),
             self.z.to_f32().unwrap_or_default(),
         )
     }
 
-    fn into_vector3(self) -> bvh::Vector3 {
-        bvh::Vector3::new(
+    fn into_vector3(self) -> glam::Vec3 {
+        glam::Vec3::new(
             self.x.to_f32().unwrap_or_default(),
             self.y.to_f32().unwrap_or_default(),
             self.z.to_f32().unwrap_or_default(),
         )
+    }
+
+    fn from_vector3(val: glam::Vec3) -> Self {
+        Self {
+            x: F::from_f32(val[0]),
+            y: F::from_f32(val[1]),
+            z: F::from_f32(val[2]),
+        }
     }
 
     fn polar_angles(self) -> (F, F)
@@ -99,8 +115,12 @@ where
     fn max(&self, other: &Self) -> Self;
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
     fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self;
-    fn into_point3(self) -> bvh::Point3;
-    fn into_vector3(self) -> bvh::Vector3;
+
+    fn into_vector3(self) -> glam::Vec3;
+    fn from_vector3(val: glam::Vec3) -> Self;
+
+    fn from_f32(value: Vector<f32>) -> Self;
+    fn into_f32(self) -> Vector<f32>;
 
     #[inline]
     fn vector_to(self, other: Self) -> Self

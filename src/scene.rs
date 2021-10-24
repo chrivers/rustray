@@ -3,7 +3,11 @@ use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::geometry::{Geometry, FiniteGeometry};
 
 use cgmath::MetricSpace;
-use bvh::bvh::BVH;
+
+use std::fmt::Debug;
+
+use rtbvh::{Bvh, Builder};
+use std::num::NonZeroUsize;
 
 pub trait HasPosition<F: Float>
 {
@@ -23,7 +27,7 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait HitTarget<F: Float> : Sync
+pub trait HitTarget<F: Float> : Sync + Debug
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>;
 }
@@ -46,23 +50,37 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
     pub objects: Vec<B>,
     pub geometry: Vec<G>,
     pub lights: Vec<L>,
-    pub bvh: BVH,
+    pub bvh: Bvh,
 }
 
 pub type BoxScene<F> = Scene<F, Box<dyn FiniteGeometry<F>>, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
 
 impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L>
 {
-    pub fn new(cameras: Vec<Camera<F>>, mut objects: Vec<B>, geometry: Vec<G>, lights: Vec<L>) -> Self {
-        let bvh = BVH::build(&mut objects);
+    pub fn new(cameras: Vec<Camera<F>>, objects: Vec<B>, geometry: Vec<G>, lights: Vec<L>) -> Self {
+        if objects.is_empty() {
+            panic!("BVH crate fails with empty lists");
+        }
+
+        let aabbs = objects
+            .iter()
+            .map(|t| t.aabb())
+            .collect::<Vec<rtbvh::Aabb>>();
+
+        let bvh = Builder {
+            aabbs: Some(aabbs.as_slice()),
+            primitives: objects.as_slice(),
+            primitives_per_leaf: NonZeroUsize::new(16),
+        }
+        /* .construct_spatial_sah().unwrap(); */
+        .construct_binned_sah().unwrap();
+        /* .construct_locally_ordered_clustered().unwrap(); */
+
         Self { cameras, objects, geometry, lights, bvh }
     }
 
     pub fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.into();
-        let aabbs = self.bvh.traverse(&r, &self.objects);
-
         let mut dist = F::max_value();
         let mut hit: Option<Hit<F>> = None;
 
@@ -78,7 +96,9 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             }
         }
 
-        for t in &aabbs {
+        let mut r: rtbvh::Ray = ray.into();
+
+        for (t, _) in self.bvh.traverse_iter(&mut r, &self.objects) {
             if let Some(curhit) = t.intersect(ray)
             {
                 let curdist = ray.pos.distance2(curhit.pos);
