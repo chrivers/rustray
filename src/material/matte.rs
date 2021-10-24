@@ -2,14 +2,18 @@ use super::mat_util::*;
 use rand::Rng;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Matte<F: Float, S: Sampler<F, F>, M: Material<F=F>>
+pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>>
 {
     rays: u32, /* Number of rays to average over */
     src: S,    /* Surface Roughness Coefficient */
     mat: M,    /* Underlying material */
 }
 
-impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Matte<F, S, M>
+impl<F, S, M> Matte<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F=F>,
 {
     pub fn new(src: S, rays: u32, mat: M) -> Self
     {
@@ -18,8 +22,11 @@ impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Matte<F, S, M>
 
 }
 
-impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Matte<F, S, M>
+impl<F, S, M> Material for Matte<F, S, M>
 where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F=F>,
     rand::distributions::Standard: rand::distributions::Distribution<F>
 {
     type F = F;

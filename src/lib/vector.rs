@@ -4,6 +4,7 @@ use num_traits::Zero;
 pub use cgmath::{InnerSpace, MetricSpace, EuclideanSpace, Transform, Point3, Matrix4};
 
 use super::Float;
+use crate::sampler::Texel;
 
 /**
 Convenience macro to construct a [`Vector<F>`] from input values.
@@ -218,3 +219,5 @@ where
     }
 
 }
+
+impl<F: Float> Texel for Vector<F> {}

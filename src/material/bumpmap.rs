@@ -1,14 +1,22 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Bumpmap<F: Float, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>>
+pub struct Bumpmap<F: Float + Texel, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>>
+where
+    Vector<F>: Texel
 {
     pow: S1,
     img: S2,
     mat: M,
 }
 
-impl<F: Float, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>> Bumpmap<F, S1, S2, M>
+impl<F, S1, S2, M> Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel + crate::lib::float::Lerp<Ratio=F>,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F=F>,
+    Vector<F>: Texel
 {
     pub fn new(pow: S1, img: S2, mat: M) -> Self
     {
@@ -16,7 +24,13 @@ impl<F: Float, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>> B
     }
 }
 
-impl<'a, F: Float, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>> Material for Bumpmap<F, S1, S2, M>
+impl<'a, F: Float + Texel, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F=F>> Material for Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F=F>,
+    Vector<F>: Texel
 {
     type F = F;
 

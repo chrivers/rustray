@@ -5,7 +5,7 @@ use num_traits::Zero;
 #[derive(Clone, Debug)]
 pub struct Smart<F, S1, S2, S3, S4, S5, S6>
 where
-    F: Float,
+    F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Color<F>>,
     S3: Sampler<F, Color<F>>,
@@ -24,7 +24,7 @@ where
 
 impl<F, S1, S2, S3, S4, S5, S6> Smart<F, S1, S2, S3, S4, S5, S6>
 where
-    F: Float,
+    F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Color<F>>,
     S3: Sampler<F, Color<F>>,
@@ -41,7 +41,7 @@ where
 
 impl<F, S1, S2, S3, S4, S5, S6> Material for Smart<F, S1, S2, S3, S4, S5, S6>
 where
-    F: Float,
+    F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Color<F>>,
     S3: Sampler<F, Color<F>>,

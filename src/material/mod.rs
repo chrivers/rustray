@@ -53,6 +53,7 @@ pub(crate) mod mat_util {
     pub use crate::sampler::Sampler;
     pub use crate::vec3;
     pub use crate::material::{Material, DynMaterial};
+    pub use crate::sampler::Texel;
 
     pub use cgmath::VectorSpace;
 

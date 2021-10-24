@@ -9,7 +9,7 @@ use crate::lib::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh};
 use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
-use crate::sampler::{BilinearSampler, NormalMap};
+use crate::sampler::{SamplerExt, NormalMap, Texel};
 
 use crate::scene::{Light, Scene, BoxScene};
 
@@ -19,7 +19,7 @@ use image::{DynamicImage, ImageFormat};
 
 pub fn construct_demo_scene<F: Float>(time: &mut TimeSlice, width: u32, height: u32) -> RResult<BoxScene<F>>
 where
-    F: 'static,
+    F: Texel + 'static,
     f32: Into<F>,
 {
     time.set("construct");
@@ -87,16 +87,16 @@ where
     let mat_white  = Phong::white().dynamic();
 
     let mat_plane = ChessBoard::new(
-        Bumpmap::new(0.5.into(), NormalMap::new(tex0b.bilinear()), Phong::new(tex0r, tex0a.bilinear().texture())),
-        Bumpmap::new(0.5.into(), NormalMap::new(tex1b.bilinear()), Phong::new(tex1r, tex1a.bilinear().texture()))).dynamic();
+        Bumpmap::new(0.5.into(), NormalMap::new(tex0b.bilinear()), Phong::new(tex0r.bilinear(), tex0a.bilinear().texture())),
+        Bumpmap::new(0.5.into(), NormalMap::new(tex1b.bilinear()), Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()))).dynamic();
 
-    let mat_bmp2 = Bumpmap::new(0.5.into(), NormalMap::new(tex2b.bilinear()), Phong::new(tex2r, tex2a.bilinear().texture())).dynamic();
+    let mat_bmp2 = Bumpmap::new(0.5.into(), NormalMap::new(tex2b.bilinear()), Phong::new(tex2r.bilinear(), tex2a.bilinear().texture())).dynamic();
 
     time.set("objload");
     let reader = File::open("models/teapot.obj").expect("Failed to open model file");
     let obj = ObjData::load_buf(reader)?;
 
-    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0), mat_bmp2);
+    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0));
 
     time.set("construct");
     let plane1   = Plane::new(vec3!( 0.0,  0.0, 20.0), vec3!(-1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), mat_plane.clone());

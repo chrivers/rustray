@@ -1,15 +1,15 @@
 use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Adjust<F: Float, P: Pixel, S: Sampler<F, P>>
+pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>>
 {
     s: F, // scale
     o: F, // offset
     samp: S,
-    _p1: PhantomData<P>,
+    _p1: PhantomData<T>,
 }
 
-impl<F: Float, P: Pixel, S: Sampler<F, P>> Adjust<F, P, S>
+impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S>
 {
     pub fn new(s: F, o: F, samp: S) -> Self
     {
@@ -17,24 +17,19 @@ impl<F: Float, P: Pixel, S: Sampler<F, P>> Adjust<F, P, S>
     }
 }
 
-impl<F, P, S> Sampler<F, P> for Adjust<F, P, S>
+impl<F, T, S> Sampler<F, T> for Adjust<F, T, S>
 where
     F: Float,
-    P: Pixel,
-    P: std::ops::Mul<F, Output = P>,
-    P: std::ops::Add<F, Output = P>,
-    P: Lerp<Ratio=F>,
-    S: Sampler<F, P>
+    T: Texel,
+    T: std::ops::Mul<F, Output = T>,
+    T: std::ops::Add<F, Output = T>,
+    T: Lerp<Ratio=F>,
+    S: Sampler<F, T>
 {
-    fn sample(&self, uv: Point<F>) -> P
+    fn sample(&self, uv: Point<F>) -> T
     {
         let s = self.samp.sample(uv);
         s * self.s + self.o
-    }
-
-    fn raw_sample(&self, uv: Point<u32>) -> P
-    {
-        self.samp.raw_sample(uv)
     }
 
     fn dimensions(&self) -> (u32, u32) {

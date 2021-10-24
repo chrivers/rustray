@@ -1,13 +1,13 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Phong<F: Float, S: Sampler<F, F>, M: Material<F=F>>
+pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>>
 {
     pow: S,
     mat: M,
 }
 
-impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Phong<F, S, M>
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Phong<F, S, M>
 {
     pub fn new(pow: S, mat: M) -> Self
     {
@@ -15,7 +15,7 @@ impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Phong<F, S, M>
     }
 }
 
-impl<F: Float> Phong<F, F, Color<F>>
+impl<F: Float + Texel> Phong<F, F, Color<F>>
 {
     pub fn white() -> Self
     {
@@ -28,7 +28,7 @@ impl<F: Float> Phong<F, F, Color<F>>
     }
 }
 
-impl<F: Float, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
 {
     type F = F;
 

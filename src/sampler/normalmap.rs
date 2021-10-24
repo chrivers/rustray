@@ -26,15 +26,12 @@ impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S>
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S>
+where
+    Vector<F>: Texel
 {
     fn sample(&self, uv: Point<F>) -> Vector<F>
     {
         Self::color_to_vector(&self.sampler.sample(uv))
-    }
-
-    fn raw_sample(&self, uv: Point<u32>) -> Vector<F>
-    {
-        Self::color_to_vector(&self.sampler.raw_sample(uv))
     }
 
     fn dimensions(&self) -> (u32, u32)

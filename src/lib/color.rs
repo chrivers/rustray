@@ -4,7 +4,7 @@ use cgmath::VectorSpace;
 use std::iter::Sum;
 use num_traits::Zero;
 
-use crate::sampler::Pixel;
+use crate::sampler::Texel;
 
 use crate::lib::float::{Float, Lerp};
 
@@ -17,7 +17,7 @@ pub struct Color<F: Float>
     pub b: F,
 }
 
-impl<F: Float> Pixel for Color<F> {}
+impl<F: Float> Texel for Color<F> {}
 
 impl<F: Float> ops::Mul<F> for Color<F>
 {

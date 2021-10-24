@@ -2,13 +2,16 @@ use super::mat_util::*;
 use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Mirror<F: Float, S: Sampler<F, F>>
+pub struct Mirror<F, S>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
 {
     refl: S,
     _p: PhantomData<F>
 }
 
-impl<F: Float, S: Sampler<F, F>> Mirror<F, S>
+impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S>
 {
     pub fn new(refl: S) -> Self
     {
@@ -16,7 +19,7 @@ impl<F: Float, S: Sampler<F, F>> Mirror<F, S>
     }
 }
 
-impl<F: Float, S: Sampler<F, F>> Material for Mirror<F, S>
+impl<F: Float + Texel, S: Sampler<F, F>> Material for Mirror<F, S>
 {
     type F = F;
 

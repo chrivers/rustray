@@ -42,20 +42,13 @@ impl Perlin
     }
 }
 
-impl<F: Float> Sampler<F, F> for Perlin
+impl<F: Float + Texel> Sampler<F, F> for Perlin
 {
     fn sample(&self, uv: Point<F>) -> F
     {
         let x = uv.x.to_f32().unwrap() as f64;
         let y = uv.y.to_f32().unwrap() as f64;
-        F::from_f32(self.pn.get_noise(x, y) as f32)
-    }
-
-    fn raw_sample(&self, uv: Point<u32>) -> F
-    {
-        let x = uv.x.to_f32().unwrap().trunc() as f64;
-        let y = uv.y.to_f32().unwrap().trunc() as f64;
-        F::from_f32(self.pn.get_noise(x, y) as f32)
+        F::from_f64(self.pn.get_noise(x, y))
     }
 
     fn dimensions(&self) -> (u32, u32) {

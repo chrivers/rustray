@@ -1,13 +1,13 @@
 use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct HeightNormal<F: Float, S: Sampler<F, F>>
+pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>>
 {
     delta: F,
     sampler: S,
 }
 
-impl<F: Float, S: Sampler<F, F>> HeightNormal<F, S>
+impl<F: Float + Texel, S: Sampler<F, F>> HeightNormal<F, S>
 {
     pub fn new(delta: F, sampler: S) -> Self
     {
@@ -15,7 +15,9 @@ impl<F: Float, S: Sampler<F, F>> HeightNormal<F, S>
     }
 }
 
-impl<F: Float, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S>
+impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S>
+where
+    Vector<F>: Texel
 {
     fn sample(&self, uv: Point<F>) -> Vector<F>
     {
@@ -31,11 +33,6 @@ impl<F: Float, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S>
             n2,
             F::ONE,
         ).normalize()
-    }
-
-    fn raw_sample(&self, uv: Point<u32>) -> Vector<F>
-    {
-        Vector::new(F::ZERO, F::ZERO, self.sampler.raw_sample(uv))
     }
 
     fn dimensions(&self) -> (u32, u32)
