@@ -97,7 +97,7 @@ pub(crate) mod geo_util {
     pub use super::Geometry;
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
 
-    pub use cgmath::{Matrix4, Transform, SquareMatrix};
+    pub use cgmath::{Matrix4, Transform, Matrix, SquareMatrix};
 
     pub use num_traits::Zero;
 
