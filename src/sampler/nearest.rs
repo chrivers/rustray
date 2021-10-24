@@ -1,4 +1,3 @@
-use image::DynamicImage;
 use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]

@@ -3,8 +3,6 @@ use super::samp_util::*;
 use std::fmt::Debug;
 use std::fmt;
 
-use num_traits::ToPrimitive;
-
 use perlin2d::PerlinNoise2D;
 
 pub struct Perlin

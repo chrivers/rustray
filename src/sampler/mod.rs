@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use num_traits::Num;
 
-use crate::lib::{Float, Point};
+use crate::lib::Point;
 
 /** Trait for sampling values from datasource (textures, etc)
  */
