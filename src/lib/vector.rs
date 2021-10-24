@@ -44,6 +44,22 @@ impl<F: Float> Vectorx<F> for Vector<F>
         Vector { x: F::ZERO, y: F::ZERO, z: F::ONE }
     }
 
+    fn surface_tangents(&self) -> (Self, Self)
+    {
+        let u = if self.x.abs() <= self.y.abs() && self.x.abs() <= self.z.abs() {
+            /* x smallest: tangent in yz plane */
+            vec3![F::ZERO, self.z, -self.y]
+        } else if self.y.abs() <= self.z.abs() {
+            /* y smallest: tangent in xz plane */
+            vec3![-self.z, F::ZERO, self.x]
+        } else {
+            /* z smallest: tangent in xy plane */
+            vec3![self.y, -self.x, F::ZERO]
+        }.normalize();
+
+        (u, self.cross(u))
+    }
+
     fn from_f32(val: Vector<f32>) -> Self {
         Self {
             x: F::from_f32(val[0]),
@@ -116,6 +132,8 @@ where
     fn max(&self, other: &Self) -> Self;
     fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
     fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self;
+
+    fn surface_tangents(&self) -> (Self, Self);
 
     fn into_vector3(self) -> glam::Vec3;
     fn from_vector3(val: glam::Vec3) -> Self;
