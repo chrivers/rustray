@@ -321,7 +321,17 @@ impl<'a, F: Float> Maxel<'a, F>
 
 /* Math functions */
 
-fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
+pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
+{
+    let (t0, t1) = quadratic2(a, b, c)?;
+    if t0 < F::ZERO {
+        None
+    } else {
+        Some(t0.min(t1))
+    }
+}
+
+pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)>
 {
     let discr = b * b - F::FOUR * a * c;
 
@@ -329,20 +339,16 @@ fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
         return None
     }
 
-    let t = {
-        let q = if b > F::ZERO {
-            -F::HALF * (b + discr.sqrt())
-        } else {
-            -F::HALF * (b - discr.sqrt())
-        };
-        let t0 = q / a;
-        let t1 = c / q;
-        t0.min(t1)
-    };
-
-    if t >= F::ZERO {
-        Some(t)
+    let q = if b > F::ZERO {
+        -F::HALF * (b + discr.sqrt())
     } else {
-        None
+        -F::HALF * (b - discr.sqrt())
+    };
+    let t0 = q / a;
+    let t1 = c / q;
+    if t0 < t1 {
+        Some((t0, t1))
+    } else {
+        Some((t1, t0))
     }
 }
