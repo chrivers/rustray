@@ -19,14 +19,9 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Cone<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        // let normal = self.pos.normal_to(hit.pos);
-        let normal = hit.nml.unwrap_or_else(Vector::unit_x);
-        let normalu = Vector::unit_y();
-        let normalv = normalu.cross(normal).normalize();
-
+        let normal = hit.nml.unwrap();
         let (u, v) = normal.polar_uv();
-
-        Maxel::from_uv(u, v, normal, normalu, normalv, &self.mat)
+        Maxel::from_uv(u, v, normal, &self.mat)
     }
 }
 
@@ -151,7 +146,9 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             return None
         }
 
-        Some(ray.hit_at(root, self).with_normal(self.xfrm.transform_vector(normal).normalize()))
+        Some(ray.hit_at(root, self)
+             .with_normal(normal.xfrm_normal(&self.xfrm))
+        )
     }
 
 }

@@ -41,9 +41,10 @@ where
 
         let mut mxl = *maxel;
 
+        let (normalu, normalv) = mxl.normal.surface_tangents();
         let nx =
-            mxl.normalu * n.x +
-            mxl.normalv * n.y +
+            normalu * n.x +
+            normalv * n.y +
             mxl.normal  * n.z / (pow + F::BIAS);
 
         mxl.normal = nx.normalize();

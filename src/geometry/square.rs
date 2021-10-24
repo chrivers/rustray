@@ -16,12 +16,8 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Square<F, M>
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         let normal = hit.nml.unwrap();
-        let normalu = Vector::unit_z().cross(normal).normalize();
-        let normalv = normalu.cross(normal).normalize();
-
         let uv = hit.uv.unwrap();
-
-        Maxel::from_uv(uv.x, uv.y, normal, normalu, normalv, &self.mat)
+        Maxel::from_uv(uv.x, uv.y, normal, &self.mat)
     }
 }
 
@@ -54,13 +50,13 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Square<F, M>
         }
 
         let normal = if r.dir.z > F::ZERO {
-            vec3!(F::ZERO, F::ZERO, -F::ONE)
+            -Vector::unit_z()
         } else {
-            vec3!(F::ZERO, F::ZERO,  F::ONE)
+            Vector::unit_z()
         };
 
         Some(ray.hit_at(t, self)
-             .with_normal(self.xfrm.transform_vector(normal).normalize())
+             .with_normal(normal.xfrm_normal(&self.xfrm))
              .with_uv(point!(p.x, p.y)))
     }
 

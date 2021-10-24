@@ -16,14 +16,9 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Sphere<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let up = Vector::unit_z().xfrm(&self.xfrm);
         let normal = hit.nml.unwrap();
-        let normalu = up.cross(normal).normalize();
-        let normalv = normalu.cross(normal).normalize();
-
         let (u, v) = normal.polar_uv();
-
-        Maxel::from_uv(u, v, normal, normalu, normalv, &self.mat)
+        Maxel::from_uv(u, v, normal, &self.mat)
     }
 }
 

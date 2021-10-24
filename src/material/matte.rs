@@ -42,10 +42,11 @@ where
             let rx = (rng.gen::<F>() - F::HALF) * src;
             let ry = (rng.gen::<F>() - F::HALF) * src;
             let rz = (rng.gen::<F>() / F::TWO ) * (F::one() - src) + src;
+            let (normalu, normalv) = mxl.normal.surface_tangents();
             mxl.normal = (
                 maxel.normal * rz +
-                    maxel.normalu * rx +
-                    maxel.normalv * ry)
+                     normalu * rx +
+                     normalv * ry)
                 .normalize();
 
             col += self.mat.render(hit, &mxl, light, rt);

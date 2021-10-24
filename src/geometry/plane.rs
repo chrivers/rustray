@@ -18,7 +18,7 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Plane<F, M>
     {
         let u = self.u.dot(hit.pos);
         let v = self.v.dot(hit.pos);
-        Maxel::from_uv(u, v, self.normal, self.dir1, self.dir2, &self.mat)
+        Maxel::from_uv(u, v, self.normal, &self.mat)
     }
 }
 

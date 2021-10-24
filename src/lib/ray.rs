@@ -15,6 +15,7 @@ pub struct Ray<F: Float>
     pub lvl: u32,
 }
 
+#[derive(Clone, Debug)]
 pub struct Hit<'a, F: Float>
 {
     pub pos: Vector<F>,
@@ -29,8 +30,6 @@ pub struct Hit<'a, F: Float>
 pub struct Maxel<'a, F: Float>
 {
     pub normal: Vector<F>,
-    pub normalu: Vector<F>,
-    pub normalv: Vector<F>,
     pub uv: Point<F>,
     pub mat: &'a dyn Material<F=F>,
 }
@@ -303,19 +302,19 @@ impl<'a, F: Float> Hit<'a, F>
 
 impl<'a, F: Float> Maxel<'a, F>
 {
-    pub fn from_uv(u: F, v: F, normal: Vector<F>, normalu: Vector<F>, normalv: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
+    pub fn from_uv(u: F, v: F, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv: point!(u, v), normal, normalu, normalv, mat }
+        Maxel { uv: point!(u, v), normal, mat }
     }
 
-    pub fn new(uv: Point<F>, normal: Vector<F>, normalu: Vector<F>, normalv: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
+    pub fn new(uv: Point<F>, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv, normal, normalu, normalv, mat }
+        Maxel { uv, normal, mat }
     }
 
     pub fn zero(mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv: Point::zero(), normal: Vector::zero(), normalu: Vector::zero(), normalv: Vector::zero(), mat }
+        Maxel { uv: Point::zero(), normal: Vector::zero(), mat }
     }
 }
 

@@ -16,13 +16,9 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Cylinder<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let normal = hit.nml.unwrap_or_else(Vector::unit_x);
-        let normalu = Vector::unit_y();
-        let normalv = normalu.cross(normal).normalize();
-
+        let normal = hit.nml.unwrap();
         let (u, v) = normal.polar_uv();
-
-        Maxel::from_uv(u, v, normal, normalu, normalv, &self.mat)
+        Maxel::from_uv(u, v, normal, &self.mat)
     }
 }
 

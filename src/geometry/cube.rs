@@ -16,12 +16,8 @@ impl<F: Float, M: Material<F=F>> HitTarget<F> for Cube<F, M>
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
         let normal = hit.nml.unwrap();
-        let normalu = Vector::unit_z().cross(normal).normalize();
-        let normalv = normalu.cross(normal).normalize();
-
         let uv = hit.uv.unwrap();
-
-        Maxel::from_uv(uv.x, uv.y, normal, normalu, normalv, &self.mat)
+        Maxel::from_uv(uv.x, uv.y, normal, &self.mat)
     }
 }
 
@@ -66,24 +62,25 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
 
         let best = best?;
 
-        let isec = r.extend(best_t);
+        let normals = [Vector::unit_x(),  Vector::unit_y(),  Vector::unit_z()];
 
-        let normal = vec3!(
-            F::from_u32((best == 3) as u32) - F::from_u32((best == 0) as u32),
-            F::from_u32((best == 4) as u32) - F::from_u32((best == 1) as u32),
-            F::from_u32((best == 5) as u32) - F::from_u32((best == 2) as u32),
-        );
+        let normal = if best < 3 {
+            -normals[best % 3]
+        } else {
+            normals[best % 3]
+        };
 
         let i1 = (best + 1) % 3;
         let i2 = (best + 2) % 3;
         let min = i1.min(i2);
         let max = i1.max(i2);
 
+        let isec = r.extend(best_t);
         let uv = point!(F::HALF - isec[min], F::HALF - isec[max]);
 
         Some(
             ray.hit_at(best_t, self)
-                .with_normal(self.xfrm.transform_vector(normal).normalize())
+                .with_normal(normal.xfrm_normal(&self.xfrm))
                 .with_uv(uv)
         )
     }
