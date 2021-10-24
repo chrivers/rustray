@@ -6,7 +6,20 @@ use std::ops::{Add, Sub, Mul};
 
 use cgmath::{RelativeEq, AbsDiffEq, UlpsEq};
 
-pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + FloatConst + num::Signed + Lerp + Debug + Display + Send + Sync + RelativeEq + AbsDiffEq<Epsilon = Self> + UlpsEq
+pub trait Float
+where
+    Self: Debug,
+    Self: Display,
+    Self: Send,
+    Self: Sync,
+    Self: AbsDiffEq<Epsilon = Self>,
+    Self: FloatConst,
+    Self: Lerp<Ratio=Self>,
+    Self: NumAssignOps,
+    Self: RelativeEq,
+    Self: UlpsEq,
+    Self: num::Float + num::Signed,
+    Self: pow::Pow<Self, Output=Self>,
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
     const BIAS2:Self; // Used for shadow rays
