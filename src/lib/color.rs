@@ -3,12 +3,13 @@ use std::ops;
 use cgmath::VectorSpace;
 use std::iter::Sum;
 use num_traits::Zero;
+use std::fmt::{self, Debug};
 
 use crate::sampler::Texel;
 
 use crate::lib::float::{Float, Lerp};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 #[derive(Add, AddAssign, Sub, Rem)]
 pub struct Color<F: Float>
 {
@@ -18,6 +19,16 @@ pub struct Color<F: Float>
 }
 
 impl<F: Float> Texel for Color<F> {}
+
+impl<F: Float> Debug for Color<F>
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Color(")?; Debug::fmt(&self.r, f)?;
+        write!(f, ", ")?;  Debug::fmt(&self.g, f)?;
+        write!(f, ", ")?;  Debug::fmt(&self.b, f)?;
+        f.write_str(")")
+    }
+}
 
 impl<F: Float> ops::Mul<F> for Color<F>
 {
