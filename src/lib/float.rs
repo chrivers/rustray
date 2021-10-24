@@ -21,6 +21,7 @@ pub trait Float : num::Float + NumAssignOps + pow::Pow<Self, Output=Self> + Floa
     fn from_u32(value: u32) -> Self;
     fn from_usize(value: usize) -> Self;
     fn from_f32(value: f32) -> Self;
+    fn from_f64(value: f64) -> Self;
     fn non_zero(self) -> bool { self != Self::zero() }
 
     fn clamp(self, low: Self, high: Self) -> Self { clamp(self, low, high) }
@@ -71,6 +72,9 @@ impl Float for f32
 
     #[inline(always)]
     fn from_f32(value: f32) -> Self { value as Self }
+
+    #[inline(always)]
+    fn from_f64(value: f64) -> Self { value as Self }
 }
 
 impl Float for f64
@@ -96,4 +100,7 @@ impl Float for f64
 
     #[inline(always)]
     fn from_f32(value: f32) -> Self { value as Self }
+
+    #[inline(always)]
+    fn from_f64(value: f64) -> Self { value as Self }
 }
