@@ -11,12 +11,14 @@ use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
 use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Cube, Square, Triangle, TriangleMesh};
-use crate::lib::{Camera};
+use crate::lib::Camera;
 use crate::lib::{RResult, Error::ParseError};
 use crate::lib::{PointLight, DirectionalLight};
+use crate::lib::float::Lerp;
 use crate::scene::{Scene, BoxScene};
-use crate::material::{Phong, Smart, Triblend};
-use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, BilinearSampler, Vectorx, Light, point};
+use crate::material::{Phong, Smart, Triblend, Bumpmap};
+use crate::sampler::{NormalMap, ShineMap, Texel};
+use crate::{Vector, Point, Float, Color, Material, DynMaterial, Sampler, DynSampler, SamplerExt, Vectorx, Light, point};
 
 #[derive(Parser)]
 #[grammar = "format/sbt.pest"]
@@ -250,9 +252,10 @@ where
         let mut spec = Color::black().dynsampler();
         let mut refl = None;
         let mut _ambi = Color::black().dynsampler();
-        let mut tran = Color::black();
-        let mut emis = Color::black();
-        let mut shi = F::ONE;
+        let mut bump = None;
+        let mut tran = Color::black().dynsampler();
+        let mut emis = Color::black().dynsampler();
+        let mut shi = F::ZERO.dynsampler();
         let mut idx = F::ZERO;
         let mut _gls = F::ZERO;
         for q in p.into_inner() {
@@ -261,11 +264,12 @@ where
                 Rule::mat_specular     => spec = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_reflective   => refl = Some(Self::parse_sampler3(q, resdir)?),
                 Rule::mat_ambient      => _ambi = Self::parse_sampler3(q, resdir)?,
-                Rule::mat_transmissive => tran = Self::parse_color(q),
-                Rule::mat_emissive     => emis = Self::parse_color(q),
-                Rule::mat_shininess    => shi  = Self::parse_val1(q)?,
+                Rule::mat_transmissive => tran = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_emissive     => emis = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_shininess    => shi  = Self::parse_sampler1(q, resdir)?,
                 Rule::mat_index        => idx  = Self::parse_val1(q)?,
                 Rule::mat_glossiness   => _gls = Self::parse_val1(q)?,
+                Rule::mat_bump         => bump = Some(Self::parse_sampler3(q, resdir)?),
                 Rule::name             => {},
                 other => {
                     error!("Unknown material prop: {:?}", other);
@@ -274,7 +278,12 @@ where
             }
         }
 
-        Ok(Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).dynamic())
+        let smart = Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone()));
+
+        match bump {
+            None => Ok(smart.dynamic()),
+            Some(b) => Ok(Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic())
+        }
     }
 
     pub fn parse_camera(p: Pair<Rule>, width: u32, height: u32) -> RResult<Camera<F>>
