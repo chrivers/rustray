@@ -108,7 +108,7 @@ pub fn spherical_uvs<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Ve
 
 impl<F> SbtParser<F>
 where
-    F: Float + FromStr + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio=F> + 'static,
 {
     /* Primitive types */
 
@@ -186,8 +186,6 @@ where
     /* Composite types */
 
     pub fn parse_sampler3<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<'a, F, Color<F>>>
-    where
-        F: 'a
     {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
