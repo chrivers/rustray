@@ -1,11 +1,19 @@
 use super::geo_util::*;
 use super::triangle::Triangle;
 
+use std::path::Path;
+
+use obj::Obj;
+use obj::ObjMaterial;
 use obj::ObjData;
 
-use rtbvh::{Bvh, Builder};
+use rtbvh::{Bvh, Builder, Bounds};
 use std::num::NonZeroUsize;
-use rtbvh::{SpatialTriangle};
+
+use crate::lib::Color;
+use crate::lib::bvh::BvhExt;
+use crate::material::{Smart, DynMaterial};
+use crate::sampler::{Sampler, SamplerExt, Texel, DynSampler};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F=F>>
