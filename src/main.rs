@@ -41,7 +41,7 @@ use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, Triangl
 #[allow(unused_imports)]
 use crate::scene::{Light, Scene, BoxScene};
 #[allow(unused_imports)]
-use crate::sampler::{Sampler, Bilinear, BilinearSampler, DynSampler};
+use crate::sampler::{Sampler, Bilinear, SamplerExt, DynSampler};
 #[allow(unused_imports)]
 use crate::material::*;
 #[allow(unused_imports)]
