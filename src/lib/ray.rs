@@ -4,8 +4,9 @@ use crate::material::Material;
 use crate::point;
 use super::vector::{Vectorx, InnerSpace};
 use num_traits::Zero;
+use crate::lib::transform::Transform;
 
-use cgmath::{Point3, Matrix4, Transform, EuclideanSpace};
+use cgmath::{Point3, Matrix4, Transform as cgTransform, EuclideanSpace};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>
