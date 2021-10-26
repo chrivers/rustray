@@ -62,7 +62,7 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a,
 
     pub fn scene(&self) -> &Scene<F, B, G, L>
     {
-        &self.scene
+        self.scene
     }
 }
 
