@@ -4,6 +4,8 @@ use std::marker::PhantomData;
 use std::path::Path;
 use std::collections::HashMap;
 
+use obj::Obj;
+
 use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Transform, Rad, Matrix, SquareMatrix};
 use num_traits::Zero;
 
@@ -440,6 +442,14 @@ where
                 Rule::texture_uv => for f in rule.into_inner() {
                     // info!("face: {:?}", f);
                     texture_uvs.push(Self::parse_val2(f));
+                }
+                Rule::objfile => {
+                    let path = rule.into_inner().next().unwrap().as_str();
+                    let path = &path[1 .. path.len()-1];
+                    info!("Reading {}", path);
+                    let obj = Obj::load(resdir.join(path))?;
+                    let mesh = TriangleMesh::load_obj(obj, Vector::zero(), F::ONE/* , Color::white().dynamic() */);
+                    tris = mesh.tris;
                 }
                 other => error!("unsupported: {:?}", other)
             }
