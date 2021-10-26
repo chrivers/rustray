@@ -33,6 +33,7 @@ pub mod demoscene;
 
 #[allow(unused_imports)]
 use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
+use crate::lib::result::Error;
 #[allow(unused_imports)]
 use crate::lib::vector::Vectorx;
 #[allow(unused_imports)]
@@ -55,6 +56,19 @@ const HEIGHT: u32 = 1440;
 
 fn main() -> RResult<()>
 {
+    match runmain() {
+        Ok(()) => { },
+        Err(Error::IOError(err)) => {
+            error!("Error: {}", err)
+        }
+        Err(err) => {
+            error!("Error: {:#?}", err)
+        }
+    }
+    Ok(())
+}
+
+fn runmain() -> RResult<()> {
     let mut time = TimeSlice::new("startup");
 
     let mut logger = colog::builder();
