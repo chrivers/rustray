@@ -253,6 +253,53 @@ impl<'a, F: Float> Ray<F>
         Some((scale * w) / (w - s))
     }
 
+    /*
+    Implementation of the "new algorithm" for segment/triangle intersection,
+    adapted from the paper:
+
+      "A robust segment/triangle intersection algorithm for interference
+      tests. Efficiency study" - by Jiménez, Segura, Feito.
+
+    (this version considers only front faces)
+     */
+    pub fn intersect_triangle4(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>) -> Option<F>
+    {
+        let scale = F::from_f32(1.0e4);
+        let q1 = self.pos;
+        let q2 = self.pos + self.dir * scale;
+        let a = q1 - v3;
+        let b = v1 - v3;
+        let c = v2 - v3;
+        let w1 = b.cross(c);
+        let w = a.dot(w1);
+
+        if w < F::ZERO {
+            return None
+        }
+
+        let d = q2 - v3;
+        let s = d.dot(w1);
+        if s > -F::BIAS {
+            return None
+        }
+
+        let w2 = a.cross(d);
+        let t = w2.dot(c);
+        if t < -F::BIAS {
+            return None
+        }
+
+        let u = -w2.dot(b);
+        if u < -F::BIAS {
+            return None
+        }
+
+        if w < s + t + u {
+            return None
+        }
+        Some((scale * w) / (w - s))
+    }
+
 }
 
 impl<F: Float> From<Ray<F>> for rtbvh::Ray
