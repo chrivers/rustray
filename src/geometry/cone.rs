@@ -53,93 +53,85 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             gamma -= self.height;
         }
 
-        let beta_squared = beta * beta;
-
-        fn good_root<F: Float>(root: &Vector<F>, height: F) -> bool
-        {
-            !(root.z < F::ZERO || root.z > height)
-        }
-
         let mut normal: Vector<F> = Vector::unit_x();
 
-        let r0: Vector<F> = r.pos;
-        let rd: Vector<F> = r.dir;
-        let pz = r0.z;
-        let dz = rd.z;
+        let p = r.pos;
+        let d = r.dir;
 
-        let a = rd.x*rd.x + rd.y*rd.y - beta_squared * rd.z*rd.z;
+        let beta2 = beta * beta;
 
-        if a == F::ZERO {
-            /* We're in the x-y plane, no intersection */
-            return None
+        let pzg = p.z + gamma;
+
+        let a =           d.x*d.x + d.y*d.y - beta2 * d.z * d.z;
+        let b = F::TWO * (p.x*d.x + p.y*d.y - beta2 * pzg * d.z);
+        let c =           p.x*p.x + p.y*p.y - beta2 * pzg * pzg;
+
+        fn test_cap<F: Float>(root: &mut F, normal: &mut Vector<F>, tx: F, r: &Ray<F>, rad: F, dz: F)
+        {
+            if tx >= *root || tx <= F::ZERO {
+                return
+            }
+
+            let p = r.extend(tx);
+            if p.x*p.x + p.y*p.y <= rad * rad {
+                *root = tx;
+                if dz > F::ZERO {
+                    *normal = -Vector::unit_z();
+                } else {
+                    *normal =  Vector::unit_z();
+                }
+            }
         }
 
-        let b = F::TWO * (r0.x*rd.x + r0.y*rd.y - beta_squared * ((r0.z + gamma) * rd.z));
-        let c = -beta_squared*(gamma + r0.z)*(gamma + r0.z) + r0.x * r0.x + r0.y * r0.y;
-
-        let mut discriminant = b * b - F::FOUR * a * c;
-
-        if discriminant <= F::ZERO {
-            return None
+        #[allow(clippy::too_many_arguments)]
+        fn test_side<F: Float>(root: &mut F, normal: &mut Vector<F>, tx: F, func: impl Fn(F, F) -> bool, r: &Ray<F>, height: F, beta2: F, gamma: F)
+        {
+            let point = r.extend(tx);
+            let good = point.z >= F::ZERO && point.z <= height;
+            if good && func(tx, *root) {
+                *root = tx;
+                *normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
+            }
         }
-
-        discriminant = discriminant.sqrt();
 
         let mut root = F::BIAS;
 
-        /* We have two roots, so calculate them */
-        let near_root = (-b + discriminant) / (F::TWO * a);
-        let far_root  = (-b - discriminant) / (F::TWO * a);
+        let (root2, root1) = crate::lib::ray::quadratic2(a, b, c)?;
 
-        /* This is confusing, but it figures out which */
-        /* root is closer and puts into root */
-        let near_good = good_root(&r.extend(near_root), self.height);
-        if near_good && (near_root > root) {
-            root = near_root;
-            normal = vec3!((r.extend(root)).x, (r.extend(root)).y, -F::TWO * beta_squared * (r.extend(root).z + gamma));
-        }
+        test_side(
+            &mut root,
+            &mut normal,
+            root1,
+            |tx, root| (tx > root) && (tx > F::BIAS),
+            &r,
+            self.height,
+            beta2,
+            gamma
+        );
 
-        let far_good = good_root(&r.extend(far_root), self.height);
-        if far_good && ((near_good && (far_root < root)) || (far_root > F::BIAS)) {
-            root = far_root;
-            normal = vec3!((r.extend(root)).x, (r.extend(root)).y, -F::TWO * beta_squared * (r.extend(root).z + gamma));
-        }
-
-        /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
-        /* Essentially, the cone in this case is a double-sided surface */
-        /* and has _2_ normals */
-        if !self.capped && (normal.dot(r.dir)) > F::ZERO {
-            normal = -normal;
-        }
-
-        /* These are to help with finding caps */
-        let t1 = (            - pz) / dz;
-        let t2 = (self.height - pz) / dz;
+        test_side(
+            &mut root,
+            &mut normal,
+            root2,
+            |tx, root| (tx < root) || (tx > F::BIAS),
+            &r,
+            self.height,
+            beta2,
+            gamma
+        );
 
         if self.capped {
-            let p = r.extend(t1);
+            /* These are to help with finding caps */
+            let t1 = (            - p.z) / d.z;
+            let t2 = (self.height - p.z) / d.z;
 
-            if p[0]*p[0] + p[1]*p[1] <= self.bot_r*self.bot_r && t1 < root && t1 > F::BIAS {
-                root = t1;
-                if dz > F::ZERO {
-                    /* Intersection with cap at z = 0. */
-                    normal = -Vector::unit_z();
-                } else {
-                    normal =  Vector::unit_z();
-                }
-            }
-
-            let q = r.extend(t2);
-
-            if q[0]*q[0] + q[1]*q[1] <= self.top_r*self.top_r && t2 < root && t2 > F::BIAS {
-                root = t2;
-                if dz > F::ZERO {
-                    /* Intersection with interior of cap at z = 1. */
-                    normal =  Vector::unit_z();
-                } else {
-                    normal = -Vector::unit_z();
-                }
-            }
+            test_cap(&mut root, &mut normal, t1, &r, self.bot_r, d.z);
+            test_cap(&mut root, &mut normal, t2, &r, self.top_r, d.z);
+        } else if normal.dot(r.dir) > top_r * bot_r {
+            /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
+            /* Essentially, the cone in this case is a double-sided surface */
+            /* and has _2_ normals */
+            normal = -normal;
         }
 
         if root <= F::BIAS {
