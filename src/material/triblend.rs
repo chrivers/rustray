@@ -27,8 +27,8 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>, C: Material<F=F>> Material fo
         let b = self.b.render(hit, maxel, lights, rt);
         let c = self.c.render(hit, maxel, lights, rt);
 
-        let u = maxel.uv.x;
-        let v = maxel.uv.y;
+        let u = maxel.st.x;
+        let v = maxel.st.y;
         let w = F::ONE - u - v;
 
         (a * w) + (b * u) + (c * v)
