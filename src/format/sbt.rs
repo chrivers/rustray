@@ -456,6 +456,7 @@ where
         }
 
         if normals.is_empty() {
+            info!("Generating normals");
             normals = face_normals(&faces, &points);
             /* normals = smooth_normals(&faces, &points); */
         }
