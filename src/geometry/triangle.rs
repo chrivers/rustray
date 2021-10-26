@@ -60,8 +60,8 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M> {
         let w = F::ONE - u - v;
         let normal =
             self.na * w +
-            self.nb * v +
-            self.nc * u;
+            self.nb * u +
+            self.nc * v;
 
         normal.normalize()
     }
@@ -69,7 +69,7 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M> {
     fn interpolate_uv(&self, u: F, v: F) -> Point<F>
     {
         let w = F::ONE - u - v;
-        (self.ta * w) + (self.tb * v) + (self.tc * u)
+        (self.ta * w) + (self.tb * u) + (self.tc * v)
     }
 
 }
