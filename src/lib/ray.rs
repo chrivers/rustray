@@ -31,6 +31,7 @@ pub struct Maxel<'a, F: Float>
 {
     pub normal: Vector<F>,
     pub uv: Point<F>,
+    pub st: Point<F>,
     pub mat: &'a dyn Material<F=F>,
 }
 
@@ -351,17 +352,22 @@ impl<'a, F: Float> Maxel<'a, F>
 {
     pub fn from_uv(u: F, v: F, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv: point!(u, v), normal, mat }
+        Maxel { uv: point!(u, v), st: Point::zero(), normal, mat }
     }
 
     pub fn new(uv: Point<F>, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv, normal, mat }
+        Maxel { uv, st: Point::zero(), normal, mat }
     }
 
     pub fn zero(mat: &'a dyn Material<F=F>) -> Self
     {
-        Maxel { uv: Point::zero(), normal: Vector::zero(), mat }
+        Maxel { uv: Point::zero(), st: Point::zero(), normal: Vector::zero(), mat }
+    }
+
+    pub fn with_st(self, st: Point<F>) -> Self
+    {
+        Maxel { st, ..self }
     }
 }
 
