@@ -30,22 +30,7 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let mut r: rtbvh::Ray = ray.into();
-
-        let mut dist = F::max_value();
-        let mut hit: Option<Hit<F>> = None;
-        for (t, _) in self.bvh.traverse_iter(&mut r, &self.tris) {
-            if let Some(curhit) = Geometry::intersect(t, ray)
-            {
-                let curdist = ray.pos.distance2(curhit.pos);
-                if curdist < dist
-                {
-                    dist = curdist;
-                    hit = Some(curhit);
-                }
-            }
-        }
-        hit
+        self.bvh.nearest_intersection(ray, &self.tris, &mut F::max_value())
     }
 }
 
