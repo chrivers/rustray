@@ -132,6 +132,14 @@ where
         [v[0], v[1], v[2]]
     }
 
+    pub fn parse_int4(p: Pair<Rule>) -> [usize; 4] {
+        let m = p.into_inner();
+        let v = m.map(
+            |x| x.as_str().trim().parse().unwrap_or(0)
+        ).collect::<Vec<usize>>();
+        [v[0], v[1], v[2], v[3]]
+    }
+
     pub fn parse_val3(p: Pair<Rule>) -> Vector<F> {
         Self::parse_val3b(p.into_inner().next().unwrap())
     }
@@ -189,6 +197,38 @@ where
                 }
             }
             _ => Err(ParseError("sampler3"))
+        }
+    }
+
+    pub fn parse_sampler1<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<'a, F, F>>
+    {
+        let ps = p.into_inner().next().unwrap();
+        match ps.as_rule() {
+            Rule::sampler1 => {
+                let q = ps.into_inner().next().unwrap();
+                match q.as_rule() {
+                    Rule::map => {
+                        let s = q.into_inner().as_str();
+                        let name = &s[1..s.len()-1];
+                        let img = image::open(resdir.join(name))?;
+                        Ok(ShineMap::new(img.bilinear(), F::from_u32(255)).dynsampler())
+                    },
+                    Rule::val1 => {
+                        let m = q.into_inner().as_str();
+                        let v = m.trim().parse().unwrap_or(F::ZERO);
+                        Ok(v.dynsampler())
+                    }
+                    other => {
+                        error!("Unknown sampler prop: {:?}", other);
+                        Err(ParseError("sampler1"))
+                    }
+                }
+            }
+
+            other => {
+                error!("Unknown sampler prop: {:?}", other);
+                Err(ParseError("sampler1"))
+            }
         }
     }
 
