@@ -2,7 +2,7 @@
 use std::fs::File;
 use std::io::{Read, Seek, Cursor};
 use zip::ZipArchive;
-use obj::ObjData;
+use obj::Obj;
 
 use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
 use crate::lib::vector::Vectorx;
@@ -93,8 +93,7 @@ where
     let mat_bmp2 = Bumpmap::new(0.5.into(), NormalMap::new(tex2b.bilinear()), Phong::new(tex2r.bilinear(), tex2a.bilinear().texture())).dynamic();
 
     time.set("objload");
-    let reader = File::open("models/teapot.obj").expect("Failed to open model file");
-    let obj = ObjData::load_buf(reader)?;
+    let obj = Obj::load("models/teapot.obj")?;
 
     let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0));
 
