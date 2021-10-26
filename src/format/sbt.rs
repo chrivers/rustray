@@ -315,7 +315,7 @@ where
 
     /* Geometry types */
 
-    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_cyl(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -328,11 +328,11 @@ where
                 other => error!("unsupported: {:?}", other)
             }
         }
-        info!("Cylinder(capped={})", capped);
-        Ok(box Cylinder::new(xfrm, capped, mat))
+        info!("Cylinder(xfrm={:7.4?}, capped={})", xfrm, capped);
+        Ok(vec![box Cylinder::new(xfrm, capped, mat)])
     }
 
-    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -346,10 +346,10 @@ where
         }
 
         info!("Sphere(xfrm={:7.4?})", xfrm);
-        Ok(box Sphere::new(xfrm, mat))
+        Ok(vec![box Sphere::new(xfrm, mat)])
     }
 
-    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -362,10 +362,10 @@ where
         }
 
         info!("Cube(xfrm={:7.4?})", xfrm);
-        Ok(box Cube::new(xfrm, mat))
+        Ok(vec![box Cube::new(xfrm, mat)])
     }
 
-    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -378,10 +378,10 @@ where
         }
 
         info!("Square(xfrm={:7.4?})", xfrm);
-        Ok(box Square::new(xfrm, mat))
+        Ok(vec![box Square::new(xfrm, mat)])
     }
 
-    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -465,10 +465,10 @@ where
         }
 
         info!("TriangleMesh(tris={})", tris.len());
-        Ok(box TriangleMesh::new(tris))
+        Ok(vec![box TriangleMesh::new(tris)])
     }
 
-    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut mat = Phong::white().dynamic();
@@ -490,7 +490,7 @@ where
         }
 
         info!("Cone(h={:.3}, t={:.3}, b={:.3}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
-        Ok(box Cone::new(height, top_r, bot_r, capped, xfrm, mat))
+        Ok(vec![box Cone::new(height, top_r, bot_r, capped, xfrm, mat)])
     }
 
     /* Light types */
@@ -539,7 +539,7 @@ where
         Ok(res)
     }
 
-    pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_translate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -549,7 +549,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_rotate(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_num1(body.next().unwrap());
@@ -560,7 +560,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_transform(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let mut body = p.into_inner();
         let a = Self::parse_val4(body.next().unwrap());
@@ -575,7 +575,7 @@ where
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_scale(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         let body = p.into_inner();
         let mut it: Vec<Pair<Rule>> = body.collect();
@@ -596,7 +596,17 @@ where
         Self::parse_statement(it.remove(0), xfrm * x2, version, resdir)
     }
 
-    pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Box<dyn FiniteGeometry<F>>>
+    pub fn parse_group(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
+    {
+        let mut res = vec![];
+        for r in p.into_inner() {
+            let mut stmt = Self::parse_statement(r, xfrm, version, resdir)?;
+            res.append(&mut stmt);
+        }
+        Ok(res)
+    }
+
+    pub fn parse_statement(p: Pair<Rule>, xfrm: Matrix4<F>, version: SbtVersion, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
     {
         /* info!("-- statement: {:?} {:.4?}", p.as_rule(), xfrm); */
         match p.as_rule() {
@@ -604,12 +614,13 @@ where
             Rule::rotate    => Self::parse_rotate(p, xfrm, version, resdir),
             Rule::transform => Self::parse_transform(p, xfrm, version, resdir),
             Rule::scale     => Self::parse_scale(p, xfrm, version, resdir),
-            Rule::geo_cyl => Self::parse_geo_cyl(p, xfrm, resdir),
-            Rule::geo_sph => Self::parse_geo_sph(p, xfrm, resdir),
-            Rule::geo_box => Self::parse_geo_box(p, xfrm, resdir),
-            Rule::geo_sqr => Self::parse_geo_sqr(p, xfrm, resdir),
-            Rule::geo_plm => Self::parse_geo_plm(p, xfrm, resdir),
-            Rule::geo_con => Self::parse_geo_con(p, xfrm, resdir),
+            Rule::geo_cyl   => Self::parse_geo_cyl(p, xfrm, resdir),
+            Rule::geo_sph   => Self::parse_geo_sph(p, xfrm, resdir),
+            Rule::geo_box   => Self::parse_geo_box(p, xfrm, resdir),
+            Rule::geo_sqr   => Self::parse_geo_sqr(p, xfrm, resdir),
+            Rule::geo_plm   => Self::parse_geo_plm(p, xfrm, resdir),
+            Rule::geo_con   => Self::parse_geo_con(p, xfrm, resdir),
+            Rule::group     => Self::parse_group(p, xfrm, version, resdir),
 
             _ => { error!("unimplemented: {:?}", p.as_rule()); Err(ParseError("statement")) },
         }
@@ -640,7 +651,7 @@ where
                 Rule::ambient_light     => warn!("unimplemented: ambient_light"),
                 Rule::material_obj      => warn!("unimplemented: material_obj"),
 
-                _ => objects.push(Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
+                _ => objects.append(&mut Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
             }
         }
         Ok(Scene::new(cameras, objects, vec![], lights))

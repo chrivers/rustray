@@ -234,8 +234,12 @@ light = _{
 
 material_obj = { "material" ~ "="? ~ "{" ~ material_prop* ~ "}" }
 
+group = {
+      "{" ~ statement* ~ "}"
+}
+
 statement = _{
-      ";" | light | camera | geo | material_obj
+      ";" | light | camera | geo | material_obj | group
 }
 
 program = _{ SOI ~ START ~ statement* ~ EOI }
