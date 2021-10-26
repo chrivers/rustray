@@ -8,6 +8,7 @@ pub mod ray;
 pub mod result;
 pub mod timeslice;
 pub mod transform;
+pub mod bvh;
 
 pub use float::Float;
 pub use point::Point;
@@ -19,3 +20,4 @@ pub use light::{PointLight, DirectionalLight};
 pub use result::{RResult, Error};
 pub use timeslice::TimeSlice;
 pub use transform::Transform;
+pub use bvh::BvhExt;
