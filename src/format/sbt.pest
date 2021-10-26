@@ -29,6 +29,7 @@ val2 = { "(" ~ num ~ "," ~ num ~ ")" }
 val1 = { num }
 
 int3 = { "(" ~ int ~ "," ~ int ~ "," ~ int ~ ")" }
+int4 = { "(" ~ int ~ "," ~ int ~ "," ~ int ~ "," ~ int ~ ")" }
 
 color                 = { ("color" | "colour")          ~ "=" ~ val3 ~ ";"? }
 position              = { "position"                    ~ "=" ~ val3 ~ ";"? }
