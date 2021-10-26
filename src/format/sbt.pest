@@ -128,31 +128,36 @@ char = {
 inner = @{ char* }
 string = ${ "\"" ~ inner ~ "\"" }
 
-map        = { "map"        ~ "(" ~ string ~ ")" }
-name       = { "name"       ~ "=" ~ string ~ ";"}
+map        = { ("map"       ~ "(" ~ string ~ ")") | string  }
+name       = { "name"       ~ "=" ~ string ~ ";"? }
+objfile    = { "objfile"    ~ "=" ~ string ~ ";"? }
+objgroup   = { "objgroup"   ~ "=" ~ string ~ ";"? }
 points     = { "points"     ~ "=" ~ "(" ~ (val3 ~ ("," ~ val3)*)? ~ ")" ~ ";"}
 normals    = { "normals"    ~ "=" ~ "(" ~ (val3 ~ ("," ~ val3)*)? ~ ")" ~ ";"}
-texture_uv = { "texture_uv" ~ "=" ~ "(" ~ (val2 ~ ("," ~ val2)*)? ~ ")" ~ ";"}
-faces      = { "faces"      ~ "=" ~ "(" ~ (int3 ~ ("," ~ int3)*)? ~ ")" ~ ";"}
+texture_uv = { ("texture_uv"|"texcoords") ~ "=" ~ "(" ~ (val2 ~ ("," ~ val2)*)? ~ ")" ~ ";"}
+faces3     = { "faces"      ~ "=" ~ "(" ~ (int3 ~ ("," ~ int3)*)? ~ ")" ~ ";"}
+faces4     = { "faces"      ~ "=" ~ "(" ~ (int4 ~ ("," ~ int4)*)? ~ ")" ~ ";"}
 
-sampler3   = { val3 | map }
+sampler1   = { map | val1 }
+sampler3   = { map | val3 }
 
-mat_diffuse      = {"diffuse"      ~ "=" ~ sampler3 ~ ";"?}
-mat_specular     = {"specular"     ~ "=" ~ sampler3 ~ ";"?}
-mat_reflective   = {"reflective"   ~ "=" ~ sampler3 ~ ";"?}
-mat_ambient      = {"ambient"      ~ "=" ~ sampler3 ~ ";"?}
-mat_transmissive = {"transmissive" ~ "=" ~ (val3 | map) ~ ";"?}
-mat_emissive     = {"emissive"     ~ "=" ~ (val3 | map) ~ ";"?}
-mat_shininess    = {"shininess"    ~ "=" ~ num          ~ ";"?}
-mat_index        = {"index"        ~ "=" ~ num          ~ ";"?}
-// mat_name      = {"name"         ~ "=" ~ string       ~ ";"?}
-mat_glossiness   = {"glossiness"   ~ "=" ~ val1         ~ ";"?}
+mat_diffuse      = { "diffuse"      ~ "=" ~ sampler3 ~ ";"? }
+mat_specular     = { "specular"     ~ "=" ~ sampler3 ~ ";"? }
+mat_reflective   = { "reflective"   ~ "=" ~ sampler3 ~ ";"? }
+mat_ambient      = { "ambient"      ~ "=" ~ sampler3 ~ ";"? }
+mat_bump         = { "bump"         ~ "=" ~ sampler3 ~ ";"? }
+mat_transmissive = { "transmissive" ~ "=" ~ sampler3 ~ ";"? }
+mat_emissive     = { "emissive"     ~ "=" ~ sampler3 ~ ";"? }
+mat_shininess    = { "shininess"    ~ "=" ~ sampler1 ~ ";"? }
+mat_index        = { "index"        ~ "=" ~ sampler1 ~ ";"? }
+mat_glossiness   = { "glossiness"   ~ "=" ~ sampler1 ~ ";"? }
 
 material_prop = _{
       mat_diffuse
     | mat_specular
     | mat_reflective
     | mat_ambient
+    | mat_bump
     | mat_transmissive
     | mat_emissive
     | mat_shininess
@@ -181,12 +186,15 @@ materials = {
 
 polymesh_ref = _{
       material_ref
+    | objfile
+    | objgroup
     | name
     | points
     | normals
     | texture_uv
     | materials
-    | faces
+    | faces3
+    | faces4
     | ( "gennormals" ~ ";" )
 }
 
