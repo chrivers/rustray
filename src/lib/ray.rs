@@ -123,7 +123,7 @@ impl<'a, F: Float> Ray<F>
         let ae = edge1.dot(h);
 
         /* This ray is parallel to this triangle. */
-        if ae.abs() < F::BIAS {
+        if ae.abs() < F::BIAS2 {
             return None
         }
 
@@ -344,7 +344,7 @@ impl<'a, F: Float> Hit<'a, F>
     pub fn reflected_ray(&self, normal: &Vector<F>) -> Ray<F>
     {
         let refl = self.dir.reflect(normal);
-        Ray::new(self.pos + refl * F::BIAS3, refl, self.lvl + 1)
+        Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl + 1)
     }
 
     pub fn refracted_ray(&self, normal: &Vector<F>, ior: F) -> Ray<F>
