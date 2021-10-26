@@ -88,7 +88,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             if let Some(curhit) = g.intersect(ray)
             {
                 let curdist = ray.pos.distance2(curhit.pos);
-                if curdist < dist
+                if curdist > F::BIAS2 && curdist < dist
                 {
                     dist = curdist;
                     hit = Some(curhit);
@@ -102,7 +102,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             if let Some(curhit) = t.intersect(ray)
             {
                 let curdist = ray.pos.distance2(curhit.pos);
-                if curdist < dist
+                if curdist > F::BIAS2 && curdist < dist
                 {
                     dist = curdist;
                     hit = Some(curhit);

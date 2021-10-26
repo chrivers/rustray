@@ -84,7 +84,7 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
             if let Some(curhit) = curobj.intersect(&hitray)
             {
                 let cur_length = hit.pos.distance2(curhit.pos);
-                if cur_length > F::BIAS && cur_length < best_length {
+                if cur_length > F::BIAS2 && cur_length < best_length {
                     if let Some(color) = maxel.mat.shadow(hit, maxel, light) {
                         best_color = Some(color);
                         best_length = cur_length;
