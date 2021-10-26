@@ -74,7 +74,7 @@ where
         }
 
         for light in lights {
-            let light_color = rt.ray_shadow(hit, maxel, &**light).unwrap_or_else(|| light.get_color());
+            let light_color = rt.ray_shadow(hit, maxel, *light).unwrap_or_else(|| light.get_color());
 
             let light_vec = hit.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
