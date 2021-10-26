@@ -1,4 +1,4 @@
-use crate::lib::{Float, Vector, Color, Camera};
+use crate::lib::{Float, Vector, Color, Camera, BvhExt};
 use crate::lib::ray::{Ray, Hit, Maxel};
 use crate::geometry::{Geometry, FiniteGeometry};
 
@@ -96,19 +96,6 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             }
         }
 
-        let mut r: rtbvh::Ray = ray.into();
-
-        for (t, _) in self.bvh.traverse_iter(&mut r, &self.objects) {
-            if let Some(curhit) = t.intersect(ray)
-            {
-                let curdist = ray.pos.distance2(curhit.pos);
-                if curdist > F::BIAS2 && curdist < dist
-                {
-                    dist = curdist;
-                    hit = Some(curhit);
-                }
-            }
-        }
-        hit
+        self.bvh.nearest_intersection(&ray, &self.objects, &mut dist).or(hit)
     }
 }
