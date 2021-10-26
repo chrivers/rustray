@@ -163,7 +163,7 @@ impl<'a, F: Float> Ray<F>
      */
     pub fn intersect_triangle2(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>) -> Option<F>
     {
-        let scale = F::from_f32(1024.0);
+        let scale = F::from_f32(1e7);
         let q1 = self.pos;
         let q2 = self.pos + self.dir * scale;
         let a = q1 - v3;
