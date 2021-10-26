@@ -61,11 +61,11 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
         let aabbs = tris
             .iter()
             .map(|t| t.aabb())
-            .collect::<Vec<rtbvh::Aabb>>();
+            .collect::<Vec<Aabb>>();
 
         let bvh = Builder {
-            aabbs: Some(aabbs.as_slice()),
-            primitives: tris.as_slice(),
+            aabbs: Some(&aabbs),
+            primitives: &tris,
             primitives_per_leaf: NonZeroUsize::new(16),
         }
         /* .construct_spatial_sah().unwrap(); */
