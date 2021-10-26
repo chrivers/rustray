@@ -95,10 +95,9 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let t = ray.intersect_triangle(&self.a, &self.b, &self.c)?;
+        let t = ray.intersect_triangle4(&self.a, &self.b, &self.c)?;
         Some(ray.hit_at(t, self))
     }
-
 }
 
 impl<F: Float, M: Material<F=F>> Triangle<F, M>
