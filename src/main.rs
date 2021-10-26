@@ -114,7 +114,13 @@ fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<
     Ok(png.encode(img.inner(), img.width(), img.height(), ColorType::Rgb8)?)
 }
 
-fn draw_image<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>(time: &mut TimeSlice, tracer: Tracer<F, B, G, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+#[allow(clippy::type_complexity)]
+fn draw_image<F, B, G, L>(time: &mut TimeSlice, tracer: Tracer<F, B, G, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+where
+    F: Float,
+    B: FiniteGeometry<F>,
+    G: Geometry<F>,
+    L: Light<F>
 {
     let pb = pbar::init(height as u64);
 
