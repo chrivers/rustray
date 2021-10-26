@@ -67,6 +67,24 @@ impl<'a, F: Float> Ray<F>
         })
     }
 
+    pub fn xfrm_inv(&self, xfrm: &Transform<F>) -> Ray<F>
+    {
+        Self {
+            pos: xfrm.pos_inv(self.pos),
+            dir: xfrm.dir_inv(self.dir),
+            lvl: self.lvl,
+        }
+    }
+
+    pub fn xfrm(&self, xfrm: &Transform<F>) -> Ray<F>
+    {
+        Self {
+            pos: xfrm.pos(self.pos),
+            dir: xfrm.dir(self.dir),
+            lvl: self.lvl,
+        }
+    }
+
     pub fn intersect_sphere(&self, pos: &Vector<F>, radius2: F) -> Option<F>
     {
         let l = self.pos - *pos;
