@@ -43,6 +43,8 @@ aspectratio           = { "aspectratio"                 ~ "=" ~ val1 ~ ";"? }
 fov                   = { "fov"                         ~ "=" ~ val1 ~ ";"? }
 range                 = { "range"                       ~ "=" ~ val1 ~ ";"? }
 capped                = { "capped"                      ~ "=" ~ bool ~ ";"? }
+angle                 = { "angle"                       ~ "=" ~ val1 ~ ";"? }
+radius                = { "radius"                      ~ "=" ~ val1 ~ ";"? }
 top_radius            = { "top_radius"                  ~ "=" ~ val1 ~ ";"? }
 bottom_radius         = { "bottom_radius"               ~ "=" ~ val1 ~ ";"? }
 create_proxy_geometry = { "create_proxy_geometry"       ~ "=" ~ bool ~ ";"? }
@@ -61,6 +63,8 @@ light_value = _{
     | updir
     | width
     | height
+    | angle
+    | radius
     | create_proxy_geometry
 }
 
