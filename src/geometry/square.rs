@@ -33,7 +33,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Square<F, M>
 
         let t = -r.pos.z / r.dir.z;
 
-        if t <= F::BIAS {
+        if t <= F::BIAS2 {
             return None
         }
 

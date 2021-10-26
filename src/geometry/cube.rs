@@ -42,7 +42,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
 
             let t = (F::from_usize(it / 3) - F::HALF - p[mod0]) / d[mod0];
 
-            if t < F::BIAS || t > best_t {
+            if t < F::BIAS2 || t > best_t {
                 continue
             }
 
