@@ -79,9 +79,9 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
         normals[face[0]] = n;
         normals[face[1]] = n;
         normals[face[2]] = n;
-        *norms.entry(hash(points[face[0]])).or_insert(Vector::zero()) += n;
-        *norms.entry(hash(points[face[1]])).or_insert(Vector::zero()) += n;
-        *norms.entry(hash(points[face[2]])).or_insert(Vector::zero()) += n;
+        *norms.entry(hash(points[face[0]])).or_insert_with(Vector::zero) += n;
+        *norms.entry(hash(points[face[1]])).or_insert_with(Vector::zero) += n;
+        *norms.entry(hash(points[face[2]])).or_insert_with(Vector::zero) += n;
     }
     for face in faces {
         normals[face[0]] = norms[&hash(points[face[0]])];
