@@ -12,7 +12,6 @@ pub struct TriangleMesh<F: Float, M: Material<F=F>>
 {
     pub tris: Vec<Triangle<F, M>>,
     bvh: Bvh,
-    aabb: Aabb,
 }
 
 impl<F: Float, M: Material<F=F>> Primitive for TriangleMesh<F, M>
@@ -51,11 +50,6 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
     {
         debug!("building bvh for {} triangles..", tris.len());
 
-        let mut aabb = Aabb::empty();
-        for tri in &tris {
-            aabb.grow_bb(&tri.aabb());
-        }
-
         let aabbs = tris
             .iter()
             .map(|t| t.aabb())
@@ -73,7 +67,6 @@ impl<F: Float, M: Material<F=F> + Clone> TriangleMesh<F, M>
         TriangleMesh {
             tris,
             bvh,
-            aabb,
         }
     }
 
