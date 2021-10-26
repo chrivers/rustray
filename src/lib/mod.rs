@@ -7,6 +7,7 @@ pub mod color;
 pub mod ray;
 pub mod result;
 pub mod timeslice;
+pub mod transform;
 
 pub use float::Float;
 pub use point::Point;
@@ -17,3 +18,4 @@ pub use ray::Ray;
 pub use light::{PointLight, DirectionalLight};
 pub use result::{RResult, Error};
 pub use timeslice::TimeSlice;
+pub use transform::Transform;
