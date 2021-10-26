@@ -95,7 +95,7 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
     normals
 }
 
-pub fn spherical_uvs<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Point<F>>
+pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>>
 {
     let mut center = Vector::zero();
     for point in points {
@@ -469,7 +469,7 @@ where
 
         if texture_uvs.is_empty() {
             info!("Generating uv coords");
-            texture_uvs = spherical_uvs(&faces, &points);
+            texture_uvs = spherical_uvs(&points);
         }
 
         for face in faces.iter() {
