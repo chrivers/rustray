@@ -15,7 +15,16 @@ pub struct TriangleMesh<F: Float, M: Material<F=F>>
     aabb: Aabb,
 }
 
-aabb_impl_fm!(TriangleMesh<F, M>);
+impl<F: Float, M: Material<F=F>> Primitive for TriangleMesh<F, M>
+{
+    fn center(&self) -> Vec3 {
+        self.bvh.bounds().center()
+    }
+
+    fn aabb(&self) -> Aabb {
+        self.bvh.bounds()
+    }
+}
 
 impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
