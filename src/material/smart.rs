@@ -62,16 +62,25 @@ where
         let tran_color = self.kt.sample(maxel.uv);
         let refl_color = self.kr.sample(maxel.uv);
 
-        if !refl_color.is_zero() {
+        let refl_term = if !refl_color.is_zero() {
             let refl = hit.reflected_ray(&maxel.normal);
-            res += rt.ray_trace(&refl).unwrap_or_else(Color::black) * refl_color
-        }
+            rt.ray_trace(&refl).unwrap_or_else(Color::black) * refl_color
+        } else {
+            Color::black()
+        };
 
-        if !tran_color.is_zero() {
-            let ior = self.ior.sample(maxel.uv);
+        let ior = self.ior.sample(maxel.uv);
+
+        let refr_term = if !tran_color.is_zero() {
             let refr = hit.refracted_ray(&maxel.normal, ior);
-            res += rt.ray_trace(&refr).unwrap_or_else(Color::black) * tran_color
-        }
+            rt.ray_trace(&refr).unwrap_or_else(Color::black) * tran_color
+        } else {
+            Color::black()
+        };
+
+        let fresnel = hit.dir.fresnel(&maxel.normal, ior);
+
+        res += refr_term.lerp(refl_term, fresnel);
 
         for light in lights {
             let light_color = rt.ray_shadow(hit, maxel, *light).unwrap_or_else(|| light.get_color());
