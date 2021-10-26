@@ -91,6 +91,20 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
     normals
 }
 
+pub fn spherical_uvs<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Point<F>>
+{
+    let mut center = Vector::zero();
+    for point in points {
+        center += *point
+    }
+    center /= F::from_usize(points.len());
+
+    let mut uvs = vec![];
+    for point in points {
+        uvs.push((point - center).normalize().polar_uv().into())
+    }
+    uvs
+}
 
 impl<F> SbtParser<F>
 where
@@ -429,6 +443,11 @@ where
             /* normals = smooth_normals(&faces, &points); */
         }
 
+        if texture_uvs.is_empty() {
+            info!("Generating uv coords");
+            texture_uvs = spherical_uvs(&faces, &points);
+        }
+
         for face in faces.iter() {
             let m = if !materials.is_empty() {
                 Triblend::new(
@@ -440,16 +459,6 @@ where
                 mat.clone()
             };
 
-            let (uv1, uv2, uv3) = if !texture_uvs.is_empty() {
-                (
-                    texture_uvs[face[0]],
-                    texture_uvs[face[1]],
-                    texture_uvs[face[2]],
-                )
-            } else {
-                let z = Point::zero();
-                (z, z, z)
-            };
             tris.push(
                 Triangle::new(
                     points[face[0]],
@@ -458,7 +467,9 @@ where
                     normals[face[0]].normalize(),
                     normals[face[1]].normalize(),
                     normals[face[2]].normalize(),
-                    uv1, uv2, uv3,
+                    texture_uvs[face[0]],
+                    texture_uvs[face[1]],
+                    texture_uvs[face[2]],
                     m
                 )
             );
