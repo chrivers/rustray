@@ -1,6 +1,6 @@
 WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
 COMMENT = _{
-      ( "//" ~ (not_newline+) ) | ( "/*" ~ (!"*/" ~ ANY)* ~ "*/" )
+      ( "//" ~ (not_newline*) ) | ( "/*" ~ (!"*/" ~ ANY)* ~ "*/" )
 }
 
 VERSION = { "0.9" | "1.0" }
