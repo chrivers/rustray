@@ -31,6 +31,6 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>, C: Material<F=F>> Material fo
         let v = maxel.uv.y;
         let w = F::ONE - u - v;
 
-        (a * w) + (b * v) + (c * u)
+        (a * w) + (b * u) + (c * v)
     }
 }
