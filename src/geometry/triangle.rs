@@ -78,16 +78,19 @@ impl<F: Float, M: Material<F=F> + Clone> HitTarget<F> for Triangle<F, M>
 {
     fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
     {
-        let c1 = (self.b - self.a).cross(hit.pos - self.b);
-        let c2 = (self.c - self.a).cross(hit.pos - self.c);
-        let area2 = self.n.magnitude();
-        let u = c1.magnitude() / area2;
-        let v = c2.magnitude() / area2;
+        let edge1 = self.b - self.a;
+        let edge2 = self.c - self.a;
 
-        let normal = self.interpolate_normal(u, v);
-        let uv = self.interpolate_uv(u, v);
+        let c1 = edge1.cross(hit.pos - self.b);
+        let c2 = edge2.cross(hit.pos - self.c);
+        let area2 = edge1.cross(edge2).magnitude();
+        let s = c2.magnitude() / area2;
+        let t = c1.magnitude() / area2;
 
-        Maxel::new(uv, normal, &self.mat)
+        let normal = self.interpolate_normal(s, t);
+        let uv = self.interpolate_uv(s, t);
+
+        Maxel::new(uv, normal, &self.mat).with_st(point!(s, t))
     }
 }
 
