@@ -394,7 +394,7 @@ impl<'a, F: Float> Maxel<'a, F>
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F>
 {
     let (t0, t1) = quadratic2(a, b, c)?;
-    if t0 < F::ZERO {
+    if t0 < F::ZERO || t1 < F::ZERO {
         None
     } else {
         Some(t0.min(t1))
