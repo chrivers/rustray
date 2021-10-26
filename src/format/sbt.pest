@@ -72,7 +72,7 @@ ambient_light     = { "ambient_light"     ~ "{" ~ (light_value*) ~ "}" }
 directional_light = { "directional_light" ~ "{" ~ (light_value*) ~ "}" }
 point_light       = { "point_light"       ~ "{" ~ (light_value*) ~ "}" }
 spot_light        = { "spot_light"        ~ "{" ~ (light_value*) ~ "}" }
-area_light        = { "area_light"        ~ "{" ~ (light_value*) ~ "}" }
+area_light        = { ( "area_light_rect" | "area_light")       ~ "{" ~ (light_value*) ~ "}" }
 
 camera = {
       "camera" ~ "{" ~ (
