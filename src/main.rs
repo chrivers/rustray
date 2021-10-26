@@ -68,14 +68,23 @@ fn main() -> RResult<()>
     info!("---------- {:?} ----------", path);
     let resdir = path.parent().unwrap();
     let mut file = File::open(path)?;
-    let mut data = String::new();
-    file.read_to_string(&mut data)?;
 
     time.set("parse");
+
+    /* Option 1: Scene from .ply file */
+    /* let scene = PlyParser::<F>::parse_file(&mut file, resdir, WIDTH, HEIGHT)?; */
+
+
+    /* Option 2: Scene from .ray file */
+
+    let mut data = String::new();
+    file.read_to_string(&mut data)?;
     let p = SbtParser::<F>::parse(Rule::program, &data)?;
 
     time.set("construct");
     let scene = SbtParser::<F>::parse_file(p, resdir, WIDTH, HEIGHT)?;
+
+    /* Option 3: Scene from built-in constructor */
 
     /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
