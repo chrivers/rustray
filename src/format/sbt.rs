@@ -427,9 +427,15 @@ where
                     points.push(Self::parse_val3b(f).xfrm(&xfrm))
                     /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                 }
-                Rule::faces => for f in rule.into_inner() {
+                Rule::faces3 => for f in rule.into_inner() {
                     // info!("face: {:?}", f);
                     faces.push(Self::parse_int3(f))
+                }
+                Rule::faces4 => for f in rule.into_inner() {
+                    // info!("face: {:?}", f);
+                    let f = Self::parse_int4(f);
+                    faces.push([f[0], f[1], f[2]]);
+                    faces.push([f[0], f[2], f[3]]);
                 }
                 Rule::normals => for f in rule.into_inner() {
                     // info!("norm: {:?}", f);
