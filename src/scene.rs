@@ -51,6 +51,7 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
     pub geometry: Vec<G>,
     pub lights: Vec<L>,
     pub bvh: Bvh,
+    pub ambient: Color<F>,
 }
 
 pub type BoxScene<F> = Scene<F, Box<dyn FiniteGeometry<F>>, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
@@ -76,7 +77,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         .construct_binned_sah().unwrap();
         /* .construct_locally_ordered_clustered().unwrap(); */
 
-        Self { cameras, objects, geometry, lights, bvh }
+        Self { cameras, objects, geometry, lights, bvh, ambient: Color::black() }
     }
 
     pub fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
@@ -97,5 +98,10 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         }
 
         self.bvh.nearest_intersection(&ray, &self.objects, &mut dist).or(hit)
+    }
+
+    pub fn with_ambient(self, ambient: Color<F>) -> Self
+    {
+        Self { ambient, ..self }
     }
 }
