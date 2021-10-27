@@ -256,7 +256,7 @@ where
         let mut diff = Color::black().dynsampler();
         let mut spec = Color::black().dynsampler();
         let mut refl = None;
-        let mut _ambi = Color::black().dynsampler();
+        let mut ambi = Color::black();
         let mut bump = None;
         let mut tran = Color::black().dynsampler();
         let mut emis = Color::black().dynsampler();
@@ -268,7 +268,7 @@ where
                 Rule::mat_diffuse      => diff = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_specular     => spec = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_reflective   => refl = Some(Self::parse_sampler3(q, resdir)?),
-                Rule::mat_ambient      => _ambi = Self::parse_sampler3(q, resdir)?,
+                Rule::mat_ambient      => ambi = Self::parse_color(q.into_inner().next().unwrap()),
                 Rule::mat_transmissive => tran = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_emissive     => emis = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_shininess    => shi  = Self::parse_sampler1(q, resdir)?,
@@ -283,7 +283,7 @@ where
             }
         }
 
-        let smart = Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone()));
+        let smart = Smart::new(idx, shi, emis, diff, spec.clone(), tran, refl.unwrap_or_else(|| spec.clone())).with_ambient(ambi);
 
         match bump {
             None => Ok(smart.dynamic()),
@@ -670,6 +670,7 @@ where
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut version: SbtVersion = SbtVersion::Sbt1_0;
+        let mut ambient = Color::black();
 
         for r in p {
             match r.as_rule() {
@@ -686,13 +687,13 @@ where
                 }
 
                 Rule::spot_light        => warn!("unimplemented: spot_light"),
-                Rule::ambient_light     => warn!("unimplemented: ambient_light"),
+                Rule::ambient_light     => ambient = Self::parse_color(r.into_inner().next().unwrap()),
                 Rule::material_obj      => warn!("unimplemented: material_obj"),
 
                 _ => objects.append(&mut Self::parse_statement(r, Matrix4::identity(), version, resdir)?),
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights))
+        Ok(Scene::new(cameras, objects, vec![], lights).with_ambient(ambient))
     }
 
 }
