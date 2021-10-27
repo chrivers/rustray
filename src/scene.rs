@@ -42,6 +42,7 @@ pub trait RayTracer<F: Float> : Sync
 {
     fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
+    fn ambient(&self) -> Color<F>;
 }
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>

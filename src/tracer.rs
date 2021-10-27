@@ -108,4 +108,9 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
         Some(maxel.mat.render(&hit, &maxel, &self.lights, self))
     }
 
+    fn ambient(&self) -> Color<F>
+    {
+        self.scene.ambient
+    }
+
 }
