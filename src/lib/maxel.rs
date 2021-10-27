@@ -47,6 +47,11 @@ impl<'a, F: Float> Maxel<'a, F>
         Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
     }
 
+    pub fn fresnel(&mut self, ior: F) -> F
+    {
+        self.dir.fresnel(&self.nml(), ior)
+    }
+
     pub fn with_normal(self, nml: Vector<F>) -> Self
     {
         Self { nml: Some(nml), ..self }

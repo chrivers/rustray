@@ -30,7 +30,7 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material for Fresnel<F, S>
         let refr = maxel.refracted_ray(ior);
         let c_refr = rt.ray_trace(&refr).unwrap_or_else(Color::black);
 
-        let fr = maxel.dir.fresnel(&maxel.nml(), ior);
+        let fr = maxel.fresnel(ior);
 
         c_refr.lerp(c_refl, fr)
     }

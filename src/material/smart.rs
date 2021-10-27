@@ -87,7 +87,7 @@ where
             Color::black()
         };
 
-        let fresnel = maxel.dir.fresnel(&normal, ior);
+        let fresnel = maxel.fresnel(ior);
 
         res += refr_term.lerp(refl_term, fresnel);
 
