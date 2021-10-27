@@ -22,7 +22,10 @@ pub enum Error
     Reqwest(#[from] reqwest::Error),
 
     #[error("parse error")]
-    ParseError(&'static str)
+    ParseError(&'static str),
+
+    #[error("unsupported parse element {0:?}")]
+    ParseUnsupported(String)
 }
 
 pub type RResult<F> = Result<F, Error>;
