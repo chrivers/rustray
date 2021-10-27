@@ -20,6 +20,7 @@ where
     ks: S4,
     kt: S5,
     kr: S6,
+    ambient: Color<F>,
 }
 
 impl<F, S1, S2, S3, S4, S5, S6> Smart<F, S1, S2, S3, S4, S5, S6>
@@ -34,7 +35,12 @@ where
 {
     pub fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self
     {
-        Self { ior, pow, ke, kd, ks, kt, kr }
+        Self { ior, pow, ke, kd, ks, kt, kr, ambient: Color::black() }
+    }
+
+    pub fn with_ambient(self, ambient: Color<F>) -> Self
+    {
+        Self { ambient, ..self }
     }
 
 }
@@ -56,8 +62,9 @@ where
         let diff_color = self.kd.sample(maxel.uv);
         let spec_color = self.ks.sample(maxel.uv);
         let spec_pow   = self.pow.sample(maxel.uv);
+        let ambi_color = self.ambient * rt.ambient();
 
-        let mut res = self.ke.sample(maxel.uv);
+        let mut res = self.ke.sample(maxel.uv) + ambi_color;
 
         let tran_color = self.kt.sample(maxel.uv);
         let refl_color = self.kr.sample(maxel.uv);
