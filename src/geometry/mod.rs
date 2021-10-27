@@ -3,8 +3,7 @@ use crate::lib::ray::{Ray, Hit};
 use crate::lib::Vector;
 use crate::lib::vector::Vectorx;
 use crate::vec3;
-
-use cgmath::Matrix4;
+use crate::lib::transform::Transform;
 
 use rtbvh::Primitive;
 use rtbvh::Aabb;
@@ -51,14 +50,14 @@ where
 {
 }
 
-pub fn build_aabb_ranged<F: Float>(xfrm: &Matrix4<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb
+pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb
 {
     /* Transform all corner points, expand aabb with each result */
     let mut aabb = Aabb::empty();
     for px in x {
         for py in y {
             for pz in z {
-                let p = vec3!(px, py, pz).xfrm(xfrm).into_f32();
+                let p = xfrm.pos(vec3!(px, py, pz)).into_f32();
                 aabb.grow(p.into_vector3());
             }
         }
@@ -66,7 +65,7 @@ pub fn build_aabb_ranged<F: Float>(xfrm: &Matrix4<F>, x: [F; 2], y: [F; 2], z: [
     aabb
 }
 
-pub fn build_aabb_symmetric<F: Float>(xfrm: &Matrix4<F>, x: F, y: F, z: F) -> Aabb
+pub fn build_aabb_symmetric<F: Float>(xfrm: &Transform<F>, x: F, y: F, z: F) -> Aabb
 {
     build_aabb_ranged(xfrm, [-x, x], [-y, y], [-z, z])
 }
@@ -92,12 +91,13 @@ pub(crate) mod geo_util {
     pub use crate::lib::{Vector, Float, Point};
     pub use crate::lib::ray::{Ray, Hit, Maxel};
     pub use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
+    pub use crate::lib::transform::Transform;
     pub use crate::scene::*;
     pub use crate::material::Material;
     pub use super::Geometry;
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
 
-    pub use cgmath::{Matrix4, Transform, Matrix, SquareMatrix};
+    pub use cgmath::{Matrix4, Transform as cgTransform, Matrix, SquareMatrix};
 
     pub use num_traits::Zero;
 

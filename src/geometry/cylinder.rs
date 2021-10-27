@@ -3,8 +3,7 @@ use super::geo_util::*;
 #[derive(Debug)]
 pub struct Cylinder<F: Float, M: Material<F=F>>
 {
-    xfrm: Matrix4<F>,
-    ifrm: Matrix4<F>,
+    xfrm: Transform<F>,
     capped: bool,
     mat: M,
     aabb: Aabb,
@@ -28,8 +27,6 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
     {
-        let r = ray.transform(&self.ifrm)?;
-
         fn isect_body<F: Float>(r: &Ray<F>, capped: bool) -> Option<(F, Vector<F>)>
         {
             let p = r.pos;
@@ -109,21 +106,22 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
             None
         }
 
+        let r = ray.xfrm_inv(&self.xfrm);
         let body = isect_body(&r, self.capped);
 
         if self.capped {
             if let Some((t1, n1)) = isect_caps(&r) {
                 if let Some((t2, n2)) = body {
                     if t2 < t1 {
-                        return Some(ray.hit_at(t2, self).with_normal(self.xfrm.transform_vector(n2).normalize()))
+                        return Some(ray.hit_at(t2, self).with_normal(self.xfrm.nml(n2)))
                     }
                 }
-                return Some(ray.hit_at(t1, self).with_normal(self.xfrm.transform_vector(n1).normalize()))
+                return Some(ray.hit_at(t1, self).with_normal(self.xfrm.nml(n1)))
             }
         }
 
         if let Some((t2, n2)) = body {
-            Some(ray.hit_at(t2, self).with_normal(self.xfrm.transform_vector(n2).normalize()))
+            Some(ray.hit_at(t2, self).with_normal(self.xfrm.nml(n2)))
         } else {
             None
         }
@@ -135,8 +133,8 @@ impl<F: Float, M: Material<F=F>> Cylinder<F, M>
 {
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Cylinder<F, M>
     {
+        let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(&xfrm, [-F::ONE, F::ONE], [-F::ONE, F::ONE], [F::ZERO, F::ONE]);
-        let ifrm = xfrm.inverse_transform().unwrap();
-        Cylinder { xfrm, ifrm, capped, mat, aabb }
+        Cylinder { xfrm, capped, mat, aabb }
     }
 }

@@ -1,7 +1,9 @@
 use cgmath;
 use num_traits::Zero;
 
-pub use cgmath::{InnerSpace, MetricSpace, EuclideanSpace, Transform, Point3, Matrix4};
+use super::transform::Transform;
+
+pub use cgmath::{InnerSpace, MetricSpace, EuclideanSpace, Transform as cgTransform, Point3, Matrix4, Matrix};
 
 use super::Float;
 use crate::sampler::Texel;
@@ -109,15 +111,16 @@ impl<F: Float> Vectorx<F> for Vector<F>
         vec3!(self.x.max(other.x), self.y.max(other.y), self.z.max(other.z))
     }
 
-    fn xfrm(&self, xfrm: &Matrix4<F>) -> Self
+    fn xfrm_pos(&self, xfrm: &Matrix4<F>) -> Self
     {
-        xfrm.transform_point(Point3::from_vec(*self)).to_vec()
+        Transform::new(*xfrm).pos(*self)
     }
 
-    fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self
+    fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self
     {
-        xfrm.transform_vector(*self).normalize()
+        Transform::new(*xfrm).nml(*self)
     }
+
 }
 
 
@@ -130,8 +133,8 @@ where
     fn identity_z() -> Self;
     fn min(&self, other: &Self) -> Self;
     fn max(&self, other: &Self) -> Self;
-    fn xfrm(&self, xfrm: &Matrix4<F>) -> Self;
-    fn xfrm_normal(&self, xfrm: &Matrix4<F>) -> Self;
+    fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self;
+    fn xfrm_pos(&self, xfrm: &Matrix4<F>) -> Self;
 
     fn surface_tangents(&self) -> (Self, Self);
 

@@ -1,6 +1,6 @@
 use super::float::Float;
 use crate::lib::Vector;
-use cgmath::{Point3, Vector3, Matrix, Matrix4, EuclideanSpace, InnerSpace};
+use cgmath::{Point3, Matrix, Matrix4, EuclideanSpace, InnerSpace};
 use cgmath::Transform as cgTransform;
 
 #[derive(Copy, Clone, Debug)]

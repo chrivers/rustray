@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use obj::Obj;
 
-use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Transform, Rad, Matrix, SquareMatrix};
+use cgmath::{Vector3, Vector4, Matrix4, InnerSpace, Rad, Matrix, SquareMatrix};
 use num_traits::Zero;
 
 use pest::iterators::{Pair, Pairs};
@@ -424,7 +424,7 @@ where
 
                 Rule::points => for f in rule.into_inner() {
                     // info!("point: {:?}", f);
-                    points.push(Self::parse_val3b(f).xfrm(&xfrm))
+                    points.push(Self::parse_val3b(f).xfrm_pos(&xfrm))
                     /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                 }
                 Rule::faces3 => for f in rule.into_inner() {
@@ -438,8 +438,8 @@ where
                     faces.push([f[0], f[2], f[3]]);
                 }
                 Rule::normals => for f in rule.into_inner() {
-                    // info!("norm: {:?}", f);
-                    normals.push(xfrm.transform_vector(Self::parse_val3b(f)));
+                    /* info!("norm: {:?}", f); */
+                    normals.push(Self::parse_val3b(f).xfrm_nml(&xfrm));
                 }
                 Rule::materials => for f in rule.into_inner() {
                     // info!("material: {:#?}", f);
