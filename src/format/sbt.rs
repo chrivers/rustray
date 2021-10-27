@@ -184,6 +184,9 @@ where
         let v = m.map(
             |x| x.as_str().trim().parse().unwrap_or(F::ZERO)
         ).collect::<Vec<F>>();
+        if v.len() != 3 {
+            return Color::black();
+        }
         Color::new(v[0], v[1], v[2])
     }
 
