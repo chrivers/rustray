@@ -21,16 +21,15 @@ impl<F: Float, M: Material<F=F>> Material for ScaleUV<F, M>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let mut smaxel = *maxel;
-        smaxel.uv.x *= self.u;
-        smaxel.uv.y *= self.v;
-        self.mat.render(hit, &smaxel, lights, rt)
+        let uv = maxel.uv();
+        let mut smaxel = maxel.with_uv(point!(uv.x * self.u, uv.x * self.v));
+        self.mat.render(&mut smaxel, lights, rt)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
+    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light)
+        self.mat.shadow(maxel, light)
     }
 }

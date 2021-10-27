@@ -1,12 +1,12 @@
-use super::{Float, Point, Vector};
-use crate::scene::HitTarget;
-use crate::material::Material;
-use crate::point;
+use super::{Float, Vector};
+use crate::geometry::Geometry;
 use super::vector::{Vectorx, InnerSpace};
-use num_traits::Zero;
 use crate::lib::transform::Transform;
+use crate::material::Material;
 
 use cgmath::{Point3, Matrix4, Transform as cgTransform, EuclideanSpace};
+
+pub use super::maxel::Maxel;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float>
@@ -14,26 +14,6 @@ pub struct Ray<F: Float>
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub lvl: u32,
-}
-
-#[derive(Clone, Debug)]
-pub struct Hit<'a, F: Float>
-{
-    pub pos: Vector<F>,
-    pub dir: Vector<F>,
-    pub obj: &'a dyn HitTarget<F>,
-    pub nml: Option<Vector<F>>,
-    pub uv:  Option<Point<F>>,
-    pub lvl: u32,
-}
-
-#[derive(Copy, Clone)]
-pub struct Maxel<'a, F: Float>
-{
-    pub normal: Vector<F>,
-    pub uv: Point<F>,
-    pub st: Point<F>,
-    pub mat: &'a dyn Material<F=F>,
 }
 
 impl<'a, F: Float> Ray<F>
@@ -48,9 +28,15 @@ impl<'a, F: Float> Ray<F>
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &'a dyn HitTarget<F>) -> Hit<'a, F>
+    pub fn hit_at(self, ext: F, obj: &'a dyn Geometry<F>, mat: &'a dyn Material<F=F>) -> Maxel<'a, F>
     {
-        Hit { pos: self.extend(ext), dir: self.dir, obj, lvl: self.lvl, nml: None, uv: None }
+        Maxel::new(
+            self.extend(ext),
+            self.dir,
+            self.lvl,
+            obj,
+            mat
+        )
     }
 
     pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>>
@@ -336,57 +322,6 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray
 {
     fn from(ray: &Ray<F>) -> Self {
         From::from(*ray)
-    }
-}
-
-/* Hit */
-impl<'a, F: Float> Hit<'a, F>
-{
-    pub fn reflected_ray(&self, normal: &Vector<F>) -> Ray<F>
-    {
-        let refl = self.dir.reflect(normal);
-        Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl + 1)
-    }
-
-    pub fn refracted_ray(&self, normal: &Vector<F>, ior: F) -> Ray<F>
-    {
-        let refr = self.dir.refract(normal, ior);
-        Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
-    }
-
-    pub fn with_normal(self, nml: Vector<F>) -> Self
-    {
-        Self { nml: Some(nml), ..self }
-    }
-
-    pub fn with_uv(self, uv: Point<F>) -> Self
-    {
-        Self { uv: Some(uv), ..self }
-    }
-}
-
-/* Maxel */
-
-impl<'a, F: Float> Maxel<'a, F>
-{
-    pub fn from_uv(u: F, v: F, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
-    {
-        Maxel { uv: point!(u, v), st: Point::zero(), normal, mat }
-    }
-
-    pub fn new(uv: Point<F>, normal: Vector<F>, mat: &'a dyn Material<F=F>) -> Self
-    {
-        Maxel { uv, st: Point::zero(), normal, mat }
-    }
-
-    pub fn zero(mat: &'a dyn Material<F=F>) -> Self
-    {
-        Maxel { uv: Point::zero(), st: Point::zero(), normal: Vector::zero(), mat }
-    }
-
-    pub fn with_st(self, st: Point<F>) -> Self
-    {
-        Maxel { st, ..self }
     }
 }
 

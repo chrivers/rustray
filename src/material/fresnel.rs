@@ -20,17 +20,18 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material for Fresnel<F, S>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, _light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, _light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let ior = self.ior.sample(maxel.uv);
+        let ior = self.ior.sample(maxel.uv());
+        let nml = &maxel.nml();
 
-        let refl = hit.reflected_ray(&maxel.normal);
+        let refl = maxel.reflected_ray(&nml);
         let c_refl = rt.ray_trace(&refl).unwrap_or_else(Color::black);
 
-        let refr = hit.refracted_ray(&maxel.normal, ior);
+        let refr = maxel.refracted_ray(&nml, ior);
         let c_refr = rt.ray_trace(&refr).unwrap_or_else(Color::black);
 
-        let fr = hit.dir.fresnel(&maxel.normal, ior);
+        let fr = maxel.dir.fresnel(&nml, ior);
 
         c_refr.lerp(c_refl, fr)
     }

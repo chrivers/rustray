@@ -32,27 +32,27 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F,
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut res = Color::black();
 
-        let self_color = self.mat.render(hit, maxel, lights, rt);
-        let spec_adjust = self.pow.sample(maxel.uv) / F::from_u32(2);
+        let self_color = self.mat.render(maxel, lights, rt);
+        let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);
 
         for light in lights {
-            let light_color = rt.ray_shadow(hit, maxel, &**light).unwrap_or_else(|| light.get_color());
+            let light_color = rt.ray_shadow(maxel, &**light).unwrap_or_else(|| light.get_color());
 
-            let light_vec = hit.pos.vector_to(light.get_position());
+            let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
 
-            let lambert = maxel.normal.dot(light_dir);
+            let lambert = maxel.nml().dot(light_dir);
 
             if lambert > F::ZERO {
                 let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
                 res += light_color * lambert;
 
-                let refl_dir = light_dir.reflect(&maxel.normal);
-                let spec_angle = refl_dir.dot(hit.dir).clamp(F::ZERO, F::ONE);
+                let refl_dir = light_dir.reflect(&maxel.nml());
+                let spec_angle = refl_dir.dot(maxel.dir).clamp(F::ZERO, F::ONE);
                 let specular = spec_angle.pow(spec_adjust);
                 res += light_color * specular;
             }
@@ -60,8 +60,8 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F,
         res
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
+    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light)
+        self.mat.shadow(maxel, light)
     }
 }

@@ -9,6 +9,7 @@ pub mod result;
 pub mod timeslice;
 pub mod transform;
 pub mod bvh;
+pub mod maxel;
 
 pub use float::Float;
 pub use point::Point;

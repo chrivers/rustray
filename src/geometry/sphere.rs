@@ -11,19 +11,9 @@ pub struct Sphere<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Sphere<F, M>);
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Sphere<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let normal = hit.nml.unwrap();
-        let (u, v) = normal.polar_uv();
-        Maxel::from_uv(u, v, normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Sphere<F, M>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -31,7 +21,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Sphere<F, M>
         let normal = r.extend(result);
 
         Some(
-            ray.hit_at(result, self)
+            ray.hit_at(result, self, &self.mat)
                 .with_normal(self.xfrm.nml(normal))
         )
     }

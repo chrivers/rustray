@@ -19,8 +19,9 @@ impl<F: Float> Material for ColorUV<F>
 {
     type F = F;
 
-    fn render(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _lights: &[&dyn Light<F>], _rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, _lights: &[&dyn Light<F>], _rt: &dyn RayTracer<F>) -> Color<F>
     {
-        Color::new(self.scale * maxel.uv.x, F::ZERO, self.scale * maxel.uv.y)
+        let uv = maxel.uv();
+        Color::new(uv.x, F::ZERO, uv.y) * self.scale
     }
 }

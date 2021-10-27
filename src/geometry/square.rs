@@ -10,19 +10,9 @@ pub struct Square<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Square<F, M>);
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Square<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let normal = hit.nml.unwrap();
-        let uv = hit.uv.unwrap();
-        Maxel::from_uv(uv.x, uv.y, normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Square<F, M>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -54,7 +44,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Square<F, M>
             Vector::unit_z()
         };
 
-        Some(ray.hit_at(t, self)
+        Some(ray.hit_at(t, self, &self.mat)
              .with_normal(self.xfrm.nml_inv(normal))
              .with_uv(point!(p.x, p.y)))
     }

@@ -34,7 +34,7 @@ impl<F: Float, M: Material<F=F>> Primitive for TriangleMesh<F, M>
 
 impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for TriangleMesh<F, M>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         self.bvh.nearest_intersection(ray, &self.tris, &mut F::max_value())
     }

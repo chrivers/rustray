@@ -12,22 +12,24 @@ pub struct Plane<F: Float, M: Material<F=F>>
     mat: M,
 }
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Plane<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let u = self.u.dot(hit.pos);
-        let v = self.v.dot(hit.pos);
-        Maxel::from_uv(u, v, self.normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Plane<F, M>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn uv(&self, maxel: &mut Maxel<F>) -> Point<F>
+    {
+        let u = self.u.dot(maxel.pos);
+        let v = self.v.dot(maxel.pos);
+        point!(u, v)
+    }
+
+    fn normal(&self, hit: &mut Maxel<F>) -> Vector<F>
+    {
+        self.normal
+    }
+
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let t = ray.intersect_plane(&self.pos, &self.dir1, &self.dir2)?;
-        Some(ray.hit_at(t, self))
+        Some(ray.hit_at(t, self, &self.mat))
     }
 }
 

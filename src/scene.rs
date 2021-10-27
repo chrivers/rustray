@@ -1,10 +1,8 @@
 use crate::lib::{Float, Vector, Color, Camera, BvhExt};
-use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::lib::ray::{Ray, Maxel};
 use crate::geometry::{Geometry, FiniteGeometry};
 
 use cgmath::MetricSpace;
-
-use std::fmt::Debug;
 
 use rtbvh::{Bvh, Builder};
 use std::num::NonZeroUsize;
@@ -27,11 +25,6 @@ pub trait HasColor<F: Float>
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait HitTarget<F: Float> : Sync + Debug
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>;
-}
-
 pub trait Light<F: Float> : HasPosition<F> + Sync
 {
     fn get_color(&self) -> Color<F>;
@@ -40,7 +33,7 @@ pub trait Light<F: Float> : HasPosition<F> + Sync
 
 pub trait RayTracer<F: Float> : Sync
 {
-    fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>;
+    fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
     fn ambient(&self) -> Color<F>;
 }
@@ -81,10 +74,10 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         Self { cameras, objects, geometry, lights, bvh, ambient: Color::black() }
     }
 
-    pub fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    pub fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let mut dist = F::max_value();
-        let mut hit: Option<Hit<F>> = None;
+        let mut hit: Option<Maxel<F>> = None;
 
         for g in &self.geometry {
             if let Some(curhit) = g.intersect(ray)

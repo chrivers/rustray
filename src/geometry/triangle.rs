@@ -74,9 +74,10 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M> {
 
 }
 
-impl<F: Float, M: Material<F=F> + Clone> HitTarget<F> for Triangle<F, M>
+impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
 {
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
+
+    fn st(&self, hit: &mut Maxel<F>) -> Point<F>
     {
         let edge1 = self.b - self.a;
         let edge2 = self.c - self.a;
@@ -87,19 +88,25 @@ impl<F: Float, M: Material<F=F> + Clone> HitTarget<F> for Triangle<F, M>
         let s = c2.magnitude() / area2;
         let t = c1.magnitude() / area2;
 
-        let normal = self.interpolate_normal(s, t);
-        let uv = self.interpolate_uv(s, t);
-
-        Maxel::new(uv, normal, &self.mat).with_st(point!(s, t))
+        point!(s, t)
     }
-}
 
-impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
-{
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn normal(&self, hit: &mut Maxel<F>) -> Vector<F>
+    {
+        let st = hit.st();
+        self.interpolate_normal(st.x, st.y)
+    }
+
+    fn uv(&self, hit: &mut Maxel<F>) -> Point<F>
+    {
+        let st = hit.st();
+        self.interpolate_uv(st.x, st.y)
+    }
+
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let t = ray.intersect_triangle4(&self.a, &self.b, &self.c)?;
-        Some(ray.hit_at(t, self))
+        Some(ray.hit_at(t, self, &self.mat))
     }
 }
 

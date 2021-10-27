@@ -34,26 +34,28 @@ where
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let n = self.img.sample(maxel.uv);
-        let pow = self.pow.sample(maxel.uv);
+        let uv = maxel.uv();
+        let n = self.img.sample(uv);
+        let pow = self.pow.sample(uv);
 
         let mut mxl = *maxel;
 
-        let (normalu, normalv) = mxl.normal.surface_tangents();
+        let normal = mxl.nml();
+        let (normalu, normalv) = normal.surface_tangents();
         let nx =
             normalu * n.x +
             normalv * n.y +
-            mxl.normal  * n.z / (pow + F::BIAS);
+            normal  * n.z / (pow + F::BIAS);
 
-        mxl.normal = nx.normalize();
+        mxl = mxl.with_normal(nx.normalize());
 
-        self.mat.render(hit, &mxl, lights, rt)
+        self.mat.render(&mut mxl, lights, rt)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
+    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light)
+        self.mat.shadow(maxel, light)
     }
 }

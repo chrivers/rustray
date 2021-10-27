@@ -1,6 +1,6 @@
 use crate::point;
 use crate::lib::{Color, Camera, Point, Float};
-use crate::lib::ray::{Ray, Hit, Maxel};
+use crate::lib::ray::{Ray, Maxel};
 use crate::lib::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry};
 use crate::scene::{RayTracer, Light, Scene};
@@ -69,12 +69,12 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a,
 
 impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<F> for Tracer<'a, F, B, G, L>
 {
-    fn ray_shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
+    fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
         let light_pos = light.get_position();
-        let hitray = Ray::new(hit.pos, hit.pos.normal_to(light_pos), hit.lvl + 1);
+        let hitray = Ray::new(maxel.pos, maxel.pos.normal_to(light_pos), maxel.lvl + 1);
 
-        let mut best_length = light_pos.distance2(hit.pos);
+        let mut best_length = light_pos.distance2(maxel.pos);
         let mut best_color = None;
 
         let mut r = hitray.into();
@@ -83,9 +83,9 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
         {
             if let Some(curhit) = curobj.intersect(&hitray)
             {
-                let cur_length = hit.pos.distance2(curhit.pos);
+                let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    if let Some(color) = maxel.mat.shadow(hit, maxel, light) {
+                    if let Some(color) = maxel.mat.shadow(maxel, light) {
                         best_color = Some(color);
                         best_length = cur_length;
                     }
@@ -101,11 +101,9 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
             return None;
         }
 
-        let hit = self.scene.intersect(ray)?;
+        let mut maxel = self.scene.intersect(ray)?;
 
-        let maxel = hit.obj.resolve(&hit);
-
-        Some(maxel.mat.render(&hit, &maxel, &self.lights, self))
+        Some(maxel.mat.render(&mut maxel, &self.lights, self))
     }
 
     fn ambient(&self) -> Color<F>

@@ -14,21 +14,11 @@ pub struct Cone<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Cone<F, M>);
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Cone<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let normal = hit.nml.unwrap();
-        let (u, v) = normal.polar_uv();
-        Maxel::from_uv(u, v, normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
 {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -137,7 +127,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             return None
         }
 
-        Some(ray.hit_at(root, self)
+        Some(ray.hit_at(root, self, &self.mat)
              .with_normal(self.xfrm.nml_inv(normal))
         )
     }

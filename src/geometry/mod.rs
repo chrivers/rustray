@@ -1,9 +1,11 @@
-use crate::lib::Float;
-use crate::lib::ray::{Ray, Hit};
+use crate::lib::{Float, Point};
+use crate::lib::ray::{Ray, Maxel};
 use crate::lib::Vector;
 use crate::lib::vector::Vectorx;
 use crate::vec3;
 use crate::lib::transform::Transform;
+
+use num_traits::Zero;
 
 use rtbvh::Primitive;
 use rtbvh::Aabb;
@@ -11,24 +13,57 @@ use glam::Vec3;
 
 pub trait Geometry<F: Float> : Sync
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>;
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
+    fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> { Vector::zero() }
+    fn uv(&self, _maxel: &mut Maxel<F>) -> Point<F> { Point::zero() }
+    fn st(&self, _maxel: &mut Maxel<F>) -> Point<F> { Point::zero() }
 }
 
 pub trait FiniteGeometry<F: Float> : Geometry<F> + rtbvh::Primitive {}
 
 impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         self.as_ref().intersect(ray)
+    }
+
+    fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F>
+    {
+        self.as_ref().normal(maxel)
+    }
+
+    fn uv(&self, maxel: &mut Maxel<F>) -> Point<F>
+    {
+        self.as_ref().uv(maxel)
+    }
+
+    fn st(&self, maxel: &mut Maxel<F>) -> Point<F>
+    {
+        self.as_ref().st(maxel)
     }
 }
 
 impl<F: Float> Geometry<F> for Box<dyn FiniteGeometry<F>>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         self.as_ref().intersect(ray)
+    }
+
+    fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F>
+    {
+        self.as_ref().normal(maxel)
+    }
+
+    fn uv(&self, maxel: &mut Maxel<F>) -> Point<F>
+    {
+        self.as_ref().uv(maxel)
+    }
+
+    fn st(&self, maxel: &mut Maxel<F>) -> Point<F>
+    {
+        self.as_ref().st(maxel)
     }
 }
 
@@ -89,7 +124,7 @@ macro_rules! aabb_impl_fm {
 pub(crate) mod geo_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point};
-    pub use crate::lib::ray::{Ray, Hit, Maxel};
+    pub use crate::lib::ray::{Ray, Maxel};
     pub use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
     pub use crate::lib::transform::Transform;
     pub use crate::scene::*;

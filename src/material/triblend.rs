@@ -21,14 +21,15 @@ impl<F: Float, A: Material<F=F>, B: Material<F=F>, C: Material<F=F>> Material fo
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let a = self.a.render(hit, maxel, lights, rt);
-        let b = self.b.render(hit, maxel, lights, rt);
-        let c = self.c.render(hit, maxel, lights, rt);
+        let a = self.a.render(maxel, lights, rt);
+        let b = self.b.render(maxel, lights, rt);
+        let c = self.c.render(maxel, lights, rt);
 
-        let u = maxel.st.x;
-        let v = maxel.st.y;
+        let st = maxel.st();
+        let u = st.x;
+        let v = st.y;
         let w = F::ONE - u - v;
 
         (a * w) + (b * u) + (c * v)

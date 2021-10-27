@@ -11,21 +11,12 @@ pub struct Cylinder<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Cylinder<F, M>);
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Cylinder<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let normal = hit.nml.unwrap();
-        let (u, v) = normal.polar_uv();
-        Maxel::from_uv(u, v, normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
 {
+
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         fn isect_body<F: Float>(r: &Ray<F>, capped: bool) -> Option<(F, Vector<F>)>
         {
@@ -113,15 +104,15 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
             if let Some((t1, n1)) = isect_caps(&r) {
                 if let Some((t2, n2)) = body {
                     if t2 < t1 {
-                        return Some(ray.hit_at(t2, self).with_normal(self.xfrm.nml(n2)))
+                        return Some(ray.hit_at(t2, self, &self.mat).with_normal(self.xfrm.nml(n2)))
                     }
                 }
-                return Some(ray.hit_at(t1, self).with_normal(self.xfrm.nml(n1)))
+                return Some(ray.hit_at(t1, self, &self.mat).with_normal(self.xfrm.nml(n1)))
             }
         }
 
         if let Some((t2, n2)) = body {
-            Some(ray.hit_at(t2, self).with_normal(self.xfrm.nml(n2)))
+            Some(ray.hit_at(t2, self, &self.mat).with_normal(self.xfrm.nml(n2)))
         } else {
             None
         }

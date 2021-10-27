@@ -23,10 +23,11 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material for Mirror<F, S>
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, _light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, _light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let refl = hit.reflected_ray(&maxel.normal);
+        let normal = &maxel.nml();
+        let refl = maxel.reflected_ray(normal);
         let c_refl = rt.ray_trace(&refl).unwrap_or_else(Color::black);
-        c_refl * self.refl.sample(maxel.uv)
+        c_refl * self.refl.sample(maxel.uv())
     }
 }

@@ -10,19 +10,10 @@ pub struct Cube<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Cube<F, M>);
 
-impl<F: Float, M: Material<F=F>> HitTarget<F> for Cube<F, M>
-{
-    fn resolve(&self, hit: &Hit<F>) -> Maxel<F>
-    {
-        let normal = hit.nml.unwrap();
-        let uv = hit.uv.unwrap();
-        Maxel::from_uv(uv.x, uv.y, normal, &self.mat)
-    }
-}
-
 impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
 {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Hit<F>>
+
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -76,7 +67,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
         let uv = point!(F::HALF - isec[min], F::HALF - isec[max]);
 
         Some(
-            ray.hit_at(best_t, self)
+            ray.hit_at(best_t, self, &self.mat)
                 .with_normal(self.xfrm.nml(normal))
                 .with_uv(uv)
         )

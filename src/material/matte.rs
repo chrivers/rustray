@@ -31,31 +31,33 @@ where
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
         let mut rng = rand::thread_rng();
         let mut col = Color::<F>::black();
         let mut mxl = *maxel;
 
+        let uv = maxel.uv();
+        let normal = mxl.nml();
         for _n in 0..self.rays {
-            let src = self.src.sample(maxel.uv);
+            let src = self.src.sample(uv);
             let rx = (rng.gen::<F>() - F::HALF) * src;
             let ry = (rng.gen::<F>() - F::HALF) * src;
             let rz = (rng.gen::<F>() / F::TWO ) * (F::one() - src) + src;
-            let (normalu, normalv) = mxl.normal.surface_tangents();
-            mxl.normal = (
-                maxel.normal * rz +
+            let (normalu, normalv) = normal.surface_tangents();
+            mxl = mxl.with_normal((
+                normal * rz +
                      normalu * rx +
                      normalv * ry)
-                .normalize();
+                .normalize());
 
-            col += self.mat.render(hit, &mxl, light, rt);
+            col += self.mat.render(&mut mxl, light, rt);
         }
         col / F::from_u32(self.rays)
     }
 
-    fn shadow(&self, hit: &Hit<F>, maxel: &Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
+    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
     {
-        self.mat.shadow(hit, maxel, light)
+        self.mat.shadow(maxel, light)
     }
 }

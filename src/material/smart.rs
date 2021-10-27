@@ -57,49 +57,51 @@ where
 {
     type F = F;
 
-    fn render(&self, hit: &Hit<F>, maxel: &Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
+    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let diff_color = self.kd.sample(maxel.uv);
-        let spec_color = self.ks.sample(maxel.uv);
-        let spec_pow   = self.pow.sample(maxel.uv);
+        let uv = maxel.uv();
+        let normal = maxel.nml();
+        let diff_color = self.kd.sample(uv);
+        let spec_color = self.ks.sample(uv);
+        let spec_pow   = self.pow.sample(uv);
         let ambi_color = self.ambient * rt.ambient();
 
-        let mut res = self.ke.sample(maxel.uv) + ambi_color;
+        let mut res = self.ke.sample(uv) + ambi_color;
 
-        let tran_color = self.kt.sample(maxel.uv);
-        let refl_color = self.kr.sample(maxel.uv);
+        let tran_color = self.kt.sample(uv);
+        let refl_color = self.kr.sample(uv);
 
         let refl_term = if !refl_color.is_zero() {
-            let refl = hit.reflected_ray(&maxel.normal);
+            let refl = maxel.reflected_ray(&normal);
             rt.ray_trace(&refl).unwrap_or_else(Color::black) * refl_color
         } else {
             Color::black()
         };
 
-        let ior = self.ior.sample(maxel.uv);
+        let ior = self.ior.sample(uv);
 
         let refr_term = if !tran_color.is_zero() {
-            let refr = hit.refracted_ray(&maxel.normal, ior);
+            let refr = maxel.refracted_ray(&normal, ior);
             rt.ray_trace(&refr).unwrap_or_else(Color::black) * tran_color
         } else {
             Color::black()
         };
 
-        let fresnel = hit.dir.fresnel(&maxel.normal, ior);
+        let fresnel = maxel.dir.fresnel(&normal, ior);
 
         res += refr_term.lerp(refl_term, fresnel);
 
         for light in lights {
-            let light_color = rt.ray_shadow(hit, maxel, *light).unwrap_or_else(|| light.get_color());
+            let light_color = rt.ray_shadow(maxel, *light).unwrap_or_else(|| light.get_color());
 
-            let light_vec = hit.pos.vector_to(light.get_position());
+            let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
-            let refl_dir = light_dir.reflect(&maxel.normal);
-            let spec_angle = refl_dir.dot(hit.dir).clamp(F::ZERO, F::ONE);
+            let refl_dir = light_dir.reflect(&normal);
+            let spec_angle = refl_dir.dot(maxel.dir).clamp(F::ZERO, F::ONE);
 
             let light_color = light.attenuate(light_color, light_vec.magnitude());
 
-            let lambert = maxel.normal.dot(light_dir);
+            let lambert = normal.dot(light_dir);
 
             if lambert > F::BIAS {
                 res += (light_color * diff_color) * lambert;
@@ -111,9 +113,10 @@ where
         res
     }
 
-    fn shadow(&self, _hit: &Hit<F>, maxel: &Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>>
+    fn shadow(&self, maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>>
     {
-        let sha = self.kt.sample(maxel.uv);
+        let uv = maxel.uv();
+        let sha = self.kt.sample(uv);
 
         if sha.is_zero() {
             None
