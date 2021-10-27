@@ -1,4 +1,13 @@
 target
 *~
 output.png
+.emacs*
 /notes/
+/example/*.png
+/example/*.rs
+/models/*.obj
+/models/*.mtl
+/models/*.png
+/models/
+/*.ray
+/*.png
