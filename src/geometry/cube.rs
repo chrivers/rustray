@@ -50,12 +50,10 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
             let x = p[mod1] + t * d[mod1];
             let y = p[mod2] + t * d[mod2];
 
-            if x <= F::HALF && x >= -F::HALF &&
-               y <= F::HALF && y >= -F::HALF {
-                if best_t > t {
-                    best_t = t;
-                    best = Some(it);
-                }
+            let half = -F::HALF..F::HALF;
+            if half.contains(&x) && half.contains(&y) && best_t > t {
+                best_t = t;
+                best = Some(it);
             }
         }
 
