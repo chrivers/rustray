@@ -72,7 +72,7 @@ where
         let refl_color = self.kr.sample(uv);
 
         let refl_term = if !refl_color.is_zero() {
-            let refl = maxel.reflected_ray(&normal);
+            let refl = maxel.reflected_ray();
             rt.ray_trace(&refl).unwrap_or_else(Color::black) * refl_color
         } else {
             Color::black()
@@ -81,7 +81,7 @@ where
         let ior = self.ior.sample(uv);
 
         let refr_term = if !tran_color.is_zero() {
-            let refr = maxel.refracted_ray(&normal, ior);
+            let refr = maxel.refracted_ray(ior);
             rt.ray_trace(&refr).unwrap_or_else(Color::black) * tran_color
         } else {
             Color::black()

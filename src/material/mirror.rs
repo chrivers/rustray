@@ -25,8 +25,7 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material for Mirror<F, S>
 
     fn render(&self, maxel: &mut Maxel<F>, _light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
     {
-        let normal = &maxel.nml();
-        let refl = maxel.reflected_ray(normal);
+        let refl = maxel.reflected_ray();
         let c_refl = rt.ray_trace(&refl).unwrap_or_else(Color::black);
         c_refl * self.refl.sample(maxel.uv())
     }

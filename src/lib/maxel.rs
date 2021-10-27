@@ -35,15 +35,15 @@ impl<'a, F: Float> Maxel<'a, F>
         }
     }
 
-    pub fn reflected_ray(&self, normal: &Vector<F>) -> Ray<F>
+    pub fn reflected_ray(&mut self) -> Ray<F>
     {
-        let refl = self.dir.reflect(normal);
+        let refl = self.dir.reflect(&self.nml());
         Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl + 1)
     }
 
-    pub fn refracted_ray(&self, normal: &Vector<F>, ior: F) -> Ray<F>
+    pub fn refracted_ray(&mut self, ior: F) -> Ray<F>
     {
-        let refr = self.dir.refract(normal, ior);
+        let refr = self.dir.refract(&self.nml(), ior);
         Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
     }
 
