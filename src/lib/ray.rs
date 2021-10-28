@@ -268,34 +268,32 @@ impl<'a, F: Float> Ray<F>
 
     (this version considers only front faces)
      */
-    pub fn intersect_triangle4(&self, v1: &Vector<F>, v2: &Vector<F>, v3: &Vector<F>) -> Option<F>
+    pub fn intersect_triangle4(&self, e1: &Vector<F>, e2: &Vector<F>, v3: &Vector<F>) -> Option<F>
     {
-        let scale = F::from_f32(1.0e4);
-        let q1 = self.pos;
-        let q2 = self.pos + self.dir * scale;
-        let a = q1 - v3;
-        let b = v1 - v3;
-        let c = v2 - v3;
-        let w1 = b.cross(c);
+        let scale = F::from_f32(1e8);
+        let a = self.pos - v3;
+        let w1 = e1.cross(*e2);
         let w = a.dot(w1);
 
         if w < F::ZERO {
             return None
         }
 
-        let d = q2 - v3;
+        let d = a + self.dir * scale;
+
         let s = d.dot(w1);
         if s > -F::BIAS {
             return None
         }
 
         let w2 = a.cross(d);
-        let t = w2.dot(c);
+
+        let t = w2.dot(*e2);
         if t < -F::BIAS {
             return None
         }
 
-        let u = -w2.dot(b);
+        let u = -w2.dot(*e1);
         if u < -F::BIAS {
             return None
         }
@@ -303,7 +301,7 @@ impl<'a, F: Float> Ray<F>
         if w < s + t + u {
             return None
         }
-        Some((scale * w) / (w - s))
+        Some(w / (w - s) * scale)
     }
 
 }

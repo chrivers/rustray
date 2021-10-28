@@ -20,6 +20,10 @@ pub struct Triangle<F: Float, M: Material<F=F>>
     tb: Point<F>,
     tc: Point<F>,
 
+    edge1: Vector<F>,
+    edge2: Vector<F>,
+    area2: F,
+
     aabb: Aabb,
 
     mat: M,
@@ -79,14 +83,10 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
 
     fn st(&self, hit: &mut Maxel<F>) -> Point<F>
     {
-        let edge1 = self.b - self.a;
-        let edge2 = self.c - self.a;
-
-        let c1 = edge1.cross(hit.pos - self.b);
-        let c2 = edge2.cross(hit.pos - self.c);
-        let area2 = edge1.cross(edge2).magnitude();
-        let s = c2.magnitude() / area2;
-        let t = c1.magnitude() / area2;
+        let c1 = self.edge1.cross(hit.pos - self.b);
+        let c2 = self.edge2.cross(hit.pos - self.c);
+        let s = c2.magnitude() / self.area2;
+        let t = c1.magnitude() / self.area2;
 
         point!(s, t)
     }
@@ -105,7 +105,7 @@ impl<F: Float, M: Material<F=F> + Clone> Geometry<F> for Triangle<F, M>
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
-        let t = ray.intersect_triangle4(&self.a, &self.b, &self.c)?;
+        let t = ray.intersect_triangle4(&self.edge1, &self.edge2, &self.a)?;
         Some(ray.hit_at(t, self, &self.mat))
     }
 }
@@ -120,10 +120,17 @@ impl<F: Float, M: Material<F=F>> Triangle<F, M>
         aabb.grow(b.into_vector3());
         aabb.grow(c.into_vector3());
 
+        let edge1 = b - a;
+        let edge2 = c - a;
+        let area2 = edge1.cross(edge2).magnitude();
+
         Triangle {
             a, b, c,
             na, nb, nc,
             ta, tb, tc,
+            edge1,
+            edge2,
+            area2,
             aabb,
             mat,
         }
