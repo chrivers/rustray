@@ -18,7 +18,7 @@ rand = "0.8.4"
 indicatif = { version = "0.16.2", features = ["rayon"] }
 colog = "1.0.0"
 log = "0.4.11"
-rayon = "*"
+rayon = "1.5"
 obj = { version = "0.10", features = ["genmesh"] }
 genmesh = "0.6"
 derive_more = "0.99"
@@ -27,7 +27,7 @@ zip = "0.5"
 thiserror = "1"
 reqwest = { version = "0.11", features = ["blocking"] }
 pest = "2.1"
-pest_derive = "*"
+pest_derive = "2.1"
 itertools = "0.10"
 perlin2d = "0.2"
 rtbvh = "0.6"
