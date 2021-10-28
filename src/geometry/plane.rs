@@ -21,7 +21,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Plane<F, M>
         point!(u, v)
     }
 
-    fn normal(&self, hit: &mut Maxel<F>) -> Vector<F>
+    fn normal(&self, _hit: &mut Maxel<F>) -> Vector<F>
     {
         self.normal
     }

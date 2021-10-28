@@ -91,7 +91,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             }
         }
 
-        self.bvh.nearest_intersection(&ray, &self.objects, &mut dist).or(hit)
+        self.bvh.nearest_intersection(ray, &self.objects, &mut dist).or(hit)
     }
 
     pub fn with_ambient(self, ambient: Color<F>) -> Self
