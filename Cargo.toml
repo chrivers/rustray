@@ -20,7 +20,6 @@ colog = "1.0.0"
 log = "0.4.11"
 rayon = "1.5"
 obj = { version = "0.10", features = ["genmesh"] }
-genmesh = "0.6"
 derive_more = "0.99"
 cgmath = "0.18"
 zip = "0.5"
