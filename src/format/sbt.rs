@@ -28,7 +28,7 @@ pub struct SbtParser<F> {
     _p: PhantomData<F>
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum SbtVersion {
     Sbt0_9,
     Sbt1_0,

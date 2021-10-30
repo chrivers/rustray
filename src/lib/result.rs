@@ -13,6 +13,9 @@ pub enum Error
     PestError(#[from] pest::error::Error<crate::format::sbt::Rule>),
 
     #[error(transparent)]
+    PestError2(#[from] pest::error::Error<crate::format::sbt2::Rule>),
+
+    #[error(transparent)]
     ZipError(#[from] zip::result::ZipError),
 
     #[error(transparent)]
@@ -20,6 +23,12 @@ pub enum Error
 
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    ParseFloat(#[from] std::num::ParseFloatError),
+
+    #[error(transparent)]
+    ParseInt(#[from] std::num::ParseIntError),
 
     #[error("parse error")]
     ParseError(&'static str),

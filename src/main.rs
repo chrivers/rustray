@@ -48,6 +48,7 @@ use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
 #[allow(unused_imports)]
 use crate::format::sbt::{SbtParser, Rule};
+use crate::format::sbt2::{SbtParser2, Rule as Rule2};
 #[allow(unused_imports)]
 use crate::tracer::Tracer;
 
@@ -60,6 +61,12 @@ fn main() -> RResult<()>
         Ok(()) => { },
         Err(Error::IOError(err)) => {
             error!("Error: {}", err)
+        }
+        Err(Error::PestError(err)) => {
+            error!("Error: {}", err);
+        }
+        Err(Error::PestError2(err)) => {
+            error!("Error: {}", err);
         }
         Err(err) => {
             error!("Error: {:#?}", err)

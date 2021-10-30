@@ -1,0 +1,100 @@
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+
+COMMENT = _{
+      "//" ~ (!"\n" ~ ANY)*
+    | "/*" ~ (!"*/" ~ ANY)* ~ "*/"
+}
+
+//
+// string and identifiers
+//
+IDENT_START = _{ ASCII_ALPHA | "_" }
+IDENT_CHAR  = _{ ASCII_ALPHA | "_" | ASCII_DIGIT }
+
+ident = @{ IDENT_START ~ IDENT_CHAR* }
+
+string = ${ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+
+//
+// numeric types
+//
+sign = _{ "-" | "+" }
+
+int = { sign? ~ ASCII_DIGIT+ }
+
+float_exp = _{
+      ^"e" ~ sign? ~ ASCII_DIGIT+
+}
+
+float = {
+      sign? ~ ASCII_DIGIT* ~ (
+          "." ~ ASCII_DIGIT* ~ float_exp?
+        | float_exp
+    )
+}
+
+//
+// other primitives
+//
+boolean = {
+      "true" | "false"
+}
+
+value  = _{
+      tuple
+    | float
+    | int
+    | dict
+    | string
+    | boolean
+    | block
+    | group
+}
+
+//
+// composite types
+//
+block = {
+      ident ~ value? ~ ";"?
+}
+
+keyvalue = _{
+      ident ~ "=" ~ value ~ ";"?
+    | ident ~ ";"
+    | block
+}
+
+group = {
+      "{" ~ block* ~ "}"
+}
+
+dict = {
+      "{" ~ keyvalue* ~ "}"
+}
+
+tuple = {
+      ("(" ~ tuple_i3 ~ ("," ~ tuple_i3)* ~ ")")
+    | ("(" ~ tuple_f3 ~ ("," ~ tuple_f3)* ~ ")")
+    | ("(" ~ tuple_f2 ~ ("," ~ tuple_f2)* ~ ")")
+    | ("(" ~ value    ~ ("," ~ value   )* ~ ","? ~ ")")
+}
+
+//
+// special cases for optimization
+// (approx ~50% speedup)
+//
+tuple_i3 = _{ "(" ~ int   ~ "," ~ int   ~ "," ~ int   ~ ")" }
+tuple_f3 = _{ "(" ~ float ~ "," ~ float ~ "," ~ float ~ ")" }
+tuple_f2 = _{ "(" ~ float ~ "," ~ float ~ ")" }
+
+//
+// top-level construct
+//
+VERSION = @{ int ~ "." ~ int }
+
+program = _{
+      SOI ~
+      "SBT-raytracer" ~ VERSION ~
+      keyvalue* ~
+      EOI
+}
