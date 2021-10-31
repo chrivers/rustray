@@ -43,8 +43,13 @@ impl TimeSlice
 
     pub fn show(&self)
     {
+        let width = self.map.iter().map(|x| x.0.len()).max().unwrap_or(0) + 4;
         for (key, value) in self.map.iter().sorted_by_key(|x| x.1).rev() {
-            info!("  {:.<12}:{:>12.2?} ms", key, value.as_micros() as f32 / 1000f32);
+            info!("  {:.<width$}:{:>9.2?} ms",
+                  format!("{} ", key),
+                  value.as_micros() as f32 / 1000f32,
+                  width=width
+            );
         }
     }
 }
