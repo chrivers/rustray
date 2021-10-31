@@ -33,6 +33,9 @@ pub enum Error
     #[error("parse error")]
     ParseError(&'static str),
 
+    #[error("missing attribute {0:?}")]
+    ParseMissingKey(String),
+
     #[error("unsupported parse element {0:?}")]
     ParseUnsupported(String)
 }

@@ -1,5 +1,6 @@
 #![allow(clippy::many_single_char_names)]
 #![feature(box_syntax)]
+#![feature(box_patterns)]
 #![feature(destructuring_assignment)]
 #![feature(const_generics_defaults)]
 #![feature(const_fn_trait_bound)]
@@ -48,7 +49,7 @@ use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
 #[allow(unused_imports)]
 use crate::format::sbt::{SbtParser, Rule};
-use crate::format::sbt2::{SbtParser2, Rule as Rule2};
+use crate::format::sbt2::{SbtParser2, Rule as Rule2, SbtBuilder};
 #[allow(unused_imports)]
 use crate::tracer::Tracer;
 
@@ -100,10 +101,22 @@ fn runmain() -> RResult<()> {
 
     let mut data = String::new();
     file.read_to_string(&mut data)?;
-    let p = SbtParser::<F>::parse(Rule::program, &data)?;
 
-    time.set("construct");
-    let scene = SbtParser::<F>::parse_file(p, resdir, WIDTH, HEIGHT)?;
+    /* /\* Option 2a: Scene from .ray file (old parser) *\/ */
+    /* let p = SbtParser::<F>::parse(Rule::program, &data).map_err(|err| err.with_path(&name))?; */
+
+    /* time.set("construct"); */
+    /* let scene = SbtParser::<F>::parse_file(p, resdir, WIDTH, HEIGHT)?; */
+
+    /* Option 2b: Scene from .ray file (new parser) */
+
+    let p = SbtParser2::<F>::parse(Rule2::program, &data).map_err(|err| err.with_path(&name))?;
+    time.set("ast");
+    /* SbtParser2::<F>::new().dump(p.clone())?; */
+    let p = SbtParser2::<F>::ast(p)?;
+    /* info!("AST {:#?}", p); */
+    time.set("build");
+    let scene = SbtBuilder::new(WIDTH, HEIGHT, resdir).build(p)?;
 
     /* Option 3: Scene from built-in constructor */
 
