@@ -87,7 +87,7 @@ fn runmain() -> RResult<()> {
 
     let name = env::args().last().unwrap();
     let path = Path::new(&name);
-    info!("---------- {:?} ----------", path);
+    info!("=={:=<60}==", format!("[ {:50} ]", name));
     let resdir = path.parent().unwrap();
     let mut file = File::open(path)?;
 
