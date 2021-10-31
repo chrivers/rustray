@@ -29,7 +29,7 @@ where
 
 pub type DynSampler<'a, F, T> = Arc<Box<dyn Sampler<F, T> + 'a>>;
 
-impl<F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T>>>
+impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>>
 {
     fn sample(&self, uv: Point<F>) -> T
     {
