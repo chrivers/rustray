@@ -32,25 +32,14 @@ pub mod download;
 pub mod format;
 pub mod demoscene;
 
-#[allow(unused_imports)]
-use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
+use crate::lib::{Color, Point, Vector, Float, RResult, TimeSlice};
 use crate::lib::result::Error;
-#[allow(unused_imports)]
 use crate::lib::vector::Vectorx;
-#[allow(unused_imports)]
-use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh, Cone, Cylinder};
-#[allow(unused_imports)]
-use crate::scene::{Light, Scene, BoxScene};
-#[allow(unused_imports)]
-use crate::sampler::{Sampler, Bilinear, SamplerExt, DynSampler};
-#[allow(unused_imports)]
+use crate::geometry::{Geometry, FiniteGeometry};
+use crate::scene::Light;
+use crate::sampler::{Sampler, SamplerExt, DynSampler};
 use crate::material::*;
-#[allow(unused_imports)]
-use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
-#[allow(unused_imports)]
-use crate::format::sbt::{SbtParser, Rule};
 use crate::format::sbt2::{SbtParser2, Rule as Rule2, SbtBuilder};
-#[allow(unused_imports)]
 use crate::tracer::Tracer;
 
 const WIDTH:  u32 = 1440;
