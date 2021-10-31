@@ -83,9 +83,9 @@ tuple = {
 // special cases for optimization
 // (approx ~50% speedup)
 //
-tuple_i3 = _{ "(" ~ int   ~ "," ~ int   ~ "," ~ int   ~ ")" }
-tuple_f3 = _{ "(" ~ float ~ "," ~ float ~ "," ~ float ~ ")" }
-tuple_f2 = _{ "(" ~ float ~ "," ~ float ~ ")" }
+tuple_i3 = { "(" ~ int   ~ "," ~ int   ~ "," ~ int   ~ ")" }
+tuple_f3 = { "(" ~ float ~ "," ~ float ~ "," ~ float ~ ")" }
+tuple_f2 = { "(" ~ float ~ "," ~ float ~ ")" }
 
 //
 // top-level construct
