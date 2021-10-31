@@ -95,7 +95,7 @@ where
     time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
 
-    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0));
+    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0))?;
 
     time.set("construct");
     let plane1   = Plane::new(vec3!( 0.0,  0.0, 20.0), vec3!(-1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), mat_plane.clone());

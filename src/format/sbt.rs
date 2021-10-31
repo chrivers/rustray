@@ -457,8 +457,7 @@ where
                     let path = &path[1 .. path.len()-1];
                     info!("Reading {}", path);
                     let obj = Obj::load(resdir.join(path))?;
-                    let mesh = TriangleMesh::load_obj(obj, Vector::zero(), F::ONE/* , Color::white().dynamic() */);
-                    tris = mesh.tris;
+                    tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
                 }
                 other => error!("unsupported: {:?}", other)
             }

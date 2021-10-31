@@ -618,8 +618,7 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            let mesh = TriangleMesh::load_obj(obj, Vector::zero(), F::ONE);
-            tris = mesh.tris;
+            tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
                 points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm))
