@@ -87,9 +87,7 @@ where
             Color::black()
         };
 
-        let fresnel = maxel.fresnel(ior);
-
-        res += refr_term.lerp(refl_term, fresnel);
+        res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
         for light in lights {
             let light_color = rt.ray_shadow(maxel, *light).unwrap_or_else(|| light.get_color());
