@@ -51,5 +51,7 @@ impl TimeSlice
                   width=width
             );
         }
+        let total = self.map.iter().map(|x| x.1.as_micros()).sum::<u128>() as f32;
+        info!("Total: {:>9.2} ms", total / 1000f32);
     }
 }
