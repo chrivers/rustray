@@ -4,31 +4,31 @@ use itertools::Itertools;
 
 pub struct TimeSlice
 {
-    map: HashMap<&'static str, Duration>,
-    name: &'static str,
+    map: HashMap<String, Duration>,
+    name: String,
     time: Instant,
 }
 
 impl TimeSlice
 {
-    pub fn new(start: &'static str) -> TimeSlice
+    pub fn new(start: &str) -> TimeSlice
     {
-        TimeSlice { map: HashMap::new(), name: start, time: Instant::now() }
+        TimeSlice { map: HashMap::new(), name: start.to_string(), time: Instant::now() }
     }
 
-    pub fn set(&mut self, new: &'static str)
+    pub fn set(&mut self, new: &str)
     {
         let now = Instant::now();
         let dur = now - self.time;
-        match self.map.get_mut(self.name) {
+        match self.map.get_mut(&self.name) {
             None => {
-                self.map.insert(self.name, dur);
+                self.map.insert(self.name.clone(), dur);
             },
             Some(ref mut d) => {
                 **d += dur
             }
         }
-        self.name = new;
+        self.name = new.to_string();
         self.time = now;
     }
 
