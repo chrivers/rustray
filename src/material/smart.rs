@@ -94,8 +94,6 @@ where
 
             let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
-            let refl_dir = light_dir.reflect(&normal);
-            let spec_angle = refl_dir.dot(maxel.dir).clamp(F::ZERO, F::ONE);
 
             let light_color = light.attenuate(light_color, light_vec.magnitude());
 
@@ -104,8 +102,12 @@ where
             if lambert > F::BIAS {
                 res += (light_color * diff_color) * lambert;
 
-                let specular = spec_angle.pow(spec_pow);
-                res += (light_color * spec_color) * specular;
+                if !spec_color.is_zero() {
+                    let spec_dir = (light_dir - maxel.dir).normalize();
+                    let spec_angle = spec_dir.dot(normal).clamp(F::ZERO, F::ONE);
+                    let specular = spec_angle.pow(spec_pow);
+                    res += (light_color * spec_color) * specular;
+                }
             }
         }
         res
