@@ -65,7 +65,7 @@ keyvalue = _{
 }
 
 group = {
-      "{" ~ block* ~ "}"
+      "{" ~ block+ ~ "}"
 }
 
 dict = {
