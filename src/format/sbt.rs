@@ -664,7 +664,7 @@ where
         }
     }
 
-    pub fn parse_file(p: Pairs<Rule>, resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<F>>
+    pub fn parse_file<'a>(p: Pairs<Rule>, resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<'a, F>>
     {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];

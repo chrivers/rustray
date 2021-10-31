@@ -90,7 +90,7 @@ where
     F: Float + FromStr + Texel + 'static,
 {
 
-    pub fn parse_file(file: &mut (impl Read + BufRead), _resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<F>>
+    pub fn parse_file(file: &mut (impl Read + BufRead), _resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<'static, F>>
     {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];

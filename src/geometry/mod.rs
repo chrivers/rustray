@@ -21,7 +21,7 @@ pub trait Geometry<F: Float> : Sync
 
 pub trait FiniteGeometry<F: Float> : Geometry<F> + rtbvh::Primitive {}
 
-impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
+impl<'a, F: Float> Geometry<F> for Box<dyn Geometry<F> + 'a>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
@@ -44,7 +44,7 @@ impl<F: Float> Geometry<F> for Box<dyn Geometry<F>>
     }
 }
 
-impl<F: Float> Geometry<F> for Box<dyn FiniteGeometry<F>>
+impl<'a, F: Float> Geometry<F> for Box<dyn FiniteGeometry<F> + 'a>
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
     {
@@ -67,7 +67,7 @@ impl<F: Float> Geometry<F> for Box<dyn FiniteGeometry<F>>
     }
 }
 
-impl<F: Float> Primitive for Box<dyn FiniteGeometry<F>>
+impl<'a, F: Float> Primitive for Box<dyn FiniteGeometry<F> + 'a>
 {
     fn center(&self) -> Vec3 {
         self.as_ref().center()

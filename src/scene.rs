@@ -48,7 +48,7 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>>
     pub ambient: Color<F>,
 }
 
-pub type BoxScene<F> = Scene<F, Box<dyn FiniteGeometry<F>>, Box<dyn Geometry<F>>, Box<dyn Light<F>>>;
+pub type BoxScene<'a, F> = Scene<F, Box<dyn FiniteGeometry<F> + 'a>, Box<dyn Geometry<F> + 'a>, Box<dyn Light<F> + 'a>>;
 
 impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L>
 {

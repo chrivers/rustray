@@ -107,7 +107,7 @@ fn obj_sampler<'a, F: Float + 'a>(resdir: &Path, map: &Option<String>, col: &Opt
     }
 }
 
-impl<F: Float + Texel + 'static> TriangleMesh<F, DynMaterial<'static, F>>
+impl<'a, F: Float + Texel + 'static> TriangleMesh<F, DynMaterial<'a, F>>
 {
     pub fn load_obj(mut obj: Obj, pos: Vector<F>, scale: F) -> Self
     {
@@ -129,7 +129,7 @@ impl<F: Float + Texel + 'static> TriangleMesh<F, DynMaterial<'static, F>>
             }
         }
 
-        let mut tris: Vec<Triangle<F, DynMaterial<F> >> = vec![];
+        let mut tris = vec![];
         obj.load_mtls().unwrap();
         /* info!("mats: {:#?}", obj.data.material_libs); */
         for o in &obj.data.objects {

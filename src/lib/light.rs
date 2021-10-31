@@ -56,7 +56,7 @@ impl<F: Float> HasPosition<F> for PointLight<F>
     fn set_position(&mut self, value: Vector<F>) { self.pos = value }
 }
 
-impl<F: Float> Light<F> for Box<dyn Light<F>> {
+impl<'a, F: Float> Light<F> for Box<dyn Light<F> + 'a> {
     fn get_color(&self) -> Color<F>
     {
         self.as_ref().get_color()
@@ -68,7 +68,7 @@ impl<F: Float> Light<F> for Box<dyn Light<F>> {
     }
 }
 
-impl<F: Float> HasPosition<F> for Box<dyn Light<F>> {
+impl<'a, F: Float> HasPosition<F> for Box<dyn Light<F> + 'a> {
     fn get_position(&self) -> Vector<F> { self.as_ref().get_position() }
     fn set_position(&mut self, _value: Vector<F>) {  }
 }

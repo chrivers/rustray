@@ -34,7 +34,7 @@ impl<F: Float> Material for Color<F>
     }
 }
 
-impl<F: Float> Material for Arc<Box<dyn Material<F=F>>>
+impl<'a, F: Float> Material for Arc<Box<dyn Material<F=F> + 'a>>
 {
     type F = F;
     fn render(&self, maxel: &mut Maxel<F>, light: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
