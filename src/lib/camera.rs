@@ -60,7 +60,7 @@ impl<F: Float> Camera<F>
         let v = u.cross(dir).normalize();
         let aspect_ratio = aspect.unwrap_or_else(|| F::from_u32(xres) / F::from_u32(yres));
         let viewplane_height = Deg(fov / F::TWO).tan() * F::TWO;
-        let viewplane_width = aspect_ratio * viewplane_height;
+        let viewplane_width = viewplane_height / aspect_ratio;
         let x_inc_vector = u * viewplane_width;
         let y_inc_vector = v * viewplane_height;
         info!("aspect_ratio: {}", aspect_ratio);
