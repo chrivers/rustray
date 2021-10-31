@@ -111,4 +111,8 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
         self.scene.ambient
     }
 
+    fn background(&self) -> Color<F>
+    {
+        self.background
+    }
 }
