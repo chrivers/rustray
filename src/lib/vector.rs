@@ -70,6 +70,14 @@ impl<F: Float> Vectorx<F> for Vector<F>
         }
     }
 
+    fn from_f32s(val: [f32; 3]) -> Self {
+        Self {
+            x: F::from_f32(val[0]),
+            y: F::from_f32(val[1]),
+            z: F::from_f32(val[2]),
+        }
+    }
+
     fn into_f32(self) -> Vector<f32> {
         Vector::new(
             self.x.to_f32().unwrap_or_default(),
@@ -141,6 +149,7 @@ where
     fn into_vector3(self) -> glam::Vec3;
     fn from_vector3(val: glam::Vec3) -> Self;
 
+    fn from_f32s(val: [f32; 3]) -> Self;
     fn from_f32(value: Vector<f32>) -> Self;
     fn into_f32(self) -> Vector<f32>;
 
