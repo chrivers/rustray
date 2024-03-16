@@ -1,6 +1,3 @@
-#![allow(clippy::many_single_char_names)]
-#![feature(box_patterns)]
-
 #[macro_use]
 extern crate log;
 
@@ -18,25 +15,12 @@ use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use log::LevelFilter;
 use pest::Parser;
 
-pub mod types;
-pub mod scene;
-pub mod tracer;
-pub mod material;
-pub mod geometry;
-pub mod sampler;
-pub mod download;
-pub mod format;
-pub mod demoscene;
-
-use crate::types::{Color, Point, Vector, Float, RResult, TimeSlice};
-use crate::types::result::Error;
-use crate::types::vector::Vectorx;
-use crate::geometry::{Geometry, FiniteGeometry};
-use crate::scene::Light;
-use crate::sampler::{Sampler, SamplerExt, DynSampler};
-use crate::material::*;
-use crate::format::sbt2::{SbtParser2, Rule as Rule2, SbtBuilder};
-use crate::tracer::Tracer;
+use rustray::types::{Float, RResult, TimeSlice};
+use rustray::types::result::Error;
+use rustray::geometry::{Geometry, FiniteGeometry};
+use rustray::scene::Light;
+use rustray::format::sbt2::{SbtParser2, Rule as Rule2, SbtBuilder};
+use rustray::tracer::Tracer;
 
 const WIDTH:  u32 = 1440;
 const HEIGHT: u32 = 1440;
