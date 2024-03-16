@@ -1,4 +1,3 @@
-use cgmath;
 use num_traits::Zero;
 
 use super::transform::Transform;

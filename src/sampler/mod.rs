@@ -72,7 +72,7 @@ impl<N: Num, T: Texel + Copy> Sampler<N, T> for T
 pub(crate) mod samp_util {
     pub use std::marker::PhantomData;
 
-    pub use crate::{vec3, point};
+    pub use crate::point;
     pub use crate::lib::{Vector, Float, Point, Color};
     pub use crate::lib::float::Lerp;
     pub use super::{Sampler, Texel};
@@ -80,7 +80,6 @@ pub(crate) mod samp_util {
     pub use cgmath::{VectorSpace, InnerSpace};
 
     pub use num_traits::ToPrimitive;
-    pub use num_traits::Num;
 }
 
 pub mod texture1;

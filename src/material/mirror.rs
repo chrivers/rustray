@@ -1,5 +1,4 @@
 use super::mat_util::*;
-use std::marker::PhantomData;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mirror<F, S>

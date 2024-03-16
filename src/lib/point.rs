@@ -1,5 +1,4 @@
 use crate::lib::Float;
-use std::convert::From;
 use num::Num;
 use derive_more::{Add, Sub, Mul};
 

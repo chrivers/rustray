@@ -1,5 +1,4 @@
 use super::geo_util::*;
-use num_traits::Zero;
 
 #[derive(Debug)]
 pub struct Sphere<F: Float, M: Material<F=F>>

@@ -1,7 +1,5 @@
 use super::mat_util::*;
 
-use std::marker::PhantomData;
-
 pub trait TextureSampler<F: Float>
 where
     Self: Sampler<F, Color<F>> + Sized

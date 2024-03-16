@@ -2,8 +2,6 @@ use std::io::Write;
 use std::fs::File;
 use std::path::PathBuf;
 
-use reqwest;
-
 use super::TextureDownloader;
 use crate::lib::RResult;
 

@@ -125,14 +125,13 @@ pub(crate) mod geo_util {
     pub use crate::{vec3, point};
     pub use crate::lib::{Vector, Float, Point};
     pub use crate::lib::ray::{Ray, Maxel};
-    pub use crate::lib::vector::{Vectorx, InnerSpace, MetricSpace};
+    pub use crate::lib::vector::{Vectorx, InnerSpace};
     pub use crate::lib::transform::Transform;
-    pub use crate::scene::*;
     pub use crate::material::Material;
     pub use super::Geometry;
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
 
-    pub use cgmath::{Matrix4, Transform as cgTransform, Matrix, SquareMatrix};
+    pub use cgmath::Matrix4;
 
     pub use num_traits::Zero;
 
