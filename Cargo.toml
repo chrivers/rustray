@@ -11,23 +11,23 @@ lto = "fat"
 opt-level = 3
 
 [dependencies]
-image = "0.23.8"
-num = "0.4.0"
-num-traits = "0.2.14"
-rand = "0.8.4"
-indicatif = { version = "0.16.2", features = ["rayon"] }
-colog = "1.0.0"
-log = "0.4.11"
-rayon = "1.5"
+image = "0.25"
+num = "0.4.1"
+num-traits = "0.2.18"
+rand = "0.8.5"
+indicatif = { version = "0.17.8", features = ["rayon"] }
+colog = "1.2.0"
+log = "0.4.21"
+rayon = "1.9"
 obj = { version = "0.10", features = ["genmesh"] }
 derive_more = "0.99"
 cgmath = "0.18"
-zip = "0.5"
+zip = "0.6"
 thiserror = "1"
 reqwest = { version = "0.11", features = ["blocking"] }
-pest = "2.1"
-pest_derive = "2.1"
-itertools = "0.10"
+pest = "2.7"
+pest_derive = "2.7"
+itertools = "0.12"
 perlin2d = "0.2"
 rtbvh = "0.6"
 ply-rs = "0.1"

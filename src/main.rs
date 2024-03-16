@@ -8,8 +8,7 @@ use std::env;
 
 use indicatif::ParallelProgressIterator;
 
-use image::{Rgb, ColorType, ImageBuffer, GenericImageView};
-use image::png::PngEncoder;
+use image::{Rgb, ColorType, ImageBuffer};
 
 use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use log::LevelFilter;
@@ -96,7 +95,7 @@ fn runmain() -> RResult<()> {
     let img = draw_image(&mut time, Tracer::new(&scene), WIDTH, HEIGHT)?;
 
     time.set("write");
-    save_image("output.png", img)?;
+    image::save_buffer("output.png", &img, img.width(), img.height(), ColorType::Rgb8)?;
 
     info!("render complete");
     time.stop();
@@ -112,21 +111,14 @@ mod pbar {
         let pb = ProgressBar::new(range);
         pb.set_style(
             ProgressStyle::default_bar()
-                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})")
+                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})").unwrap()
                 .progress_chars("*>-")
         );
         pb
     }
 }
 
-fn save_image(name: &str, img: ImageBuffer<image::Rgb<u8>, Vec<u8>>) -> RResult<()>
-{
-    let buffer = File::create(name)?;
-    let png = PngEncoder::new(buffer);
-    Ok(png.encode(img.inner(), img.width(), img.height(), ColorType::Rgb8)?)
-}
-
-fn draw_image<F, B, G, L>(time: &mut TimeSlice, tracer: Tracer<F, B, G, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+fn draw_image<F, B, G, L>(time: &mut TimeSlice, tracer: Tracer<'_, F, B, G, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
 where
     F: Float,
     B: FiniteGeometry<F>,
