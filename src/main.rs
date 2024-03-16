@@ -1,8 +1,5 @@
 #![allow(clippy::many_single_char_names)]
 #![feature(box_patterns)]
-#![feature(destructuring_assignment)]
-#![feature(const_generics_defaults)]
-#![feature(const_fn_trait_bound)]
 
 #[macro_use]
 extern crate log;
