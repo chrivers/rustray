@@ -1,4 +1,3 @@
-#![allow(clippy::many_single_char_names)]
 #![feature(box_patterns)]
 
 #[macro_use]
