@@ -52,9 +52,6 @@ trait SDict<F: Float + Texel> {
     fn boolean(&self, name: &str) -> RResult<bool>;
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>>;
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>>;
-
-    fn attr<T>(&self, name: &str) -> RResult<T>;
-    fn attr2<T>(&self, name: &str, def: T) -> RResult<T>;
 }
 
 trait STuple<F: Float> {
@@ -191,16 +188,6 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F>
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string()))
         }
-    }
-
-    fn attr<T>(&self, _name: &str) -> RResult<T>
-    {
-        Err(Error::ParseError("some"))
-    }
-
-    fn attr2<T>(&self, _name: &str, _def: T) -> RResult<T>
-    {
-        Err(Error::ParseError("some"))
     }
 }
 
