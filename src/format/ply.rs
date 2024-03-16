@@ -2,14 +2,14 @@ use std::fmt::Debug;
 use std::str::FromStr;
 use std::marker::PhantomData;
 use std::path::Path;
-use std::io::{Read, BufRead};
+use std::io::BufRead;
 
 use cgmath::InnerSpace;
 use num_traits::Zero;
 
 use crate::vec3;
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::types::{Camera};
+use crate::types::Camera;
 use crate::types::{RResult, Error};
 use crate::types::PointLight;
 use crate::scene::{Scene, BoxScene};
@@ -90,7 +90,7 @@ where
     F: Float + FromStr + Texel + 'static,
 {
 
-    pub fn parse_file(file: &mut (impl Read + BufRead), _resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<'static, F>>
+    pub fn parse_file(file: &mut impl BufRead, _resdir: &Path, width: u32, height: u32) -> RResult<BoxScene<'static, F>>
     {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];

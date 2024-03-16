@@ -17,9 +17,9 @@ use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
-pub fn construct_demo_scene<F: Float>(time: &mut TimeSlice, width: u32, height: u32) -> RResult<BoxScene<F>>
+pub fn construct_demo_scene<F>(time: &mut TimeSlice, width: u32, height: u32) -> RResult<BoxScene<F>>
 where
-    F: Texel + 'static,
+    F: Float + Texel + 'static,
     f32: Into<F>,
 {
     time.set("construct");
@@ -56,7 +56,7 @@ where
         time.set("zipload");
         let mut file = arch.by_name(name)?;
         let mut data = vec![0u8; file.size() as usize];
-        let sz = file.read_exact(&mut data)?;
+        file.read_exact(&mut data)?;
         let imgdata: Cursor<&[u8]> = Cursor::new(&data);
 
         Ok(image::load(imgdata, format)?)

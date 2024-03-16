@@ -594,7 +594,7 @@ where
         }
         if let Ok(mats) = dict.tuple("materials") {
             for mat in mats {
-                materials.push(self.parse_material(&*mat.dict()?)?)
+                materials.push(self.parse_material(mat.dict()?)?)
             }
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {

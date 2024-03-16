@@ -75,7 +75,7 @@ pub fn load<'a, F: Float + Texel + 'a>(mut obj: Obj, pos: Vector<F>, scale: F) -
     obj.load_mtls().unwrap();
     /* info!("mats: {:#?}", obj.data.material_libs); */
     for o in &obj.data.objects {
-        for (_i, g) in o.groups.iter().enumerate() {
+        for g in &o.groups {
             let mat = if let Some(ObjMaterial::Mtl(ref omat)) = g.material {
                 let ke = obj_sampler(&obj.path, &omat.map_ke, &omat.ke);
                 let kd = obj_sampler(&obj.path, &omat.map_kd, &omat.kd);
