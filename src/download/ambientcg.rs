@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::io::Write;
 use std::fs::File;
 use std::path::PathBuf;
@@ -13,16 +14,15 @@ pub enum ACGQuality
     PNG_4K,
 }
 
-impl ToString for ACGQuality
+impl Display for ACGQuality
 {
-    fn to_string(&self) -> String
-    {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self
         {
-            ACGQuality::PNG_1K => "1K-PNG",
-            ACGQuality::PNG_2K => "2K-PNG",
-            ACGQuality::PNG_4K => "4K-PNG",
-        }.to_owned()
+            ACGQuality::PNG_1K => write!(f, "1K-PNG"),
+            ACGQuality::PNG_2K => write!(f, "2K-PNG"),
+            ACGQuality::PNG_4K => write!(f, "4K-PNG"),
+        }
     }
 }
 
@@ -52,7 +52,7 @@ impl TextureDownloader for ACGDownloader
 {
     fn filename(&self, name: &str) -> String
     {
-        format!("{}_{}.zip", name, self.qual.to_string())
+        format!("{}_{}.zip", name, self.qual)
     }
 
     fn cached(&self, name: &str) -> bool {
