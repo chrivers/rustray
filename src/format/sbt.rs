@@ -355,7 +355,7 @@ where
             }
         }
         info!("Cylinder(xfrm={:7.4?}, capped={})", xfrm, capped);
-        Ok(vec![box Cylinder::new(xfrm, capped, mat)])
+        Ok(vec![Box::new(Cylinder::new(xfrm, capped, mat))])
     }
 
     pub fn parse_geo_sph(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
@@ -372,7 +372,7 @@ where
         }
 
         info!("Sphere(xfrm={:7.4?})", xfrm);
-        Ok(vec![box Sphere::new(xfrm, mat)])
+        Ok(vec![Box::new(Sphere::new(xfrm, mat))])
     }
 
     pub fn parse_geo_box(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
@@ -388,7 +388,7 @@ where
         }
 
         info!("Cube(xfrm={:7.4?})", xfrm);
-        Ok(vec![box Cube::new(xfrm, mat)])
+        Ok(vec![Box::new(Cube::new(xfrm, mat))])
     }
 
     pub fn parse_geo_sqr(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
@@ -404,7 +404,7 @@ where
         }
 
         info!("Square(xfrm={:7.4?})", xfrm);
-        Ok(vec![box Square::new(xfrm, mat)])
+        Ok(vec![Box::new(Square::new(xfrm, mat))])
     }
 
     pub fn parse_geo_plm(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
@@ -502,7 +502,7 @@ where
         }
 
         info!("TriangleMesh(tris={})", tris.len());
-        Ok(vec![box TriangleMesh::new(tris)])
+        Ok(vec![Box::new(TriangleMesh::new(tris))])
     }
 
     pub fn parse_geo_con(p: Pair<Rule>, xfrm: Matrix4<F>, resdir: &Path) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>>
@@ -527,7 +527,7 @@ where
         }
 
         info!("Cone(h={:.3}, t={:.3}, b={:.3}, xfrm={:.4?})", height, top_r, bot_r, xfrm);
-        Ok(vec![box Cone::new(height, top_r, bot_r, capped, xfrm, mat)])
+        Ok(vec![Box::new(Cone::new(height, top_r, bot_r, capped, xfrm, mat))])
     }
 
     /* Light types */

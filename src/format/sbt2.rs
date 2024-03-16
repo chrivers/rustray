@@ -114,7 +114,7 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F>
             Some(S::Float(float)) => Ok((*float).dynsampler()),
             Some(S::Str(name)) => load(name),
             Some(S::Block(
-                box SbtBlock{
+                box SbtBlock {
                     name: "map",
                     value
                 }
@@ -435,7 +435,7 @@ impl<F: Float> SbtParser2<F>
             Rule::float    => Self::parse_float(pr)?,
             Rule::string   => Self::parse_string(pr)?,
             Rule::boolean  => Self::parse_boolean(pr)?,
-            Rule::block    => SbtValue::Block(box Self::parse_block(pr.into_inner())?),
+            Rule::block    => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
             other => return Err(Error::ParseUnsupported(format!("{:?}", other)))
         };
         Ok(value)
@@ -679,7 +679,7 @@ where
             );
         }
 
-        Ok(vec![box TriangleMesh::new(tris)])
+        Ok(vec![Box::new(TriangleMesh::new(tris))])
     }
 
     fn build_geometry<'b>(&mut self, blk: &'b SbtValue<F>, xfrm: Matrix4<F>) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>>
@@ -745,34 +745,34 @@ where
                     ("sphere", dict) => {
                         /* info!("Sphere(xfrm={:7.4?})", xfrm); */
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
-                        Ok(vec![box Sphere::new(xfrm, self.parse_material_obj(dict)?)])
+                        Ok(vec![Box::new(Sphere::new(xfrm, self.parse_material_obj(dict)?))])
                     },
 
                     ("box", dict) => {
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![box Cube::new(xfrm, self.parse_material_obj(dict)?)])
+                        Ok(vec![Box::new(Cube::new(xfrm, self.parse_material_obj(dict)?))])
                     },
 
                     ("cone", dict) => {
                         /* info!("Cone(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![box Cone::new(
+                        Ok(vec![Box::new(Cone::new(
                             dict.float("height").unwrap_or(F::ONE),
                             dict.float("top_radius").unwrap_or(F::ONE),
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
                             self.parse_material_obj(dict)?
-                        )])
+                        ))])
                     },
 
                     ("square", dict) => {
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![box Square::new(xfrm, self.parse_material_obj(dict)?)])
+                        Ok(vec![Box::new(Square::new(xfrm, self.parse_material_obj(dict)?))])
                     },
 
                     ("cylinder", dict) => {
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![box Cylinder::new(xfrm, dict.boolean("capped").unwrap_or(true), self.parse_material_obj(dict)?)])
+                        Ok(vec![Box::new(Cylinder::new(xfrm, dict.boolean("capped").unwrap_or(true), self.parse_material_obj(dict)?))])
                     },
 
                     ("polymesh", dict) => {
@@ -814,19 +814,19 @@ where
         for blk in prog.blocks {
             match (blk.name, blk.value) {
                 ("camera",            S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
-                ("directional_light", S::Dict(ref dict)) => lights.push(box self.parse_directional_light(dict)?),
-                ("point_light",       S::Dict(ref dict)) => lights.push(box self.parse_point_light(dict)?),
+                ("directional_light", S::Dict(ref dict)) => lights.push(Box::new(self.parse_directional_light(dict)?)),
+                ("point_light",       S::Dict(ref dict)) => lights.push(Box::new(self.parse_point_light(dict)?)),
                 ("ambient_light",     S::Dict(ref dict)) => ambient = dict.color("color").or_else(|_| dict.color("colour"))?,
                 ("spot_light",        S::Dict(_)       ) => warn!("spot_light not supported"),
                 ("material",          S::Dict(dict)    ) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
-                    lights.push(box self.parse_point_light(dict)?)
+                    lights.push(Box::new(self.parse_point_light(dict)?))
                 }
 
                 (name, value) => {
-                    let block = S::Block(box SbtBlock { name, value });
+                    let block = S::Block(Box::new(SbtBlock { name, value }));
                     let mut objs = self.build_geometry(&block, Matrix4::identity())?;
                     objects.append(&mut objs)
                 }

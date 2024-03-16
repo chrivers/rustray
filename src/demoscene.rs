@@ -43,11 +43,11 @@ where
     let light5 = PointLight { pos: vec3!( 5.0, 5.0, 5.0 ), color: Color { r: h, g: h, b: h }, a: l, b: l, c: l };
 
     let lights: Vec<Box<dyn Light<F>>> = vec![
-        box light1,
-        box light2,
-        box light3,
-        box light4,
-        box light5,
+        Box::new(light1),
+        Box::new(light2),
+        Box::new(light3),
+        Box::new(light4),
+        Box::new(light5),
     ];
 
     fn load_zip_tex<T: Read + Seek>(time: &mut TimeSlice, arch: &mut ZipArchive<T>, name: &str, format: ImageFormat) -> RResult<DynamicImage>
@@ -134,34 +134,34 @@ where
     );
 
     let geometry: Vec<Box<dyn Geometry<F>>> = vec![
-        box plane2,
-        box plane4,
-        box plane6,
+        Box::new(plane2),
+        Box::new(plane4),
+        Box::new(plane6),
 
-        // box plane1,
-        // box plane3,
-        // box plane5,
+        // Box::new(plane1),
+        // Box::new(plane3),
+        // Box::new(plane5),
     ];
 
     let objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![
-        // box sphere1,
-        // box sphere2,
-        // box sphere3,
-        // box sphere4,
-        // box sphere5,
-        // box sphere6,
-        // box sphere7,
+        // Box::new(sphere1),
+        // Box::new(sphere2),
+        // Box::new(sphere3),
+        // Box::new(sphere4),
+        // Box::new(sphere5),
+        // Box::new(sphere6),
+        // Box::new(sphere7),
 
-        // box sphere8,
-        // box sphere9,
-        // box sphere10,
-        // box sphere11,
+        // Box::new(sphere8),
+        // Box::new(sphere9),
+        // Box::new(sphere10),
+        // Box::new(sphere11),
 
-        // box tri1,
-        // box tri2,
-        box trimesh1,
-        // box trimesh2,
-        // box trimesh3,
+        // Box::new(tri1),
+        // Box::new(tri2),
+        Box::new(trimesh1),
+        // Box::new(trimesh2),
+        // Box::new(trimesh3),
     ];
 
     Ok(Scene::new(cameras, objects, geometry, lights))

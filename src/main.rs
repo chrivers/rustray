@@ -1,5 +1,4 @@
 #![allow(clippy::many_single_char_names)]
-#![feature(box_syntax)]
 #![feature(box_patterns)]
 #![feature(destructuring_assignment)]
 #![feature(const_generics_defaults)]

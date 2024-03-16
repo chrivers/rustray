@@ -162,7 +162,7 @@ where
 
         cameras.push(cam);
 
-        objects.push(box mesh);
+        objects.push(Box::new(mesh));
 
         let lgt = PointLight {
             a: F::from_f32(0.1),
@@ -172,7 +172,7 @@ where
             color: Color::white(),
         };
 
-        lights.push(box lgt);
+        lights.push(Box::new(lgt));
 
         Ok(Scene::new(cameras, objects, vec![], lights))
     }
