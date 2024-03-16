@@ -7,7 +7,7 @@ use std::fmt::{self, Debug};
 
 use crate::sampler::Texel;
 
-use crate::lib::float::{Float, Lerp};
+use crate::types::float::{Float, Lerp};
 
 #[derive(Clone, Copy)]
 #[derive(Add, AddAssign, Sub, Rem)]

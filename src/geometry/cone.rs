@@ -85,7 +85,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
 
         let mut root = F::BIAS;
 
-        let (root2, root1) = crate::lib::ray::quadratic2(a, b, c)?;
+        let (root2, root1) = crate::types::ray::quadratic2(a, b, c)?;
 
         test_side(
             &mut root,

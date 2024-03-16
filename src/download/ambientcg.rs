@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::PathBuf;
 
 use super::TextureDownloader;
-use crate::lib::RResult;
+use crate::types::RResult;
 
 #[allow(non_camel_case_types)]
 pub enum ACGQuality

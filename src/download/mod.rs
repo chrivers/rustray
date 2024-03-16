@@ -1,4 +1,4 @@
-use crate::lib::RResult;
+use crate::types::RResult;
 use std::path::PathBuf;
 
 pub trait TextureDownloader

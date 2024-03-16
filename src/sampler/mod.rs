@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use num_traits::Num;
 
-use crate::lib::Point;
+use crate::types::Point;
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -73,8 +73,8 @@ pub(crate) mod samp_util {
     pub use std::marker::PhantomData;
 
     pub use crate::point;
-    pub use crate::lib::{Vector, Float, Point, Color};
-    pub use crate::lib::float::Lerp;
+    pub use crate::types::{Vector, Float, Point, Color};
+    pub use crate::types::float::Lerp;
     pub use super::{Sampler, Texel};
 
     pub use cgmath::{VectorSpace, InnerSpace};

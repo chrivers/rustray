@@ -1,5 +1,5 @@
-use crate::lib::{Float, Vector, Color, Camera, BvhExt};
-use crate::lib::ray::{Ray, Maxel};
+use crate::types::{Float, Vector, Color, Camera, BvhExt};
+use crate::types::ray::{Ray, Maxel};
 use crate::geometry::{Geometry, FiniteGeometry};
 
 use cgmath::MetricSpace;

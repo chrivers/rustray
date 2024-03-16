@@ -14,9 +14,9 @@ use num_traits::Zero;
 use super::sbt::{SbtVersion, face_normals, spherical_uvs};
 
 use crate::geometry::{Cube, Cone, Cylinder, Sphere, Square, Triangle, TriangleMesh, FiniteGeometry};
-use crate::lib::{Color, Camera, Float, Point, Vector, vector::Vectorx, float::Lerp};
-use crate::lib::light::{PointLight, DirectionalLight};
-use crate::lib::result::{RResult, Error};
+use crate::types::{Color, Camera, Float, Point, Vector, vector::Vectorx, float::Lerp};
+use crate::types::light::{PointLight, DirectionalLight};
+use crate::types::result::{RResult, Error};
 use crate::material::{Material, DynMaterial, Smart, Triblend, Bumpmap};
 use crate::sampler::{Sampler, DynSampler, SamplerExt, Texel, NormalMap, ShineMap};
 use crate::scene::{Scene, BoxScene, Light};

@@ -6,8 +6,8 @@ use obj::Obj;
 use rtbvh::{Bvh, Builder, Bounds};
 use std::num::NonZeroUsize;
 
-use crate::lib::result::RResult;
-use crate::lib::bvh::BvhExt;
+use crate::types::result::RResult;
+use crate::types::bvh::BvhExt;
 use crate::material::DynMaterial;
 use crate::sampler::Texel;
 

@@ -13,10 +13,10 @@ use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
 use crate::geometry::{FiniteGeometry, Sphere, Cylinder, Cone, Cube, Square, Triangle, TriangleMesh};
-use crate::lib::Camera;
-use crate::lib::{RResult, Error::ParseError};
-use crate::lib::{PointLight, DirectionalLight};
-use crate::lib::float::Lerp;
+use crate::types::Camera;
+use crate::types::{RResult, Error::ParseError};
+use crate::types::{PointLight, DirectionalLight};
+use crate::types::float::Lerp;
 use crate::scene::{Scene, BoxScene};
 use crate::material::{Phong, Smart, Triblend, Bumpmap};
 use crate::sampler::{NormalMap, ShineMap, Texel};
@@ -35,7 +35,7 @@ pub enum SbtVersion {
 }
 
 impl FromStr for SbtVersion {
-    type Err = crate::lib::Error;
+    type Err = crate::types::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {

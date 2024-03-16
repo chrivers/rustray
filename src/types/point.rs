@@ -1,4 +1,4 @@
-use crate::lib::Float;
+use crate::types::Float;
 use num::Num;
 use derive_more::{Add, Sub, Mul};
 

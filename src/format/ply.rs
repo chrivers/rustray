@@ -9,9 +9,9 @@ use num_traits::Zero;
 
 use crate::vec3;
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::lib::{Camera};
-use crate::lib::{RResult, Error};
-use crate::lib::PointLight;
+use crate::types::{Camera};
+use crate::types::{RResult, Error};
+use crate::types::PointLight;
 use crate::scene::{Scene, BoxScene};
 use crate::material::Phong;
 use crate::sampler::Texel;

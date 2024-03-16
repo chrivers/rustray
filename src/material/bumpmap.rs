@@ -12,7 +12,7 @@ where
 
 impl<F, S1, S2, M> Bumpmap<F, S1, S2, M>
 where
-    F: Float + Texel + crate::lib::float::Lerp<Ratio=F>,
+    F: Float + Texel + crate::types::float::Lerp<Ratio=F>,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F=F>,

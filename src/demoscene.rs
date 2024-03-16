@@ -4,8 +4,8 @@ use std::io::{Read, Seek, Cursor};
 use zip::ZipArchive;
 use obj::Obj;
 
-use crate::lib::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
-use crate::lib::vector::Vectorx;
+use crate::types::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
+use crate::types::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh};
 use crate::material::*;
 use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};

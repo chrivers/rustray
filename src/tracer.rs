@@ -1,7 +1,7 @@
 use crate::point;
-use crate::lib::{Color, Camera, Point, Float};
-use crate::lib::ray::{Ray, Maxel};
-use crate::lib::vector::Vectorx;
+use crate::types::{Color, Camera, Point, Float};
+use crate::types::ray::{Ray, Maxel};
+use crate::types::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry};
 use crate::scene::{RayTracer, Light, Scene};
 use cgmath::MetricSpace;

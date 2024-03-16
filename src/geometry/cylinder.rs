@@ -27,7 +27,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cylinder<F, M>
             let b = F::TWO * (p.x*d.x + p.y*d.y);
             let c = p.x*p.x + p.y*p.y - F::ONE;
 
-            let (t1, t2) = crate::lib::ray::quadratic2(a, b, c)?;
+            let (t1, t2) = crate::types::ray::quadratic2(a, b, c)?;
             if t1 < F::ZERO || t2 < F::ZERO {
                 return None
             }

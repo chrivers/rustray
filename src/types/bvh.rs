@@ -1,5 +1,5 @@
 use super::Float;
-use crate::lib::ray::{Maxel, Ray};
+use crate::types::ray::{Maxel, Ray};
 use crate::geometry::Geometry;
 
 use rtbvh::Primitive;

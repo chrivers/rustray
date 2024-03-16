@@ -1,9 +1,9 @@
-use crate::lib::{Float, Point};
-use crate::lib::ray::{Ray, Maxel};
-use crate::lib::Vector;
-use crate::lib::vector::Vectorx;
+use crate::types::{Float, Point};
+use crate::types::ray::{Ray, Maxel};
+use crate::types::Vector;
+use crate::types::vector::Vectorx;
 use crate::vec3;
-use crate::lib::transform::Transform;
+use crate::types::transform::Transform;
 
 use num_traits::Zero;
 
@@ -123,10 +123,10 @@ macro_rules! aabb_impl_fm {
 
 pub(crate) mod geo_util {
     pub use crate::{vec3, point};
-    pub use crate::lib::{Vector, Float, Point};
-    pub use crate::lib::ray::{Ray, Maxel};
-    pub use crate::lib::vector::{Vectorx, InnerSpace};
-    pub use crate::lib::transform::Transform;
+    pub use crate::types::{Vector, Float, Point};
+    pub use crate::types::ray::{Ray, Maxel};
+    pub use crate::types::vector::{Vectorx, InnerSpace};
+    pub use crate::types::transform::Transform;
     pub use crate::material::Material;
     pub use super::Geometry;
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};

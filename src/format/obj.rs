@@ -7,8 +7,8 @@ use cgmath::{InnerSpace};
 
 use crate::{point, vec3};
 use crate::geometry::Triangle;
-use crate::lib::{Color, Point, Float, Vector};
-use crate::lib::result::RResult;
+use crate::types::{Color, Point, Float, Vector};
+use crate::types::result::RResult;
 use crate::material::{Material, DynMaterial, Smart};
 use crate::sampler::{Sampler, DynSampler, SamplerExt, Texel};
 

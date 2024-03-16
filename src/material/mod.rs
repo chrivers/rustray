@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::fmt::Debug;
 
-use crate::lib::{Float, Color};
-use crate::lib::ray::{Maxel};
+use crate::types::{Float, Color};
+use crate::types::ray::{Maxel};
 
 use crate::scene::{RayTracer, Light};
 
@@ -46,9 +46,9 @@ impl<'a, F: Float> Material for Arc<Box<dyn Material<F=F> + 'a>>
 pub(crate) mod mat_util {
     /* These are convenience re-imports for modules, so skip warnings */
     #![allow(unused_imports)]
-    pub use crate::lib::{Vector, Float, Point, Color};
-    pub use crate::lib::ray::{Ray, Maxel};
-    pub use crate::lib::vector::{Vectorx, InnerSpace};
+    pub use crate::types::{Vector, Float, Point, Color};
+    pub use crate::types::ray::{Ray, Maxel};
+    pub use crate::types::vector::{Vectorx, InnerSpace};
     pub use crate::scene::{RayTracer, Light};
     pub use crate::sampler::Sampler;
     pub use crate::{vec3, point};

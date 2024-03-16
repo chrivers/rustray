@@ -1,7 +1,7 @@
 use super::{Float, Vector};
 use crate::geometry::Geometry;
 use super::vector::{Vectorx, InnerSpace};
-use crate::lib::transform::Transform;
+use crate::types::transform::Transform;
 use crate::material::Material;
 
 use cgmath::{Point3, Matrix4, Transform as cgTransform, EuclideanSpace};

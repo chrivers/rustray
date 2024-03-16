@@ -1,5 +1,5 @@
 use super::float::Float;
-use crate::lib::Vector;
+use crate::types::Vector;
 use cgmath::{Point3, Matrix, Matrix4, EuclideanSpace, InnerSpace};
 use cgmath::Transform as cgTransform;
 

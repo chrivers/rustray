@@ -18,7 +18,7 @@ use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use log::LevelFilter;
 use pest::Parser;
 
-pub mod lib;
+pub mod types;
 pub mod scene;
 pub mod tracer;
 pub mod material;
@@ -28,9 +28,9 @@ pub mod download;
 pub mod format;
 pub mod demoscene;
 
-use crate::lib::{Color, Point, Vector, Float, RResult, TimeSlice};
-use crate::lib::result::Error;
-use crate::lib::vector::Vectorx;
+use crate::types::{Color, Point, Vector, Float, RResult, TimeSlice};
+use crate::types::result::Error;
+use crate::types::vector::Vectorx;
 use crate::geometry::{Geometry, FiniteGeometry};
 use crate::scene::Light;
 use crate::sampler::{Sampler, SamplerExt, DynSampler};
