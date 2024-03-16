@@ -67,7 +67,7 @@ where
         info!("Loading texture archive [{}]", name);
         time.set("download");
         let zipfile = File::open(dl.download(name)?)?;
-        let mut archive = zip::ZipArchive::new(zipfile)?;
+        let mut archive = ZipArchive::new(zipfile)?;
         Ok((
             load_zip_tex(time, &mut archive, &format!("{}_1K_Color.png", name), ImageFormat::Png)?,
             load_zip_tex(time, &mut archive, &format!("{}_1K_NormalDX.png", name), ImageFormat::Png)?,

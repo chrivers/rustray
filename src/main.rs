@@ -149,7 +149,7 @@ where
 
     for (y, line) in lines.iter().enumerate() {
         for (x, pixel) in line.iter().enumerate() {
-            img.put_pixel(x as u32, y as u32, image::Rgb(pixel.to_array()));
+            img.put_pixel(x as u32, y as u32, Rgb(pixel.to_array()));
         }
     }
 

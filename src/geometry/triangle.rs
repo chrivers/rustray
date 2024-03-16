@@ -44,7 +44,7 @@ impl<F: Float, M: Material<F=F>> SpatialTriangle for Triangle<F, M>
 
 aabb_impl_fm!(Triangle<F, M>);
 
-impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
+impl<F: Float, M: Material<F=F>> fmt::Display for Triangle<F, M>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
