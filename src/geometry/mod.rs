@@ -7,7 +7,6 @@ use crate::types::transform::Transform;
 
 use num_traits::Zero;
 
-use rtbvh::Primitive;
 use rtbvh::Aabb;
 
 use glam::f32::Vec3;
@@ -68,7 +67,7 @@ impl<'a, F: Float> Geometry<F> for Box<dyn FiniteGeometry<F> + 'a>
     }
 }
 
-impl<'a, F: Float> Primitive for Box<dyn FiniteGeometry<F> + 'a>
+impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a>
 {
     fn center(&self) -> Vec3 {
         self.as_ref().center()
@@ -109,7 +108,7 @@ pub fn build_aabb_symmetric<F: Float>(xfrm: &Transform<F>, x: F, y: F, z: F) -> 
 macro_rules! aabb_impl_fm {
     ( $t:ty ) =>
     {
-        impl<F: Float, M: Material<F=F>> Primitive for $t
+        impl<F: Float, M: Material<F=F>> rtbvh::Primitive for $t
         {
             fn center(&self) -> Vec3 {
                 self.aabb.center()
