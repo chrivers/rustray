@@ -47,13 +47,15 @@ aabb_impl_fm!(Triangle<F, M>);
 impl<F: Float, M: Material<F=F>> std::fmt::Display for Triangle<F, M>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Triangle {{ a:")?; Debug::fmt(&self.a, f)?;
-        write!(f, ", b:")?;  Debug::fmt(&self.b, f)?;
-        write!(f, ", c:")?;  Debug::fmt(&self.c, f)?;
-        write!(f, ", na:")?; Debug::fmt(&self.na, f)?;
-        write!(f, ", nb:")?; Debug::fmt(&self.nb, f)?;
-        write!(f, ", nc:")?; Debug::fmt(&self.nc, f)?;
-        f.write_str("}")
+        write!(
+            f, "Triangle {{ a: {a:?}, b: {b:?}, c: {c:?}, na: {na:?}, nb: {nb:?}, nc: {nc:?} }}",
+            a = self.a,
+            b = self.b,
+            c = self.c,
+            na = self.na,
+            nb = self.nb,
+            nc = self.nc,
+        )
     }
 }
 
