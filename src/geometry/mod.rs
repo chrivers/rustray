@@ -9,7 +9,8 @@ use num_traits::Zero;
 
 use rtbvh::Primitive;
 use rtbvh::Aabb;
-use glam::Vec3;
+
+use glam::f32::Vec3;
 
 pub trait Geometry<F: Float> : Sync
 {
