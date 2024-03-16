@@ -5,15 +5,26 @@ use derive_more::{Add, Sub, Mul};
 /**
 Convenience macro to construct a [`Point<F>`] from input values.
 
+```
+use rustray::types::Point;
+```
+
 Shortens
 ```
-Point::new(x, y)
+# use rustray::types::Point;
+# let x = 1.0f32;
+# let y = 2.0f32;
+let p: Point<f32> = Point::new(x, y);
 ```
 
  to
 
 ```
-point!(x, y)
+# use rustray::types::Point;
+# use rustray::point;
+# let x = 1.0f32;
+# let y = 2.0f32;
+let p: Point<f32> = point!(x, y);
 ```
 */
 #[macro_export]

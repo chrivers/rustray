@@ -12,13 +12,22 @@ Convenience macro to construct a [`Vector<F>`] from input values.
 
 Shortens
 ```
-Vector::new(x, y, z)
+# use rustray::types::Vector;
+# let x = 1.0f32;
+# let y = 2.0f32;
+# let z = 3.0f32;
+let v: Vector<f32> = Vector::new(x, y, z);
 ```
 
  to
 
 ```
-vec3!(x, y, z)
+# use rustray::types::Vector;
+# use rustray::vec3;
+# let x = 1.0f32;
+# let y = 2.0f32;
+# let z = 3.0f32;
+let v: Vector<f32> = vec3!(x, y, z);
 ```
 */
 #[macro_export]
