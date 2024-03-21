@@ -1,3 +1,5 @@
+//! sbt format parser
+
 WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
 COMMENT = _{
       ( "//" ~ (not_newline*) ) | ( "/*" ~ (!"*/" ~ ANY)* ~ "*/" )

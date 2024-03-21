@@ -1,3 +1,5 @@
+//! sbt2 format parser
+
 WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
 
 COMMENT = _{
