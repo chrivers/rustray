@@ -19,7 +19,7 @@ pub trait Material : Debug + Send + Sync
     where
         Self: Sized + 'a
     {
-        Arc::new(Box::new(self) as Box<dyn Material<F=Self::F> + 'a>)
+        Arc::new(Box::new(self))
     }
 }
 

@@ -23,7 +23,7 @@ where
     where
         Self: Sized + 'a
     {
-        Arc::new(Box::new(self) as Box<dyn Sampler<F, T> + 'a>)
+        Arc::new(Box::new(self))
     }
 }
 

@@ -20,7 +20,7 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a,
 {
     pub fn new(scene: &'a Scene<F, B, G, L>) -> Self
     {
-        let lights = scene.lights.iter().map(|x| (x as &dyn Light<F>)).collect();
+        let lights = scene.lights.iter().map(|x| x as &dyn Light<F>).collect();
         Self { scene, lights, sx: 2, sy: 2, background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)), maxlvl: 5 }
     }
 
