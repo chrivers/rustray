@@ -17,23 +17,25 @@ use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
-pub fn construct_demo_scene<F>(time: &mut TimeSlice, width: u32, height: u32) -> RResult<BoxScene<F>>
+pub fn construct_demo_scene<F>(
+    time: &mut TimeSlice,
+    width: u32,
+    height: u32,
+) -> RResult<BoxScene<F>>
 where
     F: Float + Texel + 'static,
     f32: Into<F>,
 {
     time.set("construct");
 
-    let cameras = vec![
-        Camera::parametric(
-            vec3!(10.0, 4.5, 10.0),
-            vec3!(0.0, 1.0, 0.0),
-            Vector::identity_y(),
-            F::from_f32(50.0),
-            width,
-            height,
-        )
-    ];
+    let cameras = vec![Camera::parametric(
+        vec3!(10.0, 4.5, 10.0),
+        vec3!(0.0, 1.0, 0.0),
+        Vector::identity_y(),
+        F::from_f32(50.0),
+        width,
+        height,
+    )];
 
     let (h, l) = (0.8.into(), 0.2.into());
     let light1 = PointLight { pos: vec3!( 2.0, 2.0, 2.0 ), color: Color { r: h, g: h, b: h }, a: l, b: l, c: l };
@@ -50,8 +52,12 @@ where
         Box::new(light5),
     ];
 
-    fn load_zip_tex<T: Read + Seek>(time: &mut TimeSlice, arch: &mut ZipArchive<T>, name: &str, format: ImageFormat) -> RResult<DynamicImage>
-    {
+    fn load_zip_tex<T: Read + Seek>(
+        time: &mut TimeSlice,
+        arch: &mut ZipArchive<T>,
+        name: &str,
+        format: ImageFormat,
+    ) -> RResult<DynamicImage> {
         info!("  - {}", name);
         time.set("zipload");
         let mut file = arch.by_name(name)?;
@@ -62,8 +68,16 @@ where
         Ok(image::load(imgdata, format)?)
     }
 
-    fn load_tex3(time: &mut TimeSlice, dl: &ACGDownloader, name: &str) -> RResult<(DynamicImage, DynamicImage, DynamicImage, RResult<DynamicImage>)>
-    {
+    fn load_tex3(
+        time: &mut TimeSlice,
+        dl: &ACGDownloader,
+        name: &str,
+    ) -> RResult<(
+        DynamicImage,
+        DynamicImage,
+        DynamicImage,
+        RResult<DynamicImage>,
+    )> {
         info!("Loading texture archive [{}]", name);
         time.set("download");
         let zipfile = File::open(dl.download(name)?)?;
@@ -120,24 +134,35 @@ where
     let sphere11 = Sphere::place(vec3!( 3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
 
     let tri1 = Triangle::new(
-        vec3!(1.0, 0.0, 3.0), vec3!(5.0, 5.0, 3.0), vec3!(5.0, 0.0, 3.0),
-        vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0),
-        point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
-        mat_white.clone()
+        vec3!(1.0, 0.0, 3.0),
+        vec3!(5.0, 5.0, 3.0),
+        vec3!(5.0, 0.0, 3.0),
+        vec3!(0.0, 0.0, 1.0),
+        vec3!(0.0, 0.0, 1.0),
+        vec3!(0.0, 0.0, 1.0),
+        point!(0.0, 0.0),
+        point!(0.0, 1.0),
+        point!(1.0, 0.0),
+        mat_white.clone(),
     );
 
     let tri2 = Triangle::new(
-        vec3!(5.0, 5.0, 3.0), vec3!(1.0, 5.0, 3.0), vec3!(1.0, 0.0, 3.0),
-        vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0), vec3!(0.0, 0.0, 1.0),
-        point!(0.0, 0.0), point!(0.0, 1.0), point!(1.0, 0.0),
-        mat_white
+        vec3!(5.0, 5.0, 3.0),
+        vec3!(1.0, 5.0, 3.0),
+        vec3!(1.0, 0.0, 3.0),
+        vec3!(0.0, 0.0, 1.0),
+        vec3!(0.0, 0.0, 1.0),
+        vec3!(0.0, 0.0, 1.0),
+        point!(0.0, 0.0),
+        point!(0.0, 1.0),
+        point!(1.0, 0.0),
+        mat_white,
     );
 
     let geometry: Vec<Box<dyn Geometry<F>>> = vec![
         Box::new(plane2),
         Box::new(plane4),
         Box::new(plane6),
-
         // Box::new(plane1),
         // Box::new(plane3),
         // Box::new(plane5),
