@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::fmt::Debug;
 
 use crate::types::{Float, Color};
-use crate::types::ray::{Maxel};
+use crate::types::ray::Maxel;
 
 use crate::scene::{RayTracer, Light};
 

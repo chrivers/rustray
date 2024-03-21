@@ -1,9 +1,9 @@
 use super::{Float, Point, Vector};
-use super::vector::{Vectorx};
+use super::vector::Vectorx;
 
 use crate::geometry::Geometry;
 use crate::material::Material;
-use crate::types::ray::{Ray};
+use crate::types::ray::Ray;
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float>
