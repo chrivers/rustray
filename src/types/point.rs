@@ -60,9 +60,9 @@ impl<F: Float> From<(F, F)> for Point<F>
     }
 }
 
-impl<F: Float> From<[f32; 2]> for Point<F>
+impl<F: Float> From<[F; 2]> for Point<F>
 {
-    fn from(val: [f32; 2]) -> Self {
-        Point::new(F::from_f32(val[0]), F::from_f32(val[1]))
+    fn from(val: [F; 2]) -> Self {
+        Point::new(val[0], val[1])
     }
 }
