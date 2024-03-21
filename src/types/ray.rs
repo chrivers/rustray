@@ -96,10 +96,10 @@ impl<'a, F: Float> Ray<F>
     }
 
     /**
-      Implementation of the Möller–Trumbore intersection algorithm, adapted from
-      the reference algorithm on Wikipedia:
+    Implementation of the Möller–Trumbore intersection algorithm, adapted from
+    the reference algorithm on Wikipedia:
 
-      https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
+    > [https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm](https://en.wikipedia.org/wiki/M%c3%b6ller%e2%80%93Trumbore_intersection_algorithm)
      */
     pub fn intersect_triangle(&self, a: &Vector<F>, b: &Vector<F>, c: &Vector<F>) -> Option<F>
     {
@@ -139,12 +139,12 @@ impl<'a, F: Float> Ray<F>
         Some(t)
     }
 
-    /*
+    /**
     Implementation of the "new algorithm" for segment/triangle intersection,
     adapted from the paper:
 
-      "A robust segment/triangle intersection algorithm for interference
-      tests. Efficiency study" - by Jiménez, Segura, Feito.
+    > "A robust segment/triangle intersection algorithm for interference tests. Efficiency study" \
+    > [*Jiménez, Segura, Feito.*]
 
     (this version considers only front faces)
      */
@@ -197,12 +197,12 @@ impl<'a, F: Float> Ray<F>
         Some((scale * w) / (w - s))
     }
 
-    /*
+    /**
     Implementation of the "new algorithm" for segment/triangle intersection,
     adapted from the paper:
 
-      "A robust segment/triangle intersection algorithm for interference
-      tests. Efficiency study" - by Jiménez, Segura, Feito.
+    > "A robust segment/triangle intersection algorithm for interference tests. Efficiency study" \
+    > [*Jiménez, Segura, Feito.*]
 
     (this version considers both front and back faces)
      */
@@ -259,12 +259,12 @@ impl<'a, F: Float> Ray<F>
         Some((scale * w) / (w - s))
     }
 
-    /*
+    /**
     Implementation of the "new algorithm" for segment/triangle intersection,
     adapted from the paper:
 
-      "A robust segment/triangle intersection algorithm for interference
-      tests. Efficiency study" - by Jiménez, Segura, Feito.
+    > "A robust segment/triangle intersection algorithm for interference tests. Efficiency study" \
+    > [*Jiménez, Segura, Feito.*]
 
     (this version considers only front faces)
      */

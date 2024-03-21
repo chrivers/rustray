@@ -53,7 +53,7 @@ impl Texel for f64 {}
 Blanket implementation: [`Sync`] + [`Copy`] types can sample themselves, returning
 self as their value.
 
-This is useful to make e.g. a [`Float`] or [`Color<F>`] a viable substitute for a real
+This is useful to make e.g. a [`crate::Float`] or [`crate::Color<F>`] a viable substitute for a real
 texture sampler.
 */
 impl<N: Num, T: Texel + Copy> Sampler<N, T> for T
