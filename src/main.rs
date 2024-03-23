@@ -47,7 +47,7 @@ fn main() -> RResult<()>
 fn runmain() -> RResult<()> {
     let mut time = TimeSlice::new("startup");
 
-    let mut logger = colog::builder();
+    let mut logger = colog::default_builder();
     logger.filter(None, LevelFilter::Debug);
     logger.init();
 
