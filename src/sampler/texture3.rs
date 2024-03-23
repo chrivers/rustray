@@ -1,11 +1,9 @@
-use image::{GenericImageView, DynamicImage, Pixel};
+use image::{DynamicImage, GenericImageView, Pixel};
 
 use super::samp_util::*;
 
-impl<F: Float> Sampler<u32, Color<F>> for DynamicImage
-{
-    fn sample(&self, uv: Point<u32>) -> Color<F>
-    {
+impl<F: Float> Sampler<u32, Color<F>> for DynamicImage {
+    fn sample(&self, uv: Point<u32>) -> Color<F> {
         let (w, h) = Sampler::<u32, Color<F>>::dimensions(self);
         let c = self.get_pixel(uv.x % w, uv.y % h).to_rgb();
         let max = F::from_u32(0xFF);

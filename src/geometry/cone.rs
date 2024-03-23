@@ -1,8 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cone<F: Float, M: Material<F=F>>
-{
+pub struct Cone<F: Float, M: Material<F = F>> {
     height: F,
     top_r: F,
     bot_r: F,
@@ -14,12 +13,10 @@ pub struct Cone<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Cone<F, M>);
 
-impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
-{
+impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
-    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
-    {
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
         let bot_r = self.bot_r.abs().max(F::BIAS);
@@ -51,30 +48,44 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
 
         let pzg = p.z + gamma;
 
-        let a =           d.x*d.x + d.y*d.y - beta2 * d.z * d.z;
-        let b = F::TWO * (p.x*d.x + p.y*d.y - beta2 * pzg * d.z);
-        let c =           p.x*p.x + p.y*p.y - beta2 * pzg * pzg;
+        let a = d.x * d.x + d.y * d.y - beta2 * d.z * d.z;
+        let b = F::TWO * (p.x * d.x + p.y * d.y - beta2 * pzg * d.z);
+        let c = p.x * p.x + p.y * p.y - beta2 * pzg * pzg;
 
-        fn test_cap<F: Float>(root: &mut F, normal: &mut Vector<F>, tx: F, r: &Ray<F>, rad: F, dz: F)
-        {
+        fn test_cap<F: Float>(
+            root: &mut F,
+            normal: &mut Vector<F>,
+            tx: F,
+            r: &Ray<F>,
+            rad: F,
+            dz: F,
+        ) {
             if tx >= *root || tx <= F::ZERO {
-                return
+                return;
             }
 
             let p = r.extend(tx);
-            if p.x*p.x + p.y*p.y <= rad * rad {
+            if p.x * p.x + p.y * p.y <= rad * rad {
                 *root = tx;
                 if dz > F::ZERO {
                     *normal = -Vector::unit_z();
                 } else {
-                    *normal =  Vector::unit_z();
+                    *normal = Vector::unit_z();
                 }
             }
         }
 
         #[allow(clippy::too_many_arguments)]
-        fn test_side<F: Float>(root: &mut F, normal: &mut Vector<F>, tx: F, func: impl Fn(F, F) -> bool, r: &Ray<F>, height: F, beta2: F, gamma: F)
-        {
+        fn test_side<F: Float>(
+            root: &mut F,
+            normal: &mut Vector<F>,
+            tx: F,
+            func: impl Fn(F, F) -> bool,
+            r: &Ray<F>,
+            height: F,
+            beta2: F,
+            gamma: F,
+        ) {
             let point = r.extend(tx);
             let good = point.z >= F::ZERO && point.z <= height;
             if good && func(tx, *root) {
@@ -95,7 +106,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             &r,
             self.height,
             beta2,
-            gamma
+            gamma,
         );
 
         test_side(
@@ -106,12 +117,12 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
             &r,
             self.height,
             beta2,
-            gamma
+            gamma,
         );
 
         if self.capped {
             /* These are to help with finding caps */
-            let t1 = (            - p.z) / d.z;
+            let t1 = (-p.z) / d.z;
             let t2 = (self.height - p.z) / d.z;
 
             test_cap(&mut root, &mut normal, t1, &r, self.bot_r, d.z);
@@ -124,23 +135,36 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cone<F, M>
         }
 
         if root <= F::BIAS {
-            return None
+            return None;
         }
 
-        Some(ray.hit_at(root, self, &self.mat)
-             .with_normal(self.xfrm.nml_inv(normal))
+        Some(
+            ray.hit_at(root, self, &self.mat)
+                .with_normal(self.xfrm.nml_inv(normal)),
         )
     }
-
 }
 
-impl<F: Float, M: Material<F=F>> Cone<F, M>
-{
-    pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Cone<F, M>
-    {
+impl<F: Float, M: Material<F = F>> Cone<F, M> {
+    pub fn new(
+        height: F,
+        top_r: F,
+        bot_r: F,
+        capped: bool,
+        xfrm: Matrix4<F>,
+        mat: M,
+    ) -> Cone<F, M> {
         let m = bot_r.max(top_r);
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
-        Cone { height, top_r, bot_r, capped, mat, xfrm, aabb }
+        Cone {
+            height,
+            top_r,
+            bot_r,
+            capped,
+            mat,
+            xfrm,
+            aabb,
+        }
     }
 }

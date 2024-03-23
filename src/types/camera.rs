@@ -1,13 +1,12 @@
-use super::Float;
-use super::Vector;
-use super::Ray;
-use super::Point;
 use super::vector::{InnerSpace, MetricSpace};
-use cgmath::{Deg, Angle};
+use super::Float;
+use super::Point;
+use super::Ray;
+use super::Vector;
+use cgmath::{Angle, Deg};
 
 #[derive(Clone, Copy, Debug)]
-pub struct Camera<F: Float>
-{
+pub struct Camera<F: Float> {
     pos: Vector<F>,
     dir: Vector<F>,
     hor: Vector<F>,
@@ -16,8 +15,7 @@ pub struct Camera<F: Float>
     yres: u32,
 }
 
-impl<F: Float> Camera<F>
-{
+impl<F: Float> Camera<F> {
     pub fn raw(
         pos: Vector<F>,
         lookat: Vector<F>,
@@ -25,12 +23,21 @@ impl<F: Float> Camera<F>
         ver: Vector<F>,
         xres: u32,
         yres: u32,
-    ) -> Camera<F>
-    {
+    ) -> Camera<F> {
         let dir = (lookat - pos).normalize();
 
-        info!("Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]", pos, dir, hor, ver);
-        Camera { pos, dir, hor, ver, xres, yres }
+        info!(
+            "Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]",
+            pos, dir, hor, ver
+        );
+        Camera {
+            pos,
+            dir,
+            hor,
+            ver,
+            xres,
+            yres,
+        }
     }
 
     pub fn parametric(
@@ -39,9 +46,8 @@ impl<F: Float> Camera<F>
         updir: Vector<F>,
         fov: F,
         xres: u32,
-        yres: u32
-    ) -> Camera<F>
-    {
+        yres: u32,
+    ) -> Camera<F> {
         Self::build(pos, lookat - pos, updir, fov, xres, yres, None)
     }
 
@@ -53,8 +59,7 @@ impl<F: Float> Camera<F>
         xres: u32,
         yres: u32,
         aspect: Option<F>,
-    ) -> Camera<F>
-    {
+    ) -> Camera<F> {
         let dir = viewdir.normalize();
         let u = dir.cross(updir).normalize();
         let v = u.cross(dir).normalize();
@@ -79,21 +84,18 @@ impl<F: Float> Camera<F>
         }
     }
 
-    pub fn get_ray(self, point: Point<F>) -> Ray<F>
-    {
+    pub fn get_ray(self, point: Point<F>) -> Ray<F> {
         let x = point.x - F::HALF;
         let y = -point.y + F::HALF;
         let vpp = self.dir + (self.hor * x) + (self.ver * y);
         Ray::new(self.pos, vpp.normalize(), 0)
     }
 
-    pub fn size(self) -> (u32, u32)
-    {
+    pub fn size(self) -> (u32, u32) {
         (self.xres, self.yres)
     }
 
-    pub fn distance2(self, pos: Vector<F>) -> F
-    {
+    pub fn distance2(self, pos: Vector<F>) -> F {
         self.pos.distance2(pos)
     }
 }

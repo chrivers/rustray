@@ -33,16 +33,22 @@ where
     S5: Sampler<F, Color<F>>,
     S6: Sampler<F, Color<F>>,
 {
-    pub fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self
-    {
-        Self { ior, pow, ke, kd, ks, kt, kr, ambient: Color::black() }
+    pub fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
+        Self {
+            ior,
+            pow,
+            ke,
+            kd,
+            ks,
+            kt,
+            kr,
+            ambient: Color::black(),
+        }
     }
 
-    pub fn with_ambient(self, ambient: Color<F>) -> Self
-    {
+    pub fn with_ambient(self, ambient: Color<F>) -> Self {
         Self { ambient, ..self }
     }
-
 }
 
 impl<F, S1, S2, S3, S4, S5, S6> Material for Smart<F, S1, S2, S3, S4, S5, S6>
@@ -57,13 +63,17 @@ where
 {
     type F = F;
 
-    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
-    {
+    fn render(
+        &self,
+        maxel: &mut Maxel<F>,
+        lights: &[&dyn Light<F>],
+        rt: &dyn RayTracer<F>,
+    ) -> Color<F> {
         let uv = maxel.uv();
         let normal = maxel.nml();
         let diff_color = self.kd.sample(uv);
         let spec_color = self.ks.sample(uv);
-        let spec_pow   = self.pow.sample(uv);
+        let spec_pow = self.pow.sample(uv);
         let ambi_color = self.ambient * rt.ambient();
 
         let mut res = self.ke.sample(uv) + ambi_color;
@@ -90,7 +100,9 @@ where
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
         for light in lights {
-            let light_color = rt.ray_shadow(maxel, *light).unwrap_or_else(|| light.get_color());
+            let light_color = rt
+                .ray_shadow(maxel, *light)
+                .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
@@ -113,8 +125,7 @@ where
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>>
-    {
+    fn shadow(&self, maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>> {
         let uv = maxel.uv();
         let sha = self.kt.sample(uv);
 

@@ -1,17 +1,17 @@
 #![allow(unused_variables)]
-use std::fs::File;
-use std::io::{Read, Seek, Cursor};
-use zip::ZipArchive;
 use obj::Obj;
+use std::fs::File;
+use std::io::{Cursor, Read, Seek};
+use zip::ZipArchive;
 
-use crate::types::{Color, Point, Vector, Float, Camera, PointLight, RResult, TimeSlice};
-use crate::types::vector::Vectorx;
-use crate::geometry::{Geometry, FiniteGeometry, Sphere, Plane, Triangle, TriangleMesh};
+use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
+use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
 use crate::material::*;
-use crate::download::{TextureDownloader, ACGDownloader, ACGQuality};
-use crate::sampler::{SamplerExt, NormalMap, Texel};
+use crate::sampler::{NormalMap, SamplerExt, Texel};
+use crate::types::vector::Vectorx;
+use crate::types::{Camera, Color, Float, Point, PointLight, RResult, TimeSlice, Vector};
 
-use crate::scene::{Light, Scene, BoxScene};
+use crate::scene::{BoxScene, Light, Scene};
 
 use crate::{point, vec3};
 
@@ -38,11 +38,41 @@ where
     )];
 
     let (h, l) = (0.8.into(), 0.2.into());
-    let light1 = PointLight { pos: vec3!( 2.0, 2.0, 2.0 ), color: Color { r: h, g: h, b: h }, a: l, b: l, c: l };
-    let light2 = PointLight { pos: vec3!( 2.0, 2.0, 7.0 ), color: Color { r: h, g: l, b: l }, a: l, b: l, c: l };
-    let light3 = PointLight { pos: vec3!( 2.0, 7.0, 2.0 ), color: Color { r: l, g: h, b: l }, a: l, b: l, c: l };
-    let light4 = PointLight { pos: vec3!( 7.0, 2.0, 2.0 ), color: Color { r: l, g: l, b: h }, a: l, b: l, c: l };
-    let light5 = PointLight { pos: vec3!( 5.0, 5.0, 5.0 ), color: Color { r: h, g: h, b: h }, a: l, b: l, c: l };
+    let light1 = PointLight {
+        pos: vec3!(2.0, 2.0, 2.0),
+        color: Color { r: h, g: h, b: h },
+        a: l,
+        b: l,
+        c: l,
+    };
+    let light2 = PointLight {
+        pos: vec3!(2.0, 2.0, 7.0),
+        color: Color { r: h, g: l, b: l },
+        a: l,
+        b: l,
+        c: l,
+    };
+    let light3 = PointLight {
+        pos: vec3!(2.0, 7.0, 2.0),
+        color: Color { r: l, g: h, b: l },
+        a: l,
+        b: l,
+        c: l,
+    };
+    let light4 = PointLight {
+        pos: vec3!(7.0, 2.0, 2.0),
+        color: Color { r: l, g: l, b: h },
+        a: l,
+        b: l,
+        c: l,
+    };
+    let light5 = PointLight {
+        pos: vec3!(5.0, 5.0, 5.0),
+        color: Color { r: h, g: h, b: h },
+        a: l,
+        b: l,
+        c: l,
+    };
 
     let lights: Vec<Box<dyn Light<F>>> = vec![
         Box::new(light1),
@@ -83,10 +113,30 @@ where
         let zipfile = File::open(dl.download(name)?)?;
         let mut archive = ZipArchive::new(zipfile)?;
         Ok((
-            load_zip_tex(time, &mut archive, &format!("{}_1K_Color.png", name), ImageFormat::Png)?,
-            load_zip_tex(time, &mut archive, &format!("{}_1K_NormalDX.png", name), ImageFormat::Png)?,
-            load_zip_tex(time, &mut archive, &format!("{}_1K_Roughness.png", name), ImageFormat::Png)?,
-            load_zip_tex(time, &mut archive, &format!("{}_1K_Metalness.png", name), ImageFormat::Png),
+            load_zip_tex(
+                time,
+                &mut archive,
+                &format!("{}_1K_Color.png", name),
+                ImageFormat::Png,
+            )?,
+            load_zip_tex(
+                time,
+                &mut archive,
+                &format!("{}_1K_NormalDX.png", name),
+                ImageFormat::Png,
+            )?,
+            load_zip_tex(
+                time,
+                &mut archive,
+                &format!("{}_1K_Roughness.png", name),
+                ImageFormat::Png,
+            )?,
+            load_zip_tex(
+                time,
+                &mut archive,
+                &format!("{}_1K_Metalness.png", name),
+                ImageFormat::Png,
+            ),
         ))
     }
 
@@ -98,40 +148,85 @@ where
 
     time.set("construct");
     let mat_sphere = Fresnel::new(1.6.into()).dynamic();
-    let mat_white  = Phong::white().dynamic();
+    let mat_white = Phong::white().dynamic();
 
     let mat_plane = ChessBoard::new(
-        Bumpmap::new(0.5.into(), NormalMap::new(tex0b.bilinear()), Phong::new(tex0r.bilinear(), tex0a.bilinear().texture())),
-        Bumpmap::new(0.5.into(), NormalMap::new(tex1b.bilinear()), Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()))).dynamic();
+        Bumpmap::new(
+            0.5.into(),
+            NormalMap::new(tex0b.bilinear()),
+            Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+        ),
+        Bumpmap::new(
+            0.5.into(),
+            NormalMap::new(tex1b.bilinear()),
+            Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
+        ),
+    )
+    .dynamic();
 
-    let mat_bmp2 = Bumpmap::new(0.5.into(), NormalMap::new(tex2b.bilinear()), Phong::new(tex2r.bilinear(), tex2a.bilinear().texture())).dynamic();
+    let mat_bmp2 = Bumpmap::new(
+        0.5.into(),
+        NormalMap::new(tex2b.bilinear()),
+        Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
+    )
+    .dynamic();
 
     time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
 
-    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0/5.0))?;
+    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0 / 5.0))?;
 
     time.set("construct");
-    let plane1   = Plane::new(vec3!( 0.0,  0.0, 20.0), vec3!(-1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), mat_plane.clone());
-    let plane2   = Plane::new(vec3!( 0.0,  0.0,  0.0), vec3!( 1.0, 0.0, 0.0), vec3!(0.0, 1.0, 0.0), mat_plane.clone());
-    let plane3   = Plane::new(vec3!(20.0,  0.0,  0.0), vec3!( 0.0,-1.0, 0.0), vec3!(0.0, 0.0, 1.0), mat_plane.clone());
-    let plane4   = Plane::new(vec3!( 0.0,  0.0,  0.0), vec3!( 0.0, 1.0, 0.0), vec3!(0.0, 0.0, 1.0), mat_plane.clone());
-    let plane5   = Plane::new(vec3!( 0.0, 20.0,  0.0), vec3!( 0.0, 0.0,-1.0), vec3!(1.0, 0.0, 0.0), mat_plane.clone());
-    let plane6   = Plane::new(vec3!( 0.0,  0.0,  0.0), vec3!( 0.0, 0.0, 1.0), vec3!(1.0, 0.0, 0.0), mat_plane.clone());
+    let plane1 = Plane::new(
+        vec3!(0.0, 0.0, 20.0),
+        vec3!(-1.0, 0.0, 0.0),
+        vec3!(0.0, 1.0, 0.0),
+        mat_plane.clone(),
+    );
+    let plane2 = Plane::new(
+        vec3!(0.0, 0.0, 0.0),
+        vec3!(1.0, 0.0, 0.0),
+        vec3!(0.0, 1.0, 0.0),
+        mat_plane.clone(),
+    );
+    let plane3 = Plane::new(
+        vec3!(20.0, 0.0, 0.0),
+        vec3!(0.0, -1.0, 0.0),
+        vec3!(0.0, 0.0, 1.0),
+        mat_plane.clone(),
+    );
+    let plane4 = Plane::new(
+        vec3!(0.0, 0.0, 0.0),
+        vec3!(0.0, 1.0, 0.0),
+        vec3!(0.0, 0.0, 1.0),
+        mat_plane.clone(),
+    );
+    let plane5 = Plane::new(
+        vec3!(0.0, 20.0, 0.0),
+        vec3!(0.0, 0.0, -1.0),
+        vec3!(1.0, 0.0, 0.0),
+        mat_plane.clone(),
+    );
+    let plane6 = Plane::new(
+        vec3!(0.0, 0.0, 0.0),
+        vec3!(0.0, 0.0, 1.0),
+        vec3!(1.0, 0.0, 0.0),
+        mat_plane.clone(),
+    );
 
-    let sphere1  = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
-    let sphere2  = Sphere::place(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere.clone());
-    let sphere3  = Sphere::place(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere.clone());
-    let sphere4  = Sphere::place(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere.clone());
+    let sphere1 = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
+    let sphere2 = Sphere::place(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere.clone());
+    let sphere3 = Sphere::place(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere.clone());
+    let sphere4 = Sphere::place(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere.clone());
 
-    let sphere5  = Sphere::place(vec3!( 3.0, 3.0, 1.0),  1.0.into(), mat_sphere.clone());
-    let sphere6  = Sphere::place(vec3!( 2.0, 2.0, 3.0),  2.0.into(), mat_sphere.clone());
-    let sphere7  = Sphere::place(vec3!( 6.0, 6.0, 8.0),  1.0.into(), mat_sphere.clone());
-    let sphere8  = Sphere::place(vec3!( 4.0, 4.0, -1.0), 3.0.into(), mat_sphere.clone());
-    let sphere9  = Sphere::place(vec3!( 4.0, -1.0, 4.0), 3.0.into(), mat_sphere.clone());
-    let sphere10 = Sphere::place(vec3!( -1.0, 4.0, 4.0), 3.0.into(), mat_sphere.clone());
+    let sphere5 = Sphere::place(vec3!(3.0, 3.0, 1.0), 1.0.into(), mat_sphere.clone());
+    let sphere6 = Sphere::place(vec3!(2.0, 2.0, 3.0), 2.0.into(), mat_sphere.clone());
+    let sphere7 = Sphere::place(vec3!(6.0, 6.0, 8.0), 1.0.into(), mat_sphere.clone());
+    let sphere8 = Sphere::place(vec3!(4.0, 4.0, -1.0), 3.0.into(), mat_sphere.clone());
+    let sphere9 = Sphere::place(vec3!(4.0, -1.0, 4.0), 3.0.into(), mat_sphere.clone());
+    let sphere10 = Sphere::place(vec3!(-1.0, 4.0, 4.0), 3.0.into(), mat_sphere.clone());
 
-    let sphere11 = Sphere::place(vec3!( 3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
+    let sphere11 = Sphere::place(vec3!(3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
 
     let tri1 = Triangle::new(
         vec3!(1.0, 0.0, 3.0),

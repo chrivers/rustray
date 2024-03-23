@@ -2,12 +2,11 @@ use super::samp_util::*;
 use super::Bilinear;
 use super::Nearest;
 
-pub trait SamplerExt<T>
-{
+pub trait SamplerExt<T> {
     fn bilinear(self) -> Bilinear<T, Self>
     where
         Self: Sampler<u32, T> + Sized,
-        T: Texel
+        T: Texel,
     {
         Bilinear::new(self)
     }
@@ -15,7 +14,7 @@ pub trait SamplerExt<T>
     fn nearest(self) -> Nearest<T, Self>
     where
         Self: Sampler<u32, T> + Sized,
-        T: Texel
+        T: Texel,
     {
         Nearest::new(self)
     }
@@ -24,6 +23,6 @@ pub trait SamplerExt<T>
 impl<T, S> SamplerExt<T> for S
 where
     T: Texel,
-    S: Sampler<u32, T>
+    S: Sampler<u32, T>,
 {
 }

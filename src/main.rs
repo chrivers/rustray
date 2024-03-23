@@ -1,33 +1,32 @@
 #[macro_use]
 extern crate log;
 
+use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::env;
 
 use indicatif::ParallelProgressIterator;
 
-use image::{Rgb, ColorType, ImageBuffer};
+use image::{ColorType, ImageBuffer, Rgb};
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator};
 use log::LevelFilter;
 use pest::Parser;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use rustray::types::{Float, RResult, TimeSlice};
-use rustray::types::result::Error;
-use rustray::geometry::{Geometry, FiniteGeometry};
+use rustray::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
+use rustray::geometry::{FiniteGeometry, Geometry};
 use rustray::scene::Light;
-use rustray::format::sbt2::{SbtParser2, Rule as Rule2, SbtBuilder};
 use rustray::tracer::Tracer;
+use rustray::types::result::Error;
+use rustray::types::{Float, RResult, TimeSlice};
 
-const WIDTH:  u32 = 1440;
+const WIDTH: u32 = 1440;
 const HEIGHT: u32 = 1440;
 
-fn main() -> RResult<()>
-{
+fn main() -> RResult<()> {
     match runmain() {
-        Ok(()) => { },
+        Ok(()) => {}
         Err(Error::IOError(err)) => {
             error!("Error: {}", err)
         }
@@ -64,7 +63,6 @@ fn runmain() -> RResult<()> {
     /* Option 1: Scene from .ply file */
     /* let scene = PlyParser::<F>::parse_file(&mut file, resdir, WIDTH, HEIGHT)?; */
 
-
     /* Option 2: Scene from .ray file */
 
     let mut data = String::new();
@@ -90,12 +88,23 @@ fn runmain() -> RResult<()> {
 
     /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
-    info!("Loaded scene\ncams={}\nobjs={}\nlights={}", scene.cameras.len(), scene.objects.len(), scene.lights.len());
+    info!(
+        "Loaded scene\ncams={}\nobjs={}\nlights={}",
+        scene.cameras.len(),
+        scene.objects.len(),
+        scene.lights.len()
+    );
 
     let img = draw_image(&mut time, Tracer::new(&scene), WIDTH, HEIGHT)?;
 
     time.set("write");
-    image::save_buffer("output.png", &img, img.width(), img.height(), ColorType::Rgb8)?;
+    image::save_buffer(
+        "output.png",
+        &img,
+        img.width(),
+        img.height(),
+        ColorType::Rgb8,
+    )?;
 
     info!("render complete");
     time.stop();
@@ -106,8 +115,7 @@ fn runmain() -> RResult<()> {
 mod pbar {
     use indicatif::{ProgressBar, ProgressStyle};
 
-    pub fn init(range: u64) -> ProgressBar
-    {
+    pub fn init(range: u64) -> ProgressBar {
         let pb = ProgressBar::new(range);
         pb.set_style(
             ProgressStyle::default_bar()
@@ -118,12 +126,17 @@ mod pbar {
     }
 }
 
-fn draw_image<F, B, G, L>(time: &mut TimeSlice, tracer: Tracer<'_, F, B, G, L>, width: u32, height: u32) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
+fn draw_image<F, B, G, L>(
+    time: &mut TimeSlice,
+    tracer: Tracer<'_, F, B, G, L>,
+    width: u32,
+    height: u32,
+) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
 where
     F: Float,
     B: FiniteGeometry<F>,
     G: Geometry<F>,
-    L: Light<F>
+    L: Light<F>,
 {
     let pb = pbar::init(height as u64);
 
@@ -133,9 +146,11 @@ where
 
     let camera = &tracer.scene().cameras[0];
 
-    let lines: Vec<_> = (0..height).into_par_iter().progress_with(pb).map(|y| {
-        tracer.generate_span(camera, y)
-    }).collect();
+    let lines: Vec<_> = (0..height)
+        .into_par_iter()
+        .progress_with(pb)
+        .map(|y| tracer.generate_span(camera, y))
+        .collect();
 
     time.set("copy");
 

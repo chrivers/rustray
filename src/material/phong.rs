@@ -1,46 +1,45 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>>
-{
+pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
     pow: S,
     mat: M,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Phong<F, S, M>
-{
-    pub fn new(pow: S, mat: M) -> Self
-    {
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Phong<F, S, M> {
+    pub fn new(pow: S, mat: M) -> Self {
         Self { pow, mat }
     }
 }
 
-impl<F: Float + Texel> Phong<F, F, Color<F>>
-{
-    pub fn white() -> Self
-    {
+impl<F: Float + Texel> Phong<F, F, Color<F>> {
+    pub fn white() -> Self {
         Self::new(F::from_u32(8), Color::white())
     }
 
-    pub fn black() -> Self
-    {
+    pub fn black() -> Self {
         Self::new(F::from_u32(8), Color::black())
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F, S, M>
-{
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<F, S, M> {
     type F = F;
 
-    fn render(&self, maxel: &mut Maxel<F>, lights: &[&dyn Light<F>], rt: &dyn RayTracer<F>) -> Color<F>
-    {
+    fn render(
+        &self,
+        maxel: &mut Maxel<F>,
+        lights: &[&dyn Light<F>],
+        rt: &dyn RayTracer<F>,
+    ) -> Color<F> {
         let mut res = Color::black();
 
         let self_color = self.mat.render(maxel, lights, rt);
         let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);
 
         for light in lights {
-            let light_color = rt.ray_shadow(maxel, &**light).unwrap_or_else(|| light.get_color());
+            let light_color = rt
+                .ray_shadow(maxel, &**light)
+                .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
@@ -60,8 +59,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F=F>> Material for Phong<F,
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>
-    {
+    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, light)
     }
 }

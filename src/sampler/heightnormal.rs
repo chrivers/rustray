@@ -1,42 +1,33 @@
 use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>>
-{
+pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>> {
     delta: F,
     sampler: S,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> HeightNormal<F, S>
-{
-    pub fn new(delta: F, sampler: S) -> Self
-    {
+impl<F: Float + Texel, S: Sampler<F, F>> HeightNormal<F, S> {
+    pub fn new(delta: F, sampler: S) -> Self {
         Self { delta, sampler }
     }
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S>
 where
-    Vector<F>: Texel
+    Vector<F>: Texel,
 {
-    fn sample(&self, uv: Point<F>) -> Vector<F>
-    {
+    fn sample(&self, uv: Point<F>) -> Vector<F> {
         let d = self.delta;
-        let a = self.sampler.sample(point!(uv.x - d, uv.y    ));
-        let b = self.sampler.sample(point!(uv.x + d, uv.y    ));
-        let c = self.sampler.sample(point!(uv.x,     uv.y - d));
-        let d = self.sampler.sample(point!(uv.x,     uv.y + d));
+        let a = self.sampler.sample(point!(uv.x - d, uv.y));
+        let b = self.sampler.sample(point!(uv.x + d, uv.y));
+        let c = self.sampler.sample(point!(uv.x, uv.y - d));
+        let d = self.sampler.sample(point!(uv.x, uv.y + d));
         let n1 = (a - b).clamp(-F::ONE, F::ONE) / F::TWO + F::HALF;
         let n2 = (c - d).clamp(-F::ONE, F::ONE) / F::TWO + F::HALF;
-        Vector::new(
-            n1,
-            n2,
-            F::ONE,
-        ).normalize()
+        Vector::new(n1, n2, F::ONE).normalize()
     }
 
-    fn dimensions(&self) -> (u32, u32)
-    {
+    fn dimensions(&self) -> (u32, u32) {
         self.sampler.dimensions()
     }
 }

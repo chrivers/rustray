@@ -1,21 +1,20 @@
 use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>>
-{
+pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>> {
     sampler: S,
     _p: PhantomData<F>,
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S>
-{
-    pub fn new(sampler: S) -> Self
-    {
-        Self { sampler, _p: PhantomData {} }
+impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S> {
+    pub fn new(sampler: S) -> Self {
+        Self {
+            sampler,
+            _p: PhantomData {},
+        }
     }
 
-    pub fn color_to_vector(col: &Color<F>) -> Vector<F>
-    {
+    pub fn color_to_vector(col: &Color<F>) -> Vector<F> {
         let mut n = *col;
         n.r -= F::HALF;
         n.g -= F::HALF;
@@ -27,15 +26,13 @@ impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S>
 
 impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S>
 where
-    Vector<F>: Texel
+    Vector<F>: Texel,
 {
-    fn sample(&self, uv: Point<F>) -> Vector<F>
-    {
+    fn sample(&self, uv: Point<F>) -> Vector<F> {
         Self::color_to_vector(&self.sampler.sample(uv))
     }
 
-    fn dimensions(&self) -> (u32, u32)
-    {
+    fn dimensions(&self) -> (u32, u32) {
         self.sampler.dimensions()
     }
 }

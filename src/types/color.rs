@@ -1,18 +1,16 @@
-use derive_more::{Add, AddAssign, Sub, Rem};
-use std::ops;
 use cgmath::VectorSpace;
-use std::iter::Sum;
+use derive_more::{Add, AddAssign, Rem, Sub};
 use num_traits::Zero;
 use std::fmt::{self, Debug};
+use std::iter::Sum;
+use std::ops;
 
 use crate::sampler::Texel;
 
 use crate::types::float::{Float, Lerp};
 
-#[derive(Clone, Copy)]
-#[derive(Add, AddAssign, Sub, Rem)]
-pub struct Color<F: Float>
-{
+#[derive(Clone, Copy, Add, AddAssign, Sub, Rem)]
+pub struct Color<F: Float> {
     pub r: F,
     pub g: F,
     pub b: F,
@@ -20,24 +18,23 @@ pub struct Color<F: Float>
 
 impl<F: Float> Texel for Color<F> {}
 
-impl<F: Float> Debug for Color<F>
-{
+impl<F: Float> Debug for Color<F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Color(")?; Debug::fmt(&self.r, f)?;
-        write!(f, ", ")?;  Debug::fmt(&self.g, f)?;
-        write!(f, ", ")?;  Debug::fmt(&self.b, f)?;
+        write!(f, "Color(")?;
+        Debug::fmt(&self.r, f)?;
+        write!(f, ", ")?;
+        Debug::fmt(&self.g, f)?;
+        write!(f, ", ")?;
+        Debug::fmt(&self.b, f)?;
         f.write_str(")")
     }
 }
 
-impl<F: Float> ops::Mul<F> for Color<F>
-{
+impl<F: Float> ops::Mul<F> for Color<F> {
     type Output = Color<F>;
 
-    fn mul(self, other: F) -> Color<F>
-    {
-        Color
-        {
+    fn mul(self, other: F) -> Color<F> {
+        Color {
             r: self.r * other,
             g: self.g * other,
             b: self.b * other,
@@ -45,14 +42,11 @@ impl<F: Float> ops::Mul<F> for Color<F>
     }
 }
 
-impl<F: Float> ops::Mul<Color<F>> for Color<F>
-{
+impl<F: Float> ops::Mul<Color<F>> for Color<F> {
     type Output = Color<F>;
 
-    fn mul(self, other: Color<F>) -> Color<F>
-    {
-        Color
-        {
+    fn mul(self, other: Color<F>) -> Color<F> {
+        Color {
             r: self.r * other.r,
             g: self.g * other.g,
             b: self.b * other.b,
@@ -60,14 +54,11 @@ impl<F: Float> ops::Mul<Color<F>> for Color<F>
     }
 }
 
-impl<F: Float> ops::Div for Color<F>
-{
+impl<F: Float> ops::Div for Color<F> {
     type Output = Color<F>;
 
-    fn div(self, other: Color<F>) -> Color<F>
-    {
-        Color
-        {
+    fn div(self, other: Color<F>) -> Color<F> {
+        Color {
             r: self.r / other.r,
             g: self.g / other.g,
             b: self.b / other.b,
@@ -75,14 +66,11 @@ impl<F: Float> ops::Div for Color<F>
     }
 }
 
-impl<F: Float> ops::Div<F> for Color<F>
-{
+impl<F: Float> ops::Div<F> for Color<F> {
     type Output = Color<F>;
 
-    fn div(self, other: F) -> Color<F>
-    {
-        Color
-        {
+    fn div(self, other: F) -> Color<F> {
+        Color {
             r: self.r / other,
             g: self.g / other,
             b: self.b / other,
@@ -90,51 +78,42 @@ impl<F: Float> ops::Div<F> for Color<F>
     }
 }
 
-impl<F: Float> Color<F>
-{
-    pub const fn new(r: F, g: F, b: F) -> Color<F>
-    {
+impl<F: Float> Color<F> {
+    pub const fn new(r: F, g: F, b: F) -> Color<F> {
         Color { r, g, b }
     }
 
-    pub const fn gray(c: F) -> Color<F>
-    {
+    pub const fn gray(c: F) -> Color<F> {
         Self::new(c, c, c)
     }
 
-    pub const fn black() -> Color<F>
-    {
+    pub const fn black() -> Color<F> {
         Self::gray(F::ZERO)
     }
 
-    pub const fn white() -> Color<F>
-    {
+    pub const fn white() -> Color<F> {
         Self::gray(F::ONE)
     }
 
-    fn clamp(n: F) -> F
-    {
+    fn clamp(n: F) -> F {
         n.max(F::ZERO).min(F::ONE)
     }
 
-    pub fn clamped(self) -> Color<F>
-    {
+    pub fn clamped(self) -> Color<F> {
         let r = Color::clamp(self.r);
         let g = Color::clamp(self.g);
         let b = Color::clamp(self.b);
         Color { r, g, b }
     }
 
-    pub fn mixed(input: &[Color<F>]) -> Color<F>
-    {
+    pub fn mixed(input: &[Color<F>]) -> Color<F> {
         match input.len() {
             0 => Color::zero(),
-            n => input.iter().copied().sum::<Color<F>>() / F::from_usize(n)
+            n => input.iter().copied().sum::<Color<F>>() / F::from_usize(n),
         }
     }
 
-    pub fn to_array(&self) -> [u8; 3]
-    {
+    pub fn to_array(&self) -> [u8; 3] {
         let clamped = self.clamped();
         let max = F::from_u32(u8::MAX as u32);
         [
@@ -145,29 +124,23 @@ impl<F: Float> Color<F>
     }
 }
 
-impl<F: Float> Zero for Color<F>
-{
-    fn zero() -> Color<F>
-    {
+impl<F: Float> Zero for Color<F> {
+    fn zero() -> Color<F> {
         Self::black()
     }
 
-    fn is_zero(&self) -> bool
-    {
-        self.r.is_zero() &&
-        self.g.is_zero() &&
-        self.b.is_zero()
+    fn is_zero(&self) -> bool {
+        self.r.is_zero() && self.g.is_zero() && self.b.is_zero()
     }
 }
 
 impl<F: Float> Sum for Color<F> {
-    fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Color::zero(), |a, ref c| a + *c)
     }
 }
 
-impl<F: Float> VectorSpace for Color<F>
-{
+impl<F: Float> VectorSpace for Color<F> {
     type Scalar = F;
 }
 
@@ -175,8 +148,7 @@ impl<F: Float> Lerp for Color<F> {
     type Ratio = F;
 }
 
-impl<F: Float> AsRef<Color<F>> for Color<F>
-{
+impl<F: Float> AsRef<Color<F>> for Color<F> {
     fn as_ref(&self) -> &Self {
         self
     }

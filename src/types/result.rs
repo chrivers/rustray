@@ -1,8 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum Error
-{
+pub enum Error {
     #[error(transparent)]
     IOError(#[from] std::io::Error),
 
@@ -37,7 +36,7 @@ pub enum Error
     ParseMissingKey(String),
 
     #[error("unsupported parse element {0:?}")]
-    ParseUnsupported(String)
+    ParseUnsupported(String),
 }
 
 pub type RResult<F> = Result<F, Error>;

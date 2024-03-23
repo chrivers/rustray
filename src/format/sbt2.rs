@@ -8,23 +8,25 @@ use obj::Obj;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use cgmath::{Rad, Matrix, Vector4, Matrix4, InnerSpace, SquareMatrix};
+use cgmath::{InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
 use num_traits::Zero;
 
-use super::sbt::{SbtVersion, face_normals, spherical_uvs};
+use super::sbt::{face_normals, spherical_uvs, SbtVersion};
 
-use crate::geometry::{Cube, Cone, Cylinder, Sphere, Square, Triangle, TriangleMesh, FiniteGeometry};
-use crate::types::{Color, Camera, Float, Point, Vector, vector::Vectorx, float::Lerp};
-use crate::types::light::{PointLight, DirectionalLight};
-use crate::types::result::{RResult, Error};
-use crate::material::{Material, DynMaterial, Smart, Triblend, Bumpmap};
-use crate::sampler::{Sampler, DynSampler, SamplerExt, Texel, NormalMap, ShineMap};
-use crate::scene::{Scene, BoxScene, Light};
+use crate::geometry::{
+    Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
+};
+use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
+use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
+use crate::scene::{BoxScene, Light, Scene};
+use crate::types::light::{DirectionalLight, PointLight};
+use crate::types::result::{Error, RResult};
+use crate::types::{float::Lerp, vector::Vectorx, Camera, Color, Float, Point, Vector};
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
 pub struct SbtParser2<F: Float> {
-    _p: PhantomData<F>
+    _p: PhantomData<F>,
 }
 
 #[derive(Debug)]
@@ -64,45 +66,39 @@ trait STuple<F: Float> {
     fn vector4(&self) -> RResult<Vector4<F>>;
 }
 
-impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F>
-{
-    fn float(&self, name: &str) -> RResult<F>
-    {
+impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
+    fn float(&self, name: &str) -> RResult<F> {
         match self.get(name) {
             Some(val) => val.float(),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn string(&self, name: &str) -> RResult<&str>
-    {
+    fn string(&self, name: &str) -> RResult<&str> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Str(string)) => {
-                Ok(string)
-            },
+            Some(S::Str(string)) => Ok(string),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn color(&self, name: &str) -> RResult<Color<F>>
-    {
+    fn color(&self, name: &str) -> RResult<Color<F>> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => {
-                tuple.color()
-            },
+            Some(S::Tuple(tuple)) if tuple.len() == 3 => tuple.color(),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>>
-    {
+    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>> {
         let load = |name| {
             info!("{:?}", resdir.join(name));
-            Ok(ShineMap::new(image::open(resdir.join(name))?.bilinear(), F::from_u32(128)).dynsampler())
+            Ok(
+                ShineMap::new(image::open(resdir.join(name))?.bilinear(), F::from_u32(128))
+                    .dynsampler(),
+            )
         };
 
         use SbtValue as S;
@@ -110,167 +106,119 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F>
             Some(S::Int(int)) => Ok((F::from_f64(*int as f64)).dynsampler()),
             Some(S::Float(float)) => Ok((*float).dynsampler()),
             Some(S::Str(name)) => load(name),
-            Some(S::Block(
-                box SbtBlock {
-                    name: "map",
-                    value
-                }
-            )) => load(&value.tuple()?.string()?),
+            Some(S::Block(box SbtBlock { name: "map", value })) => load(&value.tuple()?.string()?),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn sampler3<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, Color<F>>>
-    {
+    fn sampler3<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, Color<F>>> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => {
-                Ok(tuple.color()?.dynsampler())
-            },
+            Some(S::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
             Some(S::Str(name)) => {
                 info!("{:?}", resdir.join(name));
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
-            },
-            Some(S::Block(box SbtBlock{name: "map", value})) => {
+            }
+            Some(S::Block(box SbtBlock { name: "map", value })) => {
                 let name = value.tuple()?.string()?;
                 info!("name: {:#?}", name);
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
-            },
+            }
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn vector(&self, name: &str) -> RResult<Vector<F>>
-    {
+    fn vector(&self, name: &str) -> RResult<Vector<F>> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => {
-                tuple.vector3()
-            },
+            Some(S::Tuple(tuple)) if tuple.len() == 3 => tuple.vector3(),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn boolean(&self, name: &str) -> RResult<bool>
-    {
+    fn boolean(&self, name: &str) -> RResult<bool> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Bool(b)) => {
-                Ok(*b)
-            },
+            Some(S::Bool(b)) => Ok(*b),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn dict(&self, name: &str) -> RResult<&SbtDict<F>>
-    {
+    fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Dict(dict)) => {
-                Ok(dict)
-            },
+            Some(S::Dict(dict)) => Ok(dict),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
-    fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>>
-    {
+    fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>> {
         use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) => {
-                Ok(tuple)
-            },
+            Some(S::Tuple(tuple)) => Ok(tuple),
             Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string()))
+            None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 }
 
-impl<'a, F: Float> STuple<F> for SbtTuple<'a, F>
-{
-    fn string(&self) -> RResult<&str>
-    {
+impl<'a, F: Float> STuple<F> for SbtTuple<'a, F> {
+    fn string(&self) -> RResult<&str> {
         match self.as_slice() {
             [SbtValue::Str(s)] => Ok(s),
-            _ => Err(Error::ParseError("expected vector3"))
+            _ => Err(Error::ParseError("expected vector3")),
         }
     }
 
-    fn color(&self) -> RResult<Color<F>>
-    {
+    fn color(&self) -> RResult<Color<F>> {
         match self.as_slice() {
-            [x, y, z] => Ok(Color::new(
-                x.float()?,
-                y.float()?,
-                z.float()?
-            )),
-            _ => Err(Error::ParseError("expected color"))
+            [x, y, z] => Ok(Color::new(x.float()?, y.float()?, z.float()?)),
+            _ => Err(Error::ParseError("expected color")),
         }
     }
 
-    fn int3(&self) -> RResult<[usize; 3]>
-    {
+    fn int3(&self) -> RResult<[usize; 3]> {
         match self.as_slice() {
-            [a, b, c] => Ok([
-                a.int()? as usize,
-                b.int()? as usize,
-                c.int()? as usize
-            ]),
-            _ => Err(Error::ParseError("expected int3"))
+            [a, b, c] => Ok([a.int()? as usize, b.int()? as usize, c.int()? as usize]),
+            _ => Err(Error::ParseError("expected int3")),
         }
     }
 
-    fn int4(&self) -> RResult<[usize; 4]>
-    {
+    fn int4(&self) -> RResult<[usize; 4]> {
         match self.as_slice() {
             [a, b, c, d] => Ok([
                 a.int()? as usize,
                 b.int()? as usize,
                 c.int()? as usize,
-                d.int()? as usize
+                d.int()? as usize,
             ]),
-            _ => Err(Error::ParseError("expected int4"))
+            _ => Err(Error::ParseError("expected int4")),
         }
     }
 
-    fn point(&self) -> RResult<Point<F>>
-    {
+    fn point(&self) -> RResult<Point<F>> {
         match self.as_slice() {
-            [x, y] => Ok(Point::new(
-                x.float()?,
-                y.float()?
-            )),
-            _ => Err(Error::ParseError("expected point"))
+            [x, y] => Ok(Point::new(x.float()?, y.float()?)),
+            _ => Err(Error::ParseError("expected point")),
         }
     }
 
-    fn vector3(&self) -> RResult<Vector<F>>
-    {
+    fn vector3(&self) -> RResult<Vector<F>> {
         match self.as_slice() {
-            [x, y, z] => Ok(Vector::new(
-                x.float()?,
-                y.float()?,
-                z.float()?
-            )),
-            _ => Err(Error::ParseError("expected vector3"))
+            [x, y, z] => Ok(Vector::new(x.float()?, y.float()?, z.float()?)),
+            _ => Err(Error::ParseError("expected vector3")),
         }
     }
 
-    fn vector4(&self) -> RResult<Vector4<F>>
-    {
+    fn vector4(&self) -> RResult<Vector4<F>> {
         match self.as_slice() {
-            [x, y, z, w] => Ok(Vector4::new(
-                x.float()?,
-                y.float()?,
-                z.float()?,
-                w.float()?
-            )),
-            _ => Err(Error::ParseError("expected vector4"))
+            [x, y, z, w] => Ok(Vector4::new(x.float()?, y.float()?, z.float()?, w.float()?)),
+            _ => Err(Error::ParseError("expected vector4")),
         }
     }
 }
@@ -286,18 +234,15 @@ pub enum SbtValue<'a, F: Float> {
     Bool(bool),
 }
 
-impl<'a, F: Float> SbtValue<'a, F>
-{
-    pub fn int(&self) -> RResult<i64>
-    {
+impl<'a, F: Float> SbtValue<'a, F> {
+    pub fn int(&self) -> RResult<i64> {
         match self {
             SbtValue::Int(int) => Ok(*int),
             _ => Err(Error::ParseError("number expected")),
         }
     }
 
-    pub fn float(&self) -> RResult<F>
-    {
+    pub fn float(&self) -> RResult<F> {
         match self {
             SbtValue::Int(int) => Ok(F::from_f64(*int as f64)),
             SbtValue::Float(float) => Ok(*float),
@@ -305,8 +250,7 @@ impl<'a, F: Float> SbtValue<'a, F>
         }
     }
 
-    pub fn tuple(&self) -> RResult<&'a SbtTuple<F>>
-    {
+    pub fn tuple(&self) -> RResult<&'a SbtTuple<F>> {
         if let SbtValue::Tuple(ref tuple) = self {
             Ok(tuple)
         } else {
@@ -314,8 +258,7 @@ impl<'a, F: Float> SbtValue<'a, F>
         }
     }
 
-    pub fn dict(&self) -> RResult<&'a SbtDict<F>>
-    {
+    pub fn dict(&self) -> RResult<&'a SbtDict<F>> {
         if let SbtValue::Dict(ref dict) = self {
             Ok(dict)
         } else {
@@ -324,22 +267,14 @@ impl<'a, F: Float> SbtValue<'a, F>
     }
 }
 
-impl<F: Float> SbtParser2<F>
-{
-    pub fn dump(pr: Pairs<Rule>) -> RResult<()>
-    {
-        pub fn _dump(pr: Pair<Rule>, lvl: usize) -> RResult<()>
-        {
-            print!(
-                "{}{:?}",
-                "    ".repeat(lvl),
-                pr.as_rule(),
-            );
+impl<F: Float> SbtParser2<F> {
+    pub fn dump(pr: Pairs<Rule>) -> RResult<()> {
+        pub fn _dump(pr: Pair<Rule>, lvl: usize) -> RResult<()> {
+            print!("{}{:?}", "    ".repeat(lvl), pr.as_rule(),);
             match pr.as_rule() {
                 Rule::ident => print!(" '{}'", pr.as_span().as_str()),
-                Rule::int |
-                Rule::float => print!(" {}", { pr.as_span().as_str() } ),
-                _other      => print!(""),
+                Rule::int | Rule::float => print!(" {}", { pr.as_span().as_str() }),
+                _other => print!(""),
             }
             println!();
             for p in pr.into_inner() {
@@ -355,15 +290,12 @@ impl<F: Float> SbtParser2<F>
         Ok(())
     }
 
-    pub fn parse_dict(pr: Pairs<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_dict(pr: Pairs<Rule>) -> RResult<SbtValue<F>> {
         let mut hash = HashMap::new();
         let mut key = "";
         for p in pr {
             match p.as_rule() {
-                Rule::ident => {
-                    key = p.as_span().as_str()
-                }
+                Rule::ident => key = p.as_span().as_str(),
                 _value => {
                     hash.insert(key.to_string(), Self::parse_value(p)?);
                 }
@@ -372,8 +304,7 @@ impl<F: Float> SbtParser2<F>
         Ok(SbtValue::Dict(hash))
     }
 
-    pub fn parse_tuple(pr: Pairs<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_tuple(pr: Pairs<Rule>) -> RResult<SbtValue<F>> {
         let mut tuple = vec![];
 
         /* Manual iteration is significantly faster than map()+collect() */
@@ -384,82 +315,76 @@ impl<F: Float> SbtParser2<F>
         Ok(SbtValue::Tuple(tuple))
     }
 
-    pub fn parse_float(pr: Pair<Rule>) -> RResult<SbtValue<F>>
-    {
-        Ok(SbtValue::Float(F::from_f64(pr.as_span().as_str().trim().parse::<f64>()?)))
+    pub fn parse_float(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+        Ok(SbtValue::Float(F::from_f64(
+            pr.as_span().as_str().trim().parse::<f64>()?,
+        )))
     }
 
-    pub fn parse_int(pr: Pair<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_int(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         Ok(SbtValue::Int(pr.as_span().as_str().trim().parse()?))
     }
 
-    pub fn parse_boolean(pr: Pair<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_boolean(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         match pr.as_span().as_str() {
-            "true"  => Ok(SbtValue::Bool(true)),
+            "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
-            _       => panic!("internal parser error"),
+            _ => panic!("internal parser error"),
         }
     }
 
-    pub fn parse_string(pr: Pair<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_string(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         let val = pr.as_span().as_str();
-        Ok(SbtValue::Str(&val[1..val.len()-1]))
+        Ok(SbtValue::Str(&val[1..val.len() - 1]))
     }
 
-    pub fn parse_value(pr: Pair<Rule>) -> RResult<SbtValue<F>>
-    {
+    pub fn parse_value(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         let value = match pr.as_rule() {
-            Rule::group    |
-            Rule::tuple    |
-            Rule::tuple_i3 |
-            Rule::tuple_f3 |
-            Rule::tuple_f2 => Self::parse_tuple(pr.into_inner())?,
-            Rule::dict     => Self::parse_dict(pr.into_inner())?,
-            Rule::int      => Self::parse_int(pr)?,
-            Rule::float    => Self::parse_float(pr)?,
-            Rule::string   => Self::parse_string(pr)?,
-            Rule::boolean  => Self::parse_boolean(pr)?,
-            Rule::block    => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
-            other => return Err(Error::ParseUnsupported(format!("{:?}", other)))
+            Rule::group | Rule::tuple | Rule::tuple_i3 | Rule::tuple_f3 | Rule::tuple_f2 => {
+                Self::parse_tuple(pr.into_inner())?
+            }
+            Rule::dict => Self::parse_dict(pr.into_inner())?,
+            Rule::int => Self::parse_int(pr)?,
+            Rule::float => Self::parse_float(pr)?,
+            Rule::string => Self::parse_string(pr)?,
+            Rule::boolean => Self::parse_boolean(pr)?,
+            Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
+            other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
         };
         Ok(value)
     }
 
-    pub fn parse_block(mut pr: Pairs<Rule>) -> RResult<SbtBlock<F>>
-    {
+    pub fn parse_block(mut pr: Pairs<Rule>) -> RResult<SbtBlock<F>> {
         let name = pr.next().unwrap().as_str();
         let value = Self::parse_value(pr.next().unwrap())?;
         Ok(SbtBlock { name, value })
     }
 
-    pub fn ast(pr: Pairs<Rule>) -> RResult<SbtProgram<F>>
-    {
-        let mut prog = SbtProgram { version: SbtVersion::Sbt1_0, blocks: vec![] };
+    pub fn ast(pr: Pairs<Rule>) -> RResult<SbtProgram<F>> {
+        let mut prog = SbtProgram {
+            version: SbtVersion::Sbt1_0,
+            blocks: vec![],
+        };
         let mut name = "";
         for p in pr {
             match p.as_rule() {
                 Rule::VERSION => prog.version = SbtVersion::from_str(p.as_str())?,
                 Rule::block => prog.blocks.push(Self::parse_block(p.into_inner())?),
                 Rule::ident => name = p.as_span().as_str(),
-                Rule::dict  => {
+                Rule::dict => {
                     /* warn!("Workaround for malformed file"); */
                     let value = Self::parse_dict(p.into_inner())?;
                     prog.blocks.push(SbtBlock { name, value })
                 }
                 Rule::EOI => break,
-                other => return Err(Error::ParseUnsupported(format!("{:?}", other)))
+                other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
             }
         }
         Ok(prog)
     }
-
 }
 
-pub struct SbtBuilder<'a, F: Float>
-{
+pub struct SbtBuilder<'a, F: Float> {
     _p: PhantomData<F>,
     width: u32,
     height: u32,
@@ -470,21 +395,26 @@ pub struct SbtBuilder<'a, F: Float>
 
 impl<'a, F: Float> SbtBuilder<'a, F>
 where
-    F: Float + FromStr + Texel + Lerp<Ratio=F> + 'a + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio = F> + 'a + 'static,
 {
-    pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self
-    {
-        Self { _p: PhantomData{}, width, height, resdir, version: SbtVersion::Sbt1_0, material: SbtDict::new() }
+    pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
+        Self {
+            _p: PhantomData {},
+            width,
+            height,
+            resdir,
+            version: SbtVersion::Sbt1_0,
+            material: SbtDict::new(),
+        }
     }
 
-    fn parse_camera(&mut self, dict: impl SDict<F>) -> RResult<Camera<F>>
-    {
-        let position    = dict.vector("position").unwrap_or_else(|_| Vector::zero());
+    fn parse_camera(&mut self, dict: impl SDict<F>) -> RResult<Camera<F>> {
+        let position = dict.vector("position").unwrap_or_else(|_| Vector::zero());
         let mut viewdir = dict.vector("viewdir").ok();
-        let updir       = dict.vector("updir").unwrap_or_else(|_| Vector::unit_y());
-        let look_at     = dict.vector("look_at");
+        let updir = dict.vector("updir").unwrap_or_else(|_| Vector::unit_y());
+        let look_at = dict.vector("look_at");
         let aspectratio = dict.float("aspectratio").ok();
-        let fov         = dict.float("fov").unwrap_or_else(|_| F::from_f32(55.0));
+        let fov = dict.float("fov").unwrap_or_else(|_| F::from_f32(55.0));
 
         if viewdir.is_none() && look_at.is_ok() {
             viewdir = Some(look_at? - position);
@@ -501,34 +431,36 @@ where
         info!("  updir: {:?}", updir);
         info!("  fov: {:?}", fov);
 
-        Ok(
-            Camera::build(
-                position,
-                viewdir.unwrap(),
-                updir,
-                fov,
-                self.width,
-                self.height,
-                aspectratio,
-            )
-        )
+        Ok(Camera::build(
+            position,
+            viewdir.unwrap(),
+            updir,
+            fov,
+            self.width,
+            self.height,
+            aspectratio,
+        ))
     }
 
-    fn parse_point_light(&mut self, dict: impl SDict<F>) -> RResult<PointLight<F>>
-    {
+    fn parse_point_light(&mut self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
         let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
         let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
 
-        let res = PointLight { a, b, c, pos, color };
+        let res = PointLight {
+            a,
+            b,
+            c,
+            pos,
+            color,
+        };
         info!("{:7.3?}", res);
         Ok(res)
     }
 
-    fn parse_directional_light(&mut self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>>
-    {
+    fn parse_directional_light(&mut self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
@@ -537,26 +469,23 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>>
-    {
-        let float = |name| {
-            dict.float(name).or_else(|_| (&self.material).float(name))
-        };
-        let color = |name| {
-            dict.color(name).or_else(|_| (&self.material).color(name))
-        };
+    fn parse_material(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
+        let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
+        let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
         let shinemap = |name| {
-            dict.shinemap(name, self.resdir).or_else(|_| (&self.material).shinemap(name, self.resdir))
+            dict.shinemap(name, self.resdir)
+                .or_else(|_| (&self.material).shinemap(name, self.resdir))
         };
 
         let colormap = |name| {
-            dict.sampler3(name, self.resdir).or_else(|_| (&self.material).sampler3(name, self.resdir))
+            dict.sampler3(name, self.resdir)
+                .or_else(|_| (&self.material).sampler3(name, self.resdir))
         };
 
-        let idx  = float("index").unwrap_or(F::ZERO);
+        let idx = float("index").unwrap_or(F::ZERO);
         let ambi = color("ambient").unwrap_or_else(|_| Color::black());
-        let shi  = shinemap("shininess").unwrap_or_else(|_| F::ZERO.dynsampler());
+        let shi = shinemap("shininess").unwrap_or_else(|_| F::ZERO.dynsampler());
         let emis = colormap("emissive").unwrap_or_else(|_| Color::black().dynsampler());
         let diff = colormap("diffuse").unwrap_or_else(|_| Color::black().dynsampler());
         let spec = colormap("specular").unwrap_or_else(|_| Color::black().dynsampler());
@@ -569,17 +498,21 @@ where
 
         match bump {
             None => Ok(smart.dynamic()),
-            Some(b) => Ok(Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic())
+            Some(b) => Ok(
+                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
+            ),
         }
     }
 
-    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>>
-    {
+    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
         self.parse_material(dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
-    fn parse_polymesh(&mut self, xfrm: Matrix4<F>, dict: impl SDict<F>) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>>
-    {
+    fn parse_polymesh(
+        &mut self,
+        xfrm: Matrix4<F>,
+        dict: impl SDict<F>,
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
         let mut tris = vec![];
         let mut points = vec![];
         let mut faces = vec![];
@@ -640,7 +573,8 @@ where
                     materials[face[0]].clone(),
                     materials[face[1]].clone(),
                     materials[face[2]].clone(),
-                ).dynamic()
+                )
+                .dynamic()
             } else {
                 mat.clone()
             };
@@ -649,96 +583,106 @@ where
             /* let ac = points[face[0]] - points[face[2]]; */
             /* let n = ab.cross(ac); */
 
-            tris.push(
-                Triangle::new(
-                    points[face[0]],
-                    points[face[1]],
-                    points[face[2]],
-                    normals[face[0]].normalize(),
-                    normals[face[1]].normalize(),
-                    normals[face[2]].normalize(),
-                    /* n,n,n, */
-                    texture_uvs[face[0]],
-                    texture_uvs[face[1]],
-                    texture_uvs[face[2]],
-                    m
-                )
-            );
+            tris.push(Triangle::new(
+                points[face[0]],
+                points[face[1]],
+                points[face[2]],
+                normals[face[0]].normalize(),
+                normals[face[1]].normalize(),
+                normals[face[2]].normalize(),
+                /* n,n,n, */
+                texture_uvs[face[0]],
+                texture_uvs[face[1]],
+                texture_uvs[face[2]],
+                m,
+            ));
         }
 
         Ok(vec![Box::new(TriangleMesh::new(tris))])
     }
 
-    fn build_geometry<'b>(&mut self, blk: &'b SbtValue<F>, xfrm: Matrix4<F>) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>>
-    {
+    fn build_geometry<'b>(
+        &mut self,
+        blk: &'b SbtValue<F>,
+        xfrm: Matrix4<F>,
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
         use SbtValue as S;
         /* info!("block: {:#?}", blk); */
         match blk {
-            SbtValue::Block(box SbtBlock { name, value: S::Tuple(tuple) }) => {
-                match (*name, tuple.as_slice()) {
-
-                    ("translate", [x, y, z, blk]) => {
-                        let (x, y, z) = (x.float()?, y.float()?, z.float()?);
-                        info!("translate [{:?}, {:?}, {:?}]", x, y, z);
-                        let vec = Vector::new(x, y, z);
-                        let x2 = Matrix4::from_translation(vec);
-                        self.build_geometry(blk, xfrm * x2)
-                    },
-
-                    ("scale", [s, other]) => {
-                        let s = s.float()?;
-                        info!("scale [{}]", s);
-                        let x2 = Matrix4::from_scale(s);
-                        self.build_geometry(other, xfrm * x2)
-                    },
-
-                    ("scale", [x, y, z, other]) => {
-                        let (x, y, z) = (x.float()?, y.float()?, z.float()?);
-                        info!("scale [{}, {}, {}]", x, y, z);
-                        let x2 = Matrix4::from_nonuniform_scale(x, y, z);
-                        self.build_geometry(other, xfrm * x2)
-                    },
-
-                    ("rotate", [x, y, z, w, blk]) => {
-                        let (x, y, z, w) = (x.float()?, y.float()?, z.float()?, w.float()?);
-                        info!("rotate [{}, {}, {}, {}]", x, y, z, w);
-                        let x2 = Matrix4::from_axis_angle(Vector::new(x, y, z).normalize(), Rad(w));
-                        self.build_geometry(blk, xfrm * x2)
-                    },
-
-                    ("transform", [S::Tuple(vx), S::Tuple(vy), S::Tuple(vz), S::Tuple(vw), blk]) => {
-                        let x = vx.vector4()?;
-                        let y = vy.vector4()?;
-                        let z = vz.vector4()?;
-                        let w = vw.vector4()?;
-                        info!("transform [{:5.2?}, {:5.2?}, {:5.2?}, {:5.2?}]", x, y, z, w);
-                        let x2 = Matrix4::from_cols(x, y, z, w);
-                        let x2 = match self.version {
-                            SbtVersion::Sbt0_9 => x2.transpose(),
-                            SbtVersion::Sbt1_0 => x2,
-                        };
-                        self.build_geometry(blk, xfrm * x2)
-                    }
-
-                    other => {
-                        info!("unhandled: {:#?}", other);
-                        Err(Error::ParseUnsupported(name.to_string()))
-                    },
+            SbtValue::Block(box SbtBlock {
+                name,
+                value: S::Tuple(tuple),
+            }) => match (*name, tuple.as_slice()) {
+                ("translate", [x, y, z, blk]) => {
+                    let (x, y, z) = (x.float()?, y.float()?, z.float()?);
+                    info!("translate [{:?}, {:?}, {:?}]", x, y, z);
+                    let vec = Vector::new(x, y, z);
+                    let x2 = Matrix4::from_translation(vec);
+                    self.build_geometry(blk, xfrm * x2)
                 }
-            }
 
-            SbtValue::Block(box SbtBlock { name, value: S::Dict(dict) }) => {
+                ("scale", [s, other]) => {
+                    let s = s.float()?;
+                    info!("scale [{}]", s);
+                    let x2 = Matrix4::from_scale(s);
+                    self.build_geometry(other, xfrm * x2)
+                }
+
+                ("scale", [x, y, z, other]) => {
+                    let (x, y, z) = (x.float()?, y.float()?, z.float()?);
+                    info!("scale [{}, {}, {}]", x, y, z);
+                    let x2 = Matrix4::from_nonuniform_scale(x, y, z);
+                    self.build_geometry(other, xfrm * x2)
+                }
+
+                ("rotate", [x, y, z, w, blk]) => {
+                    let (x, y, z, w) = (x.float()?, y.float()?, z.float()?, w.float()?);
+                    info!("rotate [{}, {}, {}, {}]", x, y, z, w);
+                    let x2 = Matrix4::from_axis_angle(Vector::new(x, y, z).normalize(), Rad(w));
+                    self.build_geometry(blk, xfrm * x2)
+                }
+
+                ("transform", [S::Tuple(vx), S::Tuple(vy), S::Tuple(vz), S::Tuple(vw), blk]) => {
+                    let x = vx.vector4()?;
+                    let y = vy.vector4()?;
+                    let z = vz.vector4()?;
+                    let w = vw.vector4()?;
+                    info!("transform [{:5.2?}, {:5.2?}, {:5.2?}, {:5.2?}]", x, y, z, w);
+                    let x2 = Matrix4::from_cols(x, y, z, w);
+                    let x2 = match self.version {
+                        SbtVersion::Sbt0_9 => x2.transpose(),
+                        SbtVersion::Sbt1_0 => x2,
+                    };
+                    self.build_geometry(blk, xfrm * x2)
+                }
+
+                other => {
+                    info!("unhandled: {:#?}", other);
+                    Err(Error::ParseUnsupported(name.to_string()))
+                }
+            },
+
+            SbtValue::Block(box SbtBlock {
+                name,
+                value: S::Dict(dict),
+            }) => {
                 match (*name, dict) {
                     ("sphere", dict) => {
                         /* info!("Sphere(xfrm={:7.4?})", xfrm); */
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
-                        Ok(vec![Box::new(Sphere::new(xfrm, self.parse_material_obj(dict)?))])
-                    },
+                        Ok(vec![Box::new(Sphere::new(
+                            xfrm,
+                            self.parse_material_obj(dict)?,
+                        ))])
+                    }
 
                     ("box", dict) => {
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![Box::new(Cube::new(xfrm, self.parse_material_obj(dict)?))])
-                    },
+                        Ok(vec![Box::new(Cube::new(
+                            xfrm,
+                            self.parse_material_obj(dict)?,
+                        ))])
+                    }
 
                     ("cone", dict) => {
                         /* info!("Cone(xfrm={:7.4?})", xfrm); */
@@ -748,28 +692,33 @@ where
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
-                            self.parse_material_obj(dict)?
+                            self.parse_material_obj(dict)?,
                         ))])
-                    },
+                    }
 
                     ("square", dict) => {
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![Box::new(Square::new(xfrm, self.parse_material_obj(dict)?))])
-                    },
+                        Ok(vec![Box::new(Square::new(
+                            xfrm,
+                            self.parse_material_obj(dict)?,
+                        ))])
+                    }
 
                     ("cylinder", dict) => {
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
-                        Ok(vec![Box::new(Cylinder::new(xfrm, dict.boolean("capped").unwrap_or(true), self.parse_material_obj(dict)?))])
-                    },
-
-                    ("polymesh", dict) => {
-                        self.parse_polymesh(xfrm, dict)
+                        Ok(vec![Box::new(Cylinder::new(
+                            xfrm,
+                            dict.boolean("capped").unwrap_or(true),
+                            self.parse_material_obj(dict)?,
+                        ))])
                     }
+
+                    ("polymesh", dict) => self.parse_polymesh(xfrm, dict),
 
                     _ => {
                         error!("unparsed block: {:?}", blk);
                         Err(Error::ParseUnsupported("foo1".to_string()))
-                    },
+                    }
                 }
             }
 
@@ -784,12 +733,11 @@ where
             _ => {
                 error!("unparsed block: {:?}", blk);
                 Err(Error::ParseUnsupported("foo2".to_string()))
-            },
+            }
         }
     }
 
-    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<'a, F>>
-    {
+    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<'a, F>> {
         use SbtValue as S;
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F> + 'a>> = vec![];
@@ -800,12 +748,18 @@ where
 
         for blk in prog.blocks {
             match (blk.name, blk.value) {
-                ("camera",            S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
-                ("directional_light", S::Dict(ref dict)) => lights.push(Box::new(self.parse_directional_light(dict)?)),
-                ("point_light",       S::Dict(ref dict)) => lights.push(Box::new(self.parse_point_light(dict)?)),
-                ("ambient_light",     S::Dict(ref dict)) => ambient = dict.color("color").or_else(|_| dict.color("colour"))?,
-                ("spot_light",        S::Dict(_)       ) => warn!("spot_light not supported"),
-                ("material",          S::Dict(dict)    ) => self.material.extend(dict),
+                ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
+                ("directional_light", S::Dict(ref dict)) => {
+                    lights.push(Box::new(self.parse_directional_light(dict)?))
+                }
+                ("point_light", S::Dict(ref dict)) => {
+                    lights.push(Box::new(self.parse_point_light(dict)?))
+                }
+                ("ambient_light", S::Dict(ref dict)) => {
+                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?
+                }
+                ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
+                ("material", S::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);

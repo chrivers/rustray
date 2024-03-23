@@ -1,10 +1,10 @@
+use num::{clamp, pow};
+use num_traits::{float::FloatConst, NumAssignOps};
 use std::fmt::Debug;
 use std::fmt::Display;
-use num_traits::{float::FloatConst,NumAssignOps};
-use num::{clamp, pow};
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Mul, Sub};
 
-use cgmath::{RelativeEq, AbsDiffEq, UlpsEq};
+use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 
 pub trait Float
 where
@@ -14,38 +14,39 @@ where
     Self: Sync,
     Self: AbsDiffEq<Epsilon = Self>,
     Self: FloatConst,
-    Self: Lerp<Ratio=Self>,
+    Self: Lerp<Ratio = Self>,
     Self: NumAssignOps,
     Self: RelativeEq,
     Self: UlpsEq,
     Self: num::Float + num::Signed,
-    Self: pow::Pow<Self, Output=Self>,
+    Self: pow::Pow<Self, Output = Self>,
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
-    const BIAS2:Self; // Used for shadow rays
-    const BIAS3:Self; // Used for reflected rays
-    const BIAS4:Self; // Used for refracted rays
+    const BIAS2: Self; // Used for shadow rays
+    const BIAS3: Self; // Used for reflected rays
+    const BIAS4: Self; // Used for refracted rays
     const ZERO: Self;
     const HALF: Self;
-    const ONE:  Self;
-    const TWO:  Self;
+    const ONE: Self;
+    const TWO: Self;
     const FOUR: Self;
     fn from_i32(value: i32) -> Self;
     fn from_u32(value: u32) -> Self;
     fn from_usize(value: usize) -> Self;
     fn from_f32(value: f32) -> Self;
     fn from_f64(value: f64) -> Self;
-    fn non_zero(self) -> bool { self != Self::zero() }
+    fn non_zero(self) -> bool {
+        self != Self::zero()
+    }
 
-    fn clamp(self, low: Self, high: Self) -> Self { clamp(self, low, high) }
+    fn clamp(self, low: Self, high: Self) -> Self {
+        clamp(self, low, high)
+    }
 }
 
 pub trait Lerp
 where
-    Self: Add<Output=Self>
-    + Sub<Output=Self>
-    + Mul<Self::Ratio, Output=Self>
-    + Sized + Copy
+    Self: Add<Output = Self> + Sub<Output = Self> + Mul<Self::Ratio, Output = Self> + Sized + Copy,
 {
     type Ratio: Float;
 
@@ -62,58 +63,76 @@ impl Lerp for f64 {
     type Ratio = Self;
 }
 
-impl Float for f32
-{
+impl Float for f32 {
     const BIAS: Self = 1e-7;
-    const BIAS2:Self = 1e-6;
-    const BIAS3:Self = 1e-5;
-    const BIAS4:Self = 1e-4;
+    const BIAS2: Self = 1e-6;
+    const BIAS3: Self = 1e-5;
+    const BIAS4: Self = 1e-4;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
-    const ONE:  Self = 1.0;
-    const TWO:  Self = 2.0;
+    const ONE: Self = 1.0;
+    const TWO: Self = 2.0;
     const FOUR: Self = 4.0;
 
     #[inline(always)]
-    fn from_i32(value: i32) -> Self { value as Self }
+    fn from_i32(value: i32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_u32(value: u32) -> Self { value as Self }
+    fn from_u32(value: u32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_usize(value: usize) -> Self { value as Self }
+    fn from_usize(value: usize) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_f32(value: f32) -> Self { value as Self }
+    fn from_f32(value: f32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_f64(value: f64) -> Self { value as Self }
+    fn from_f64(value: f64) -> Self {
+        value as Self
+    }
 }
 
-impl Float for f64
-{
+impl Float for f64 {
     const BIAS: Self = 1e-10;
-    const BIAS2:Self = 1e-9;
-    const BIAS3:Self = 1e-7;
-    const BIAS4:Self = 1e-5;
+    const BIAS2: Self = 1e-9;
+    const BIAS3: Self = 1e-7;
+    const BIAS4: Self = 1e-5;
     const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
-    const ONE:  Self = 1.0;
-    const TWO:  Self = 2.0;
+    const ONE: Self = 1.0;
+    const TWO: Self = 2.0;
     const FOUR: Self = 4.0;
 
     #[inline(always)]
-    fn from_i32(value: i32) -> Self { value as Self }
+    fn from_i32(value: i32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_u32(value: u32) -> Self { value as Self }
+    fn from_u32(value: u32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_usize(value: usize) -> Self { value as Self }
+    fn from_usize(value: usize) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_f32(value: f32) -> Self { value as Self }
+    fn from_f32(value: f32) -> Self {
+        value as Self
+    }
 
     #[inline(always)]
-    fn from_f64(value: f64) -> Self { value as Self }
+    fn from_f64(value: f64) -> Self {
+        value as Self
+    }
 }

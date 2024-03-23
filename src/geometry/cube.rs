@@ -1,8 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cube<F: Float, M: Material<F=F>>
-{
+pub struct Cube<F: Float, M: Material<F = F>> {
     xfrm: Transform<F>,
     mat: M,
     aabb: Aabb,
@@ -10,11 +9,8 @@ pub struct Cube<F: Float, M: Material<F=F>>
 
 aabb_impl_fm!(Cube<F, M>);
 
-impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
-{
-
-    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>
-    {
+impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
+    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
         let p = r.pos;
@@ -27,13 +23,13 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
             let mod0 = it % 3;
 
             if d[mod0] == F::ZERO {
-                continue
+                continue;
             }
 
             let t = (F::from_usize(it / 3) - F::HALF - p[mod0]) / d[mod0];
 
             if t < F::BIAS2 || t > best_t {
-                continue
+                continue;
             }
 
             let mod1 = (it + 1) % 3;
@@ -50,7 +46,7 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
 
         let best = best?;
 
-        let normals = [Vector::unit_x(),  Vector::unit_y(),  Vector::unit_z()];
+        let normals = [Vector::unit_x(), Vector::unit_y(), Vector::unit_z()];
 
         let normal = if best < 3 {
             -normals[best % 3]
@@ -69,16 +65,13 @@ impl<F: Float, M: Material<F=F>> Geometry<F> for Cube<F, M>
         Some(
             ray.hit_at(best_t, self, &self.mat)
                 .with_normal(self.xfrm.nml(normal))
-                .with_uv(uv)
+                .with_uv(uv),
         )
     }
-
 }
 
-impl<F: Float, M: Material<F=F>> Cube<F, M>
-{
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Cube<F, M>
-    {
+impl<F: Float, M: Material<F = F>> Cube<F, M> {
+    pub fn new(xfrm: Matrix4<F>, mat: M) -> Cube<F, M> {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);
         Cube { xfrm, mat, aabb }
