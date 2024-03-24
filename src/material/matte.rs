@@ -35,16 +35,16 @@ where
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let mut rng = rand::thread_rng();
-        let mut col = Color::<F>::black();
+        let mut col = Color::black();
         let mut mxl = *maxel;
 
         let uv = maxel.uv();
         let normal = mxl.nml();
         for _n in 0..self.rays {
             let src = self.src.sample(uv);
-            let rx = (rng.gen::<F>() - F::HALF) * src;
-            let ry = (rng.gen::<F>() - F::HALF) * src;
-            let rz = (rng.gen::<F>() / F::TWO) * (F::one() - src) + src;
+            let rx = (rng.gen() - F::HALF) * src;
+            let ry = (rng.gen() - F::HALF) * src;
+            let rz = (rng.gen() / F::TWO) * (F::one() - src) + src;
             let (normalu, normalv) = normal.surface_tangents();
             mxl = mxl.with_normal((normal * rz + normalu * rx + normalv * ry).normalize());
 
