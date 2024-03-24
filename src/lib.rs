@@ -21,5 +21,7 @@ use crate::scene::Light;
 use crate::types::vector::Vectorx;
 use crate::types::{Color, Float, Point, Vector};
 
+#[cfg(feature = "fixedpoint1")]
 pub mod fixedpoint;
+#[cfg(feature = "fixedpoint2")]
 pub mod fixedpoint2;
