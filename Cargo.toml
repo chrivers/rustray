@@ -18,7 +18,7 @@ fixedpoint2 = ["fixedpoint"]
 rayon = ["dep:rayon", "indicatif/rayon"]
 
 [dependencies]
-image = { version = "0.25", default-features = false }
+image = { version = "0.25", default-features = false, features = [ "png" ] }
 num = "0.4.1"
 num-traits = "0.2.18"
 rand = "0.8.5"
