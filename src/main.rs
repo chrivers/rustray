@@ -55,7 +55,12 @@ fn runmain() -> RResult<()> {
     logger.filter(None, LevelFilter::Debug);
     logger.init();
 
-    type F = f32;
+    type F = rustray::fixedpoint2::FXP<24>;
+    /* type F = rustray::fixedpoint::FP<25>; */
+    /* type F = f32; */
+
+    use num_traits::float::Float;
+    info!("F {}", F::max_value());
 
     let name = env::args().last().unwrap();
     let path = Path::new(&name);
