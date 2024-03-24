@@ -31,11 +31,11 @@ pub type DynSampler<'a, F, T> = Arc<Box<dyn Sampler<F, T> + 'a>>;
 
 impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
     fn sample(&self, uv: Point<F>) -> T {
-        (*self.as_ref()).sample(uv)
+        self.as_ref().sample(uv)
     }
 
     fn dimensions(&self) -> (u32, u32) {
-        (*self.as_ref()).dimensions()
+        self.as_ref().dimensions()
     }
 }
 
