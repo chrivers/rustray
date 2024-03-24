@@ -385,7 +385,6 @@ impl<F: Float> SbtParser2<F> {
 }
 
 pub struct SbtBuilder<'a, F: Float> {
-    _p: PhantomData<F>,
     width: u32,
     height: u32,
     resdir: &'a Path,
@@ -399,7 +398,6 @@ where
 {
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
-            _p: PhantomData {},
             width,
             height,
             resdir,
