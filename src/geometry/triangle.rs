@@ -46,13 +46,16 @@ impl<F: Float, M: Material<F = F>> fmt::Display for Triangle<F, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Triangle {{ a: {a:?}, b: {b:?}, c: {c:?}, na: {na:?}, nb: {nb:?}, nc: {nc:?} }}",
+            "Triangle {{ pos: [{a:?} {b:?} {c:?}], nml: [{na:?} {nb:?} {nc:?}], tex: [{ta:?} {tb:?} {tc:?}] }}",
             a = self.a,
             b = self.b,
             c = self.c,
             na = self.na,
             nb = self.nb,
             nc = self.nc,
+            ta = self.ta,
+            tb = self.tb,
+            tc = self.tc,
         )
     }
 }
