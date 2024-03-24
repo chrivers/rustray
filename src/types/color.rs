@@ -95,14 +95,10 @@ impl<F: Float> Color<F> {
         Self::gray(F::ONE)
     }
 
-    fn clamp(n: F) -> F {
-        n.max(F::ZERO).min(F::ONE)
-    }
-
     pub fn clamped(self) -> Color<F> {
-        let r = Color::clamp(self.r);
-        let g = Color::clamp(self.g);
-        let b = Color::clamp(self.b);
+        let r = self.r.clamp(F::ZERO, F::ONE);
+        let g = self.g.clamp(F::ZERO, F::ONE);
+        let b = self.b.clamp(F::ZERO, F::ONE);
         Color { r, g, b }
     }
 
