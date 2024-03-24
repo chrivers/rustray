@@ -46,7 +46,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<
 
             let lambert = maxel.nml().dot(light_dir);
 
-            if lambert > F::ZERO {
+            if lambert.is_positive() {
                 let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
                 res += light_color * lambert;
 

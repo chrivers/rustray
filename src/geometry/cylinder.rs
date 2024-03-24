@@ -39,7 +39,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
                 /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
                 /* Essentially, the cone in this case is a double-sided surface */
                 /* and has _2_ normals */
-                if !capped && r.dir.dot(normal) > F::ZERO {
+                if !capped && r.dir.dot(normal).is_positive() {
                     normal = -normal
                 }
                 Some((t, normal))
@@ -59,7 +59,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
             let t1;
             let t2;
 
-            if dz > F::ZERO {
+            if dz.is_positive() {
                 t1 = (-pz) / dz;
                 t2 = (F::ONE - pz) / dz;
             } else {
@@ -75,7 +75,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
 
             let p = r.extend(t);
             if (p.x * p.x + p.y * p.y) <= F::ONE {
-                let n = if dz > F::ZERO {
+                let n = if dz.is_positive() {
                     /* Intersection with cap at z = 0. */
                     -Vector::unit_z()
                 } else {

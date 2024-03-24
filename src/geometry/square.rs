@@ -35,7 +35,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
             return None;
         }
 
-        let normal = if r.dir.z > F::ZERO {
+        let normal = if r.dir.z.is_positive() {
             -Vector::unit_z()
         } else {
             Vector::unit_z()

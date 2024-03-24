@@ -237,7 +237,7 @@ where
     fn fresnel(self, normal: &Self, ior: F) -> F {
         let mut cos_i = self.dot(*normal).clamp(-F::ONE, F::ONE);
         let (eta_i, eta_t);
-        if cos_i > F::ZERO {
+        if cos_i.is_positive() {
             eta_i = ior;
             eta_t = F::ONE;
         } else {

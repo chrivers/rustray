@@ -67,7 +67,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
             let p = r.extend(tx);
             if p.x * p.x + p.y * p.y <= rad * rad {
                 *root = tx;
-                if dz > F::ZERO {
+                if dz.is_positive() {
                     *normal = -Vector::unit_z();
                 } else {
                     *normal = Vector::unit_z();

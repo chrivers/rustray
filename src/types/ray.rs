@@ -366,7 +366,7 @@ pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
         return None;
     }
 
-    let q = if b > F::ZERO {
+    let q = if b.is_positive() {
         -F::HALF * (b + discr.sqrt())
     } else {
         -F::HALF * (b - discr.sqrt())
