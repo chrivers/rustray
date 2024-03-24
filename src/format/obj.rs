@@ -10,22 +10,7 @@ use crate::material::{DynMaterial, Material, Smart};
 use crate::sampler::{DynSampler, Sampler, SamplerExt, Texel};
 use crate::types::result::RResult;
 use crate::types::{Color, Float, Point, Vector};
-use crate::{point, vec3};
-
-fn a2point<F: Float>(p: &[f32; 2]) -> Point<F> {
-    point!(F::from_f32(p[0]), F::from_f32(p[1]))
-}
-
-fn a2vec<F: Float>(p: &[f32; 3]) -> Vector<F> {
-    vec3!(F::from_f32(p[0]), F::from_f32(p[1]), F::from_f32(p[2]))
-}
-
-fn sampler<'a, F: Float + 'a>(val: Option<[f32; 3]>) -> DynSampler<'a, F, Color<F>> {
-    match val {
-        None => Color::white().dynsampler(),
-        Some([r, g, b]) => Color::new(F::from_f32(r), F::from_f32(g), F::from_f32(b)).dynsampler(),
-    }
-}
+use crate::types::vector::Vectorx;
 
 fn obj_sampler<'a, F: Float + 'a>(
     resdir: &Path,
@@ -42,7 +27,7 @@ fn obj_sampler<'a, F: Float + 'a>(
                     Color::white().dynsampler()
                 })
         }
-        None => sampler(*col),
+        None => col.map(|c| Color::from(c)).unwrap_or(Color::white()).dynsampler(),
     }
 }
 
@@ -97,9 +82,9 @@ pub fn load<'a, F: Float + Texel + 'a>(
                     continue;
                 }
                 for n in 1..(poly.0.len() - 1) {
-                    let a = (a2vec(&obj.data.position[poly.0[0].0]) - corner) * scale + pos;
-                    let b = (a2vec(&obj.data.position[poly.0[n].0]) - corner) * scale + pos;
-                    let c = (a2vec(&obj.data.position[poly.0[n + 1].0]) - corner) * scale + pos;
+                    let a = (Vector::from_f32s(obj.data.position[poly.0[0].0]) - corner) * scale + pos;
+                    let b = (Vector::from_f32s(obj.data.position[poly.0[n].0]) - corner) * scale + pos;
+                    let c = (Vector::from_f32s(obj.data.position[poly.0[n + 1].0]) - corner) * scale + pos;
 
                     /* FIXME: .unwrap() is a terrible when loading data from a file */
                     let (na, nb, nc) = if obj.data.normal.is_empty() {
@@ -107,9 +92,9 @@ pub fn load<'a, F: Float + Texel + 'a>(
                         (n, n, n)
                     } else {
                         (
-                            a2vec(&obj.data.normal[poly.0[0].2.unwrap()]).normalize(),
-                            a2vec(&obj.data.normal[poly.0[n].2.unwrap()]).normalize(),
-                            a2vec(&obj.data.normal[poly.0[n + 1].2.unwrap()]).normalize(),
+                            Vector::from_f32s(obj.data.normal[poly.0[0].2.unwrap()]).normalize(),
+                            Vector::from_f32s(obj.data.normal[poly.0[n].2.unwrap()]).normalize(),
+                            Vector::from_f32s(obj.data.normal[poly.0[n + 1].2.unwrap()]).normalize(),
                         )
                     };
 
@@ -117,9 +102,9 @@ pub fn load<'a, F: Float + Texel + 'a>(
                         (Point::zero(), Point::zero(), Point::zero())
                     } else {
                         (
-                            a2point(&obj.data.texture[poly.0[0].1.unwrap()]),
-                            a2point(&obj.data.texture[poly.0[n].1.unwrap()]),
-                            a2point(&obj.data.texture[poly.0[n + 1].1.unwrap()]),
+                            Point::from(obj.data.texture[poly.0[0].1.unwrap()]),
+                            Point::from(obj.data.texture[poly.0[n].1.unwrap()]),
+                            Point::from(obj.data.texture[poly.0[n + 1].1.unwrap()]),
                         )
                     };
 
