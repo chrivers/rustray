@@ -10,15 +10,21 @@ codegen-units = 1
 lto = "fat"
 opt-level = 3
 
+[features]
+default = ["rayon"]
+fixedpoint1 = []
+fixedpoint2 = []
+rayon = ["dep:rayon", "indicatif/rayon"]
+
 [dependencies]
 image = "0.25"
 num = "0.4.1"
 num-traits = "0.2.18"
 rand = "0.8.5"
-indicatif = { version = "0.17.8", features = ["rayon"] }
+indicatif = { version = "0.17.8" }
 colog = "1.2.0"
 log = "0.4.21"
-rayon = "1.9"
+rayon = { version = "1.9", optional = true }
 obj = { version = "0.10", features = ["genmesh"] }
 derive_more = "0.99"
 cgmath = "0.18"
