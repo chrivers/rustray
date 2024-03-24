@@ -38,3 +38,7 @@ perlin2d = "0.2"
 rtbvh = "0.6"
 ply-rs = "0.1"
 glam = "0.27"
+assert_float_eq = "1.1.3"
+#fixed = { version = "1.26.0", features = ["num-traits"] }
+fixed = { version = "2.0.0-alpha", features = ["num-traits"] }
+az = "*"

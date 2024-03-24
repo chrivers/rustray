@@ -1,4 +1,6 @@
 #![feature(box_patterns)]
+#![feature(const_trait_impl)]
+#![feature(effects)]
 
 #[macro_use]
 extern crate log;
@@ -18,3 +20,6 @@ use crate::sampler::{DynSampler, Sampler, SamplerExt};
 use crate::scene::Light;
 use crate::types::vector::Vectorx;
 use crate::types::{Color, Float, Point, Vector};
+
+pub mod fixedpoint;
+pub mod fixedpoint2;
