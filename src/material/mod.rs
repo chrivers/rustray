@@ -20,7 +20,7 @@ pub trait Material: Debug + Send + Sync {
         _maxel: &mut Maxel<Self::F>,
         _light: &dyn Light<Self::F>,
     ) -> Option<Color<Self::F>> {
-        Some(Color::<Self::F>::black())
+        Some(Color::black())
     }
 
     fn dynamic<'a>(self) -> DynMaterial<'a, Self::F>
