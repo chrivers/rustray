@@ -23,14 +23,14 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
             let c = p.x * p.x + p.y * p.y - F::ONE;
 
             let (t1, t2) = crate::types::ray::quadratic2(a, b, c)?;
-            if t1 < F::ZERO || t2 < F::ZERO {
+            if t1.is_negative() || t2.is_negative() {
                 return None;
             }
 
             fn isect_side<F: Float>(r: &Ray<F>, t: F, capped: bool) -> Option<(F, Vector<F>)> {
                 let p = r.extend(t);
 
-                if p.z < F::ZERO || p.z > F::ONE {
+                if !p.z.is_unit() {
                     return None;
                 }
 
@@ -52,7 +52,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
             let pz = r.pos.z;
             let dz = r.dir.z;
 
-            if dz == F::ZERO {
+            if dz.is_zero() {
                 return None;
             }
 

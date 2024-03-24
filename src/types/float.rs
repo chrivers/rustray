@@ -42,6 +42,10 @@ where
     fn clamp(self, low: Self, high: Self) -> Self {
         clamp(self, low, high)
     }
+
+    fn is_unit(self) -> bool {
+        (self >= Self::ZERO) && (self <= Self::ONE)
+    }
 }
 
 pub trait Lerp

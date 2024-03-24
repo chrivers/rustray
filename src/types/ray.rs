@@ -110,13 +110,13 @@ impl<'a, F: Float> Ray<F> {
 
         let s = self.pos - *a;
         let u = f * s.dot(h);
-        if u < F::ZERO || u > F::ONE {
+        if !u.is_unit() {
             return None;
         }
 
         let q = s.cross(edge1);
         let v = f * self.dir.dot(q);
-        if v < F::ZERO || u + v > F::ONE {
+        if v.is_negative() || u + v > F::ONE {
             return None;
         }
 
@@ -306,7 +306,7 @@ impl<'a, F: Float> Ray<F> {
         let w1 = e1.cross(*e2);
         let w = a.dot(w1);
 
-        if w < F::ZERO {
+        if w.is_negative() {
             return None;
         }
 
@@ -352,7 +352,7 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
 
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
     let (t0, t1) = quadratic2(a, b, c)?;
-    if t0 < F::ZERO || t1 < F::ZERO {
+    if t0.is_negative() || t1.is_negative() {
         None
     } else {
         Some(t0.min(t1))
@@ -362,7 +362,7 @@ pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
 pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
     let discr = b * b - F::FOUR * a * c;
 
-    if discr < F::ZERO {
+    if discr.is_negative() {
         return None;
     }
 

@@ -29,13 +29,13 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
         }
 
         let mut gamma;
-        gamma = if beta < F::ZERO {
+        gamma = if beta.is_negative() {
             top_r / beta
         } else {
             bot_r / beta
         };
 
-        if gamma < F::ZERO {
+        if gamma.is_negative() {
             gamma -= self.height;
         }
 

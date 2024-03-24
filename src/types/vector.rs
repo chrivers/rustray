@@ -207,7 +207,7 @@ where
         let eta_i;
         let eta_t;
         let n;
-        if cosi < F::ZERO {
+        if cosi.is_negative() {
             eta_i = F::ONE;
             eta_t = ior;
             cosi = -cosi;
@@ -222,7 +222,7 @@ where
 
         let k = F::ONE - eta * eta * (F::ONE - cosi * cosi);
 
-        if k < F::ZERO {
+        if k.is_negative() {
             Self::zero()
         } else {
             self * eta + n * (eta * cosi - k.sqrt())
