@@ -1,3 +1,5 @@
+use core::fmt::Debug;
+
 use super::vector::Vectorx;
 use super::{Float, Point, Vector};
 
@@ -15,6 +17,21 @@ pub struct Maxel<'a, F: Float> {
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
+}
+
+impl<'a, F: Float> Debug for Maxel<'a, F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Maxel")
+            .field("pos", &self.pos)
+            .field("dir", &self.dir)
+            .field("obj", &"<dyn Geometry>")
+            .field("mat", &self.mat)
+            .field("lvl", &self.lvl)
+            .field("nml", &self.nml)
+            .field("uv", &self.uv)
+            .field("st", &self.st)
+            .finish()
+    }
 }
 
 /* Maxel */
