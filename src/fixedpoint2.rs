@@ -1,3 +1,4 @@
+use az::Cast;
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{AddAssign, Neg, SubAssign};
 use fixed::FixedI64;
@@ -5,10 +6,9 @@ use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
 use num_traits::{FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
-    ops::{Add, Sub, Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
+    ops::{Add, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub},
     str::FromStr,
 };
-use az::Cast;
 
 use num_traits::Bounded;
 
@@ -134,7 +134,7 @@ impl<const P: i32> Div for FXP<P> {
         let a: f64 = self.0.cast();
         let b: f64 = rhs.0.cast();
         if b == 0.0 {
-            return Self(FixedI64::<P>::max_value())
+            return Self(FixedI64::<P>::max_value());
         }
         /* dbg!(a, b); */
         Self::from_f64(a / b)
@@ -613,7 +613,7 @@ impl<const P: i32> Float for FXP<P> {
     /* const BIAS3: Self = Self(FixedI64::<P>::from_bits(0x10)); */
     /* const BIAS4: Self = Self(FixedI64::<P>::from_bits(0x80)); */
 
-    const BIAS:  Self = Self(FixedI64::<P>::from_bits(0x01));
+    const BIAS: Self = Self(FixedI64::<P>::from_bits(0x01));
     const BIAS2: Self = Self(FixedI64::<P>::from_bits(0x08));
     const BIAS3: Self = Self(FixedI64::<P>::from_bits(0x10));
     const BIAS4: Self = Self(FixedI64::<P>::from_bits(0x80));
