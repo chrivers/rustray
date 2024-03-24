@@ -301,7 +301,7 @@ impl<'a, F: Float> Ray<F> {
     (this version considers only front faces)
      */
     pub fn intersect_triangle4(&self, e1: &Vector<F>, e2: &Vector<F>, v3: &Vector<F>) -> Option<F> {
-        let scale = F::from_f32(1e8);
+        let scale = F::from_f32(1e4);
         let a = self.pos - v3;
         let w1 = e1.cross(*e2);
         let w = a.dot(w1);
