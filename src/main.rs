@@ -78,7 +78,7 @@ fn runmain() -> RResult<()> {
 
     let p = SbtParser2::<F>::parse(Rule2::program, &data).map_err(|err| err.with_path(&name))?;
     time.set("ast");
-    /* SbtParser2::<F>::new().dump(p.clone())?; */
+    /* SbtParser2::<F>::dump(p.clone())?; */
     let p = SbtParser2::<F>::ast(p)?;
     /* info!("AST {:#?}", p); */
     time.set("build");
@@ -86,6 +86,7 @@ fn runmain() -> RResult<()> {
 
     /* Option 3: Scene from built-in constructor */
 
+    /* use rustray::demoscene; */
     /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
     info!(
