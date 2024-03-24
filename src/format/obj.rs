@@ -51,7 +51,7 @@ pub fn load<'a, F: Float + Texel + 'a>(
     }
 
     let mut tris = vec![];
-    obj.load_mtls().unwrap();
+    obj.load_mtls()?;
     /* info!("mats: {:#?}", obj.data.material_libs); */
     for o in &obj.data.objects {
         for g in &o.groups {

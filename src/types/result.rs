@@ -29,6 +29,9 @@ pub enum Error {
     #[error(transparent)]
     ParseInt(#[from] std::num::ParseIntError),
 
+    #[error(transparent)]
+    MtlLibsLoadError(#[from] obj::MtlLibsLoadError),
+
     #[error("parse error")]
     ParseError(&'static str),
 
