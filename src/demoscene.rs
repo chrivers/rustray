@@ -284,5 +284,5 @@ where
         // Box::new(trimesh3),
     ];
 
-    Ok(Scene::new(cameras, objects, geometry, lights))
+    Scene::new(cameras, objects, geometry, lights)
 }

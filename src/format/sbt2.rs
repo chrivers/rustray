@@ -771,6 +771,6 @@ where
                 }
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights).with_ambient(ambient))
+        Ok(Scene::new(cameras, objects, vec![], lights)?.with_ambient(ambient))
     }
 }

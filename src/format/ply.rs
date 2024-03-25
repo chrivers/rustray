@@ -194,6 +194,6 @@ where
 
         lights.push(Box::new(lgt));
 
-        Ok(Scene::new(cameras, objects, vec![], lights))
+        Scene::new(cameras, objects, vec![], lights)
     }
 }

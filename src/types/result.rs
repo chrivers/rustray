@@ -40,6 +40,9 @@ pub enum Error {
 
     #[error("unsupported parse element {0:?}")]
     ParseUnsupported(String),
+
+    #[error(transparent)]
+    BuildError(#[from] rtbvh::BuildError),
 }
 
 pub type RResult<F> = Result<F, Error>;
