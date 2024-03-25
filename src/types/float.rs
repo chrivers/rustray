@@ -6,7 +6,7 @@ use std::ops::{Add, Mul, Sub};
 
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 
-pub trait Float
+pub trait Float: num_traits::FloatConst
 where
     Self: Debug,
     Self: Display,
@@ -36,7 +36,7 @@ where
     fn from_f32(value: f32) -> Self;
     fn from_f64(value: f64) -> Self;
     fn non_zero(self) -> bool {
-        self != Self::zero()
+        self != Self::ZERO
     }
 
     fn clamp(self, low: Self, high: Self) -> Self {
