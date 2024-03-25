@@ -40,8 +40,8 @@ where
 
         let uv = maxel.uv();
         let normal = mxl.nml();
+        let src = self.src.sample(uv);
         for _n in 0..self.rays {
-            let src = self.src.sample(uv);
             let rx = (rng.gen() - F::HALF) * src;
             let ry = (rng.gen() - F::HALF) * src;
             let rz = (rng.gen() / F::TWO) * (F::one() - src) + src;
