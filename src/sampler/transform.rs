@@ -2,17 +2,17 @@ use super::samp_util::*;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>> {
-    s: F, // scale
-    o: F, // offset
+    scale: F,
+    offset: F,
     samp: S,
     _p1: PhantomData<T>,
 }
 
 impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
-    pub fn new(s: F, o: F, samp: S) -> Self {
+    pub fn new(scale: F, offset: F, samp: S) -> Self {
         Self {
-            s,
-            o,
+            scale,
+            offset,
             samp,
             _p1: PhantomData {},
         }
@@ -29,8 +29,7 @@ where
     S: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {
-        let s = self.samp.sample(uv);
-        s * self.s + self.o
+        self.samp.sample(uv) * self.scale + self.offset
     }
 
     fn dimensions(&self) -> (u32, u32) {
