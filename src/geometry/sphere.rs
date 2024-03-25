@@ -33,6 +33,6 @@ impl<F: Float, M: Material<F = F>> Sphere<F, M> {
     pub fn place(pos: Vector<F>, radius: F, mat: M) -> Sphere<F, M> {
         let scale = Matrix4::from_scale(radius);
         let xlate = Matrix4::from_translation(pos);
-        Self::new(scale * xlate, mat)
+        Self::new(xlate * scale, mat)
     }
 }
