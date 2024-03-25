@@ -43,6 +43,13 @@ impl<F: Num + Copy> Point<F> {
         Point { x, y }
     }
 
+    pub fn dot(self, other: Point<F>) -> Point<F> {
+        Self {
+            x: self.x * other.x,
+            y: self.y * other.y,
+        }
+    }
+
     pub fn zero() -> Point<F> {
         Point {
             x: F::zero(),
