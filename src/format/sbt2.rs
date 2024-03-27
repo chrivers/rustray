@@ -495,10 +495,9 @@ where
         /* use crate::ColorNormal; let smart = ColorNormal::new(F::ONE).dynamic(); */
 
         match bump {
-            None => Ok(smart.dynamic()),
-            Some(b) => Ok(
+            None => smart.dynamic(),
+            Some(b) =>
                 Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
-            ),
         }
     }
 
@@ -525,7 +524,7 @@ where
         }
         if let Ok(mats) = dict.tuple("materials") {
             for mat in mats {
-                materials.push(self.parse_material(mat.dict()?)?)
+                materials.push(self.parse_material(mat.dict()?));
             }
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {
@@ -552,7 +551,7 @@ where
                 }
             }
         }
-        let mat = self.parse_material_obj(dict)?;
+        let mat = self.parse_material_obj(dict);
 
         if normals.is_empty() {
             info!("Generating normals");
@@ -671,7 +670,7 @@ where
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
                         Ok(vec![Box::new(Sphere::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -679,7 +678,7 @@ where
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Cube::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -691,7 +690,7 @@ where
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -699,7 +698,7 @@ where
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Square::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -708,7 +707,7 @@ where
                         Ok(vec![Box::new(Cylinder::new(
                             xfrm,
                             dict.boolean("capped").unwrap_or(true),
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -748,15 +747,12 @@ where
         for blk in prog.blocks {
             match (blk.name, blk.value) {
                 ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
-                ("directional_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_directional_light(dict)?))
-                }
-                ("point_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_point_light(dict)?))
-                }
-                ("ambient_light", S::Dict(ref dict)) => {
-                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?
-                }
+                ("directional_light", S::Dict(ref dict)) =>
+                    lights.push(Box::new(self.parse_directional_light(dict)?)),
+                ("point_light", S::Dict(ref dict)) =>
+                    lights.push(Box::new(self.parse_point_light(dict)?)),
+                ("ambient_light", S::Dict(ref dict)) =>
+                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?,
                 ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
                 ("material", S::Dict(dict)) => self.material.extend(dict),
 
