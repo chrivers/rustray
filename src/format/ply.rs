@@ -112,10 +112,10 @@ where
         for (_, element) in &header.elements {
             match element.name.as_ref() {
                 "vertex" => {
-                    vertex_list = vertex_parser.read_payload_for_element(file, element, &header)?
+                    vertex_list = vertex_parser.read_payload_for_element(file, element, &header)?;
                 }
                 "face" => {
-                    face_list = face_parser.read_payload_for_element(file, element, &header)?
+                    face_list = face_parser.read_payload_for_element(file, element, &header)?;
                 }
                 other => return Err(Error::ParseUnsupported(other.to_owned())),
             }
@@ -133,13 +133,13 @@ where
                 let mut c = vertex_list[face.idx[n + 1]];
                 let n = (a.0 - b.0).cross(a.0 - c.0);
                 if a.1.is_zero() {
-                    a.1 = n
+                    a.1 = n;
                 }
                 if b.1.is_zero() {
-                    b.1 = n
+                    b.1 = n;
                 }
                 if c.1.is_zero() {
-                    c.1 = n
+                    c.1 = n;
                 }
                 let tri = Triangle::new(
                     a.0,

@@ -25,7 +25,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
         let mut beta = (top_r - bot_r) / self.height;
 
         if beta.abs() < F::BIAS {
-            beta = F::BIAS
+            beta = F::BIAS;
         }
 
         let mut gamma;

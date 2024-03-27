@@ -309,7 +309,7 @@ impl<F: Float> SbtParser2<F> {
 
         /* Manual iteration is significantly faster than map()+collect() */
         for p in pr {
-            tuple.push(Self::parse_value(p)?)
+            tuple.push(Self::parse_value(p)?);
         }
 
         Ok(SbtValue::Tuple(tuple))
@@ -374,7 +374,7 @@ impl<F: Float> SbtParser2<F> {
                 Rule::dict => {
                     /* warn!("Workaround for malformed file"); */
                     let value = Self::parse_dict(p.into_inner())?;
-                    prog.blocks.push(SbtBlock { name, value })
+                    prog.blocks.push(SbtBlock { name, value });
                 }
                 Rule::EOI => break,
                 other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
@@ -418,7 +418,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z())
+            viewdir = Some(-Vector::unit_z());
         }
 
         info!("Camera:");
@@ -520,7 +520,7 @@ where
 
         if let Ok(nmls) = dict.tuple("normals") {
             for normal in nmls {
-                normals.push(normal.tuple()?.vector3()?.xfrm_nml(&xfrm))
+                normals.push(normal.tuple()?.vector3()?.xfrm_nml(&xfrm));
             }
         }
         if let Ok(mats) = dict.tuple("materials") {
@@ -530,7 +530,7 @@ where
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {
             for uv in uvs {
-                texture_uvs.push(uv.tuple()?.point()?)
+                texture_uvs.push(uv.tuple()?.point()?);
             }
         }
         if let Ok(path) = dict.string("objfile") {
@@ -539,7 +539,7 @@ where
             tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
-                points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm))
+                points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm));
             }
             for point in dict.tuple("faces")? {
                 let tuple = point.tuple()?;
@@ -548,7 +548,7 @@ where
                     faces.push([f[0], f[1], f[2]]);
                     faces.push([f[0], f[2], f[3]]);
                 } else {
-                    faces.push(point.tuple()?.int3()?)
+                    faces.push(point.tuple()?.int3()?);
                 }
             }
         }
@@ -724,7 +724,7 @@ where
             SbtValue::Tuple(blks) => {
                 let mut res = vec![];
                 for blk in blks {
-                    res.append(&mut self.build_geometry(blk, xfrm)?)
+                    res.append(&mut self.build_geometry(blk, xfrm)?);
                 }
                 Ok(res)
             }
@@ -762,13 +762,13 @@ where
 
                 ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
-                    lights.push(Box::new(self.parse_point_light(dict)?))
+                    lights.push(Box::new(self.parse_point_light(dict)?));
                 }
 
                 (name, value) => {
                     let block = S::Block(Box::new(SbtBlock { name, value }));
                     let mut objs = self.build_geometry(&block, Matrix4::identity())?;
-                    objects.append(&mut objs)
+                    objects.append(&mut objs);
                 }
             }
         }

@@ -48,7 +48,7 @@ impl<F: Float> HasPosition<F> for PointLight<F> {
         self.pos
     }
     fn set_position(&mut self, value: Vector<F>) {
-        self.pos = value
+        self.pos = value;
     }
 }
 

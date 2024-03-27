@@ -106,13 +106,13 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
 pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
     let mut center = Vector::zero();
     for point in points {
-        center += *point
+        center += *point;
     }
     center /= F::from_usize(points.len());
 
     let mut uvs = vec![];
     for point in points {
-        uvs.push((point - center).normalize().polar_uv().into())
+        uvs.push((point - center).normalize().polar_uv().into());
     }
     uvs
 }
@@ -335,7 +335,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z())
+            viewdir = Some(-Vector::unit_z());
         }
 
         info!("Camera:");
@@ -459,14 +459,14 @@ where
                 Rule::points => {
                     for f in rule.into_inner() {
                         // info!("point: {:?}", f);
-                        points.push(Self::parse_val3b(f).xfrm_pos(&xfrm))
+                        points.push(Self::parse_val3b(f).xfrm_pos(&xfrm));
                         /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                     }
                 }
                 Rule::faces3 => {
                     for f in rule.into_inner() {
                         // info!("face: {:?}", f);
-                        faces.push(Self::parse_int3(f))
+                        faces.push(Self::parse_int3(f));
                     }
                 }
                 Rule::faces4 => {
@@ -771,7 +771,7 @@ where
 
                 Rule::area_light => {
                     warn!("Simulating area_light using point_light");
-                    lights.push(Box::new(Self::parse_point_light(r)?))
+                    lights.push(Box::new(Self::parse_point_light(r)?));
                 }
 
                 Rule::spot_light => warn!("unimplemented: spot_light"),

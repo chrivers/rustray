@@ -31,7 +31,7 @@ impl TimeSlice {
     }
 
     pub fn stop(&mut self) {
-        self.set("")
+        self.set("");
     }
 
     pub fn get(&self, key: &'static str) -> Option<Duration> {

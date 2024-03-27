@@ -40,7 +40,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
                 /* Essentially, the cone in this case is a double-sided surface */
                 /* and has _2_ normals */
                 if !capped && r.dir.dot(normal).is_positive() {
-                    normal = -normal
+                    normal = -normal;
                 }
                 Some((t, normal))
             }
