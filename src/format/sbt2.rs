@@ -656,7 +656,7 @@ where
 
                 other => {
                     info!("unhandled: {:#?}", other);
-                    Err(Error::ParseUnsupported(name.to_string()))
+                    Err(Error::ParseUnsupported((*name).to_string()))
                 }
             },
 
