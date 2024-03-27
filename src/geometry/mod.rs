@@ -33,29 +33,29 @@ where
     T: Geometry<F> + ?Sized,
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        self.as_ref().intersect(ray)
+        (**self).intersect(ray)
     }
 
     fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F> {
-        self.as_ref().normal(maxel)
+        (**self).normal(maxel)
     }
 
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().uv(maxel)
+        (**self).uv(maxel)
     }
 
     fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().st(maxel)
+        (**self).st(maxel)
     }
 }
 
 impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
     fn center(&self) -> Vec3 {
-        self.as_ref().center()
+        (**self).center()
     }
 
     fn aabb(&self) -> Aabb {
-        self.as_ref().aabb()
+        (**self).aabb()
     }
 }
 
