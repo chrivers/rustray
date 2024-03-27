@@ -349,7 +349,7 @@ impl<F: Float> SbtParser2<F> {
             Rule::string => Self::parse_string(pr)?,
             Rule::boolean => Self::parse_boolean(pr)?,
             Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
-            other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
+            other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
         };
         Ok(value)
     }
@@ -377,7 +377,7 @@ impl<F: Float> SbtParser2<F> {
                     prog.blocks.push(SbtBlock { name, value })
                 }
                 Rule::EOI => break,
-                other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
+                other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
             }
         }
         Ok(prog)

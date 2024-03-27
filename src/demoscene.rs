@@ -116,25 +116,25 @@ where
             load_zip_tex(
                 time,
                 &mut archive,
-                &format!("{}_1K_Color.png", name),
+                &format!("{name}_1K_Color.png"),
                 ImageFormat::Png,
             )?,
             load_zip_tex(
                 time,
                 &mut archive,
-                &format!("{}_1K_NormalDX.png", name),
+                &format!("{name}_1K_NormalDX.png"),
                 ImageFormat::Png,
             )?,
             load_zip_tex(
                 time,
                 &mut archive,
-                &format!("{}_1K_Roughness.png", name),
+                &format!("{name}_1K_Roughness.png"),
                 ImageFormat::Png,
             )?,
             load_zip_tex(
                 time,
                 &mut archive,
-                &format!("{}_1K_Metalness.png", name),
+                &format!("{name}_1K_Metalness.png"),
                 ImageFormat::Png,
             ),
         ))

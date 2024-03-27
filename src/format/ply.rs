@@ -48,13 +48,13 @@ impl<F: Float> ply::PropertyAccess for Vertex<F> {
                 "s" | "t" => {}
                 "tx" | "ty" | "tz" => {}
                 "bx" | "by" | "bz" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {}", k),
+                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
             },
             ply::Property::UChar(_v) => match key.as_ref() {
                 "red" | "green" | "blue" | "alpha" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {}", k),
+                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
             },
-            t => panic!("Vertex: Unexpected type: {:?}", t),
+            t => panic!("Vertex: Unexpected type: {t:?}"),
         }
     }
 }
@@ -83,10 +83,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
             ("red" | "green" | "blue" | "alpha", _) => {}
             ("flags", _) => {}
             ("texnumber", _) => {}
-            (k, t) => panic!(
-                "Face: Unexpected key/value combination: key: {} (type {:?})",
-                k, t
-            ),
+            (k, t) => panic!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
         }
     }
 }

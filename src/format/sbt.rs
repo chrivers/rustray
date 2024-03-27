@@ -327,9 +327,7 @@ where
                 Rule::updir => updir = Self::parse_val3(q),
                 Rule::fov => fov = Self::parse_val1(q)?,
                 Rule::look_at => look_at = Ok(Self::parse_val3(q)),
-                _ => {
-                    error!("{}", q)
-                }
+                _ => error!("{q}"),
             }
         }
 
@@ -377,7 +375,7 @@ where
                 other => error!("unsupported: {:?}", other),
             }
         }
-        info!("Cylinder(xfrm={:7.4?}, capped={})", xfrm, capped);
+        info!("Cylinder(xfrm={xfrm:7.4?}, capped={capped})");
         Ok(vec![Box::new(Cylinder::new(xfrm, capped, mat))])
     }
 
@@ -393,7 +391,7 @@ where
             match rule.as_rule() {
                 Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
                 Rule::name => {}
-                other => error!("unsupported: {:?}", other),
+                other => error!("unsupported: {other:?}"),
             }
         }
 
@@ -500,7 +498,7 @@ where
                 Rule::objfile => {
                     let path = rule.into_inner().next().unwrap().as_str();
                     let path = &path[1..path.len() - 1];
-                    info!("Reading {}", path);
+                    info!("Reading {path}");
                     let obj = Obj::load(resdir.join(path))?;
                     tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
                 }
@@ -569,7 +567,7 @@ where
                 Rule::bottom_radius => bot_r = Self::parse_val1(rule)?,
                 Rule::capped => capped = Self::parse_bool(rule),
                 Rule::material_ref => {}
-                other => error!("unsupported: {:?}", other),
+                other => error!("unsupported: {other:?}"),
             }
         }
 
@@ -598,7 +596,7 @@ where
                 Rule::coeff1 => b = Self::parse_val1(q)?,
                 Rule::coeff2 => c = Self::parse_val1(q)?,
                 _ => {
-                    error!("{}", q)
+                    error!("{q}");
                 }
             }
         }
@@ -612,7 +610,7 @@ where
             pos,
             color,
         };
-        info!("{:7.3?}", res);
+        info!("{res:7.3?}");
         Ok(res)
     }
 
@@ -624,7 +622,7 @@ where
                 Rule::direction => direction = Ok(Self::parse_val3(q)),
                 Rule::color => color = Ok(Self::parse_val3(q)),
                 _ => {
-                    error!("{}", q)
+                    error!("{q}");
                 }
             }
         }
