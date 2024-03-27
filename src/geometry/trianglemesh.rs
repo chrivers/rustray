@@ -38,7 +38,7 @@ impl<F: Float, M: Material<F = F> + Clone> TriangleMesh<F, M> {
     pub fn new(tris: Vec<Triangle<F, M>>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 
-        let aabbs = tris.iter().map(|t| t.aabb()).collect::<Vec<Aabb>>();
+        let aabbs = tris.iter().map(rtbvh::Primitive::aabb).collect::<Vec<Aabb>>();
 
         let bvh = Builder {
             aabbs: Some(&aabbs),

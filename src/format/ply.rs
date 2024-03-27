@@ -69,16 +69,16 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
     fn set_property(&mut self, key: String, property: ply::Property) {
         match (key.as_ref(), property) {
             ("vertex_indices", ply::Property::ListInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("vertex_indices", ply::Property::ListUInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("vertex_index", ply::Property::ListUInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("texcoord", ply::Property::ListFloat(vec)) => {
-                self.uv = vec.iter().map(|x| F::from_f32(*x)).collect()
+                self.uv = vec.into_iter().map(F::from_f32).collect();
             }
             ("red" | "green" | "blue" | "alpha", _) => {}
             ("flags", _) => {}

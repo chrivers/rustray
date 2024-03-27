@@ -565,7 +565,7 @@ where
             texture_uvs = spherical_uvs(&points);
         }
 
-        for face in faces.iter() {
+        for face in &faces {
             let m = if !materials.is_empty() {
                 Triblend::new(
                     materials[face[0]].clone(),

@@ -58,7 +58,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         } else {
             let aabbs = objects
                 .iter()
-                .map(|t| t.aabb())
+                .map(rtbvh::Primitive::aabb)
                 .collect::<Vec<rtbvh::Aabb>>();
 
             Builder {
