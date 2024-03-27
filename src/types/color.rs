@@ -31,10 +31,10 @@ impl<F: Float> Debug for Color<F> {
 }
 
 impl<F: Float> ops::Mul<F> for Color<F> {
-    type Output = Color<F>;
+    type Output = Self;
 
-    fn mul(self, other: F) -> Color<F> {
-        Color {
+    fn mul(self, other: F) -> Self {
+        Self {
             r: self.r * other,
             g: self.g * other,
             b: self.b * other,
@@ -43,10 +43,10 @@ impl<F: Float> ops::Mul<F> for Color<F> {
 }
 
 impl<F: Float> ops::Mul<Color<F>> for Color<F> {
-    type Output = Color<F>;
+    type Output = Self;
 
-    fn mul(self, other: Color<F>) -> Color<F> {
-        Color {
+    fn mul(self, other: Self) -> Self {
+        Self {
             r: self.r * other.r,
             g: self.g * other.g,
             b: self.b * other.b,
@@ -55,10 +55,10 @@ impl<F: Float> ops::Mul<Color<F>> for Color<F> {
 }
 
 impl<F: Float> ops::Div for Color<F> {
-    type Output = Color<F>;
+    type Output = Self;
 
-    fn div(self, other: Color<F>) -> Color<F> {
-        Color {
+    fn div(self, other: Self) -> Self {
+        Self {
             r: self.r / other.r,
             g: self.g / other.g,
             b: self.b / other.b,
@@ -67,10 +67,10 @@ impl<F: Float> ops::Div for Color<F> {
 }
 
 impl<F: Float> ops::Div<F> for Color<F> {
-    type Output = Color<F>;
+    type Output = Self;
 
-    fn div(self, other: F) -> Color<F> {
-        Color {
+    fn div(self, other: F) -> Self {
+        Self {
             r: self.r / other,
             g: self.g / other,
             b: self.b / other,
@@ -79,33 +79,33 @@ impl<F: Float> ops::Div<F> for Color<F> {
 }
 
 impl<F: Float> Color<F> {
-    pub const fn new(r: F, g: F, b: F) -> Color<F> {
-        Color { r, g, b }
+    pub const fn new(r: F, g: F, b: F) -> Self {
+        Self { r, g, b }
     }
 
-    pub const fn gray(c: F) -> Color<F> {
+    pub const fn gray(c: F) -> Self {
         Self::new(c, c, c)
     }
 
-    pub const fn black() -> Color<F> {
+    pub const fn black() -> Self {
         Self::gray(F::ZERO)
     }
 
-    pub const fn white() -> Color<F> {
+    pub const fn white() -> Self {
         Self::gray(F::ONE)
     }
 
-    pub fn clamped(self) -> Color<F> {
+    pub fn clamped(self) -> Self {
         let r = self.r.clamp(F::ZERO, F::ONE);
         let g = self.g.clamp(F::ZERO, F::ONE);
         let b = self.b.clamp(F::ZERO, F::ONE);
-        Color { r, g, b }
+        Self { r, g, b }
     }
 
-    pub fn mixed(input: &[Color<F>]) -> Color<F> {
+    pub fn mixed(input: &[Color<F>]) -> Self {
         match input.len() {
-            0 => Color::zero(),
-            n => input.iter().copied().sum::<Color<F>>() / F::from_usize(n),
+            0 => Self::zero(),
+            n => input.iter().copied().sum::<Self>() / F::from_usize(n),
         }
     }
 
@@ -121,7 +121,7 @@ impl<F: Float> Color<F> {
 }
 
 impl<F: Float> Zero for Color<F> {
-    fn zero() -> Color<F> {
+    fn zero() -> Self {
         Self::black()
     }
 

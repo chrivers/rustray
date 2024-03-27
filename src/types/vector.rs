@@ -40,24 +40,24 @@ macro_rules! vec3 {
 pub type Vector<F> = cgmath::Vector3<F>;
 
 impl<F: Float> Vectorx<F> for Vector<F> {
-    fn identity_x() -> Vector<F> {
-        Vector {
+    fn identity_x() -> Self {
+        Self {
             x: F::ONE,
             y: F::ZERO,
             z: F::ZERO,
         }
     }
 
-    fn identity_y() -> Vector<F> {
-        Vector {
+    fn identity_y() -> Self {
+        Self {
             x: F::ZERO,
             y: F::ONE,
             z: F::ZERO,
         }
     }
 
-    fn identity_z() -> Vector<F> {
-        Vector {
+    fn identity_z() -> Self {
+        Self {
             x: F::ZERO,
             y: F::ZERO,
             z: F::ONE,

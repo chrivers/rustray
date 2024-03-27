@@ -49,12 +49,12 @@ pub type RResult<F> = Result<F, Error>;
 
 impl From<pest::error::Error<crate::format::sbt::Rule>> for Error {
     fn from(value: pest::error::Error<crate::format::sbt::Rule>) -> Self {
-        Error::PestError(Box::new(value))
+        Self::PestError(Box::new(value))
     }
 }
 
 impl From<pest::error::Error<crate::format::sbt2::Rule>> for Error {
     fn from(value: pest::error::Error<crate::format::sbt2::Rule>) -> Self {
-        Error::PestError2(Box::new(value))
+        Self::PestError2(Box::new(value))
     }
 }
