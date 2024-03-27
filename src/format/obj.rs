@@ -12,11 +12,11 @@ use crate::types::result::RResult;
 use crate::types::{Color, Float, Point, Vector};
 use crate::types::vector::Vectorx;
 
-fn obj_sampler<'a, F: Float + 'a>(
+fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
     map: &Option<String>,
     col: &Option<[f32; 3]>,
-) -> DynSampler<'a, F, Color<F>> {
+) -> DynSampler<F, Color<F>> {
     match map {
         Some(ref kd) => {
             info!("loading [{}]", kd);
@@ -31,11 +31,11 @@ fn obj_sampler<'a, F: Float + 'a>(
     }
 }
 
-pub fn load<'a, F: Float + Texel + 'a>(
+pub fn load<F: Float + Texel>(
     mut obj: Obj,
     pos: Vector<F>,
     scale: F,
-) -> RResult<Vec<Triangle<F, DynMaterial<'a, F>>>> {
+) -> RResult<Vec<Triangle<F, DynMaterial<F>>>> {
     let mut corner = Vector::new(F::max_value(), F::max_value(), F::max_value());
 
     for o in &obj.data.objects {

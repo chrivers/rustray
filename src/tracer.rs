@@ -1,29 +1,29 @@
-use crate::geometry::{FiniteGeometry, Geometry};
 use crate::point;
-use crate::scene::{Light, RayTracer, Scene};
+use crate::scene::{BoxScene, Light, RayTracer};
 use crate::types::ray::{Maxel, Ray};
 use crate::types::vector::Vectorx;
 use crate::types::{Camera, Color, Float, Point};
 use cgmath::MetricSpace;
+use std::sync::RwLockReadGuard;
 
-pub struct Tracer<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
-    scene: &'a Scene<F, B, G, L>,
-    lights: Vec<&'a dyn Light<F>>,
+pub struct Tracer<'a, F: Float> {
+    scene: RwLockReadGuard<'a, BoxScene<F>>,
     sx: u32,
     sy: u32,
-    background: Color<F>,
     maxlvl: u32,
 }
 
-impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a, F, B, G, L> {
-    pub fn new(scene: &'a Scene<F, B, G, L>) -> Self {
-        let lights = scene.lights.iter().map(|x| x as &dyn Light<F>).collect();
+pub struct RenderSpan<F: Float> {
+    pub line: u32,
+    pub pixels: Vec<Color<F>>,
+}
+
+impl<'a, F: Float> Tracer<'a, F> {
+    pub fn new(scene: RwLockReadGuard<'a, BoxScene<F>>) -> Self {
         Self {
             scene,
-            lights,
             sx: 2,
             sy: 2,
-            background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
             maxlvl: 5,
         }
     }
@@ -38,36 +38,36 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Tracer<'a,
                 let pixely = py + F::from_u32(ya) / (fsy * fy);
                 let ray = camera.get_ray(point!(pixelx, pixely));
                 if let Some(color) = self.ray_trace(&ray) {
-                    colors += color.clamped()
+                    colors += color.clamped();
                 } else {
-                    colors += self.background
+                    colors += self.scene.background;
                 }
             }
         }
         colors / (fsx * fsy)
     }
 
-    pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> Vec<Color<F>> {
+    pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
         let (xres, yres) = camera.size();
         let fx = F::from_u32(xres);
         let fy = F::from_u32(yres);
         let py = F::from_u32(y);
-        (0..xres)
+        let pixels = (0..xres)
             .map(|x| {
                 let px = F::from_u32(x);
                 self.render_pixel(camera, px / fx, py / fy, fx, fy)
             })
-            .collect()
+            .collect();
+
+        RenderSpan { line: y, pixels }
     }
 
-    pub fn scene(&self) -> &Scene<F, B, G, L> {
-        self.scene
+    pub fn scene(&self) -> &BoxScene<F> {
+        &self.scene
     }
 }
 
-impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<F>
-    for Tracer<'a, F, B, G, L>
-{
+impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         let light_pos = light.get_position();
         let hitray = Ray::new(maxel.pos, maxel.pos.normal_to(light_pos), maxel.lvl + 1);
@@ -98,14 +98,18 @@ impl<'a, F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> RayTracer<
 
         let mut maxel = self.scene.intersect(ray)?;
 
-        Some(maxel.mat.render(&mut maxel, &self.lights, self))
+        Some(maxel.mat.render(&mut maxel, self))
     }
 
     fn ambient(&self) -> Color<F> {
         self.scene.ambient
     }
 
+    fn get_lights(&self) -> &[Box<dyn Light<F>>] {
+        &self.scene.lights
+    }
+
     fn background(&self) -> Color<F> {
-        self.background
+        self.scene.background
     }
 }

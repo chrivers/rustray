@@ -28,17 +28,16 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let mut res = Color::black();
 
-        let self_color = self.mat.render(maxel, lights, rt);
+        let self_color = self.mat.render(maxel, rt);
         let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);
 
-        for light in lights {
+        for light in rt.get_lights() {
             let light_color = rt
-                .ray_shadow(maxel, &**light)
+                .ray_shadow(maxel, light)
                 .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());

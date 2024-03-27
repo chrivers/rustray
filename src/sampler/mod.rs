@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use num_traits::Num;
 
-use crate::types::Point;
+use crate::types::{Point, Float, Color};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -19,15 +19,15 @@ where
     /** Return (`width`, `height`) dimensions of sampler */
     fn dimensions(&self) -> (u32, u32);
 
-    fn dynsampler<'a>(self) -> DynSampler<'a, F, T>
+    fn dynsampler(self) -> DynSampler<F, T>
     where
-        Self: Sized + 'a,
+        Self: Sized + 'static,
     {
         Arc::new(Box::new(self))
     }
 }
 
-pub type DynSampler<'a, F, T> = Arc<Box<dyn Sampler<F, T> + 'a>>;
+pub type DynSampler<F, T> = Arc<Box<dyn Sampler<F, T>>>;
 
 impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
     fn sample(&self, uv: Point<F>) -> T {
@@ -51,8 +51,21 @@ self as their value.
 This is useful to make e.g. a [`crate::Float`] or [`crate::Color<F>`] a viable substitute for a real
 texture sampler.
 */
-impl<N: Num, T: Texel + Copy> Sampler<N, T> for T {
-    fn sample(&self, _uv: Point<N>) -> T {
+impl<F: Float + Texel> Sampler<F, F> for F
+where
+    Self: Debug
+{
+    fn sample(&self, _uv: Point<F>) -> F {
+        *self
+    }
+
+    fn dimensions(&self) -> (u32, u32) {
+        (1, 1)
+    }
+}
+
+impl<F: Float> Sampler<F, Color<F>> for Color<F> {
+    fn sample(&self, _uv: Point<F>) -> Color<F> {
         *self
     }
 

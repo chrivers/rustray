@@ -18,12 +18,11 @@ impl<F: Float, M: Material<F = F>> Material for ScaleUV<F, M> {
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let uv = maxel.uv();
         let mut smaxel = maxel.with_uv(self.uv.dot(uv));
-        self.mat.render(&mut smaxel, lights, rt)
+        self.mat.render(&mut smaxel, rt)
     }
 
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {

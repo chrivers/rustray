@@ -54,7 +54,7 @@ impl<F: Float, M: Material<F = F> + Clone> TriangleMesh<F, M> {
     }
 }
 
-impl<'a, F: Float + Texel + 'static> TriangleMesh<F, DynMaterial<'a, F>> {
+impl<F: Float + Texel> TriangleMesh<F, DynMaterial<F>> {
     pub fn load_obj(obj: Obj, pos: Vector<F>, scale: F) -> RResult<Self> {
         let tris = crate::format::obj::load(obj, pos, scale)?;
         Ok(TriangleMesh::new(tris))

@@ -5,6 +5,7 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::sync::RwLock;
 
 #[cfg(not(feature = "rayon"))]
 use indicatif::ProgressIterator;
@@ -20,8 +21,6 @@ use log::LevelFilter;
 use pest::Parser;
 
 use rustray::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
-use rustray::geometry::{FiniteGeometry, Geometry};
-use rustray::scene::Light;
 use rustray::tracer::Tracer;
 use rustray::types::result::Error;
 use rustray::types::{Float, RResult, TimeSlice};
@@ -55,9 +54,9 @@ fn runmain() -> RResult<()> {
     logger.filter(None, LevelFilter::Debug);
     logger.init();
 
-    type F = rustray::fixedpoint2::FXP<24>;
+    /* type F = rustray::fixedpoint2::FXP<24>; */
     /* type F = rustray::fixedpoint::FP<25>; */
-    /* type F = f32; */
+    type F = f32;
 
     use num_traits::float::Float;
     info!("F {}", F::max_value());
@@ -106,7 +105,9 @@ fn runmain() -> RResult<()> {
         scene.lights.len()
     );
 
-    let img = draw_image(&mut time, Tracer::new(&scene), WIDTH, HEIGHT)?;
+    let scene = RwLock::new(scene);
+
+    let img = draw_image(&mut time, Tracer::new(scene.read().unwrap()), WIDTH, HEIGHT)?;
 
     time.set("write");
     image::save_buffer(
@@ -137,17 +138,12 @@ mod pbar {
     }
 }
 
-fn draw_image<F, B, G, L>(
+fn draw_image<F: Float>(
     time: &mut TimeSlice,
-    tracer: Tracer<'_, F, B, G, L>,
+    tracer: Tracer<F>,
     width: u32,
     height: u32,
 ) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
-where
-    F: Float,
-    B: FiniteGeometry<F>,
-    G: Geometry<F>,
-    L: Light<F>,
 {
     let pb = pbar::init(height as u64);
 
@@ -171,7 +167,7 @@ where
     time.set("copy");
 
     for (y, line) in lines.iter().enumerate() {
-        for (x, pixel) in line.iter().enumerate() {
+        for (x, pixel) in line.pixels.iter().enumerate() {
             img.put_pixel(x as u32, y as u32, Rgb(pixel.to_array()));
         }
     }

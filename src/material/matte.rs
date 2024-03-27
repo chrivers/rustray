@@ -31,7 +31,6 @@ where
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        light: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let mut rng = rand::thread_rng();
@@ -48,7 +47,7 @@ where
             let (normalu, normalv) = normal.surface_tangents();
             mxl = mxl.with_normal((normal * rz + normalu * rx + normalv * ry).normalize());
 
-            col += self.mat.render(&mut mxl, light, rt);
+            col += self.mat.render(&mut mxl, rt);
         }
         col / F::from_u32(self.rays)
     }

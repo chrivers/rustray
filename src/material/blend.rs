@@ -19,11 +19,10 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for Blend<F, A, 
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
-        let a = self.a.render(maxel, lights, rt);
-        let b = self.b.render(maxel, lights, rt);
+        let a = self.a.render(maxel, rt);
+        let b = self.b.render(maxel, rt);
         a.lerp(b, self.pct)
     }
 }

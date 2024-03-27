@@ -17,7 +17,6 @@ impl<F: Float> Material for ColorPos<F> {
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        _lights: &[&dyn Light<F>],
         _rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let mut n = maxel.pos / F::from_f32(32.0);

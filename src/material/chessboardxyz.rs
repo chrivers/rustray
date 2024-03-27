@@ -18,7 +18,6 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for ChessBoardXY
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let x = maxel.pos.x.abs().fract() > F::HALF;
@@ -26,9 +25,9 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for ChessBoardXY
         let z = maxel.pos.z.abs().fract() > F::HALF;
 
         if x ^ y ^ z {
-            self.a.render(maxel, lights, rt)
+            self.a.render(maxel, rt)
         } else {
-            self.b.render(maxel, lights, rt)
+            self.b.render(maxel, rt)
         }
     }
 }

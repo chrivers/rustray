@@ -66,7 +66,6 @@ where
     fn render(
         &self,
         maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
         rt: &dyn RayTracer<F>,
     ) -> Color<F> {
         let uv = maxel.uv();
@@ -99,9 +98,9 @@ where
 
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
-        for light in lights {
+        for light in rt.get_lights() {
             let light_color = rt
-                .ray_shadow(maxel, *light)
+                .ray_shadow(maxel, light)
                 .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());

@@ -119,7 +119,7 @@ pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
 
 impl<F> SbtParser<F>
 where
-    F: Float + FromStr + Texel + Lerp<Ratio = F> + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio = F>,
 {
     /* Primitive types */
 
@@ -202,10 +202,10 @@ where
 
     /* Composite types */
 
-    pub fn parse_sampler3<'a>(
+    pub fn parse_sampler3(
         p: Pair<Rule>,
         resdir: &Path,
-    ) -> RResult<DynSampler<'a, F, Color<F>>> {
+    ) -> RResult<DynSampler<F, Color<F>>> {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
             Rule::sampler3 => {
@@ -231,7 +231,7 @@ where
         }
     }
 
-    pub fn parse_sampler1<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<'a, F, F>> {
+    pub fn parse_sampler1(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<F, F>> {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
             Rule::sampler1 => {
@@ -262,7 +262,7 @@ where
         }
     }
 
-    pub fn parse_material<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<'a, F>> {
+    pub fn parse_material(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<F>> {
         let mut diff = Color::black().dynsampler();
         let mut spec = Color::black().dynsampler();
         let mut refl = None;
@@ -750,12 +750,12 @@ where
         }
     }
 
-    pub fn parse_file<'a>(
+    pub fn parse_file(
         p: Pairs<Rule>,
         resdir: &Path,
         width: u32,
         height: u32,
-    ) -> RResult<BoxScene<'a, F>> {
+    ) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];

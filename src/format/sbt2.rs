@@ -47,8 +47,8 @@ pub type SbtTuple<'a, F> = Vec<SbtValue<'a, F>>;
 trait SDict<F: Float + Texel> {
     fn float(&self, name: &str) -> RResult<F>;
     fn color(&self, name: &str) -> RResult<Color<F>>;
-    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>>;
-    fn sampler3<'a>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'a, F, Color<F>>>;
+    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>>;
+    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>>;
     fn string(&self, name: &str) -> RResult<&str>;
     fn vector(&self, name: &str) -> RResult<Vector<F>>;
     fn boolean(&self, name: &str) -> RResult<bool>;
@@ -66,7 +66,7 @@ trait STuple<F: Float> {
     fn vector4(&self) -> RResult<Vector4<F>>;
 }
 
-impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
+impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     fn float(&self, name: &str) -> RResult<F> {
         match self.get(name) {
             Some(val) => val.float(),
@@ -92,7 +92,7 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
         }
     }
 
-    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>> {
+    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>> {
         let load = |name| {
             info!("{:?}", resdir.join(name));
             Ok(
@@ -112,7 +112,7 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
         }
     }
 
-    fn sampler3<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, Color<F>>> {
+    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
         use SbtValue as S;
         match self.get(name) {
             Some(S::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
@@ -394,7 +394,7 @@ pub struct SbtBuilder<'a, F: Float> {
 
 impl<'a, F: Float> SbtBuilder<'a, F>
 where
-    F: Float + FromStr + Texel + Lerp<Ratio = F> + 'a + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio = F>,
 {
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
@@ -440,7 +440,7 @@ where
         ))
     }
 
-    fn parse_point_light(&mut self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
+    fn parse_point_light(&self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
@@ -458,7 +458,7 @@ where
         Ok(res)
     }
 
-    fn parse_directional_light(&mut self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
+    fn parse_directional_light(&self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
@@ -467,7 +467,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
+    fn parse_material(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -502,7 +502,7 @@ where
         }
     }
 
-    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
+    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
         self.parse_material(dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
@@ -510,7 +510,7 @@ where
         &mut self,
         xfrm: Matrix4<F>,
         dict: impl SDict<F>,
-    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut tris = vec![];
         let mut points = vec![];
         let mut faces = vec![];
@@ -599,11 +599,12 @@ where
         Ok(vec![Box::new(TriangleMesh::new(tris))])
     }
 
-    fn build_geometry<'b>(
+    #[allow(clippy::too_many_lines)]
+    fn build_geometry(
         &mut self,
-        blk: &'b SbtValue<F>,
+        blk: &SbtValue<F>,
         xfrm: Matrix4<F>,
-    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         use SbtValue as S;
         /* info!("block: {:#?}", blk); */
         match blk {
@@ -735,11 +736,11 @@ where
         }
     }
 
-    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<'a, F>> {
+    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
         use SbtValue as S;
         let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn FiniteGeometry<F> + 'a>> = vec![];
-        let mut lights: Vec<Box<dyn Light<F> + 'a>> = vec![];
+        let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
+        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut ambient = Color::black();
         self.material.clear();
         self.version = prog.version;

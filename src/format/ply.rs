@@ -2,7 +2,6 @@ use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
 use std::path::Path;
-use std::str::FromStr;
 
 use cgmath::InnerSpace;
 use num_traits::Zero;
@@ -94,14 +93,14 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
 
 impl<F> PlyParser<F>
 where
-    F: Float + FromStr + Texel + 'static,
+    F: Float + Texel,
 {
     pub fn parse_file(
         file: &mut impl BufRead,
         _resdir: &Path,
         width: u32,
         height: u32,
-    ) -> RResult<BoxScene<'static, F>> {
+    ) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
