@@ -39,6 +39,7 @@ where
         self != Self::ZERO
     }
 
+    #[must_use]
     fn clamp(self, low: Self, high: Self) -> Self {
         clamp(self, low, high)
     }

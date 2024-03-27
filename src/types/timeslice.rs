@@ -9,6 +9,7 @@ pub struct TimeSlice {
 }
 
 impl TimeSlice {
+    #[must_use]
     pub fn new(start: &str) -> Self {
         Self {
             map: HashMap::new(),

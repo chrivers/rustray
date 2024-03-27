@@ -69,6 +69,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         self.dir.fresnel(&self.nml(), ior)
     }
 
+    #[must_use]
     pub fn with_normal(self, nml: Vector<F>) -> Self {
         Self {
             nml: Some(nml),
@@ -76,6 +77,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
+    #[must_use]
     pub fn with_uv(self, uv: Point<F>) -> Self {
         Self {
             uv: Some(uv),
@@ -83,6 +85,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
+    #[must_use]
     pub fn with_st(self, st: Point<F>) -> Self {
         Maxel {
             st: Some(st),

@@ -39,18 +39,21 @@ pub struct Point<F: Num> {
 }
 
 impl<F: Num + Copy> Point<F> {
-    pub fn new(x: F, y: F) -> Self {
+    #[must_use]
+    pub const fn new(x: F, y: F) -> Self {
         Self { x, y }
     }
 
-    pub fn dot(self, other: Self) -> Self {
+    #[must_use]
+    pub const fn dot(self, other: Self) -> Self {
         Self {
             x: self.x * other.x,
             y: self.y * other.y,
         }
     }
 
-    pub fn zero() -> Self {
+    #[must_use]
+    pub const fn zero() -> Self {
         Self {
             x: F::zero(),
             y: F::zero(),

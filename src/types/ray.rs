@@ -16,10 +16,11 @@ pub struct Ray<F: Float> {
 }
 
 impl<'a, F: Float> Ray<F> {
-    pub fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
+    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
         Ray { pos, dir, lvl }
     }
 
+    #[must_use]
     pub fn extend(self, scale: F) -> Vector<F> {
         self.pos + self.dir * scale
     }
@@ -33,11 +34,13 @@ impl<'a, F: Float> Ray<F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
     }
 
+    #[must_use]
     pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
         let inv = xfrm.inverse_transform()?;
         self.transform(&inv)
     }
 
+    #[must_use]
     pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
         Some(Self {
             pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
@@ -46,6 +49,7 @@ impl<'a, F: Float> Ray<F> {
         })
     }
 
+    #[must_use]
     pub fn xfrm_inv(&self, xfrm: &Transform<F>) -> Self {
         Self {
             pos: xfrm.pos_inv(self.pos),
@@ -54,6 +58,7 @@ impl<'a, F: Float> Ray<F> {
         }
     }
 
+    #[must_use]
     pub fn xfrm(&self, xfrm: &Transform<F>) -> Self {
         Self {
             pos: xfrm.pos(self.pos),
