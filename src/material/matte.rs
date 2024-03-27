@@ -28,11 +28,7 @@ where
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut rng = rand::thread_rng();
         let mut col = Color::black();
         let mut mxl = *maxel;

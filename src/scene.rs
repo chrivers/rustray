@@ -52,7 +52,12 @@ pub type BoxScene<F> = Scene<F,
                              >;
 
 impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L> {
-    pub fn new(cameras: Vec<Camera<F>>, objects: Vec<B>, geometry: Vec<G>, lights: Vec<L>) -> RResult<Self> {
+    pub fn new(
+        cameras: Vec<Camera<F>>,
+        objects: Vec<B>,
+        geometry: Vec<G>,
+        lights: Vec<L>,
+    ) -> RResult<Self> {
         let bvh = if objects.is_empty() {
             Bvh::default()
         } else {

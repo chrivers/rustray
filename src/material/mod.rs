@@ -8,11 +8,7 @@ use crate::scene::{Light, RayTracer};
 
 pub trait Material: Debug + Send + Sync {
     type F: Float;
-    fn render(
-        &self,
-        maxel: &mut Maxel<Self::F>,
-        rt: &dyn RayTracer<Self::F>,
-    ) -> Color<Self::F>;
+    fn render(&self, maxel: &mut Maxel<Self::F>, rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
 
     fn shadow(
         &self,
@@ -34,22 +30,14 @@ pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
 
 impl<F: Float> Material for Color<F> {
     type F = F;
-    fn render(
-        &self,
-        _maxel: &mut Maxel<F>,
-        _rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         *self
     }
 }
 
 impl<F: Float> Material for Arc<Box<dyn Material<F = F>>> {
     type F = F;
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         self.as_ref().render(maxel, rt)
     }
 }

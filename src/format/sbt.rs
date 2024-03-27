@@ -202,10 +202,7 @@ where
 
     /* Composite types */
 
-    pub fn parse_sampler3(
-        p: Pair<Rule>,
-        resdir: &Path,
-    ) -> RResult<DynSampler<F, Color<F>>> {
+    pub fn parse_sampler3(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
             Rule::sampler3 => {

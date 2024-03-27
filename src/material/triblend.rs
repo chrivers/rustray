@@ -24,11 +24,7 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>, C: Material<F = F>> Mater
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let a = self.a.render(maxel, rt);
         let b = self.b.render(maxel, rt);
         let c = self.c.render(maxel, rt);

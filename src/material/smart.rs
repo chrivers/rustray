@@ -63,11 +63,7 @@ where
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let normal = maxel.nml();
         let diff_color = self.kd.sample(uv);

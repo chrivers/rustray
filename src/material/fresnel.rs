@@ -18,11 +18,7 @@ impl<F: Float + Texel, S: Sampler<F, F>> Fresnel<F, S> {
 impl<F: Float + Texel, S: Sampler<F, F>> Material for Fresnel<F, S> {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let ior = self.ior.sample(maxel.uv());
 
         let refl = maxel.reflected_ray();

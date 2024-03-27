@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use num_traits::Num;
 
-use crate::types::{Point, Float, Color};
+use crate::types::{Color, Float, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -53,7 +53,7 @@ texture sampler.
 */
 impl<F: Float + Texel> Sampler<F, F> for F
 where
-    Self: Debug
+    Self: Debug,
 {
     fn sample(&self, _uv: Point<F>) -> F {
         *self
