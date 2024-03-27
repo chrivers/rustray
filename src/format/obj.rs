@@ -41,10 +41,11 @@ pub fn load<F: Float + Texel>(
     for o in &obj.data.objects {
         for g in &o.groups {
             for poly in &g.polys {
+                let pos = &obj.data.position;
                 for n in 0..(poly.0.len() - 1) {
-                    corner.x = corner.x.min(F::from_f32(obj.data.position[poly.0[n].0][0]));
-                    corner.y = corner.y.min(F::from_f32(obj.data.position[poly.0[n].0][1]));
-                    corner.z = corner.z.min(F::from_f32(obj.data.position[poly.0[n].0][2]));
+                    corner.x = corner.x.min(F::from_f32(pos[poly.0[n].0][0]));
+                    corner.y = corner.y.min(F::from_f32(pos[poly.0[n].0][1]));
+                    corner.z = corner.z.min(F::from_f32(pos[poly.0[n].0][2]));
                 }
             }
         }
