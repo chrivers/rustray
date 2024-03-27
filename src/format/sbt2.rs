@@ -488,7 +488,7 @@ where
         let diff = colormap("diffuse").unwrap_or_else(|_| Color::black().dynsampler());
         let spec = colormap("specular").unwrap_or_else(|_| Color::black().dynsampler());
         let tran = colormap("transmissive").unwrap_or_else(|_| Color::black().dynsampler());
-        let refl = colormap("reflective").unwrap_or_else(|_| spec.clone());
+        let refl = colormap("reflective").or_else(|_| colormap("specular")).unwrap_or_else(|_| Color::black().dynsampler());
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
