@@ -1,5 +1,6 @@
 use super::mat_util::*;
 
+/// Proxy material that scales UV coordinates, before rendering backing material.
 #[derive(Copy, Clone, Debug)]
 pub struct ScaleUV<F: Float, M: Material<F = F>> {
     uv: Point<F>,

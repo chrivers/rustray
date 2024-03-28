@@ -11,6 +11,11 @@ where
 
 impl<F: Float, T: Sampler<F, Color<F>>> TextureSampler<F> for T {}
 
+/// Simple material that maps a sampler to an object based on UV coordinates.
+///
+/// This material is practically only useful as a part of a material
+/// composition, or for extremely simple objects.
+
 #[derive(Copy, Clone, Debug)]
 pub struct Texture<F: Float, S: Sampler<F, Color<F>>> {
     _f: PhantomData<F>,

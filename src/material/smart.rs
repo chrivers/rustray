@@ -2,6 +2,8 @@ use super::mat_util::*;
 
 use num_traits::Zero;
 
+/// Smart material shader that supports ambient, diffuse, specular, translucent,
+/// and reflective light. Implements the Phong shader model for light transport.
 #[derive(Clone, Debug)]
 pub struct Smart<F, S1, S2, S3, S4, S5, S6>
 where
