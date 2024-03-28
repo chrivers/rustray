@@ -8,7 +8,7 @@ use zip::ZipArchive;
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
 use crate::material::*;
-use crate::sampler::{NormalMap, SamplerExt, Texel};
+use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::types::vector::Vectorx;
 use crate::types::{Camera, Color, Float, Point, PointLight, RResult, TimeSlice, Vector};
 
@@ -18,7 +18,8 @@ use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
-pub fn construct_demo_scene<'a, F>(
+#[allow(clippy::too_many_lines)]
+pub fn construct_demo_scene<F>(
     time: &mut TimeSlice,
     width: u32,
     height: u32,
@@ -136,26 +137,28 @@ where
     let mat_sphere = Fresnel::new(1.6.into()).dynamic();
     let mat_white = Phong::white().dynamic();
 
-    let mat_plane = ChessBoard::new(
-        Bumpmap::new(
-            0.5.into(),
-            NormalMap::new(tex0b.bilinear()),
-            Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
-        ),
-        Bumpmap::new(
-            0.5.into(),
-            NormalMap::new(tex1b.bilinear()),
-            Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
-        ),
-    )
-    .dynamic();
+    let mat_plane = ScaleUV::new(
+        (0.1).into(),
+        (0.1).into(),
+        ChessBoard::new(
+            Bumpmap::new(
+                0.5.into(),
+                NormalMap::new(tex0b.bilinear()),
+                Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+            ),
+            Bumpmap::new(
+                0.5.into(),
+                NormalMap::new(tex1b.bilinear()),
+                Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
+            ),
+        )
+    );
 
     let mat_bmp2 = Bumpmap::new(
         0.5.into(),
         NormalMap::new(tex2b.bilinear()),
         Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
-    )
-    .dynamic();
+    );
 
     time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
@@ -197,7 +200,17 @@ where
         vec3!(0.0, 0.0, 0.0),
         vec3!(0.0, 0.0, 1.0),
         vec3!(1.0, 0.0, 0.0),
-        mat_plane.clone(),
+        mat_plane,
+    );
+
+    let mat_matte = ScaleUV::new(
+        16.0.into(),
+        16.0.into(),
+        Matte::new(
+            Adjust::new((0.1).into(), (0.00).into(), Perlin::new(3, 3)),
+            8,
+            Fresnel::new(0.1.into()),
+        ),
     );
 
     let sphere1 = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
