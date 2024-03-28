@@ -5,62 +5,25 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::sync::RwLock;
 
-#[cfg(not(feature = "rayon"))]
-use indicatif::ProgressIterator;
-
-#[cfg(feature = "rayon")]
-use indicatif::ParallelProgressIterator;
-#[cfg(feature = "rayon")]
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
-
-use image::{ColorType, ImageBuffer, Rgb};
+use std::str::FromStr;
 
 use log::LevelFilter;
 use pest::Parser;
 
 use rustray::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
-use rustray::tracer::Tracer;
-use rustray::types::result::Error;
+use rustray::sampler::Texel;
+use rustray::scene::BoxScene;
 use rustray::types::{Float, RResult, TimeSlice};
 
 const WIDTH: u32 = 1440;
-const HEIGHT: u32 = 1440;
+const HEIGHT: u32 = 1200;
 
-fn main() -> RResult<()> {
-    match runmain() {
-        Ok(()) => {}
-        Err(Error::IOError(err)) => {
-            error!("Error: {}", err)
-        }
-        Err(Error::PestError(err)) => {
-            error!("Error: {}", err);
-        }
-        Err(Error::PestError2(err)) => {
-            error!("Error: {}", err);
-        }
-        Err(err) => {
-            error!("Error: {:#?}", err)
-        }
-    }
-    Ok(())
-}
-
-fn runmain() -> RResult<()> {
-    let mut time = TimeSlice::new("startup");
-
-    let mut logger = colog::default_builder();
-    logger.filter(None, LevelFilter::Debug);
-    logger.init();
-
-    /* type F = rustray::fixedpoint2::FXP<24>; */
-    /* type F = rustray::fixedpoint::FP<25>; */
-    type F = f32;
-
-    use num_traits::float::Float;
-    info!("F {}", F::max_value());
-
+fn load_scene<F: Float + FromStr + Texel>(
+    time: &mut TimeSlice,
+    width: u32,
+    height: u32,
+) -> RResult<BoxScene<F>> {
     let name = env::args().last().unwrap();
     let path = Path::new(&name);
     info!("=={:=<60}==", format!("[ {:50} ]", name));
@@ -81,7 +44,7 @@ fn runmain() -> RResult<()> {
     /* let p = SbtParser::<F>::parse(Rule::program, &data).map_err(|err| err.with_path(&name))?; */
 
     /* time.set("construct"); */
-    /* let scene = SbtParser::<F>::parse_file(p, resdir, WIDTH, HEIGHT)?; */
+    /* let scene = SbtParser::<F>::parse_file(p, resdir, width, height)?; */
 
     /* Option 2b: Scene from .ray file (new parser) */
 
@@ -91,12 +54,25 @@ fn runmain() -> RResult<()> {
     let p = SbtParser2::<F>::ast(p)?;
     /* info!("AST {:#?}", p); */
     time.set("build");
-    let scene = SbtBuilder::new(WIDTH, HEIGHT, resdir).build(p)?;
+    let scene = SbtBuilder::new(width, height, resdir).build(p)?;
 
     /* Option 3: Scene from built-in constructor */
-
     /* use rustray::demoscene; */
-    /* let scene = demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
+    /* let scene = demoscene::construct_demo_scene::<F>(&mut time, width, height)?; */
+
+    Ok(scene)
+}
+
+fn main() -> RResult<()> {
+    let mut logger = colog::default_builder();
+    logger.filter(None, LevelFilter::Debug);
+    logger.init();
+
+    type F = f64;
+
+    let mut time = TimeSlice::new("startup");
+    let scene = load_scene::<F>(&mut time, WIDTH, HEIGHT)?;
+    /* let scene = rustray::demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
 
     info!(
         "Loaded scene\ncams={}\nobjs={}\nlights={}",
@@ -105,74 +81,7 @@ fn runmain() -> RResult<()> {
         scene.lights.len()
     );
 
-    let scene = RwLock::new(scene);
-
-    let img = draw_image(&mut time, Tracer::new(scene.read().unwrap()), WIDTH, HEIGHT)?;
-
-    time.set("write");
-    image::save_buffer(
-        "output.png",
-        &img,
-        img.width(),
-        img.height(),
-        ColorType::Rgb8,
-    )?;
-
-    info!("render complete");
-    time.stop();
-    time.show();
-    Ok(())
-}
-
-mod pbar {
-    use indicatif::{ProgressBar, ProgressStyle};
-
-    pub fn init(range: u64) -> ProgressBar {
-        let pb = ProgressBar::new(range);
-        pb.set_style(
-            ProgressStyle::default_bar()
-                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.bright.cyan/blue}] line {pos}/{len} ({eta})").unwrap()
-                .progress_chars("*>-")
-        );
-        pb
-    }
-}
-
-fn draw_image<F: Float>(
-    time: &mut TimeSlice,
-    tracer: Tracer<F>,
-    width: u32,
-    height: u32,
-) -> RResult<ImageBuffer<Rgb<u8>, Vec<u8>>>
-{
-    let pb = pbar::init(height as u64);
-
-    let mut img = ImageBuffer::new(width, height);
-
-    time.set("render");
-
-    let camera = &tracer.scene().cameras[0];
-
-    #[cfg(feature = "rayon")]
-    let indices = (0..height).into_par_iter();
-
-    #[cfg(not(feature = "rayon"))]
-    let indices = (0..height).into_iter();
-
-    let lines: Vec<_> = indices
-        .progress_with(pb)
-        .map(|y| tracer.generate_span(camera, y))
-        .collect();
-
-    time.set("copy");
-
-    for (y, line) in lines.iter().enumerate() {
-        for (x, pixel) in line.pixels.iter().enumerate() {
-            img.put_pixel(x as u32, y as u32, Rgb(pixel.to_array()));
-        }
-    }
-
-    Ok(img)
+    rustray::frontend::cli::run(scene, WIDTH, HEIGHT)
 }
 
 #[cfg(test)]
