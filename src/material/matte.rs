@@ -51,4 +51,15 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, light)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Matte")
+            .default_open(true)
+            .show(ui, |ui| {
+                ui.add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"));
+                self.src.ui(ui, "Surface Roughness Coefficient");
+                self.mat.ui(ui);
+            });
+    }
 }
