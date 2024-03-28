@@ -9,6 +9,32 @@ pub struct Square<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Square<F, M>);
 
+impl<F: Float, M: Material<F = F>> Interactive for Square<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::Grid::new("grid")
+            .num_columns(2)
+            .spacing([40.0, 4.0])
+            .striped(true)
+            .show(ui, |ui| {
+                self.mat.ui(ui);
+            });
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for Square<F, M> {
+    fn get_name(&self) -> &str {
+        "Square"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
