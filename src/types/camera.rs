@@ -3,6 +3,9 @@ use super::Float;
 use super::Point;
 use super::Ray;
 use super::Vector;
+#[cfg(feature = "gui")]
+use crate::frontend::gui::position_ui;
+use crate::scene::{Interactive, SceneObject};
 use cgmath::{Angle, Deg};
 
 #[derive(Clone, Copy, Debug)]
@@ -97,5 +100,44 @@ impl<F: Float> Camera<F> {
 
     pub fn distance2(self, pos: Vector<F>) -> F {
         self.pos.distance2(pos)
+    }
+}
+
+impl<F: Float> Interactive for Camera<F> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::CollapsingHeader::new("Camera")
+            .default_open(true)
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        ui.label(format!("X resolution: {}", self.xres));
+                        ui.end_row();
+
+                        ui.label(format!("Y resolution: {}", self.yres));
+                        ui.end_row();
+
+                        position_ui(ui, &mut self.pos, "Position");
+                        position_ui(ui, &mut self.dir, "Direction");
+                        self.dir = self.dir.normalize();
+                    })
+            });
+    }
+}
+
+impl<F: Float> SceneObject for Camera<F> {
+    fn get_name(&self) -> &str {
+        "Camera"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
     }
 }
