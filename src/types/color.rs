@@ -118,6 +118,17 @@ impl<F: Float> Color<F> {
             <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
         ]
     }
+
+    pub fn to_array4(&self) -> [u8; 4] {
+        let clamped = self.clamped();
+        let max = F::from_u32(u8::MAX as u32);
+        [
+            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            255,
+        ]
+    }
 }
 
 impl<F: Float> Zero for Color<F> {
@@ -157,5 +168,15 @@ impl<F: Float> From<[f32; 3]> for Color<F> {
             F::from_f32(val[1]),
             F::from_f32(val[2]),
         )
+    }
+}
+
+impl<F: Float> From<Color<F>> for [f32; 3] {
+    fn from(color: Color<F>) -> Self {
+        [
+            color.r.to_f32().unwrap(),
+            color.g.to_f32().unwrap(),
+            color.b.to_f32().unwrap(),
+        ]
     }
 }
