@@ -55,4 +55,15 @@ impl<F: Float + Texel> Sampler<F, F> for Perlin {
     fn dimensions(&self) -> (u32, u32) {
         (self.w, self.h)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        ui.label(name);
+        egui::CollapsingHeader::new("Perlin")
+            .default_open(true)
+            .show(ui, |ui| {
+                ui.add(Slider::new(&mut self.w, 0..=10).text("Width"));
+                ui.add(Slider::new(&mut self.h, 0..=10).text("Height"));
+            });
+    }
 }
