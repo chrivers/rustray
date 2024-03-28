@@ -55,7 +55,7 @@ where
     }
 }
 
-impl<F, S1, S2, S3, S4, S5, S6> Material for Smart<F, S1, S2, S3, S4, S5, S6>
+impl<F, S1, S2, S3, S4, S5, S6> Material<F> for Smart<F, S1, S2, S3, S4, S5, S6>
 where
     F: Float + Texel,
     S1: Sampler<F, F>,
@@ -65,8 +65,6 @@ where
     S5: Sampler<F, Color<F>>,
     S6: Sampler<F, Color<F>>,
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let normal = maxel.nml();

@@ -1,42 +1,45 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Bumpmap<
+pub struct Bumpmap<F, S1, S2, M>
+where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
-> where
-    Vector<F>: Texel,
+    M: Material<F>,
 {
     pow: S1,
     img: S2,
     mat: M,
+    _p: PhantomData<F>,
 }
 
 impl<F, S1, S2, M> Bumpmap<F, S1, S2, M>
 where
-    F: Float + Texel + crate::types::float::Lerp<Ratio = F>,
+    F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
     pub const fn new(pow: S1, img: S2, mat: M) -> Self {
-        Self { pow, img, mat }
+        Self {
+            pow,
+            img,
+            mat,
+            _p: PhantomData,
+        }
     }
 }
 
-impl<F, S1, S2, M> Material for Bumpmap<F, S1, S2, M>
+impl<F, S1, S2, M> Material<F> for Bumpmap<F, S1, S2, M>
 where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let n = self.img.sample(uv);

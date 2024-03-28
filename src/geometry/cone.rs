@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cone<F: Float, M: Material<F = F>> {
+pub struct Cone<F: Float, M: Material<F>> {
     height: F,
     top_r: F,
     bot_r: F,
@@ -13,7 +13,7 @@ pub struct Cone<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cone<F, M>);
 
-impl<F: Float, M: Material<F = F>> Interactive for Cone<F, M> {
+impl<F: Float, M: Material<F>> Interactive for Cone<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -56,7 +56,7 @@ impl<F: Float, M: Material<F = F>> Interactive for Cone<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for Cone<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for Cone<F, M> {
     fn get_name(&self) -> &str {
         "Cone"
     }
@@ -69,7 +69,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for Cone<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -201,7 +201,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Cone<F, M> {
+impl<F: Float, M: Material<F>> Cone<F, M> {
     pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Self {
         let m = bot_r.max(top_r);
         let xfrm = Transform::new(xfrm);

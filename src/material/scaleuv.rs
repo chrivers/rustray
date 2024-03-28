@@ -2,12 +2,12 @@ use super::mat_util::*;
 
 /// Proxy material that scales UV coordinates, before rendering backing material.
 #[derive(Copy, Clone, Debug)]
-pub struct ScaleUV<F: Float, M: Material<F = F>> {
+pub struct ScaleUV<F: Float, M: Material<F>> {
     uv: Point<F>,
     mat: M,
 }
 
-impl<F: Float, M: Material<F = F>> ScaleUV<F, M> {
+impl<F: Float, M: Material<F>> ScaleUV<F, M> {
     pub fn new(u: F, v: F, mat: M) -> Self {
         Self {
             uv: point!(u, v),
@@ -16,9 +16,7 @@ impl<F: Float, M: Material<F = F>> ScaleUV<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Material for ScaleUV<F, M> {
-    type F = F;
-
+impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let mut smaxel = maxel.with_uv(self.uv.dot(uv));

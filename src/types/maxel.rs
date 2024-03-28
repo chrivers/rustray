@@ -12,7 +12,7 @@ pub struct Maxel<'a, F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub obj: &'a dyn Geometry<F>,
-    pub mat: &'a dyn Material<F = F>,
+    pub mat: &'a dyn Material<F>,
     pub lvl: u32,
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
@@ -41,7 +41,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         dir: Vector<F>,
         lvl: u32,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F = F>,
+        mat: &'a dyn Material<F>,
     ) -> Self {
         Maxel {
             pos,

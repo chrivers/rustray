@@ -6,19 +6,14 @@ use crate::types::{Color, Float};
 
 use crate::scene::{Light, RayTracer};
 
-pub trait Material: Debug + Send + Sync {
-    type F: Float;
-    fn render(&self, maxel: &mut Maxel<Self::F>, rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
+pub trait Material<F: Float>: Debug + Send + Sync {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
-    fn shadow(
-        &self,
-        _maxel: &mut Maxel<Self::F>,
-        _light: &dyn Light<Self::F>,
-    ) -> Option<Color<Self::F>> {
+    fn shadow(&self, _maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>> {
         Some(Color::black())
     }
 
-    fn dynamic(self) -> DynMaterial<Self::F>
+    fn dynamic(self) -> DynMaterial<F>
     where
         Self: Sized + 'static,
     {
@@ -31,10 +26,9 @@ pub trait Material: Debug + Send + Sync {
     }
 }
 
-pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
+pub type DynMaterial<F> = Arc<Box<dyn Material<F>>>;
 
-impl<F: Float> Material for Color<F> {
-    type F = F;
+impl<F: Float> Material<F> for Color<F> {
     fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
         *self
     }
@@ -45,8 +39,7 @@ impl<F: Float> Material for Color<F> {
     }
 }
 
-impl<F: Float> Material for Arc<Box<dyn Material<F = F>>> {
-    type F = F;
+impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         self.as_ref().render(maxel, rt)
     }

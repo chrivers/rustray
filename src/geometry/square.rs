@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Square<F: Float, M: Material<F = F>> {
+pub struct Square<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
     mat: M,
     aabb: Aabb,
@@ -9,7 +9,7 @@ pub struct Square<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Square<F, M>);
 
-impl<F: Float, M: Material<F = F>> Interactive for Square<F, M> {
+impl<F: Float, M: Material<F>> Interactive for Square<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -22,7 +22,7 @@ impl<F: Float, M: Material<F = F>> Interactive for Square<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for Square<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for Square<F, M> {
     fn get_name(&self) -> &str {
         "Square"
     }
@@ -35,7 +35,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for Square<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for Square<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -75,7 +75,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Square<F, M> {
+impl<F: Float, M: Material<F>> Square<F, M> {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::ZERO);

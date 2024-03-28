@@ -6,7 +6,7 @@ use std::fmt::Debug;
 use rtbvh::SpatialTriangle;
 
 #[derive(Clone, Debug)]
-pub struct Triangle<F: Float, M: Material<F = F>> {
+pub struct Triangle<F: Float, M: Material<F>> {
     a: Vector<F>,
     b: Vector<F>,
     c: Vector<F>,
@@ -28,14 +28,14 @@ pub struct Triangle<F: Float, M: Material<F = F>> {
     mat: M,
 }
 
-impl<F: Float, M: Material<F = F>> Interactive for Triangle<F, M> {
+impl<F: Float, M: Material<F>> Interactive for Triangle<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         self.mat.ui(ui);
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for Triangle<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for Triangle<F, M> {
     fn get_name(&self) -> &str {
         "Triangle"
     }
@@ -48,7 +48,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> SpatialTriangle for Triangle<F, M> {
+impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {
         self.a.into_vector3()
     }
@@ -62,7 +62,7 @@ impl<F: Float, M: Material<F = F>> SpatialTriangle for Triangle<F, M> {
 
 aabb_impl_fm!(Triangle<F, M>);
 
-impl<F: Float, M: Material<F = F>> fmt::Display for Triangle<F, M> {
+impl<F: Float, M: Material<F>> fmt::Display for Triangle<F, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -80,7 +80,7 @@ impl<F: Float, M: Material<F = F>> fmt::Display for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Triangle<F, M> {
+impl<F: Float, M: Material<F>> Triangle<F, M> {
     fn interpolate_normal(&self, u: F, v: F) -> Vector<F> {
         let w = F::ONE - u - v;
         let normal = self.na * w + self.nb * u + self.nc * v;
@@ -94,7 +94,7 @@ impl<F: Float, M: Material<F = F>> Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F> + Clone> Geometry<F> for Triangle<F, M> {
+impl<F: Float, M: Material<F> + Clone> Geometry<F> for Triangle<F, M> {
     fn st(&self, hit: &mut Maxel<F>) -> Point<F> {
         let c1 = self.edge1.cross(hit.pos - self.b);
         let c2 = self.edge2.cross(hit.pos - self.c);
@@ -120,7 +120,7 @@ impl<F: Float, M: Material<F = F> + Clone> Geometry<F> for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Triangle<F, M> {
+impl<F: Float, M: Material<F>> Triangle<F, M> {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         a: Vector<F>,

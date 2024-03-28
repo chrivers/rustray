@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cylinder<F: Float, M: Material<F = F>> {
+pub struct Cylinder<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
     capped: bool,
     mat: M,
@@ -10,7 +10,7 @@ pub struct Cylinder<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cylinder<F, M>);
 
-impl<F: Float, M: Material<F = F>> Interactive for Cylinder<F, M> {
+impl<F: Float, M: Material<F>> Interactive for Cylinder<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -26,7 +26,7 @@ impl<F: Float, M: Material<F = F>> Interactive for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for Cylinder<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for Cylinder<F, M> {
     fn get_name(&self) -> &str {
         "Cylinder"
     }
@@ -40,7 +40,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -147,7 +147,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Cylinder<F, M> {
+impl<F: Float, M: Material<F>> Cylinder<F, M> {
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(

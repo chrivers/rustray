@@ -12,12 +12,12 @@ use crate::types::bvh::BvhExt;
 use crate::types::result::RResult;
 
 #[derive(Debug)]
-pub struct TriangleMesh<F: Float, M: Material<F = F>> {
+pub struct TriangleMesh<F: Float, M: Material<F>> {
     pub tris: Vec<Triangle<F, M>>,
     bvh: Bvh,
 }
 
-impl<F: Float, M: Material<F = F>> Interactive for TriangleMesh<F, M> {
+impl<F: Float, M: Material<F>> Interactive for TriangleMesh<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         for tri in &mut self.tris {
@@ -26,7 +26,7 @@ impl<F: Float, M: Material<F = F>> Interactive for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for TriangleMesh<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for TriangleMesh<F, M> {
     fn get_name(&self) -> &str {
         "Triangle mesh"
     }
@@ -39,7 +39,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Primitive for TriangleMesh<F, M> {
+impl<F: Float, M: Material<F>> Primitive for TriangleMesh<F, M> {
     fn center(&self) -> Vec3 {
         self.bvh.bounds().center()
     }
@@ -49,14 +49,14 @@ impl<F: Float, M: Material<F = F>> Primitive for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F> + Clone> Geometry<F> for TriangleMesh<F, M> {
+impl<F: Float, M: Material<F> + Clone> Geometry<F> for TriangleMesh<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         self.bvh
             .nearest_intersection(ray, &self.tris, &mut F::max_value())
     }
 }
 
-impl<F: Float, M: Material<F = F> + Clone> TriangleMesh<F, M> {
+impl<F: Float, M: Material<F> + Clone> TriangleMesh<F, M> {
     pub fn new(tris: Vec<Triangle<F, M>>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 

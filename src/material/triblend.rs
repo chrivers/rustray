@@ -8,14 +8,14 @@ use super::mat_util::*;
 /// Useful for representing triangles with heterogenous materials.
 
 #[derive(Clone, Debug)]
-pub struct Triblend<F: Float, A: Material, B: Material, C: Material> {
+pub struct Triblend<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> {
     a: A,
     b: B,
     c: C,
     p: PhantomData<F>,
 }
 
-impl<F: Float, A: Material, B: Material, C: Material> Triblend<F, A, B, C> {
+impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Triblend<F, A, B, C> {
     pub const fn new(a: A, b: B, c: C) -> Self {
         Self {
             a,
@@ -26,11 +26,9 @@ impl<F: Float, A: Material, B: Material, C: Material> Triblend<F, A, B, C> {
     }
 }
 
-impl<F: Float, A: Material<F = F>, B: Material<F = F>, C: Material<F = F>> Material
+impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
     for Triblend<F, A, B, C>
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let a = self.a.render(maxel, rt);
         let b = self.b.render(maxel, rt);

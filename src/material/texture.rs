@@ -31,9 +31,7 @@ impl<F: Float, S: Sampler<F, Color<F>>> Texture<F, S> {
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> Material for Texture<F, S> {
-    type F = F;
-
+impl<F: Float, S: Sampler<F, Color<F>>> Material<F> for Texture<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         self.img.sample(maxel.uv())
     }

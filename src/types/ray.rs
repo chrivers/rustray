@@ -29,7 +29,7 @@ impl<'a, F: Float> Ray<F> {
         self,
         ext: F,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F = F>,
+        mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
     }

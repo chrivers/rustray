@@ -110,7 +110,7 @@ pub fn build_aabb_symmetric<F: Float>(xfrm: &Transform<F>, x: F, y: F, z: F) -> 
 
 macro_rules! aabb_impl_fm {
     ( $t:ty ) => {
-        impl<F: Float, M: Material<F = F>> rtbvh::Primitive for $t {
+        impl<F: Float, M: Material<F>> rtbvh::Primitive for $t {
             fn center(&self) -> Vec3 {
                 self.aabb.center()
             }

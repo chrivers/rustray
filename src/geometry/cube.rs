@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cube<F: Float, M: Material<F = F>> {
+pub struct Cube<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
     mat: M,
     aabb: Aabb,
@@ -9,14 +9,14 @@ pub struct Cube<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cube<F, M>);
 
-impl<F: Float, M: Material<F = F>> Interactive for Cube<F, M> {
+impl<F: Float, M: Material<F>> Interactive for Cube<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         self.mat.ui(ui);
     }
 }
 
-impl<F: Float, M: Material<F = F>> SceneObject for Cube<F, M> {
+impl<F: Float, M: Material<F>> SceneObject for Cube<F, M> {
     fn get_name(&self) -> &str {
         "Cube"
     }
@@ -29,7 +29,7 @@ impl<F: Float, M: Material<F = F>> SceneObject for Cube<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -90,7 +90,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Cube<F, M> {
+impl<F: Float, M: Material<F>> Cube<F, M> {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);

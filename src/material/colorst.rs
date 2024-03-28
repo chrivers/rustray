@@ -11,9 +11,7 @@ impl<F: Float> ColorST<F> {
     }
 }
 
-impl<F: Float> Material for ColorST<F> {
-    type F = F;
-
+impl<F: Float> Material<F> for ColorST<F> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         let st = maxel.st();
         let w = F::ONE - st.x - st.y;

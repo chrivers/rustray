@@ -1,15 +1,20 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
+pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> {
     pow: S,
     mat: M,
+    _p: PhantomData<F>,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Phong<F, S, M> {
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Phong<F, S, M> {
     #[must_use]
     pub const fn new(pow: S, mat: M) -> Self {
-        Self { pow, mat }
+        Self {
+            pow,
+            mat,
+            _p: PhantomData,
+        }
     }
 }
 
@@ -25,9 +30,7 @@ impl<F: Float + Texel> Phong<F, F, Color<F>> {
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<F, S, M> {
-    type F = F;
-
+impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F, S, M> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut res = Color::black();
 

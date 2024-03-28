@@ -2,32 +2,36 @@ use super::mat_util::*;
 use rand::Rng;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
+pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> {
     src: S,    /* Surface Roughness Coefficient */
     rays: u32, /* Number of rays to average over */
     mat: M,    /* Underlying material */
+    _p: PhantomData<F>,
 }
 
 impl<F, S, M> Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F = F>,
+    M: Material<F>,
 {
     pub const fn new(src: S, rays: u32, mat: M) -> Self {
-        Self { src, rays, mat }
+        Self {
+            src,
+            rays,
+            mat,
+            _p: PhantomData,
+        }
     }
 }
 
-impl<F, S, M> Material for Matte<F, S, M>
+impl<F, S, M> Material<F> for Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F = F>,
+    M: Material<F>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut rng = rand::thread_rng();
         let mut col = Color::black();
