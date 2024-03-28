@@ -1,5 +1,6 @@
 #![allow(unused_variables)]
 use obj::Obj;
+use rand::distributions::{Distribution, Standard};
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
 use zip::ZipArchive;
@@ -21,9 +22,10 @@ pub fn construct_demo_scene<'a, F>(
     time: &mut TimeSlice,
     width: u32,
     height: u32,
-) -> RResult<BoxScene<'a, F>>
+) -> RResult<BoxScene<F>>
 where
-    F: Float + Texel + 'static,
+    F: Float + Texel,
+    Standard: Distribution<F>,
     f32: Into<F>,
 {
     time.set("construct");
