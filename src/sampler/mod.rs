@@ -25,6 +25,11 @@ where
     {
         Arc::new(Box::new(self))
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        ui.label(name);
+    }
 }
 
 pub type DynSampler<F, T> = Arc<Box<dyn Sampler<F, T>>>;
@@ -36,6 +41,16 @@ impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
 
     fn dimensions(&self) -> (u32, u32) {
         self.as_ref().dimensions()
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        match Arc::<Box<_>>::get_mut(self) {
+            Some(samp) => samp.ui(ui, name),
+            None => {
+                ui.label("nope :(");
+            }
+        }
     }
 }
 
@@ -62,6 +77,12 @@ where
     fn dimensions(&self) -> (u32, u32) {
         (1, 1)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        ui.label(name);
+        ui.add(egui::Slider::new(self, F::zero()..=F::from_u32(128)).clamp_to_range(false));
+    }
 }
 
 impl<F: Float> Sampler<F, Color<F>> for Color<F> {
@@ -71,6 +92,11 @@ impl<F: Float> Sampler<F, Color<F>> for Color<F> {
 
     fn dimensions(&self) -> (u32, u32) {
         (1, 1)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        crate::frontend::gui::color_ui(ui, self, name);
     }
 }
 
@@ -85,6 +111,9 @@ pub(crate) mod samp_util {
     pub use cgmath::{InnerSpace, VectorSpace};
 
     pub use num_traits::ToPrimitive;
+
+    #[cfg(feature = "gui")]
+    pub use egui::{CollapsingHeader, Slider};
 }
 
 pub mod bilinear;
