@@ -28,4 +28,27 @@ impl<F: Float, M: Material<F = F>> Material for ScaleUV<F, M> {
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, light)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("ScaleUV")
+            .default_open(true)
+            .show(ui, |ui| {
+                ui.add(
+                    Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
+                        .logarithmic(true)
+                        .clamp_to_range(false)
+                        .trailing_fill(true)
+                        .text("u scaling factor"),
+                );
+                ui.add(
+                    Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
+                        .logarithmic(true)
+                        .clamp_to_range(false)
+                        .trailing_fill(true)
+                        .text("v scaling factor"),
+                );
+                self.mat.ui(ui);
+            });
+    }
 }
