@@ -315,17 +315,17 @@ impl<F: Float> SbtParser2<F> {
         Ok(SbtValue::Tuple(tuple))
     }
 
-    pub fn parse_float(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_float<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         Ok(SbtValue::Float(F::from_f64(
             pr.as_span().as_str().trim().parse::<f64>()?,
         )))
     }
 
-    pub fn parse_int(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_int<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         Ok(SbtValue::Int(pr.as_span().as_str().trim().parse()?))
     }
 
-    pub fn parse_boolean(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_boolean<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         match pr.as_span().as_str() {
             "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
@@ -333,7 +333,7 @@ impl<F: Float> SbtParser2<F> {
         }
     }
 
-    pub fn parse_string(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_string<'a>(pr: &Pair<'a, Rule>) -> RResult<SbtValue<'a, F>> {
         let val = pr.as_span().as_str();
         Ok(SbtValue::Str(&val[1..val.len() - 1]))
     }
@@ -344,10 +344,10 @@ impl<F: Float> SbtParser2<F> {
                 Self::parse_tuple(pr.into_inner())?
             }
             Rule::dict => Self::parse_dict(pr.into_inner())?,
-            Rule::int => Self::parse_int(pr)?,
-            Rule::float => Self::parse_float(pr)?,
-            Rule::string => Self::parse_string(pr)?,
-            Rule::boolean => Self::parse_boolean(pr)?,
+            Rule::int => Self::parse_int(&pr)?,
+            Rule::float => Self::parse_float(&pr)?,
+            Rule::string => Self::parse_string(&pr)?,
+            Rule::boolean => Self::parse_boolean(&pr)?,
             Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
             other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
         };
@@ -406,7 +406,7 @@ where
         }
     }
 
-    fn parse_camera(&mut self, dict: impl SDict<F>) -> RResult<Camera<F>> {
+    fn parse_camera(&mut self, dict: &impl SDict<F>) -> RResult<Camera<F>> {
         let position = dict.vector("position").unwrap_or_else(|_| Vector::zero());
         let mut viewdir = dict.vector("viewdir").ok();
         let updir = dict.vector("updir").unwrap_or_else(|_| Vector::unit_y());
@@ -440,7 +440,7 @@ where
         ))
     }
 
-    fn parse_point_light(&self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
+    fn parse_point_light(&self, dict: &impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
@@ -458,7 +458,7 @@ where
         Ok(res)
     }
 
-    fn parse_directional_light(&self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
+    fn parse_directional_light(&self, dict: &impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
@@ -467,7 +467,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
+    fn parse_material(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -504,14 +504,14 @@ where
         }
     }
 
-    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
-        self.parse_material(dict.dict("material").unwrap_or(&SbtDict::new()))
+    fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
+        self.parse_material(&dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
     fn parse_polymesh(
         &mut self,
         xfrm: Matrix4<F>,
-        dict: impl SDict<F>,
+        dict: &impl SDict<F>,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut tris = vec![];
         let mut points = vec![];
@@ -527,7 +527,7 @@ where
         }
         if let Ok(mats) = dict.tuple("materials") {
             for mat in mats {
-                materials.push(self.parse_material(mat.dict()?));
+                materials.push(self.parse_material(&mat.dict()?));
             }
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {
@@ -673,7 +673,7 @@ where
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
                         Ok(vec![Box::new(Sphere::new(
                             xfrm,
-                            self.parse_material_obj(dict),
+                            self.parse_material_obj(&dict),
                         ))])
                     }
 
@@ -681,7 +681,7 @@ where
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Cube::new(
                             xfrm,
-                            self.parse_material_obj(dict),
+                            self.parse_material_obj(&dict),
                         ))])
                     }
 
@@ -693,7 +693,7 @@ where
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
-                            self.parse_material_obj(dict),
+                            self.parse_material_obj(&dict),
                         ))])
                     }
 
@@ -701,7 +701,7 @@ where
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Square::new(
                             xfrm,
-                            self.parse_material_obj(dict),
+                            self.parse_material_obj(&dict),
                         ))])
                     }
 
@@ -710,11 +710,11 @@ where
                         Ok(vec![Box::new(Cylinder::new(
                             xfrm,
                             dict.boolean("capped").unwrap_or(true),
-                            self.parse_material_obj(dict),
+                            self.parse_material_obj(&dict),
                         ))])
                     }
 
-                    ("polymesh", dict) => self.parse_polymesh(xfrm, dict),
+                    ("polymesh", dict) => self.parse_polymesh(xfrm, &dict),
 
                     _ => {
                         error!("unparsed block: {:?}", blk);
@@ -749,12 +749,12 @@ where
 
         for blk in prog.blocks {
             match (blk.name, blk.value) {
-                ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
+                ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(&dict)?),
                 ("directional_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_directional_light(dict)?));
+                    lights.push(Box::new(self.parse_directional_light(&dict)?));
                 }
                 ("point_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_point_light(dict)?));
+                    lights.push(Box::new(self.parse_point_light(&dict)?));
                 }
                 ("ambient_light", S::Dict(ref dict)) => {
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -764,7 +764,7 @@ where
 
                 ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
-                    lights.push(Box::new(self.parse_point_light(dict)?));
+                    lights.push(Box::new(self.parse_point_light(&dict)?));
                 }
 
                 (name, value) => {

@@ -131,7 +131,7 @@ where
         }
     }
 
-    pub fn parse_num1(m: Pair<Rule>) -> F {
+    pub fn parse_num1(m: &Pair<Rule>) -> F {
         m.as_str().parse().unwrap_or(F::ZERO)
     }
 
@@ -638,9 +638,9 @@ where
         resdir: &Path,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut body = p.into_inner();
-        let a = Self::parse_num1(body.next().unwrap());
-        let b = Self::parse_num1(body.next().unwrap());
-        let c = Self::parse_num1(body.next().unwrap());
+        let a = Self::parse_num1(&body.next().unwrap());
+        let b = Self::parse_num1(&body.next().unwrap());
+        let c = Self::parse_num1(&body.next().unwrap());
         let x2 = Matrix4::from_translation(Vector3::new(a, b, c));
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
@@ -652,10 +652,10 @@ where
         resdir: &Path,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut body = p.into_inner();
-        let a = Self::parse_num1(body.next().unwrap());
-        let b = Self::parse_num1(body.next().unwrap());
-        let c = Self::parse_num1(body.next().unwrap());
-        let d = Self::parse_num1(body.next().unwrap());
+        let a = Self::parse_num1(&body.next().unwrap());
+        let b = Self::parse_num1(&body.next().unwrap());
+        let c = Self::parse_num1(&body.next().unwrap());
+        let d = Self::parse_num1(&body.next().unwrap());
         let x2 = Matrix4::from_axis_angle(Vector3::new(a, b, c).normalize(), Rad(d));
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
@@ -690,13 +690,13 @@ where
 
         let x2 = match it.len() {
             2 => {
-                let a = Self::parse_num1(it.remove(0));
+                let a = Self::parse_num1(&it.remove(0));
                 Matrix4::from_scale(a)
             }
             4 => {
-                let a = Self::parse_num1(it.remove(0));
-                let b = Self::parse_num1(it.remove(0));
-                let c = Self::parse_num1(it.remove(0));
+                let a = Self::parse_num1(&it.remove(0));
+                let b = Self::parse_num1(&it.remove(0));
+                let c = Self::parse_num1(&it.remove(0));
                 Matrix4::from_nonuniform_scale(a, b, c)
             }
             _ => return Err(ParseError("invalid scale")),
