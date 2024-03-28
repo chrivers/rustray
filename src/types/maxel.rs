@@ -24,7 +24,7 @@ impl<'a, F: Float> Debug for Maxel<'a, F> {
         f.debug_struct("Maxel")
             .field("pos", &self.pos)
             .field("dir", &self.dir)
-            .field("obj", &"<dyn Geometry>")
+            .field("obj", &self.obj)
             .field("mat", &self.mat)
             .field("lvl", &self.lvl)
             .field("nml", &self.nml)
