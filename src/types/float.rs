@@ -6,7 +6,19 @@ use std::ops::{Add, Mul, Sub};
 
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 
-pub trait Float: num_traits::FloatConst
+#[cfg(feature = "gui")]
+pub trait FloatReq: num::Float + num::Signed + egui::emath::Numeric {}
+
+#[cfg(feature = "gui")]
+impl<T: num::Float + num::Signed + egui::emath::Numeric> FloatReq for T {}
+
+#[cfg(not(feature = "gui"))]
+pub trait FloatReq: num::Float + num::Signed + 'static {}
+
+#[cfg(not(feature = "gui"))]
+impl<T: num::Float + num::Signed + 'static> FloatReq for T {}
+
+pub trait Float
 where
     Self: Debug,
     Self: Display,
@@ -18,7 +30,7 @@ where
     Self: NumAssignOps,
     Self: RelativeEq,
     Self: UlpsEq,
-    Self: num::Float + num::Signed,
+    Self: FloatReq,
     Self: pow::Pow<Self, Output = Self>,
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
@@ -34,7 +46,9 @@ where
     fn from_u32(value: u32) -> Self;
     fn from_usize(value: usize) -> Self;
     fn from_f32(value: f32) -> Self;
+    #[cfg(not(feature = "gui"))]
     fn from_f64(value: f64) -> Self;
+
     fn non_zero(self) -> bool {
         self != Self::ZERO
     }
@@ -47,6 +61,9 @@ where
     fn is_unit(self) -> bool {
         (self >= Self::ZERO) && (self <= Self::ONE)
     }
+
+    #[cfg(not(feature = "gui"))]
+    fn to_f64(self) -> f64;
 }
 
 pub trait Lerp
@@ -100,8 +117,15 @@ impl Float for f32 {
     }
 
     #[inline(always)]
+    #[cfg(not(feature = "gui"))]
     fn from_f64(value: f64) -> Self {
         value as Self
+    }
+
+    #[inline(always)]
+    #[cfg(not(feature = "gui"))]
+    fn to_f64(self) -> f64 {
+        self as f64
     }
 }
 
@@ -137,7 +161,14 @@ impl Float for f64 {
     }
 
     #[inline(always)]
+    #[cfg(not(feature = "gui"))]
     fn from_f64(value: f64) -> Self {
-        value as Self
+        value
+    }
+
+    #[inline(always)]
+    #[cfg(not(feature = "gui"))]
+    fn to_f64(self) -> f64 {
+        self as f64
     }
 }

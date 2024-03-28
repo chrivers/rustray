@@ -48,6 +48,10 @@ pub enum Error {
 
     #[error("Crossbeam send error")]
     CrossbeamSend,
+
+    #[cfg(feature = "gui")]
+    #[error(transparent)]
+    EFrame(#[from] eframe::Error),
 }
 
 pub type RResult<F> = Result<F, Error>;

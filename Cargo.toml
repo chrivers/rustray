@@ -11,11 +11,12 @@ lto = "fat"
 opt-level = 3
 
 [features]
-default = ["rayon", "fixedpoint1", "fixedpoint2"]
+default = ["rayon", "fixedpoint1", "fixedpoint2", "gui"]
 fixedpoint = ["dep:fixed", "dep:az", "dep:assert_float_eq", "derive_more/not"]
 fixedpoint1 = ["fixedpoint"]
 fixedpoint2 = ["fixedpoint"]
 rayon = ["dep:rayon", "indicatif/rayon"]
+gui = ["dep:eframe", "dep:egui"]
 
 [dependencies]
 image = { version = "0.25", default-features = false, features = [ "png", "jpeg" ] }
@@ -44,3 +45,6 @@ fixed = { version = "2.0.0-alpha", features = ["num-traits"], optional = true }
 az = { version = "1.2", optional = true }
 crossbeam-channel = "0.5.12"
 workerpool = { version = "1.2.1", features = ["crossbeam"] }
+
+eframe = { version = "0.26", default-features = false, features = ["glow"], optional = true }
+egui = { version = "0.26", default-features = false, features = ["default_fonts"], optional = true }

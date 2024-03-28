@@ -53,9 +53,9 @@ impl FromStr for SbtVersion {
 
 fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
     (
-        p.x.to_f64().unwrap().to_bits(),
-        p.y.to_f64().unwrap().to_bits(),
-        p.z.to_f64().unwrap().to_bits(),
+        p.x.to_f64().to_bits(),
+        p.y.to_f64().to_bits(),
+        p.z.to_f64().to_bits(),
     )
 }
 
