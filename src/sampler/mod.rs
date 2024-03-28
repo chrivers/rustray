@@ -88,6 +88,7 @@ pub(crate) mod samp_util {
 }
 
 pub mod bilinear;
+pub mod chessboard;
 pub mod heightnormal;
 pub mod nearest;
 pub mod normalmap;
@@ -99,6 +100,7 @@ pub mod texture3;
 pub mod transform;
 
 pub use bilinear::Bilinear;
+pub use chessboard::ChessBoardSampler;
 pub use heightnormal::HeightNormal;
 pub use nearest::Nearest;
 pub use normalmap::NormalMap;
