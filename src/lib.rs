@@ -7,6 +7,7 @@ extern crate log;
 
 pub mod demoscene;
 pub mod download;
+pub mod engine;
 pub mod format;
 pub mod frontend;
 pub mod geometry;
