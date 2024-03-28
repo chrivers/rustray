@@ -86,9 +86,10 @@ pub fn load<F: Float + Texel>(
                 }
                 let data = &obj.data;
                 for n in 1..(poly.0.len() - 1) {
-                    let a = (Vector::from_f32s(data.position[poly.0[0].0]) - corner) * scale + pos;
-                    let b = (Vector::from_f32s(data.position[poly.0[n].0]) - corner) * scale + pos;
-                    let c = (Vector::from_f32s(data.position[poly.0[n + 1].0]) - corner) * scale + pos;
+                    let dpos = &data.position;
+                    let a = (Vector::from_f32s(dpos[poly.0[0].0]) - corner) * scale + pos;
+                    let b = (Vector::from_f32s(dpos[poly.0[n].0]) - corner) * scale + pos;
+                    let c = (Vector::from_f32s(dpos[poly.0[n + 1].0]) - corner) * scale + pos;
 
                     /* FIXME: .unwrap() is a terrible when loading data from a file */
                     let (na, nb, nc) = if obj.data.normal.is_empty() {
