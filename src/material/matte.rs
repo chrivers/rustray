@@ -3,8 +3,8 @@ use rand::Rng;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
-    rays: u32, /* Number of rays to average over */
     src: S,    /* Surface Roughness Coefficient */
+    rays: u32, /* Number of rays to average over */
     mat: M,    /* Underlying material */
 }
 
