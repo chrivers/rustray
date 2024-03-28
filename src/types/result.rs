@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::{engine::RenderSpan, Float};
+
 #[derive(Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -43,6 +45,9 @@ pub enum Error {
 
     #[error(transparent)]
     BuildError(#[from] rtbvh::BuildError),
+
+    #[error("Crossbeam send error")]
+    CrossbeamSend,
 }
 
 pub type RResult<F> = Result<F, Error>;
@@ -56,5 +61,11 @@ impl From<pest::error::Error<crate::format::sbt::Rule>> for Error {
 impl From<pest::error::Error<crate::format::sbt2::Rule>> for Error {
     fn from(value: pest::error::Error<crate::format::sbt2::Rule>) -> Self {
         Self::PestError2(Box::new(value))
+    }
+}
+
+impl<F: Float> From<crossbeam_channel::SendError<RenderSpan<F>>> for Error {
+    fn from(_value: crossbeam_channel::SendError<RenderSpan<F>>) -> Self {
+        Self::CrossbeamSend
     }
 }
