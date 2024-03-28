@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use crate::scene::{Interactive, SceneObject};
 use crate::types::ray::{Maxel, Ray};
 use crate::types::transform::Transform;
 use crate::types::vector::Vectorx;
@@ -13,7 +14,7 @@ use rtbvh::Aabb;
 
 use glam::f32::Vec3;
 
-pub trait Geometry<F: Float>: Debug + Sync + Send {
+pub trait Geometry<F: Float>: SceneObject + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
         Vector::zero()
@@ -26,11 +27,12 @@ pub trait Geometry<F: Float>: Debug + Sync + Send {
     }
 }
 
-pub trait FiniteGeometry<F: Float>: Geometry<F> + rtbvh::Primitive {}
+pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject + rtbvh::Primitive {}
 
 impl<F: Float, T> Geometry<F> for Box<T>
 where
     T: Geometry<F> + ?Sized,
+    Box<T>: SceneObject,
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         (**self).intersect(ray)
@@ -46,6 +48,33 @@ where
 
     fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
         (**self).st(maxel)
+    }
+}
+
+impl<F: Float> SceneObject for Box<(dyn FiniteGeometry<F> + 'static)> {
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        (**self).get_interactive()
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
+    }
+}
+
+impl<F: Float> SceneObject for Box<(dyn Geometry<F> + 'static)> {
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        (**self).get_interactive()
+    }
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
     }
 }
 
@@ -97,11 +126,17 @@ pub(crate) mod geo_util {
     pub use super::Geometry;
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
     pub use crate::material::Material;
+    pub use crate::scene::{Interactive, SceneObject};
     pub use crate::types::ray::{Maxel, Ray};
     pub use crate::types::transform::Transform;
     pub use crate::types::vector::{InnerSpace, Vectorx};
     pub use crate::types::{Float, Point, Vector};
     pub use crate::{point, vec3};
+
+    #[cfg(feature = "gui")]
+    pub use crate::frontend::gui::position_ui;
+    #[cfg(feature = "gui")]
+    pub use egui::Slider;
 
     pub use cgmath::Matrix4;
 
