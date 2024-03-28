@@ -26,4 +26,11 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for ChessBoard<A
             self.b.render(maxel, rt)
         }
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Chessboard")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
