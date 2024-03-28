@@ -127,7 +127,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
 
     fn polar_angles(self) -> (F, F) {
         let theta = self.x.atan2(self.z);
-        let phi = self.y.acos();
+        let phi = self.y.asin();
         (phi, theta)
     }
 
@@ -204,7 +204,7 @@ where
         let raw_u = theta / (F::TWO * F::PI());
 
         let u = raw_u + F::HALF;
-        let v = phi / (F::TWO * F::PI());
+        let v = phi / F::PI();
 
         (u, v)
     }
