@@ -751,13 +751,13 @@ where
             match (blk.name, blk.value) {
                 ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
                 ("directional_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_directional_light(dict)?))
+                    lights.push(Box::new(self.parse_directional_light(dict)?));
                 }
                 ("point_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_point_light(dict)?))
+                    lights.push(Box::new(self.parse_point_light(dict)?));
                 }
                 ("ambient_light", S::Dict(ref dict)) => {
-                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?
+                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
                 ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
                 ("material", S::Dict(dict)) => self.material.extend(dict),
