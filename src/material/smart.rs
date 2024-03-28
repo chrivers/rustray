@@ -102,11 +102,10 @@ where
             let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
 
-            let light_color = light.attenuate(light_color, light_vec.magnitude());
-
             let lambert = normal.dot(light_dir);
 
             if lambert > F::BIAS {
+                let light_color = light.attenuate(light_color, light_vec.magnitude());
                 res += (light_color * diff_color) * lambert;
 
                 if !spec_color.is_zero() {
