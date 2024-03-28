@@ -13,6 +13,62 @@ pub struct Cone<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cone<F, M>);
 
+impl<F: Float, M: Material<F = F>> Interactive for Cone<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::Grid::new("grid")
+            .num_columns(2)
+            .spacing([40.0, 4.0])
+            .striped(true)
+            .show(ui, |ui| {
+                ui.add(
+                    Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
+                        .clamp_to_range(false)
+                        .smallest_positive(0.01)
+                        .text("Top radius"),
+                );
+                ui.end_row();
+
+                ui.add(
+                    Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
+                        .clamp_to_range(false)
+                        .smallest_positive(0.01)
+                        .text("Bottom radius"),
+                );
+                ui.end_row();
+
+                ui.add(
+                    Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+                        .clamp_to_range(false)
+                        .smallest_positive(0.01)
+                        .text("Height"),
+                );
+                ui.end_row();
+
+                ui.checkbox(&mut self.capped, "Capped");
+                ui.end_row();
+
+                /* position_ui(ui, &mut self.pos, "Position"); */
+                self.mat.ui(ui);
+            });
+        let m = self.bot_r.max(self.top_r);
+        self.aabb = build_aabb_ranged(&self.xfrm, [-m, m], [-m, m], [F::ZERO, self.height]);
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for Cone<F, M> {
+    fn get_name(&self) -> &str {
+        "Cone"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
