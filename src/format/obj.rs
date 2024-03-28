@@ -105,7 +105,7 @@ pub fn load<F: Float + Texel>(
                         )
                     };
 
-                    let (ta, tb, tc) = if obj.data.texture.is_empty() {
+                    let (mut ta, mut tb, mut tc) = if obj.data.texture.is_empty() {
                         (Point::zero(), Point::zero(), Point::zero())
                     } else {
                         (
@@ -114,6 +114,9 @@ pub fn load<F: Float + Texel>(
                             Point::from(data.texture[poly.0[n + 1].1.unwrap()]),
                         )
                     };
+                    ta.y = F::ONE - ta.y;
+                    tb.y = F::ONE - tb.y;
+                    tc.y = F::ONE - tc.y;
 
                     let tri = Triangle::new(a, b, c, na, nb, nc, ta, tb, tc, mat.clone());
                     tris.push(tri);
