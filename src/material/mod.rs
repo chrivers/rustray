@@ -24,6 +24,11 @@ pub trait Material: Debug + Send + Sync {
     {
         Arc::new(Box::new(self))
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        ui.label("Unknown material");
+    }
 }
 
 pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
