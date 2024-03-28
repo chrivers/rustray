@@ -72,3 +72,10 @@ impl<F: Float> From<[f32; 2]> for Point<F> {
         Self::new(F::from_f32(val[0]), F::from_f32(val[1]))
     }
 }
+
+#[cfg(feature = "gui")]
+impl<F: Float> From<egui::Vec2> for Point<F> {
+    fn from(val: egui::Vec2) -> Self {
+        Self::new(F::from_f32(val[0]), F::from_f32(val[1]))
+    }
+}
