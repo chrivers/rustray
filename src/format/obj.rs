@@ -1,16 +1,15 @@
 use std::path::Path;
 
-use obj::Obj;
-use obj::ObjMaterial;
+use obj::{Obj, ObjMaterial};
 
 use cgmath::InnerSpace;
 
 use crate::geometry::Triangle;
-use crate::material::{DynMaterial, Material, Smart};
-use crate::sampler::{DynSampler, Sampler, SamplerExt, Texel};
+use crate::material::{Bumpmap, DynMaterial, Material, Phong, Smart};
+use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, Texel};
 use crate::types::result::RResult;
-use crate::types::{Color, Float, Point, Vector};
 use crate::types::vector::Vectorx;
+use crate::types::{Color, Float, Point, Vector};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
@@ -27,7 +26,10 @@ fn obj_sampler<F: Float + Texel>(
                     Color::white().dynsampler()
                 })
         }
-        None => col.map(Color::from).unwrap_or_else(Color::black).dynsampler()
+        None => col
+            .map(Color::from)
+            .unwrap_or_else(Color::black)
+            .dynsampler(),
     }
 }
 
