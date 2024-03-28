@@ -38,7 +38,7 @@ pub trait HasColor<F: Float> {
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait Light<F: Float>: HasPosition<F> + Sync {
+pub trait Light<F: Float>: HasPosition<F> + SceneObject + Sync + Send {
     fn get_color(&self) -> Color<F>;
     fn attenuate(&self, color: Color<F>, d: F) -> Color<F>;
 }
