@@ -1,4 +1,4 @@
-use crate::scene::*;
+use crate::scene::{HasPosition, Interactive, Light, SceneObject};
 use crate::types::{Color, Float, Vector};
 
 #[cfg(feature = "gui")]
@@ -119,7 +119,7 @@ impl<F: Float> Light<F> for DirectionalLight<F> {
 
 impl<F: Float> HasPosition<F> for DirectionalLight<F> {
     fn get_position(&self) -> Vector<F> {
-        self.dir * F::from_f32(-100000.0)
+        self.dir * F::from_f32(-100_000.0)
     }
     fn set_position(&mut self, _: Vector<F>) {}
 }
