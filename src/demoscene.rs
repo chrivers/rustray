@@ -28,6 +28,19 @@ where
     Standard: Distribution<F>,
     f32: Into<F>,
 {
+    fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
+    where
+        f32: Into<F>,
+    {
+        PointLight {
+            pos,
+            color,
+            a: (0.3).into(),
+            b: (0.2).into(),
+            c: (0.01).into(),
+        }
+    }
+
     time.set("construct");
 
     let cameras = vec![Camera::parametric(
@@ -39,42 +52,13 @@ where
         height,
     )];
 
-    let (h, l) = (0.8.into(), 0.2.into());
-    let light1 = PointLight {
-        pos: vec3!(2.0, 2.0, 2.0),
-        color: Color { r: h, g: h, b: h },
-        a: l,
-        b: l,
-        c: l,
-    };
-    let light2 = PointLight {
-        pos: vec3!(2.0, 2.0, 7.0),
-        color: Color { r: h, g: l, b: l },
-        a: l,
-        b: l,
-        c: l,
-    };
-    let light3 = PointLight {
-        pos: vec3!(2.0, 7.0, 2.0),
-        color: Color { r: l, g: h, b: l },
-        a: l,
-        b: l,
-        c: l,
-    };
-    let light4 = PointLight {
-        pos: vec3!(7.0, 2.0, 2.0),
-        color: Color { r: l, g: l, b: h },
-        a: l,
-        b: l,
-        c: l,
-    };
-    let light5 = PointLight {
-        pos: vec3!(5.0, 5.0, 5.0),
-        color: Color { r: h, g: h, b: h },
-        a: l,
-        b: l,
-        c: l,
-    };
+    let (h, l) = (1.2.into(), 0.3.into());
+
+    let light1 = point_light(vec3!(2.0, 2.0, 2.0), Color { r: h, g: h, b: h });
+    let light2 = point_light(vec3!(2.0, 2.0, 7.0), Color { r: h, g: l, b: l });
+    let light3 = point_light(vec3!(2.0, 7.0, 2.0), Color { r: l, g: h, b: l });
+    let light4 = point_light(vec3!(7.0, 2.0, 2.0), Color { r: l, g: l, b: h });
+    let light5 = point_light(vec3!(5.0, 5.0, 5.0), Color { r: h, g: h, b: h });
 
     let lights: Vec<Box<dyn Light<F>>> = vec![
         Box::new(light1),
