@@ -131,4 +131,41 @@ where
             Some(sha)
         }
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Smart2")
+            .default_open(true)
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        self.pow.ui(ui, "Power");
+                        ui.end_row();
+
+                        Sampler::ui(&mut self.ior, ui, "Index of refraction");
+                        ui.end_row();
+
+                        self.ke.ui(ui, "Emissive");
+                        ui.end_row();
+
+                        self.kd.ui(ui, "Diffuse");
+                        ui.end_row();
+
+                        self.ks.ui(ui, "Specular");
+                        ui.end_row();
+
+                        self.kt.ui(ui, "Translucense");
+                        ui.end_row();
+
+                        self.kr.ui(ui, "Reflection");
+                        ui.end_row();
+
+                        Sampler::ui(&mut self.ambient, ui, "ambient");
+                        ui.end_row();
+                    });
+            });
+    }
 }
