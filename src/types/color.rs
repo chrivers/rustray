@@ -179,9 +179,9 @@ impl<F: Float> From<[f32; 3]> for Color<F> {
 impl<F: Float> From<Color<F>> for [f32; 3] {
     fn from(color: Color<F>) -> Self {
         [
-            color.r.to_f32().unwrap(),
-            color.g.to_f32().unwrap(),
-            color.b.to_f32().unwrap(),
+            color.r.to_f32().unwrap_or_default(),
+            color.g.to_f32().unwrap_or_default(),
+            color.b.to_f32().unwrap_or_default(),
         ]
     }
 }
