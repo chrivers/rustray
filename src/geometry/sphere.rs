@@ -9,6 +9,27 @@ pub struct Sphere<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Sphere<F, M>);
 
+impl<F: Float, M: Material<F = F>> Interactive for Sphere<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        self.mat.ui(ui);
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for Sphere<F, M> {
+    fn get_name(&self) -> &str {
+        "Sphere"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> Geometry<F> for Sphere<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
