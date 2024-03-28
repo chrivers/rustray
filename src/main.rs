@@ -81,7 +81,9 @@ fn main() -> RResult<()> {
         scene.lights.len()
     );
 
-    rustray::frontend::cli::run(scene, WIDTH, HEIGHT)
+    /* rustray::frontend::cli::run(scene, WIDTH, HEIGHT) */
+
+    rustray::frontend::gui::run(scene, WIDTH, HEIGHT)
 }
 
 #[cfg(test)]
