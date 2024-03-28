@@ -45,6 +45,5 @@ fixed = { version = "2.0.0-alpha", features = ["num-traits"], optional = true }
 az = { version = "1.2", optional = true }
 crossbeam-channel = "0.5.12"
 workerpool = { version = "1.2.1", features = ["crossbeam"] }
-
 eframe = { version = "0.26", default-features = false, features = ["glow"], optional = true }
 egui = { version = "0.26", default-features = false, features = ["default_fonts"], optional = true }
