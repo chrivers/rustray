@@ -323,7 +323,7 @@ impl<F: Float> SbtParser2<F> {
         match pr.as_span().as_str() {
             "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
-            _ => Err(Error::ParseError("internal parser error"))
+            _ => Err(Error::ParseError("internal parser error")),
         }
     }
 
