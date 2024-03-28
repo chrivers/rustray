@@ -1,21 +1,19 @@
+use crate::engine::RenderSpan;
 use crate::point;
-use crate::scene::{BoxScene, Light, RayTracer};
+use crate::scene::{BoxScene, Interactive, Light, RayTracer, SceneObject};
 use crate::types::ray::{Maxel, Ray};
 use crate::types::vector::Vectorx;
 use crate::types::{Camera, Color, Float, Point};
 use cgmath::MetricSpace;
 use std::sync::RwLockReadGuard;
 
+use std::fmt::{self, Debug};
+
 pub struct Tracer<'a, F: Float> {
     scene: RwLockReadGuard<'a, BoxScene<F>>,
     sx: u32,
     sy: u32,
     maxlvl: u32,
-}
-
-pub struct RenderSpan<F: Float> {
-    pub line: u32,
-    pub pixels: Vec<Color<F>>,
 }
 
 impl<'a, F: Float> Tracer<'a, F> {
@@ -111,5 +109,53 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
 
     fn background(&self) -> Color<F> {
         self.scene.background
+    }
+}
+
+impl<'a, F: Float> Debug for Tracer<'a, F> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("Tracer")
+            .field("scene", &"<scene>")
+            .field("sx", &self.sx)
+            .field("sy", &self.sy)
+            .field("maxlvl", &self.maxlvl)
+            .finish()
+    }
+}
+
+#[cfg(feature = "gui")]
+impl<'a, F: Float> Interactive for Tracer<'a, F> {
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::CollapsingHeader::new("Ray tracer")
+            .default_open(true)
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        ui.add(egui::Slider::new(&mut self.sx, 0..=16).text("X supersampling"));
+                        ui.add(egui::Slider::new(&mut self.sy, 0..=16).text("Y supersampling"));
+                        /* color_ui(ui, &mut self.color, "Color"); */
+                        /* ui.end_row(); */
+
+                        /* position_ui(ui, &mut self.dir, "Direction"); */
+                    })
+            });
+    }
+}
+
+#[cfg(feature = "gui")]
+impl<'a, F: Float> SceneObject for Tracer<'a, F> {
+    fn get_name(&self) -> &str {
+        "Ray tracer"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
     }
 }
