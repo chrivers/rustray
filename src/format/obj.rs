@@ -77,7 +77,7 @@ pub fn load<F: Float + Texel>(
                 )
                 .dynamic()
             } else {
-                Color::white().dynamic()
+                Phong::white().dynamic()
             };
 
             for poly in &g.polys {
