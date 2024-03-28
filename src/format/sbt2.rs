@@ -21,7 +21,7 @@ use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel
 use crate::scene::{BoxScene, Light, Scene};
 use crate::types::light::{DirectionalLight, PointLight};
 use crate::types::result::{Error, RResult};
-use crate::types::{float::Lerp, vector::Vectorx, Camera, Color, Float, Point, Vector};
+use crate::types::{vector::Vectorx, Camera, Color, Float, Point, Vector};
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
@@ -392,10 +392,7 @@ pub struct SbtBuilder<'a, F: Float> {
     material: SbtDict<'a, F>,
 }
 
-impl<'a, F: Float> SbtBuilder<'a, F>
-where
-    F: Float + FromStr + Texel + Lerp<Ratio = F>,
-{
+impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
             width,
