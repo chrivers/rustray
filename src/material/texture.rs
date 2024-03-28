@@ -37,6 +37,13 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material for Texture<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         self.img.sample(maxel.uv())
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Texture")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Texture<F, S>> for Texture<F, S> {
