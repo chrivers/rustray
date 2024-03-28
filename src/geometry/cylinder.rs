@@ -10,6 +10,36 @@ pub struct Cylinder<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cylinder<F, M>);
 
+impl<F: Float, M: Material<F = F>> Interactive for Cylinder<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::Grid::new("grid")
+            .num_columns(2)
+            .spacing([40.0, 4.0])
+            .striped(true)
+            .show(ui, |ui| {
+                ui.checkbox(&mut self.capped, "Capped");
+                ui.end_row();
+
+                self.mat.ui(ui);
+            });
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for Cylinder<F, M> {
+    fn get_name(&self) -> &str {
+        "Cylinder"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
