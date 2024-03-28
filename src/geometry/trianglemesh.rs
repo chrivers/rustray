@@ -17,6 +17,28 @@ pub struct TriangleMesh<F: Float, M: Material<F = F>> {
     bvh: Bvh,
 }
 
+impl<F: Float, M: Material<F = F>> Interactive for TriangleMesh<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        for tri in &mut self.tris {
+            tri.ui(ui);
+        }
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for TriangleMesh<F, M> {
+    fn get_name(&self) -> &str {
+        "Triangle mesh"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> Primitive for TriangleMesh<F, M> {
     fn center(&self) -> Vec3 {
         self.bvh.bounds().center()
