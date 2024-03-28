@@ -77,6 +77,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
 
         let mut r = hitray.into();
 
+        #[allow(clippy::significant_drop_in_scrutinee)]
         for (curobj, _ray) in self.scene.bvh.traverse_iter(&mut r, &self.scene.objects) {
             if let Some(curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
