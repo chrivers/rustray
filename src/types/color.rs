@@ -79,22 +79,27 @@ impl<F: Float> ops::Div<F> for Color<F> {
 }
 
 impl<F: Float> Color<F> {
+    #[must_use]
     pub const fn new(r: F, g: F, b: F) -> Self {
         Self { r, g, b }
     }
 
+    #[must_use]
     pub const fn gray(c: F) -> Self {
         Self::new(c, c, c)
     }
 
+    #[must_use]
     pub const fn black() -> Self {
         Self::gray(F::ZERO)
     }
 
+    #[must_use]
     pub const fn white() -> Self {
         Self::gray(F::ONE)
     }
 
+    #[must_use]
     pub fn clamped(self) -> Self {
         let r = self.r.clamp(F::ZERO, F::ONE);
         let g = self.g.clamp(F::ZERO, F::ONE);

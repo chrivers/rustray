@@ -73,6 +73,7 @@ where
     type Ratio: Float;
 
     #[inline]
+    #[must_use]
     fn lerp(self, other: Self, amount: Self::Ratio) -> Self {
         self + ((other - self) * amount)
     }

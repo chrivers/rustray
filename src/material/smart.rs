@@ -35,6 +35,7 @@ where
     S5: Sampler<F, Color<F>>,
     S6: Sampler<F, Color<F>>,
 {
+    #[must_use]
     pub fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
         Self {
             ior,
@@ -48,6 +49,7 @@ where
         }
     }
 
+    #[must_use]
     pub fn with_ambient(self, ambient: Color<F>) -> Self {
         Self { ambient, ..self }
     }

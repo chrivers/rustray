@@ -123,6 +123,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             .or(hit)
     }
 
+    #[must_use]
     pub fn with_ambient(self, ambient: Color<F>) -> Self {
         Self { ambient, ..self }
     }
