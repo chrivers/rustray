@@ -16,9 +16,11 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Sphere<F, M> {
         let result = r.intersect_sphere(&Vector::zero(), F::ONE)?;
         let normal = r.extend(result);
 
+        let nml = self.xfrm.nml(normal);
         Some(
             ray.hit_at(result, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal)),
+                .with_normal(nml)
+                .with_uv(nml.polar_uv().into()),
         )
     }
 }
