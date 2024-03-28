@@ -75,18 +75,16 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     }
 
     fn string(&self, name: &str) -> RResult<&str> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Str(string)) => Ok(string),
+            Some(SbtValue::Str(string)) => Ok(string),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
     fn color(&self, name: &str) -> RResult<Color<F>> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => tuple.color(),
+            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => tuple.color(),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
@@ -101,26 +99,26 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
             )
         };
 
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Int(int)) => Ok((F::from_f64(*int as f64)).dynsampler()),
-            Some(S::Float(float)) => Ok((*float).dynsampler()),
-            Some(S::Str(name)) => load(name),
-            Some(S::Block(box SbtBlock { name: "map", value })) => load(&value.tuple()?.string()?),
+            Some(SbtValue::Int(int)) => Ok((F::from_f64(*int as f64)).dynsampler()),
+            Some(SbtValue::Float(float)) => Ok((*float).dynsampler()),
+            Some(SbtValue::Str(name)) => load(name),
+            Some(SbtValue::Block(box SbtBlock { name: "map", value })) => {
+                load(&value.tuple()?.string()?)
+            }
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
     fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
-            Some(S::Str(name)) => {
+            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
+            Some(SbtValue::Str(name)) => {
                 info!("{:?}", resdir.join(name));
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
             }
-            Some(S::Block(box SbtBlock { name: "map", value })) => {
+            Some(SbtValue::Block(box SbtBlock { name: "map", value })) => {
                 let name = value.tuple()?.string()?;
                 info!("name: {:#?}", name);
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
@@ -131,36 +129,32 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     }
 
     fn vector(&self, name: &str) -> RResult<Vector<F>> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) if tuple.len() == 3 => tuple.vector3(),
+            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => tuple.vector3(),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
     fn boolean(&self, name: &str) -> RResult<bool> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Bool(b)) => Ok(*b),
+            Some(SbtValue::Bool(b)) => Ok(*b),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Dict(dict)) => Ok(dict),
+            Some(SbtValue::Dict(dict)) => Ok(dict),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
     }
 
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>> {
-        use SbtValue as S;
         match self.get(name) {
-            Some(S::Tuple(tuple)) => Ok(tuple),
+            Some(SbtValue::Tuple(tuple)) => Ok(tuple),
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
@@ -604,12 +598,11 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         blk: &SbtValue<F>,
         xfrm: Matrix4<F>,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
-        use SbtValue as S;
         /* info!("block: {:#?}", blk); */
         match blk {
             SbtValue::Block(box SbtBlock {
                 name,
-                value: S::Tuple(tuple),
+                value: SbtValue::Tuple(tuple),
             }) => match (*name, tuple.as_slice()) {
                 ("translate", [x, y, z, blk]) => {
                     let (x, y, z) = (x.float()?, y.float()?, z.float()?);
@@ -640,7 +633,10 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
                     self.build_geometry(blk, xfrm * x2)
                 }
 
-                ("transform", [S::Tuple(vx), S::Tuple(vy), S::Tuple(vz), S::Tuple(vw), blk]) => {
+                (
+                    "transform",
+                    [SbtValue::Tuple(vx), SbtValue::Tuple(vy), SbtValue::Tuple(vz), SbtValue::Tuple(vw), blk],
+                ) => {
                     let x = vx.vector4()?;
                     let y = vy.vector4()?;
                     let z = vz.vector4()?;
@@ -662,7 +658,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
 
             SbtValue::Block(box SbtBlock {
                 name,
-                value: S::Dict(dict),
+                value: SbtValue::Dict(dict),
             }) => {
                 match (*name, dict) {
                     ("sphere", dict) => {
@@ -736,7 +732,6 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
     }
 
     pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
-        use SbtValue as S;
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -746,26 +741,26 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
 
         for blk in prog.blocks {
             match (blk.name, blk.value) {
-                ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(&dict)?),
-                ("directional_light", S::Dict(ref dict)) => {
+                ("camera", SbtValue::Dict(ref dict)) => cameras.push(self.parse_camera(&dict)?),
+                ("directional_light", SbtValue::Dict(ref dict)) => {
                     lights.push(Box::new(self.parse_directional_light(&dict)?));
                 }
-                ("point_light", S::Dict(ref dict)) => {
+                ("point_light", SbtValue::Dict(ref dict)) => {
                     lights.push(Box::new(self.parse_point_light(&dict)?));
                 }
-                ("ambient_light", S::Dict(ref dict)) => {
+                ("ambient_light", SbtValue::Dict(ref dict)) => {
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
-                ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
-                ("material", S::Dict(dict)) => self.material.extend(dict),
+                ("spot_light", SbtValue::Dict(_)) => warn!("spot_light not supported"),
+                ("material", SbtValue::Dict(dict)) => self.material.extend(dict),
 
-                ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
+                ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
                     lights.push(Box::new(self.parse_point_light(&dict)?));
                 }
 
                 (name, value) => {
-                    let block = S::Block(Box::new(SbtBlock { name, value }));
+                    let block = SbtValue::Block(Box::new(SbtBlock { name, value }));
                     let mut objs = self.build_geometry(&block, Matrix4::identity())?;
                     objects.append(&mut objs);
                 }

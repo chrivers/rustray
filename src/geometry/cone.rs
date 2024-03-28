@@ -202,14 +202,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
 }
 
 impl<F: Float, M: Material<F = F>> Cone<F, M> {
-    pub fn new(
-        height: F,
-        top_r: F,
-        bot_r: F,
-        capped: bool,
-        xfrm: Matrix4<F>,
-        mat: M,
-    ) -> Self {
+    pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Self {
         let m = bot_r.max(top_r);
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
