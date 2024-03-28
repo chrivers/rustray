@@ -431,7 +431,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         ))
     }
 
-    fn parse_point_light(&self, dict: &impl SDict<F>) -> RResult<PointLight<F>> {
+    fn parse_point_light(dict: &impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
@@ -449,7 +449,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         Ok(res)
     }
 
-    fn parse_directional_light(&self, dict: &impl SDict<F>) -> RResult<DirectionalLight<F>> {
+    fn parse_directional_light(dict: &impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
@@ -743,10 +743,10 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
             match (blk.name, blk.value) {
                 ("camera", SbtValue::Dict(ref dict)) => cameras.push(self.parse_camera(&dict)?),
                 ("directional_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_directional_light(&dict)?));
+                    lights.push(Box::new(Self::parse_directional_light(&dict)?));
                 }
                 ("point_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_point_light(&dict)?));
+                    lights.push(Box::new(Self::parse_point_light(&dict)?));
                 }
                 ("ambient_light", SbtValue::Dict(ref dict)) => {
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -756,7 +756,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
 
                 ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
-                    lights.push(Box::new(self.parse_point_light(&dict)?));
+                    lights.push(Box::new(Self::parse_point_light(&dict)?));
                 }
 
                 (name, value) => {
