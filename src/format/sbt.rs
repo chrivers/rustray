@@ -124,6 +124,7 @@ where
 {
     /* Primitive types */
 
+    #[must_use]
     pub fn parse_bool(p: Pair<Rule>) -> bool {
         match p.into_inner().next().map(|p| p.as_str()) {
             Some("false") => false,
@@ -146,6 +147,7 @@ where
             .or(Err(ParseError("val1")))
     }
 
+    #[must_use]
     pub fn parse_val2(p: Pair<Rule>) -> Point<F> {
         let m = p.into_inner();
         let v = m
@@ -154,6 +156,7 @@ where
         point!(v[0], v[1])
     }
 
+    #[must_use]
     pub fn parse_int3(p: Pair<Rule>) -> [usize; 3] {
         let m = p.into_inner();
         let v = m
@@ -162,6 +165,7 @@ where
         [v[0], v[1], v[2]]
     }
 
+    #[must_use]
     pub fn parse_int4(p: Pair<Rule>) -> [usize; 4] {
         let m = p.into_inner();
         let v = m

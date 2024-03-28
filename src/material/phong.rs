@@ -7,16 +7,19 @@ pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Phong<F, S, M> {
+    #[must_use]
     pub const fn new(pow: S, mat: M) -> Self {
         Self { pow, mat }
     }
 }
 
 impl<F: Float + Texel> Phong<F, F, Color<F>> {
+    #[must_use]
     pub fn white() -> Self {
         Self::new(F::from_u32(8), Color::white())
     }
 
+    #[must_use]
     pub fn black() -> Self {
         Self::new(F::from_u32(8), Color::black())
     }

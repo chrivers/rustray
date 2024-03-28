@@ -387,6 +387,7 @@ pub struct SbtBuilder<'a, F: Float> {
 }
 
 impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
+    #[must_use]
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
             width,

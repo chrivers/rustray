@@ -22,6 +22,7 @@ impl Debug for Perlin {
 }
 
 impl Perlin {
+    #[must_use]
     pub fn new(w: u32, h: u32) -> Self {
         let pn = PerlinNoise2D::new(
             // `octaves`     - The amount of detail in Perlin noise.

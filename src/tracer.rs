@@ -17,6 +17,7 @@ pub struct Tracer<'a, F: Float> {
 }
 
 impl<'a, F: Float> Tracer<'a, F> {
+    #[must_use]
     pub fn new(scene: RwLockReadGuard<'a, BoxScene<F>>) -> Self {
         Self {
             scene,
@@ -60,6 +61,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         RenderSpan { line: y, pixels }
     }
 
+    #[must_use]
     pub fn scene(&self) -> &BoxScene<F> {
         &self.scene
     }
