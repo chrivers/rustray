@@ -22,10 +22,7 @@ impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
 impl<F, T, S> Sampler<F, T> for Adjust<F, T, S>
 where
     F: Float,
-    T: Texel,
-    T: std::ops::Mul<F, Output = T>,
-    T: std::ops::Add<F, Output = T>,
-    T: Lerp<Ratio = F>,
+    T: Texel + std::ops::Add<F, Output = T> + Lerp<Ratio = F>,
     S: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {

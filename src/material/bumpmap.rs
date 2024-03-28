@@ -27,8 +27,7 @@ where
     }
 }
 
-impl<F: Float + Texel, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F = F>> Material
-    for Bumpmap<F, S1, S2, M>
+impl<F, S1, S2, M> Material for Bumpmap<F, S1, S2, M>
 where
     F: Float + Texel,
     S1: Sampler<F, F>,

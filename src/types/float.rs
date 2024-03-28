@@ -20,18 +20,18 @@ impl<T: num::Float + num::Signed + 'static> FloatReq for T {}
 
 pub trait Float
 where
-    Self: Debug,
-    Self: Display,
-    Self: Send,
-    Self: Sync,
-    Self: AbsDiffEq<Epsilon = Self>,
-    Self: FloatConst,
-    Self: Lerp<Ratio = Self>,
-    Self: NumAssignOps,
-    Self: RelativeEq,
-    Self: UlpsEq,
-    Self: FloatReq,
-    Self: pow::Pow<Self, Output = Self>,
+    Self: Debug
+        + Display
+        + Send
+        + Sync
+        + AbsDiffEq<Epsilon = Self>
+        + FloatConst
+        + Lerp<Ratio = Self>
+        + NumAssignOps
+        + RelativeEq
+        + UlpsEq
+        + FloatReq
+        + pow::Pow<Self, Output = Self>,
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
     const BIAS2: Self; // Used for shadow rays
