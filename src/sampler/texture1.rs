@@ -13,4 +13,15 @@ impl<F: Float + Texel> Sampler<u32, F> for DynamicImage {
     fn dimensions(&self) -> (u32, u32) {
         GenericImageView::dimensions(self)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+        ui.label(name);
+        CollapsingHeader::new("Texture")
+            .default_open(true)
+            .show(ui, |ui| {
+                let (w, h) = GenericImageView::dimensions(self);
+                ui.label(format!("{w}x{h}"));
+            });
+    }
 }
