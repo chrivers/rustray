@@ -5,7 +5,23 @@ use crate::types::{BvhExt, Camera, Color, Float, RResult, Vector};
 use cgmath::MetricSpace;
 
 use rtbvh::{Builder, Bvh};
+use std::fmt::Debug;
 use std::num::NonZeroUsize;
+
+pub trait SceneObject {
+    fn get_name(&self) -> &str {
+        "Unknown object"
+    }
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        None
+    }
+    fn get_id(&self) -> Option<usize>;
+}
+
+pub trait Interactive: Debug {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui);
+}
 
 pub trait HasPosition<F: Float> {
     fn get_position(&self) -> Vector<F>;
