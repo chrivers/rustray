@@ -28,6 +28,26 @@ pub struct Triangle<F: Float, M: Material<F = F>> {
     mat: M,
 }
 
+impl<F: Float, M: Material<F = F>> Interactive for Triangle<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        self.mat.ui(ui);
+    }
+}
+
+impl<F: Float, M: Material<F = F>> SceneObject for Triangle<F, M> {
+    fn get_name(&self) -> &str {
+        "Triangle"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
 impl<F: Float, M: Material<F = F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {
         self.a.into_vector3()
