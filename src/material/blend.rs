@@ -21,4 +21,11 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for Blend<F, A, 
         let b = self.b.render(maxel, rt);
         a.lerp(b, self.pct)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Blend")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
