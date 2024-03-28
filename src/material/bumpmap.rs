@@ -57,4 +57,24 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, light)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Bumpmap")
+            .default_open(true)
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        Sampler::ui(&mut self.pow, ui, "Power");
+                        ui.end_row();
+
+                        Sampler::ui(&mut self.img, ui, "Image");
+                        ui.end_row();
+                    });
+                self.mat.ui(ui);
+            });
+    }
 }
