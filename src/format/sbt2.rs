@@ -488,7 +488,9 @@ where
         let diff = colormap("diffuse").unwrap_or_else(|_| Color::black().dynsampler());
         let spec = colormap("specular").unwrap_or_else(|_| Color::black().dynsampler());
         let tran = colormap("transmissive").unwrap_or_else(|_| Color::black().dynsampler());
-        let refl = colormap("reflective").or_else(|_| colormap("specular")).unwrap_or_else(|_| Color::black().dynsampler());
+        let refl = colormap("reflective")
+            .or_else(|_| colormap("specular"))
+            .unwrap_or_else(|_| Color::black().dynsampler());
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
@@ -496,8 +498,9 @@ where
 
         match bump {
             None => smart.dynamic(),
-            Some(b) =>
-                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
+            Some(b) => {
+                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic()
+            }
         }
     }
 
@@ -747,12 +750,15 @@ where
         for blk in prog.blocks {
             match (blk.name, blk.value) {
                 ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
-                ("directional_light", S::Dict(ref dict)) =>
-                    lights.push(Box::new(self.parse_directional_light(dict)?)),
-                ("point_light", S::Dict(ref dict)) =>
-                    lights.push(Box::new(self.parse_point_light(dict)?)),
-                ("ambient_light", S::Dict(ref dict)) =>
-                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?,
+                ("directional_light", S::Dict(ref dict)) => {
+                    lights.push(Box::new(self.parse_directional_light(dict)?))
+                }
+                ("point_light", S::Dict(ref dict)) => {
+                    lights.push(Box::new(self.parse_point_light(dict)?))
+                }
+                ("ambient_light", S::Dict(ref dict)) => {
+                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?
+                }
                 ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
                 ("material", S::Dict(dict)) => self.material.extend(dict),
 

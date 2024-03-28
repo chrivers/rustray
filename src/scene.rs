@@ -45,11 +45,12 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub background: Color<F>,
 }
 
-pub type BoxScene<F> = Scene<F,
-                             Box<dyn FiniteGeometry<F> + 'static>,
-                             Box<dyn Geometry<F> + 'static>,
-                             Box<dyn Light<F> + 'static>
-                             >;
+pub type BoxScene<F> = Scene<
+    F,
+    Box<dyn FiniteGeometry<F> + 'static>,
+    Box<dyn Geometry<F> + 'static>,
+    Box<dyn Light<F> + 'static>,
+>;
 
 impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L> {
     pub fn new(

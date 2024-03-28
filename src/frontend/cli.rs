@@ -10,9 +10,9 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use image::{ColorType, ImageBuffer, Rgb};
 
+use crate::scene::BoxScene;
 use crate::tracer::Tracer;
 use crate::types::{Float, RResult, TimeSlice};
-use crate::scene::BoxScene;
 
 mod pbar {
     use indicatif::{ProgressBar, ProgressStyle};
@@ -33,8 +33,7 @@ fn draw_image<F: Float>(
     tracer: Tracer<F>,
     width: u32,
     height: u32,
-) -> ImageBuffer<Rgb<u8>, Vec<u8>>
-{
+) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let pb = pbar::init(height as u64);
 
     let mut img = ImageBuffer::new(width, height);
