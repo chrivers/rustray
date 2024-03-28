@@ -45,9 +45,7 @@ impl<F: Float> ply::PropertyAccess for Vertex<F> {
                 "nx" => self.1.x = F::from_f32(v),
                 "ny" => self.1.y = F::from_f32(v),
                 "nz" => self.1.z = F::from_f32(v),
-                "s" | "t" => {}
-                "tx" | "ty" | "tz" => {}
-                "bx" | "by" | "bz" => {}
+                "s" | "t" | "tx" | "ty" | "tz" | "bx" | "by" | "bz" => {}
                 k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
             },
             ply::Property::UChar(_v) => match key.as_ref() {
@@ -80,9 +78,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
             ("texcoord", ply::Property::ListFloat(vec)) => {
                 self.uv = vec.into_iter().map(F::from_f32).collect();
             }
-            ("red" | "green" | "blue" | "alpha", _) => {}
-            ("flags", _) => {}
-            ("texnumber", _) => {}
+            ("red" | "green" | "blue" | "alpha" | "flags" | "texnumber", _) => {}
             (k, t) => panic!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
         }
     }
