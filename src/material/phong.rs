@@ -57,4 +57,11 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, light)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Phong")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
