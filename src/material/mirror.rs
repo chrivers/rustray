@@ -27,4 +27,11 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material for Mirror<F, S> {
         let c_refl = rt.ray_trace(&refl).unwrap_or_else(Color::black);
         c_refl * self.refl.sample(maxel.uv())
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Mirror")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
