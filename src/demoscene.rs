@@ -18,6 +18,77 @@ use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
+fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
+where
+    f32: Into<F>,
+{
+    PointLight {
+        pos,
+        color,
+        a: (0.3).into(),
+        b: (0.2).into(),
+        c: (0.01).into(),
+    }
+}
+
+fn load_zip_tex<T: Read + Seek>(
+    time: &mut TimeSlice,
+    arch: &mut ZipArchive<T>,
+    name: &str,
+    format: ImageFormat,
+) -> RResult<DynamicImage> {
+    info!("  - {}", name);
+    time.set("zipload");
+    let mut file = arch.by_name(name)?;
+    let mut data = vec![0u8; file.size() as usize];
+    file.read_exact(&mut data)?;
+    let imgdata: Cursor<&[u8]> = Cursor::new(&data);
+
+    Ok(image::load(imgdata, format)?)
+}
+
+fn load_tex3(
+    time: &mut TimeSlice,
+    dl: &ACGDownloader,
+    name: &str,
+) -> RResult<(
+    DynamicImage,
+    DynamicImage,
+    DynamicImage,
+    RResult<DynamicImage>,
+)> {
+    info!("Loading texture archive [{}]", name);
+    time.set("download");
+    let zipfile = File::open(dl.download(name)?)?;
+    let mut archive = ZipArchive::new(zipfile)?;
+    Ok((
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Color.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_NormalDX.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Roughness.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Metalness.png"),
+            ImageFormat::Png,
+        ),
+    ))
+}
+
 #[allow(clippy::too_many_lines)]
 pub fn construct_demo_scene<F>(
     time: &mut TimeSlice,
@@ -29,19 +100,6 @@ where
     Standard: Distribution<F>,
     f32: Into<F>,
 {
-    fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
-    where
-        f32: Into<F>,
-    {
-        PointLight {
-            pos,
-            color,
-            a: (0.3).into(),
-            b: (0.2).into(),
-            c: (0.01).into(),
-        }
-    }
-
     time.set("construct");
 
     let cameras = vec![Camera::parametric(
@@ -69,64 +127,6 @@ where
         Box::new(light5),
     ];
 
-    fn load_zip_tex<T: Read + Seek>(
-        time: &mut TimeSlice,
-        arch: &mut ZipArchive<T>,
-        name: &str,
-        format: ImageFormat,
-    ) -> RResult<DynamicImage> {
-        info!("  - {}", name);
-        time.set("zipload");
-        let mut file = arch.by_name(name)?;
-        let mut data = vec![0u8; file.size() as usize];
-        file.read_exact(&mut data)?;
-        let imgdata: Cursor<&[u8]> = Cursor::new(&data);
-
-        Ok(image::load(imgdata, format)?)
-    }
-
-    fn load_tex3(
-        time: &mut TimeSlice,
-        dl: &ACGDownloader,
-        name: &str,
-    ) -> RResult<(
-        DynamicImage,
-        DynamicImage,
-        DynamicImage,
-        RResult<DynamicImage>,
-    )> {
-        info!("Loading texture archive [{}]", name);
-        time.set("download");
-        let zipfile = File::open(dl.download(name)?)?;
-        let mut archive = ZipArchive::new(zipfile)?;
-        Ok((
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Color.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_NormalDX.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Roughness.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Metalness.png"),
-                ImageFormat::Png,
-            ),
-        ))
-    }
-
     let dl = ACGDownloader::new("textures/download".into(), ACGQuality::PNG_1K)?;
 
     let (tex0a, tex0b, tex0r, tex0m) = load_tex3(time, &dl, "WoodFloor008")?;
@@ -151,7 +151,7 @@ where
                 NormalMap::new(tex1b.bilinear()),
                 Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
             ),
-        )
+        ),
     );
 
     let mat_bmp2 = Bumpmap::new(
