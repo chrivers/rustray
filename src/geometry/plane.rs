@@ -56,12 +56,12 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Plane<F, M> {
 }
 
 impl<F: Float, M: Material<F = F>> Plane<F, M> {
-    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Plane<F, M> {
+    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Self {
         let dir1 = d1.normalize();
         let dir2 = d2.normalize();
         let normal = dir1.cross(dir2);
 
-        Plane {
+        Self {
             pos,
             dir1,
             dir2,

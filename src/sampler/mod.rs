@@ -85,8 +85,8 @@ where
     }
 }
 
-impl<F: Float> Sampler<F, Color<F>> for Color<F> {
-    fn sample(&self, _uv: Point<F>) -> Color<F> {
+impl<F: Float> Sampler<F, Self> for Color<F> {
+    fn sample(&self, _uv: Point<F>) -> Self {
         *self
     }
 

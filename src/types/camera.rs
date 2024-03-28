@@ -26,14 +26,14 @@ impl<F: Float> Camera<F> {
         ver: Vector<F>,
         xres: u32,
         yres: u32,
-    ) -> Camera<F> {
+    ) -> Self {
         let dir = (lookat - pos).normalize();
 
         info!(
             "Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]",
             pos, dir, hor, ver
         );
-        Camera {
+        Self {
             pos,
             dir,
             hor,
@@ -50,7 +50,7 @@ impl<F: Float> Camera<F> {
         fov: F,
         xres: u32,
         yres: u32,
-    ) -> Camera<F> {
+    ) -> Self {
         Self::build(pos, lookat - pos, updir, fov, xres, yres, None)
     }
 
@@ -62,7 +62,7 @@ impl<F: Float> Camera<F> {
         xres: u32,
         yres: u32,
         aspect: Option<F>,
-    ) -> Camera<F> {
+    ) -> Self {
         let dir = viewdir.normalize();
         let u = dir.cross(updir).normalize();
         let v = u.cross(dir).normalize();
@@ -77,7 +77,7 @@ impl<F: Float> Camera<F> {
         info!("x_inc_vector: {:8.4?}", x_inc_vector);
         info!("y_inc_vector: {:8.4?}", y_inc_vector);
 
-        Camera {
+        Self {
             pos,
             dir,
             hor: x_inc_vector,

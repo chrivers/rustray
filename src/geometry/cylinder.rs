@@ -148,7 +148,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
 }
 
 impl<F: Float, M: Material<F = F>> Cylinder<F, M> {
-    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Cylinder<F, M> {
+    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(
             &xfrm,
@@ -156,7 +156,7 @@ impl<F: Float, M: Material<F = F>> Cylinder<F, M> {
             [-F::ONE, F::ONE],
             [F::ZERO, F::ONE],
         );
-        Cylinder {
+        Self {
             xfrm,
             capped,
             mat,

@@ -76,9 +76,9 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
 }
 
 impl<F: Float, M: Material<F = F>> Square<F, M> {
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Square<F, M> {
+    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::ZERO);
-        Square { xfrm, mat, aabb }
+        Self { xfrm, mat, aabb }
     }
 }

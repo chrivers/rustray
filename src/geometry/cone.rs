@@ -209,11 +209,11 @@ impl<F: Float, M: Material<F = F>> Cone<F, M> {
         capped: bool,
         xfrm: Matrix4<F>,
         mat: M,
-    ) -> Cone<F, M> {
+    ) -> Self {
         let m = bot_r.max(top_r);
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
-        Cone {
+        Self {
             height,
             top_r,
             bot_r,

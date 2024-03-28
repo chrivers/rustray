@@ -17,7 +17,7 @@ pub struct Ray<F: Float> {
 
 impl<'a, F: Float> Ray<F> {
     pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
-        Ray { pos, dir, lvl }
+        Self { pos, dir, lvl }
     }
 
     #[must_use]

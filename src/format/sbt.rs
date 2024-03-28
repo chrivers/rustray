@@ -44,8 +44,8 @@ impl FromStr for SbtVersion {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "0.9" => Ok(SbtVersion::Sbt0_9),
-            "1.0" => Ok(SbtVersion::Sbt1_0),
+            "0.9" => Ok(Self::Sbt0_9),
+            "1.0" => Ok(Self::Sbt1_0),
             _ => panic!("impossible"),
         }
     }

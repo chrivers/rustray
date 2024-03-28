@@ -35,7 +35,7 @@ pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
 
 impl<F: Float> Material for Color<F> {
     type F = F;
-    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
+    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
         *self
     }
 

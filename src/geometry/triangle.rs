@@ -143,7 +143,7 @@ impl<F: Float, M: Material<F = F>> Triangle<F, M> {
         let edge2 = c - a;
         let area2 = edge1.cross(edge2).magnitude();
 
-        Triangle {
+        Self {
             a,
             b,
             c,

@@ -32,7 +32,7 @@ pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject + rtbvh::Primitive
 impl<F: Float, T> Geometry<F> for Box<T>
 where
     T: Geometry<F> + ?Sized,
-    Box<T>: SceneObject,
+    Self: SceneObject,
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         (**self).intersect(ray)

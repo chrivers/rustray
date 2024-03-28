@@ -46,7 +46,7 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material for Texture<F, S> {
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Texture<F, S>> for Texture<F, S> {
+impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Self> for Texture<F, S> {
     fn as_ref(&self) -> &Self {
         self
     }

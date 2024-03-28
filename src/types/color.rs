@@ -42,7 +42,7 @@ impl<F: Float> ops::Mul<F> for Color<F> {
     }
 }
 
-impl<F: Float> ops::Mul<Color<F>> for Color<F> {
+impl<F: Float> ops::Mul<Self> for Color<F> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
@@ -102,7 +102,7 @@ impl<F: Float> Color<F> {
         Self { r, g, b }
     }
 
-    pub fn mixed(input: &[Color<F>]) -> Self {
+    pub fn mixed(input: &[Self]) -> Self {
         match input.len() {
             0 => Self::zero(),
             n => input.iter().copied().sum::<Self>() / F::from_usize(n),
@@ -143,7 +143,7 @@ impl<F: Float> Zero for Color<F> {
 
 impl<F: Float> Sum for Color<F> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Color::zero(), |a, ref c| a + *c)
+        iter.fold(Self::zero(), |a, ref c| a + *c)
     }
 }
 
@@ -155,7 +155,7 @@ impl<F: Float> Lerp for Color<F> {
     type Ratio = F;
 }
 
-impl<F: Float> AsRef<Color<F>> for Color<F> {
+impl<F: Float> AsRef<Self> for Color<F> {
     fn as_ref(&self) -> &Self {
         self
     }

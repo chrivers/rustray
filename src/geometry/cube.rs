@@ -91,9 +91,9 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
 }
 
 impl<F: Float, M: Material<F = F>> Cube<F, M> {
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Cube<F, M> {
+    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let xfrm = Transform::new(xfrm);
         let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);
-        Cube { xfrm, mat, aabb }
+        Self { xfrm, mat, aabb }
     }
 }

@@ -72,7 +72,7 @@ impl<F: Float, M: Material<F = F> + Clone> TriangleMesh<F, M> {
         .unwrap();
         /* .construct_locally_ordered_clustered().unwrap(); */
 
-        TriangleMesh { tris, bvh }
+        Self { tris, bvh }
     }
 }
 
