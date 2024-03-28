@@ -489,9 +489,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
 
         match bump {
             None => smart.dynamic(),
-            Some(b) => {
-                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic()
-            }
+            Some(b) => Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic(),
         }
     }
 

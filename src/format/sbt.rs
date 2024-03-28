@@ -303,9 +303,7 @@ where
 
         match bump {
             None => Ok(smart.dynamic()),
-            Some(b) => Ok(
-                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
-            ),
+            Some(b) => Ok(Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic()),
         }
     }
 
