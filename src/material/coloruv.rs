@@ -18,4 +18,11 @@ impl<F: Float> Material for ColorUV<F> {
         let uv = maxel.uv();
         Color::new(uv.x, F::ZERO, uv.y) * self.scale
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Color UV")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }

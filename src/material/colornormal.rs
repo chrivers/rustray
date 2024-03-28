@@ -18,4 +18,11 @@ impl<F: Float> Material for ColorNormal<F> {
         let n = maxel.nml();
         Color::new(n.x, n.y, n.z) * self.scale
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Color Normals")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }

@@ -19,4 +19,11 @@ impl<F: Float> Material for ColorST<F> {
         let w = F::ONE - st.x - st.y;
         Color::new(st.x, w, st.y) * self.scale
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Color ST")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }

@@ -20,4 +20,11 @@ impl<F: Float> Material for ColorPos<F> {
         n.y += F::ONE;
         Color::new(n.x, n.y, n.z) * self.scale
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        CollapsingHeader::new("Color Position")
+            .default_open(true)
+            .show(ui, |_ui| {});
+    }
 }
