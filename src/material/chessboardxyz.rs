@@ -7,7 +7,7 @@ pub struct ChessBoardXYZ<A: Material, B: Material> {
 }
 
 impl<A: Material, B: Material> ChessBoardXYZ<A, B> {
-    pub fn new(a: A, b: B) -> Self {
+    pub const fn new(a: A, b: B) -> Self {
         Self { a, b }
     }
 }

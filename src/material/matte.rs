@@ -14,7 +14,7 @@ where
     S: Sampler<F, F>,
     M: Material<F = F>,
 {
-    pub fn new(src: S, rays: u32, mat: M) -> Self {
+    pub const fn new(src: S, rays: u32, mat: M) -> Self {
         Self { src, rays, mat }
     }
 }

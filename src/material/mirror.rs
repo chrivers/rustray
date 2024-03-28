@@ -11,7 +11,7 @@ where
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S> {
-    pub fn new(refl: S) -> Self {
+    pub const fn new(refl: S) -> Self {
         Self {
             refl,
             _p: PhantomData {},

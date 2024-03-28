@@ -9,7 +9,7 @@ pub struct ChessBoardSampler<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F,
 }
 
 impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> ChessBoardSampler<F, T, A, B> {
-    pub fn new(a: A, b: B) -> Self {
+    pub const fn new(a: A, b: B) -> Self {
         Self {
             a,
             b,

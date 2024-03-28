@@ -23,7 +23,7 @@ pub struct Texture<F: Float, S: Sampler<F, Color<F>>> {
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> Texture<F, S> {
-    pub fn new(img: S) -> Self {
+    pub const fn new(img: S) -> Self {
         Self {
             _f: PhantomData {},
             img,

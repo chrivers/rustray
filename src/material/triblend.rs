@@ -16,7 +16,7 @@ pub struct Triblend<F: Float, A: Material, B: Material, C: Material> {
 }
 
 impl<F: Float, A: Material, B: Material, C: Material> Triblend<F, A, B, C> {
-    pub fn new(a: A, b: B, c: C) -> Self {
+    pub const fn new(a: A, b: B, c: C) -> Self {
         Self {
             a,
             b,

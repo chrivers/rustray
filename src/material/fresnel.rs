@@ -7,7 +7,7 @@ pub struct Fresnel<F: Float + Texel, S: Sampler<F, F>> {
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>> Fresnel<F, S> {
-    pub fn new(ior: S) -> Self {
+    pub const fn new(ior: S) -> Self {
         Self {
             ior,
             _p: PhantomData {},

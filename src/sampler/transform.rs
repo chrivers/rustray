@@ -9,7 +9,7 @@ pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>> {
 }
 
 impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
-    pub fn new(scale: F, offset: F, samp: S) -> Self {
+    pub const fn new(scale: F, offset: F, samp: S) -> Self {
         Self {
             scale,
             offset,

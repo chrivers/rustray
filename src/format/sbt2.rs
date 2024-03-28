@@ -235,7 +235,7 @@ pub enum SbtValue<'a, F: Float> {
 }
 
 impl<'a, F: Float> SbtValue<'a, F> {
-    pub fn int(&self) -> RResult<i64> {
+    pub const fn int(&self) -> RResult<i64> {
         match self {
             SbtValue::Int(int) => Ok(*int),
             _ => Err(Error::ParseError("number expected")),
@@ -250,7 +250,7 @@ impl<'a, F: Float> SbtValue<'a, F> {
         }
     }
 
-    pub fn tuple(&self) -> RResult<&'a SbtTuple<F>> {
+    pub const fn tuple(&self) -> RResult<&'a SbtTuple<F>> {
         if let SbtValue::Tuple(ref tuple) = self {
             Ok(tuple)
         } else {
@@ -258,7 +258,7 @@ impl<'a, F: Float> SbtValue<'a, F> {
         }
     }
 
-    pub fn dict(&self) -> RResult<&'a SbtDict<F>> {
+    pub const fn dict(&self) -> RResult<&'a SbtDict<F>> {
         if let SbtValue::Dict(ref dict) = self {
             Ok(dict)
         } else {

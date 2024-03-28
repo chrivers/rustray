@@ -7,7 +7,7 @@ pub struct Nearest<P: Texel, S: Sampler<u32, P>> {
 }
 
 impl<P: Texel, S: Sampler<u32, P>> Nearest<P, S> {
-    pub fn new(samp: S) -> Self {
+    pub const fn new(samp: S) -> Self {
         Self {
             samp,
             _p0: PhantomData {},

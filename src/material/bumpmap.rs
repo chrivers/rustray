@@ -22,7 +22,7 @@ where
     M: Material<F = F>,
     Vector<F>: Texel,
 {
-    pub fn new(pow: S1, img: S2, mat: M) -> Self {
+    pub const fn new(pow: S1, img: S2, mat: M) -> Self {
         Self { pow, img, mat }
     }
 }

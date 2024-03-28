@@ -94,7 +94,7 @@ impl<F: Float> Camera<F> {
         Ray::new(self.pos, vpp.normalize(), 0)
     }
 
-    pub fn size(self) -> (u32, u32) {
+    pub const fn size(self) -> (u32, u32) {
         (self.xres, self.yres)
     }
 

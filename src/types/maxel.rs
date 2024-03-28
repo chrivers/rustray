@@ -70,7 +70,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_normal(self, nml: Vector<F>) -> Self {
+    pub const fn with_normal(self, nml: Vector<F>) -> Self {
         Self {
             nml: Some(nml),
             ..self
@@ -78,7 +78,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_uv(self, uv: Point<F>) -> Self {
+    pub const fn with_uv(self, uv: Point<F>) -> Self {
         Self {
             uv: Some(uv),
             ..self
@@ -86,7 +86,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_st(self, st: Point<F>) -> Self {
+    pub const fn with_st(self, st: Point<F>) -> Self {
         Maxel {
             st: Some(st),
             ..self

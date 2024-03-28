@@ -6,7 +6,7 @@ pub struct ColorUV<F: Float> {
 }
 
 impl<F: Float> ColorUV<F> {
-    pub fn new(scale: F) -> Self {
+    pub const fn new(scale: F) -> Self {
         Self { scale }
     }
 }

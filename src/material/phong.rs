@@ -7,7 +7,7 @@ pub struct Phong<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Phong<F, S, M> {
-    pub fn new(pow: S, mat: M) -> Self {
+    pub const fn new(pow: S, mat: M) -> Self {
         Self { pow, mat }
     }
 }
