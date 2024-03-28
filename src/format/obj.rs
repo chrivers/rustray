@@ -59,23 +59,25 @@ pub fn load<F: Float + Texel>(
     for o in &obj.data.objects {
         for g in &o.groups {
             let mat = if let Some(ObjMaterial::Mtl(ref omat)) = g.material {
+                let ni = F::from_f32(omat.ni.unwrap_or(1.0));
+                let ns = F::from_f32(omat.ns.unwrap_or(1.0));
                 let ke = obj_sampler(&obj.path, &omat.map_ke, &omat.ke);
                 let kd = obj_sampler(&obj.path, &omat.map_kd, &omat.kd);
                 let ks = obj_sampler(&obj.path, &omat.map_ks, &omat.ks);
+                let tf = obj_sampler(&obj.path, &None, &omat.tf);
                 /* let kt = obj_sampler(&obj.path, &omat.map_kt, &omat.kt); */
                 /* let kr = obj_sampler(&obj.path, &omat.map_refl, &omat.kr); */
                 /* let ns = obj_sampler(&obj.path, &omat.map_ns, F::from_f32(omat.ns.unwrap_or(1.0)) */
 
-                Smart::new(
-                    F::from_f32(omat.ni.unwrap_or(1.0)),
-                    F::from_f32(omat.ns.unwrap_or(1.0)),
-                    ke,
-                    kd,
-                    ks,
-                    Color::black().dynsampler(),
-                    Color::white().dynsampler(),
-                )
-                .dynamic()
+                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::white());
+
+                if omat.map_bump.is_some() {
+                    let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));
+                    let bump = Bumpmap::new(F::ONE, bumpmap, smart);
+                    bump.dynamic()
+                } else {
+                    smart.dynamic()
+                }
             } else {
                 Phong::white().dynamic()
             };
