@@ -46,7 +46,7 @@ impl FromStr for SbtVersion {
         match s {
             "0.9" => Ok(Self::Sbt0_9),
             "1.0" => Ok(Self::Sbt1_0),
-            _ => panic!("impossible"),
+            _ => Err(Error::ParseError("internal parser error")),
         }
     }
 }
@@ -124,12 +124,11 @@ where
 {
     /* Primitive types */
 
-    #[must_use]
-    pub fn parse_bool(p: Pair<Rule>) -> bool {
+    pub fn parse_bool(p: Pair<Rule>) -> RResult<bool> {
         match p.into_inner().next().map(|p| p.as_str()) {
-            Some("false") => false,
-            Some("true") => true,
-            _ => panic!("internal parser error"),
+            Some("false") => Ok(false),
+            Some("true") => Ok(true),
+            _ => Err(Error::ParseError("internal parser error")),
         }
     }
 
@@ -375,7 +374,7 @@ where
         for rule in body {
             match rule.as_rule() {
                 Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
-                Rule::capped => capped = Self::parse_bool(rule),
+                Rule::capped => capped = Self::parse_bool(rule)?,
                 other => error!("unsupported: {:?}", other),
             }
         }
@@ -569,7 +568,7 @@ where
                 Rule::height => height = Self::parse_val1(rule)?,
                 Rule::top_radius => top_r = Self::parse_val1(rule)?,
                 Rule::bottom_radius => bot_r = Self::parse_val1(rule)?,
-                Rule::capped => capped = Self::parse_bool(rule),
+                Rule::capped => capped = Self::parse_bool(rule)?,
                 Rule::material_ref => {}
                 other => error!("unsupported: {other:?}"),
             }

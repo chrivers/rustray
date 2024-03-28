@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
-use std::path::Path;
 
 use cgmath::InnerSpace;
 use num_traits::Zero;
@@ -46,13 +45,13 @@ impl<F: Float> ply::PropertyAccess for Vertex<F> {
                 "ny" => self.1.y = F::from_f32(v),
                 "nz" => self.1.z = F::from_f32(v),
                 "s" | "t" | "tx" | "ty" | "tz" | "bx" | "by" | "bz" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
+                k => error!("Vertex: Unexpected key/value combination: key: {k}"),
             },
             ply::Property::UChar(_v) => match key.as_ref() {
                 "red" | "green" | "blue" | "alpha" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
+                k => error!("Vertex: Unexpected key/value combination: key: {k}"),
             },
-            t => panic!("Vertex: Unexpected type: {t:?}"),
+            t => error!("Vertex: Unexpected type: {t:?}"),
         }
     }
 }
@@ -79,18 +78,14 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
                 self.uv = vec.into_iter().map(F::from_f32).collect();
             }
             ("red" | "green" | "blue" | "alpha" | "flags" | "texnumber", _) => {}
-            (k, t) => panic!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
+            (k, t) => error!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
         }
     }
 }
 
-impl<F> PlyParser<F>
-where
-    F: Float + Texel,
-{
+impl<F: Float + Texel> PlyParser<F> {
     pub fn parse_file(
         file: &mut impl BufRead,
-        _resdir: &Path,
         width: u32,
         height: u32,
     ) -> RResult<BoxScene<F>> {
