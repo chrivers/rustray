@@ -149,8 +149,8 @@ impl<F: Float + Texel> PlyParser<F> {
         let bb = mesh.aabb();
         info!("aabb {:?}", bb);
 
-        let sz: Vector<F> = Vectorx::from_vector3(bb.lengths());
-        let look: Vector<F> = Vectorx::from_vector3(bb.center());
+        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
+        let look: Vector<F> = Vector::from_vec3(bb.center());
         let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
 
         let cam = Camera::build(
