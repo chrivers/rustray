@@ -1,4 +1,5 @@
 use super::float::Float;
+use crate::types::vector::Vector4x;
 use crate::types::Vector;
 use cgmath::Transform as cgTransform;
 use cgmath::{EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3};
@@ -39,5 +40,37 @@ impl<F: Float> Transform<F> {
 
     pub fn nml_inv(&self, vec: Vector<F>) -> Vector<F> {
         self.xfrm.transform_vector(vec).normalize()
+    }
+
+    pub fn into_mint(&self) -> mint::ColumnMatrix4<f32> {
+        let t = self.xfrm;
+        mint::ColumnMatrix4 {
+            x: t.x.into_mint(),
+            y: t.y.into_mint(),
+            z: t.z.into_mint(),
+            w: t.w.into_mint(),
+        }
+    }
+
+    pub fn inv_into_mint(&self) -> mint::ColumnMatrix4<f32> {
+        let t = self.ifrm;
+        mint::ColumnMatrix4 {
+            x: t.x.into_mint(),
+            y: t.y.into_mint(),
+            z: t.z.into_mint(),
+            w: t.w.into_mint(),
+        }
+    }
+}
+
+impl<F: Float> From<mint::ColumnMatrix4<f32>> for Transform<F> {
+    fn from(value: mint::ColumnMatrix4<f32>) -> Self {
+        let t = value;
+        Self::new(Matrix4 {
+            x: Vector4x::from_mint(t.x),
+            y: Vector4x::from_mint(t.y),
+            z: Vector4x::from_mint(t.z),
+            w: Vector4x::from_mint(t.w),
+        })
     }
 }
