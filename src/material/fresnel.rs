@@ -19,11 +19,13 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Fresnel<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let ior = self.ior.sample(maxel.uv());
 
-        let refl = maxel.reflected_ray();
-        let c_refl = rt.ray_trace(&refl).unwrap_or_else(Color::black);
+        let c_refl = maxel.reflected_ray()
+            .and_then(|refl| rt.ray_trace(&refl))
+            .unwrap_or_else(Color::black);
 
-        let refr = maxel.refracted_ray(ior);
-        let c_refr = rt.ray_trace(&refr).unwrap_or_else(Color::black);
+        let c_refr = maxel.refracted_ray(ior)
+            .and_then(|refr| rt.ray_trace(&refr))
+            .unwrap_or_else(Color::black);
 
         let fr = maxel.fresnel(ior);
 

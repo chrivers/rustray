@@ -69,8 +69,11 @@ impl<'a, F: Float> Tracer<'a, F> {
 
 impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
+        if maxel.lvl == 0 {
+            return None;
+        }
         let light_pos = light.get_position();
-        let hitray = Ray::new(maxel.pos, maxel.pos.normal_to(light_pos), maxel.lvl + 1);
+        let hitray = Ray::new(maxel.pos, maxel.pos.normal_to(light_pos), maxel.lvl - 1);
 
         let mut best_length = light_pos.distance2(maxel.pos);
         let mut best_color = None;
@@ -93,10 +96,6 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>> {
-        if ray.lvl > self.maxlvl {
-            return None;
-        }
-
         let mut maxel = self.scene.intersect(ray)?;
 
         Some(maxel.mat.render(&mut maxel, self))

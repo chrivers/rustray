@@ -55,14 +55,20 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
-    pub fn reflected_ray(&mut self) -> Ray<F> {
+    pub fn reflected_ray(&mut self) -> Option<Ray<F>> {
+        if self.lvl == 0 {
+            return None;
+        }
         let refl = self.dir.reflect(&self.nml());
-        Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl + 1)
+        Some(Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl - 1))
     }
 
-    pub fn refracted_ray(&mut self, ior: F) -> Ray<F> {
+    pub fn refracted_ray(&mut self, ior: F) -> Option<Ray<F>> {
+        if self.lvl == 0 {
+            return None;
+        }
         let refr = self.dir.refract(&self.nml(), ior);
-        Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
+        Some(Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl - 1))
     }
 
     pub fn fresnel(&mut self, ior: F) -> F {

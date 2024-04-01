@@ -79,8 +79,9 @@ where
         let refl_color = self.kr.sample(uv);
 
         let refl_term = if !refl_color.is_zero() {
-            let refl = maxel.reflected_ray();
-            rt.ray_trace(&refl).unwrap_or_else(|| rt.background()) * refl_color
+            maxel.reflected_ray()
+                .and_then(|refl| rt.ray_trace(&refl))
+                .unwrap_or_else(|| rt.background()) * refl_color
         } else {
             Color::black()
         };
@@ -88,8 +89,9 @@ where
         let ior = self.ior.sample(uv);
 
         let refr_term = if !tran_color.is_zero() {
-            let refr = maxel.refracted_ray(ior);
-            rt.ray_trace(&refr).unwrap_or_else(|| rt.background()) * tran_color
+            maxel.refracted_ray(ior)
+                .and_then(|refr| rt.ray_trace(&refr))
+                .unwrap_or_else(|| rt.background()) * tran_color
         } else {
             Color::black()
         };
