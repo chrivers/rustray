@@ -10,6 +10,11 @@ pub struct Transform<F: Float> {
     ifrm: Matrix4<F>,
 }
 
+pub trait HasTransform<F: Float> {
+    fn get_transform(&self) -> &Transform<F>;
+    fn set_transform(&mut self, xfrm: &Transform<F>);
+}
+
 impl<F: Float> Transform<F> {
     pub fn new(xfrm: Matrix4<F>) -> Self {
         Self {
