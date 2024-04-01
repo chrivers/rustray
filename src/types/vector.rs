@@ -280,3 +280,28 @@ where
 }
 
 impl<F: Float> Texel for Vector<F> {}
+
+pub trait Vector4x<F: Float> {
+    fn from_mint(val: mint::Vector4<f32>) -> Self;
+    fn into_mint(self) -> mint::Vector4<f32>;
+}
+
+impl<F: Float> Vector4x<F> for cgmath::Vector4<F> {
+    fn from_mint(val: mint::Vector4<f32>) -> Self {
+        Self {
+            x: F::from_f32(val.x),
+            y: F::from_f32(val.y),
+            z: F::from_f32(val.z),
+            w: F::from_f32(val.w),
+        }
+    }
+
+    fn into_mint(self) -> mint::Vector4<f32> {
+        mint::Vector4::<f32> {
+            x: self.x.to_f32().unwrap_or_default(),
+            y: self.y.to_f32().unwrap_or_default(),
+            z: self.z.to_f32().unwrap_or_default(),
+            w: self.w.to_f32().unwrap_or_default(),
+        }
+    }
+}
