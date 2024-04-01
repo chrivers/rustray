@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::RwLock;
 
 #[cfg(not(feature = "rayon"))]
@@ -64,7 +65,7 @@ fn draw_image<F: Float>(
     img
 }
 
-pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32, output: PathBuf) -> RResult<()>
 where
     F: Float + From<f32>,
 {
@@ -75,13 +76,7 @@ where
     let img = draw_image(&mut time, Tracer::new(scene.read().unwrap()), width, height);
 
     time.set("write");
-    image::save_buffer(
-        "output.png",
-        &img,
-        img.width(),
-        img.height(),
-        ColorType::Rgb8,
-    )?;
+    image::save_buffer(output, &img, img.width(), img.height(), ColorType::Rgb8)?;
 
     info!("render complete");
     time.stop();

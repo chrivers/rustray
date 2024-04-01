@@ -1,34 +1,51 @@
 #[macro_use]
 extern crate log;
 
-use std::env;
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
+use std::path::PathBuf;
 
 use std::str::FromStr;
 
 use log::LevelFilter;
-use pest::Parser;
+use pest::Parser as PestParser;
 
 use rustray::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
 use rustray::sampler::Texel;
 use rustray::scene::BoxScene;
-use rustray::types::{Float, RResult, TimeSlice};
+use rustray::types::{Error, Float, RResult, TimeSlice};
 
-const WIDTH: u32 = 1440;
-const HEIGHT: u32 = 1200;
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    #[arg(short, long, default_value_t = 1440)]
+    width: u32,
+
+    #[arg(short, long, default_value_t = 1200)]
+    height: u32,
+
+    #[arg(value_name = "input")]
+    input: PathBuf,
+
+    #[arg(short, long, value_name = "output")]
+    output: Option<PathBuf>,
+}
 
 fn load_scene<F: Float + FromStr + Texel>(
     time: &mut TimeSlice,
+    path: PathBuf,
     width: u32,
     height: u32,
 ) -> RResult<BoxScene<F>> {
-    let name = env::args().last().unwrap();
-    let path = Path::new(&name);
+    let name = path
+        .to_str()
+        .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;
+
     info!("=={:=<60}==", format!("[ {:50} ]", name));
     let resdir = path.parent().unwrap();
-    let mut file = File::open(path)?;
+    let mut file = File::open(&path)?;
 
     time.set("parse");
 
@@ -48,7 +65,7 @@ fn load_scene<F: Float + FromStr + Texel>(
 
     /* Option 2b: Scene from .ray file (new parser) */
 
-    let p = SbtParser2::<F>::parse(Rule2::program, &data).map_err(|err| err.with_path(&name))?;
+    let p = SbtParser2::<F>::parse(Rule2::program, &data).map_err(|err| err.with_path(name))?;
     time.set("ast");
     /* SbtParser2::<F>::dump(p.clone())?; */
     let p = SbtParser2::<F>::ast(p)?;
@@ -68,11 +85,13 @@ fn main() -> RResult<()> {
     logger.filter(None, LevelFilter::Debug);
     logger.init();
 
+    let cli = Cli::parse();
+
     type F = f64;
 
     let mut time = TimeSlice::new("startup");
-    let scene = load_scene::<F>(&mut time, WIDTH, HEIGHT)?;
-    /* let scene = rustray::demoscene::construct_demo_scene::<F>(&mut time, WIDTH, HEIGHT)?; */
+    let scene = load_scene::<F>(&mut time, cli.input, cli.width, cli.height)?;
+    /* let scene = rustray::demoscene::construct_demo_scene::<F>(&mut time, cli.width, cli.height)?; */
 
     info!(
         "Loaded scene\ncams={}\nobjs={}\nlights={}",
@@ -81,9 +100,9 @@ fn main() -> RResult<()> {
         scene.lights.len()
     );
 
-    /* rustray::frontend::cli::run(scene, WIDTH, HEIGHT) */
+    /* rustray::frontend::cli::run(scene, cli.width, cli.height, cli.output.unwrap_or_else(|| PathBuf::from_str("output.png").unwrap())) */
 
-    rustray::frontend::gui::run(scene, WIDTH, HEIGHT)
+    rustray::frontend::gui::run(scene, cli.width, cli.height)
 }
 
 #[cfg(test)]
