@@ -185,3 +185,11 @@ impl<F: Float> From<Color<F>> for [f32; 3] {
         ]
     }
 }
+
+#[cfg(feature = "gui")]
+impl<F: Float> From<Color<F>> for egui::Color32 {
+    fn from(color: Color<F>) -> Self {
+        let rgb = color.to_array();
+        Self::from_rgb(rgb[0], rgb[1], rgb[2])
+    }
+}
