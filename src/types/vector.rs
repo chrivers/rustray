@@ -108,7 +108,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         )
     }
 
-    fn into_vector3(self) -> glam::Vec3 {
+    fn into_vec3(self) -> glam::Vec3 {
         glam::Vec3::new(
             self.x.to_f32().unwrap_or_default(),
             self.y.to_f32().unwrap_or_default(),
@@ -117,7 +117,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
     }
 
     #[must_use]
-    fn from_vector3(val: glam::Vec3) -> Self {
+    fn from_vec3(val: glam::Vec3) -> Self {
         Self {
             x: F::from_f32(val[0]),
             y: F::from_f32(val[1]),
@@ -177,8 +177,8 @@ where
 
     fn surface_tangents(&self) -> (Self, Self);
 
-    fn into_vector3(self) -> glam::Vec3;
-    fn from_vector3(val: glam::Vec3) -> Self;
+    fn into_vec3(self) -> glam::Vec3;
+    fn from_vec3(val: glam::Vec3) -> Self;
 
     fn from_f32s(val: [f32; 3]) -> Self;
     fn from_f32(value: Vector<f32>) -> Self;

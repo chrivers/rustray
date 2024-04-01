@@ -343,7 +343,7 @@ impl<'a, F: Float> Ray<F> {
 
 impl<F: Float> From<Ray<F>> for rtbvh::Ray {
     fn from(ray: Ray<F>) -> Self {
-        Self::new(ray.pos.into_vector3(), ray.dir.into_vector3())
+        Self::new(ray.pos.into_vec3(), ray.dir.into_vec3())
     }
 }
 

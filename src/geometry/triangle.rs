@@ -50,13 +50,13 @@ impl<F: Float, M: Material<F>> SceneObject for Triangle<F, M> {
 
 impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {
-        self.a.into_vector3()
+        self.a.into_vec3()
     }
     fn vertex1(&self) -> Vec3 {
-        self.b.into_vector3()
+        self.b.into_vec3()
     }
     fn vertex2(&self) -> Vec3 {
-        self.c.into_vector3()
+        self.c.into_vec3()
     }
 }
 
@@ -135,9 +135,9 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
         mat: M,
     ) -> Self {
         let mut aabb = Aabb::empty();
-        aabb.grow(a.into_vector3());
-        aabb.grow(b.into_vector3());
-        aabb.grow(c.into_vector3());
+        aabb.grow(a.into_vec3());
+        aabb.grow(b.into_vec3());
+        aabb.grow(c.into_vec3());
 
         let edge1 = b - a;
         let edge2 = c - a;

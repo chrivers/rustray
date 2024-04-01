@@ -97,7 +97,7 @@ pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z:
         for py in y {
             for pz in z {
                 let p = xfrm.pos(vec3!(px, py, pz)).into_f32();
-                aabb.grow(p.into_vector3());
+                aabb.grow(p.into_vec3());
             }
         }
     }
