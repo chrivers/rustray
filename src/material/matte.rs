@@ -34,7 +34,7 @@ where
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut rng = rand::thread_rng();
-        let mut col = Color::black();
+        let mut col = Color::BLACK;
         let mut mxl = *maxel;
 
         let uv = maxel.uv();

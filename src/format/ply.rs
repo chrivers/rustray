@@ -172,7 +172,7 @@ impl<F: Float + Texel> PlyParser<F> {
             b: F::from_f32(0.0001),
             c: F::from_f32(0.0),
             pos,
-            color: Color::white(),
+            color: Color::WHITE,
         };
 
         lights.push(Box::new(lgt));

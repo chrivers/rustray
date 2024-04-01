@@ -45,7 +45,7 @@ where
             ks,
             kt,
             kr,
-            ambient: Color::black(),
+            ambient: Color::BLACK,
         }
     }
 
@@ -83,7 +83,7 @@ where
                 .and_then(|refl| rt.ray_trace(&refl))
                 .unwrap_or_else(|| rt.background()) * refl_color
         } else {
-            Color::black()
+            Color::BLACK
         };
 
         let ior = self.ior.sample(uv);
@@ -93,7 +93,7 @@ where
                 .and_then(|refr| rt.ray_trace(&refr))
                 .unwrap_or_else(|| rt.background()) * tran_color
         } else {
-            Color::black()
+            Color::BLACK
         };
 
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));

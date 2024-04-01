@@ -474,15 +474,15 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         };
 
         let idx = float("index").unwrap_or(F::ZERO);
-        let ambi = color("ambient").unwrap_or_else(|_| Color::black());
+        let ambi = color("ambient").unwrap_or(Color::BLACK);
         let shi = shinemap("shininess").unwrap_or_else(|_| F::ZERO.dynsampler());
-        let emis = colormap("emissive").unwrap_or_else(|_| Color::black().dynsampler());
-        let diff = colormap("diffuse").unwrap_or_else(|_| Color::black().dynsampler());
-        let spec = colormap("specular").unwrap_or_else(|_| Color::black().dynsampler());
-        let tran = colormap("transmissive").unwrap_or_else(|_| Color::black().dynsampler());
+        let emis = colormap("emissive").unwrap_or_else(|_| Color::BLACK.dynsampler());
+        let diff = colormap("diffuse").unwrap_or_else(|_| Color::BLACK.dynsampler());
+        let spec = colormap("specular").unwrap_or_else(|_| Color::BLACK.dynsampler());
+        let tran = colormap("transmissive").unwrap_or_else(|_| Color::BLACK.dynsampler());
         let refl = colormap("reflective")
             .or_else(|_| colormap("specular"))
-            .unwrap_or_else(|_| Color::black().dynsampler());
+            .unwrap_or_else(|_| Color::BLACK.dynsampler());
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
@@ -734,7 +734,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
-        let mut ambient = Color::black();
+        let mut ambient = Color::BLACK;
         self.material.clear();
         self.version = prog.version;
 

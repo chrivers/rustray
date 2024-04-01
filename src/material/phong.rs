@@ -21,18 +21,18 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Phong<F, S, M> {
 impl<F: Float + Texel> Phong<F, F, Color<F>> {
     #[must_use]
     pub fn white() -> Self {
-        Self::new(F::from_u32(8), Color::white())
+        Self::new(F::from_u32(8), Color::WHITE)
     }
 
     #[must_use]
     pub fn black() -> Self {
-        Self::new(F::from_u32(8), Color::black())
+        Self::new(F::from_u32(8), Color::BLACK)
     }
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F, S, M> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let mut res = Color::black();
+        let mut res = Color::BLACK;
 
         let self_color = self.mat.render(maxel, rt);
         let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);

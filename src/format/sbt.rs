@@ -203,7 +203,7 @@ where
             .map(|x| x.as_str().trim().parse())
             .collect::<Result<Vec<F>, _>>()?;
         if v.len() != 3 {
-            return Ok(Color::black());
+            return Ok(Color::BLACK);
         }
         Ok(Color::new(v[0], v[1], v[2]))
     }
@@ -268,13 +268,13 @@ where
     }
 
     pub fn parse_material(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<F>> {
-        let mut diff = Color::black().dynsampler();
-        let mut spec = Color::black().dynsampler();
+        let mut diff = Color::BLACK.dynsampler();
+        let mut spec = Color::BLACK.dynsampler();
         let mut refl = None;
-        let mut ambi = Color::black();
+        let mut ambi = Color::BLACK;
         let mut bump = None;
-        let mut tran = Color::black().dynsampler();
-        let mut emis = Color::black().dynsampler();
+        let mut tran = Color::BLACK.dynsampler();
+        let mut emis = Color::BLACK.dynsampler();
         let mut shi = F::ZERO.dynsampler();
         let mut idx = F::ZERO;
         let mut _gls = F::ZERO;
@@ -761,7 +761,7 @@ where
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut version: SbtVersion = SbtVersion::Sbt1_0;
-        let mut ambient = Color::black();
+        let mut ambient = Color::BLACK;
 
         for r in p {
             match r.as_rule() {

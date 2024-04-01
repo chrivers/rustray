@@ -28,7 +28,7 @@ impl<'a, F: Float> Tracer<'a, F> {
     }
 
     pub fn render_pixel(&self, camera: &Camera<F>, px: F, py: F, fx: F, fy: F) -> Color<F> {
-        let mut colors = Color::black();
+        let mut colors = Color::BLACK;
         let fsx = F::from_u32(self.sx);
         let fsy = F::from_u32(self.sy);
         for xa in 0..self.sx {

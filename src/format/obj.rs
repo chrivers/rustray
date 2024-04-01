@@ -23,12 +23,12 @@ fn obj_sampler<F: Float + Texel>(
                 .map(|m| m.bilinear().dynsampler())
                 .unwrap_or_else(|_| {
                     warn!("Missing texture [{}]", kd);
-                    Color::white().dynsampler()
+                    Color::WHITE.dynsampler()
                 })
         }
         None => col
             .map(Color::from)
-            .unwrap_or_else(Color::black)
+            .unwrap_or(Color::BLACK)
             .dynsampler(),
     }
 }

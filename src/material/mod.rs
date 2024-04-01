@@ -10,7 +10,7 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
     fn shadow(&self, _maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>> {
-        Some(Color::black())
+        Some(Color::BLACK)
     }
 
     fn dynamic(self) -> DynMaterial<F>
