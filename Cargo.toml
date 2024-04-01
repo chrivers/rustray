@@ -45,6 +45,9 @@ fixed = { version = "2.0.0-alpha.27.0", features = ["num-traits"], optional = tr
 az = { version = "1.2", optional = true }
 crossbeam-channel = "0.5.12"
 workerpool = { version = "1.2.1", features = ["crossbeam"] }
-eframe = { version = "0.27", default-features = false, features = ["glow"], optional = true }
-egui = { version = "0.27", default-features = false, features = ["default_fonts"], optional = true }
+eframe = { version = "0.26", default-features = false, features = ["glow"], optional = true }
+egui = { version = "0.26", default-features = false, features = ["default_fonts"], optional = true }
 clap = { version = "4.5.4", features = ["derive"] }
+egui-file-dialog = "0.4"
+egui-gizmo = "0.16.2"
+mint = "0.5.9"
