@@ -11,7 +11,7 @@ pub struct Plane<F: Float, M: Material<F>> {
     mat: M,
 }
 
-impl<F: Float, M: Material<F>> Interactive for Plane<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -25,12 +25,12 @@ impl<F: Float, M: Material<F>> Interactive for Plane<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Plane<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Plane<F, M> {
     fn get_name(&self) -> &str {
         "Plane"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {

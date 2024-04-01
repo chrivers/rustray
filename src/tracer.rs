@@ -126,7 +126,7 @@ impl<'a, F: Float> Debug for Tracer<'a, F> {
 }
 
 #[cfg(feature = "gui")]
-impl<'a, F: Float> Interactive for Tracer<'a, F> {
+impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::CollapsingHeader::new("Ray tracer")
             .default_open(true)
@@ -148,12 +148,12 @@ impl<'a, F: Float> Interactive for Tracer<'a, F> {
 }
 
 #[cfg(feature = "gui")]
-impl<'a, F: Float> SceneObject for Tracer<'a, F> {
+impl<'a, F: Float> SceneObject<F> for Tracer<'a, F> {
     fn get_name(&self) -> &str {
         "Ray tracer"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
 

@@ -9,7 +9,7 @@ pub struct Square<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Square<F, M>);
 
-impl<F: Float, M: Material<F>> Interactive for Square<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -22,12 +22,12 @@ impl<F: Float, M: Material<F>> Interactive for Square<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Square<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Square<F, M> {
     fn get_name(&self) -> &str {
         "Square"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {

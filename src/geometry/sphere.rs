@@ -9,19 +9,19 @@ pub struct Sphere<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Sphere<F, M>);
 
-impl<F: Float, M: Material<F>> Interactive for Sphere<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         self.mat.ui(ui);
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Sphere<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Sphere<F, M> {
     fn get_name(&self) -> &str {
         "Sphere"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
 

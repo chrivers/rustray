@@ -10,7 +10,7 @@ pub struct Cylinder<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cylinder<F, M>);
 
-impl<F: Float, M: Material<F>> Interactive for Cylinder<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -26,12 +26,12 @@ impl<F: Float, M: Material<F>> Interactive for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Cylinder<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Cylinder<F, M> {
     fn get_name(&self) -> &str {
         "Cylinder"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
 

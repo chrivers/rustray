@@ -103,7 +103,7 @@ impl<F: Float> Camera<F> {
     }
 }
 
-impl<F: Float> Interactive for Camera<F> {
+impl<F: Float> Interactive<F> for Camera<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::CollapsingHeader::new("Camera")
@@ -128,12 +128,12 @@ impl<F: Float> Interactive for Camera<F> {
     }
 }
 
-impl<F: Float> SceneObject for Camera<F> {
+impl<F: Float> SceneObject<F> for Camera<F> {
     fn get_name(&self) -> &str {
         "Camera"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
 

@@ -14,7 +14,7 @@ use rtbvh::Aabb;
 
 use glam::f32::Vec3;
 
-pub trait Geometry<F: Float>: SceneObject + Debug + Sync + Send {
+pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
         Vector::zero()
@@ -27,12 +27,12 @@ pub trait Geometry<F: Float>: SceneObject + Debug + Sync + Send {
     }
 }
 
-pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject + rtbvh::Primitive {}
+pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {}
 
 impl<F: Float, T> Geometry<F> for Box<T>
 where
     T: Geometry<F> + ?Sized,
-    Self: SceneObject,
+    Self: SceneObject<F>,
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         (**self).intersect(ray)
@@ -51,12 +51,12 @@ where
     }
 }
 
-impl<F: Float> SceneObject for Box<(dyn FiniteGeometry<F> + 'static)> {
+impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
     fn get_name(&self) -> &str {
         (**self).get_name()
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
 
@@ -65,12 +65,12 @@ impl<F: Float> SceneObject for Box<(dyn FiniteGeometry<F> + 'static)> {
     }
 }
 
-impl<F: Float> SceneObject for Box<(dyn Geometry<F> + 'static)> {
+impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
     fn get_name(&self) -> &str {
         (**self).get_name()
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
     fn get_id(&self) -> Option<usize> {

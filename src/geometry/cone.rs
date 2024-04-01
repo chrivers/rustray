@@ -13,7 +13,7 @@ pub struct Cone<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cone<F, M>);
 
-impl<F: Float, M: Material<F>> Interactive for Cone<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::Grid::new("grid")
@@ -56,12 +56,12 @@ impl<F: Float, M: Material<F>> Interactive for Cone<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Cone<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Cone<F, M> {
     fn get_name(&self) -> &str {
         "Cone"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {

@@ -19,7 +19,7 @@ pub struct DirectionalLight<F: Float> {
     pub color: Color<F>,
 }
 
-impl<F: Float> Interactive for PointLight<F> {
+impl<F: Float> Interactive<F> for PointLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::CollapsingHeader::new("Point light")
@@ -51,7 +51,7 @@ impl<F: Float> Interactive for PointLight<F> {
     }
 }
 
-impl<F: Float> Interactive for DirectionalLight<F> {
+impl<F: Float> Interactive<F> for DirectionalLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         egui::CollapsingHeader::new("Directional light")
@@ -71,12 +71,12 @@ impl<F: Float> Interactive for DirectionalLight<F> {
     }
 }
 
-impl<F: Float> SceneObject for PointLight<F> {
+impl<F: Float> SceneObject<F> for PointLight<F> {
     fn get_name(&self) -> &str {
         "Point Light"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {
@@ -84,12 +84,12 @@ impl<F: Float> SceneObject for PointLight<F> {
     }
 }
 
-impl<F: Float> SceneObject for DirectionalLight<F> {
+impl<F: Float> SceneObject<F> for DirectionalLight<F> {
     fn get_name(&self) -> &str {
         "Directional Light"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {
@@ -143,12 +143,12 @@ impl<'a, F: Float> Light<F> for Box<dyn Light<F> + 'a> {
     }
 }
 
-impl<'a, F: Float> SceneObject for Box<dyn Light<F> + 'a> {
+impl<'a, F: Float> SceneObject<F> for Box<dyn Light<F> + 'a> {
     fn get_name(&self) -> &str {
         self.as_ref().get_name()
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         self.as_mut().get_interactive()
     }
     fn get_id(&self) -> Option<usize> {

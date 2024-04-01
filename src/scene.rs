@@ -8,19 +8,23 @@ use rtbvh::{Builder, Bvh};
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
-pub trait SceneObject {
+pub trait SceneObject<F: Float> {
     fn get_name(&self) -> &str {
         "Unknown object"
     }
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         None
     }
     fn get_id(&self) -> Option<usize>;
 }
 
-pub trait Interactive: Debug {
+pub trait Interactive<F: Float>: Debug {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui);
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
+        false
+    }
 }
 
 pub trait HasPosition<F: Float> {
@@ -38,7 +42,7 @@ pub trait HasColor<F: Float> {
     fn set_color(&mut self, value: Color<F>);
 }
 
-pub trait Light<F: Float>: HasPosition<F> + SceneObject + Sync + Send {
+pub trait Light<F: Float>: HasPosition<F> + SceneObject<F> + Sync + Send {
     fn get_color(&self) -> Color<F>;
     fn attenuate(&self, color: Color<F>, d: F) -> Color<F>;
 }

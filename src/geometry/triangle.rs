@@ -28,19 +28,19 @@ pub struct Triangle<F: Float, M: Material<F>> {
     mat: M,
 }
 
-impl<F: Float, M: Material<F>> Interactive for Triangle<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
         self.mat.ui(ui);
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject for Triangle<F, M> {
+impl<F: Float, M: Material<F>> SceneObject<F> for Triangle<F, M> {
     fn get_name(&self) -> &str {
         "Triangle"
     }
 
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive> {
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
     fn get_id(&self) -> Option<usize> {
