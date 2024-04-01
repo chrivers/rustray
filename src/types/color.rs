@@ -79,6 +79,9 @@ impl<F: Float> ops::Div<F> for Color<F> {
 }
 
 impl<F: Float> Color<F> {
+    pub const BLACK: Self = Self::gray(F::ZERO);
+    pub const WHITE: Self = Self::gray(F::ONE);
+
     #[must_use]
     pub const fn new(r: F, g: F, b: F) -> Self {
         Self { r, g, b }
