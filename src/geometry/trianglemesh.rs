@@ -19,10 +19,7 @@ pub struct TriangleMesh<F: Float, M: Material<F>> {
 
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
-        for tri in &mut self.tris {
-            tri.ui(ui);
-        }
+    fn ui(&mut self, _ui: &mut egui::Ui) {
     }
 }
 
