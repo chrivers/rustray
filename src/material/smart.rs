@@ -36,7 +36,7 @@ where
     S6: Sampler<F, Color<F>>,
 {
     #[must_use]
-    pub fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
+    pub const fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
         Self {
             ior,
             pow,
