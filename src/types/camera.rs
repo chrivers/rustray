@@ -1,12 +1,10 @@
-use super::vector::{InnerSpace, MetricSpace};
-use super::Float;
-use super::Point;
-use super::Ray;
-use super::Vector;
+use cgmath::{Angle, Deg, InnerSpace, Matrix4, MetricSpace, Point3};
+
 #[cfg(feature = "gui")]
 use crate::frontend::gui::position_ui;
 use crate::scene::{Interactive, SceneObject};
-use cgmath::{Angle, Deg};
+use crate::types::{Float, Point, Ray, Transform, Vector};
+use crate::vec3;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float> {

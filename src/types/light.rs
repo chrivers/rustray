@@ -1,5 +1,7 @@
-use crate::scene::{HasPosition, Interactive, Light, SceneObject};
-use crate::types::{Color, Float, Vector};
+use cgmath::InnerSpace;
+
+use crate::scene::{Interactive, Light, Lixel, SceneObject};
+use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 #[cfg(feature = "gui")]
 use crate::frontend::gui::{color_ui, position_ui};

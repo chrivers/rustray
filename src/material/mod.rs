@@ -1,8 +1,7 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::types::ray::Maxel;
-use crate::types::{Color, Float};
+use crate::types::{Color, Float, Maxel};
 
 use crate::scene::{Light, RayTracer};
 
@@ -62,9 +61,7 @@ pub(crate) mod mat_util {
     pub use crate::sampler::Sampler;
     pub use crate::sampler::Texel;
     pub use crate::scene::{Interactive, Light, RayTracer};
-    pub use crate::types::ray::{Maxel, Ray};
-    pub use crate::types::vector::{InnerSpace, Vectorx};
-    pub use crate::types::{Color, Float, Point, Vector};
+    pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 
     #[cfg(feature = "gui")]
@@ -72,7 +69,7 @@ pub(crate) mod mat_util {
     #[cfg(feature = "gui")]
     pub use egui::{CollapsingHeader, Slider};
 
-    pub use cgmath::VectorSpace;
+    pub use cgmath::{InnerSpace, VectorSpace};
 
     use num_traits::Zero;
     pub use std::marker::PhantomData;

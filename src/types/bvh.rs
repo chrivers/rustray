@@ -1,6 +1,6 @@
 use super::Float;
 use crate::geometry::Geometry;
-use crate::types::ray::{Maxel, Ray};
+use crate::types::{Maxel, Ray};
 
 use rtbvh::Primitive;
 

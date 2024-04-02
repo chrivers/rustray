@@ -1,9 +1,7 @@
 use crate::engine::RenderSpan;
-use crate::point;
-use crate::scene::{BoxScene, Interactive, Light, RayTracer, SceneObject};
-use crate::types::ray::{Maxel, Ray};
-use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, Point};
+use crate::scene::{BoxScene, Interactive, Light, Lixel, RayTracer, SceneObject};
+use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
+use crate::{point, ColorNormal, Material};
 use cgmath::MetricSpace;
 use std::sync::RwLockReadGuard;
 

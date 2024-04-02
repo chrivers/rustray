@@ -1,12 +1,8 @@
-use super::vector::{InnerSpace, Vectorx};
-use super::{Float, Vector};
+use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
+
 use crate::geometry::Geometry;
 use crate::material::Material;
-use crate::types::transform::Transform;
-
-use cgmath::{EuclideanSpace, Matrix4, Point3, Transform as cgTransform};
-
-pub use super::maxel::Maxel;
+use crate::types::{Float, Maxel, Transform, Vector, Vectorx};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float> {

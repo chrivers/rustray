@@ -1,11 +1,7 @@
 use std::fmt::Debug;
 
 use crate::scene::{Interactive, SceneObject};
-use crate::types::ray::{Maxel, Ray};
-use crate::types::transform::Transform;
-use crate::types::vector::Vectorx;
-use crate::types::Vector;
-use crate::types::{Float, Point};
+use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 use num_traits::Zero;
@@ -127,10 +123,8 @@ pub(crate) mod geo_util {
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
     pub use crate::material::Material;
     pub use crate::scene::{Interactive, SceneObject};
-    pub use crate::types::ray::{Maxel, Ray};
-    pub use crate::types::transform::Transform;
-    pub use crate::types::vector::{InnerSpace, Vectorx};
-    pub use crate::types::{Float, Point, Vector};
+    pub use crate::types::transform::{HasTransform, Transform};
+    pub use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 
     #[cfg(feature = "gui")]
@@ -138,7 +132,7 @@ pub(crate) mod geo_util {
     #[cfg(feature = "gui")]
     pub use egui::Slider;
 
-    pub use cgmath::Matrix4;
+    pub use cgmath::{InnerSpace, Matrix4};
 
     pub use num_traits::Zero;
 
