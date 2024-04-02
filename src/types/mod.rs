@@ -21,4 +21,5 @@ pub use ray::Ray;
 pub use result::{Error, RResult};
 pub use timeslice::TimeSlice;
 pub use transform::Transform;
-pub use vector::Vector;
+pub use vector::{Vector, Vectorx};
+pub use maxel::Maxel;
