@@ -60,6 +60,16 @@ impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     }
 }
 
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Triangle<F, M> {
+    fn recompute_aabb(&mut self) {
+        let mut aabb = Aabb::empty();
+        aabb.grow(self.a.into_vec3());
+        aabb.grow(self.b.into_vec3());
+        aabb.grow(self.c.into_vec3());
+        self.aabb = aabb;
+    }
+}
+
 aabb_impl_fm!(Triangle<F, M>);
 
 impl<F: Float, M: Material<F>> fmt::Display for Triangle<F, M> {
@@ -134,16 +144,11 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
         tc: Point<F>,
         mat: M,
     ) -> Self {
-        let mut aabb = Aabb::empty();
-        aabb.grow(a.into_vec3());
-        aabb.grow(b.into_vec3());
-        aabb.grow(c.into_vec3());
-
         let edge1 = b - a;
         let edge2 = c - a;
         let area2 = edge1.cross(edge2).magnitude();
 
-        Self {
+        let mut res = Self {
             a,
             b,
             c,
@@ -156,8 +161,10 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
             edge1,
             edge2,
             area2,
-            aabb,
             mat,
-        }
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 }
