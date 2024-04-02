@@ -24,8 +24,26 @@ impl<F: Float, M: Material<F>> SceneObject<F> for Cube<F, M> {
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         Some(self)
     }
+
     fn get_id(&self) -> Option<usize> {
         Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
+impl<F: Float, M: Material<F>> HasTransform<F> for Cube<F, M> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {
+    fn recompute_aabb(&mut self) {
+        self.aabb = build_aabb_symmetric(&self.xfrm, F::HALF, F::HALF, F::HALF);
     }
 }
 
@@ -92,8 +110,12 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
 
 impl<F: Float, M: Material<F>> Cube<F, M> {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
-        let xfrm = Transform::new(xfrm);
-        let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);
-        Self { xfrm, mat, aabb }
+        let mut res = Self {
+            xfrm: Transform::new(xfrm),
+            mat,
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 }
