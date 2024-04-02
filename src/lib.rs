@@ -49,6 +49,7 @@
 #[macro_use]
 extern crate log;
 
+pub mod debug;
 pub mod demoscene;
 pub mod download;
 pub mod engine;
