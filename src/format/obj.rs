@@ -26,10 +26,7 @@ fn obj_sampler<F: Float + Texel>(
                     Color::WHITE.dynsampler()
                 })
         }
-        None => col
-            .map(Color::from)
-            .unwrap_or(Color::BLACK)
-            .dynsampler(),
+        None => col.map(Color::from).unwrap_or(Color::BLACK).dynsampler(),
     }
 }
 
