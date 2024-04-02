@@ -88,6 +88,12 @@ impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
 
 impl<F: Float, G: Geometry<F> + rtbvh::Primitive> FiniteGeometry<F> for G {}
 
+impl<F: Float> FiniteGeometry<F> for Box<dyn FiniteGeometry<F> + 'static> {
+    fn recompute_aabb(&mut self) {
+        (**self).recompute_aabb();
+    }
+}
+
 pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb {
     /* Transform all corner points, expand aabb with each result */
     let mut aabb = Aabb::empty();
