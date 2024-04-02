@@ -46,6 +46,10 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
     fn ui(&mut self, ui: &mut egui::Ui) {
         CollapsingHeader::new("Triblend")
             .default_open(true)
-            .show(ui, |_ui| {});
+            .show(ui, |ui| {
+                self.a.ui(ui);
+                self.b.ui(ui);
+                self.c.ui(ui);
+            });
     }
 }
