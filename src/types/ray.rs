@@ -9,11 +9,17 @@ pub struct Ray<F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub lvl: u32,
+    pub grp: u16,
 }
 
 impl<'a, F: Float> Ray<F> {
     pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
-        Self { pos, dir, lvl }
+        Self {
+            pos,
+            dir,
+            lvl,
+            grp: lvl as u16,
+        }
     }
 
     #[must_use]
@@ -42,6 +48,7 @@ impl<'a, F: Float> Ray<F> {
             pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
             dir: xfrm.transform_vector(self.dir),
             lvl: self.lvl,
+            grp: self.grp,
         })
     }
 
@@ -51,6 +58,7 @@ impl<'a, F: Float> Ray<F> {
             pos: xfrm.pos_inv(self.pos),
             dir: xfrm.dir_inv(self.dir),
             lvl: self.lvl,
+            grp: self.grp,
         }
     }
 
@@ -60,6 +68,7 @@ impl<'a, F: Float> Ray<F> {
             pos: xfrm.pos(self.pos),
             dir: xfrm.dir(self.dir),
             lvl: self.lvl,
+            grp: self.grp,
         }
     }
 
