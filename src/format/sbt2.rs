@@ -8,7 +8,7 @@ use obj::Obj;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use cgmath::{InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
+use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
 use num_traits::Zero;
 
 use super::sbt::{face_normals, spherical_uvs, SbtVersion};
@@ -16,6 +16,7 @@ use super::sbt::{face_normals, spherical_uvs, SbtVersion};
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
+use crate::light::SpotLight;
 use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Light, Scene};
@@ -450,6 +451,30 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         Ok(res)
     }
 
+    fn parse_spot_light(dict: impl SDict<F>) -> RResult<SpotLight<F>> {
+        let pos = dict.vector("position")?;
+        let dir = dict.vector("direction")?.normalize();
+        let color = dict.color("color").or_else(|_| dict.color("colour"))?;
+        let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
+        let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
+        let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        let umbra = Deg(dict.float("umbra").unwrap_or_else(|_| F::from_f32(45.0))).into();
+        let penumbra = Deg(dict.float("penumbra").unwrap_or_else(|_| F::from_f32(45.0))).into();
+
+        let res = SpotLight {
+            a,
+            b,
+            c,
+            umbra,
+            penumbra,
+            pos,
+            dir,
+            color,
+        };
+        info!("{:7.3?}", res);
+        Ok(res)
+    }
+
     fn parse_directional_light(dict: &impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -750,7 +775,9 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
                 ("ambient_light", SbtValue::Dict(ref dict)) => {
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
-                ("spot_light", SbtValue::Dict(_)) => warn!("spot_light not supported"),
+                ("spot_light", SbtValue::Dict(ref dict)) => {
+                    lights.push(Box::new(Self::parse_spot_light(dict)?));
+                }
                 ("material", SbtValue::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
