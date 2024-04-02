@@ -36,6 +36,14 @@ impl<'a, F: Float> Ray<F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
     }
 
+    pub const fn enter_group(mut self) -> Option<Self> {
+        if self.grp == 0 {
+            return None;
+        }
+        self.grp -= 1;
+        Some(self)
+    }
+
     #[must_use]
     pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
         let inv = xfrm.inverse_transform()?;
