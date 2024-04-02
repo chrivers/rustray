@@ -462,7 +462,7 @@ where
                 Rule::points => {
                     for f in rule.into_inner() {
                         // info!("point: {:?}", f);
-                        points.push(Self::parse_val3b(f)?.xfrm_pos(&xfrm));
+                        points.push(Self::parse_val3b(f)?);
                         /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                     }
                 }
@@ -483,7 +483,7 @@ where
                 Rule::normals => {
                     for f in rule.into_inner() {
                         /* info!("norm: {:?}", f); */
-                        normals.push(Self::parse_val3b(f)?.xfrm_nml(&xfrm));
+                        normals.push(Self::parse_val3b(f)?);
                     }
                 }
                 Rule::materials => {
@@ -547,7 +547,7 @@ where
         }
 
         info!("TriangleMesh(tris={})", tris.len());
-        Ok(vec![Box::new(TriangleMesh::new(tris))])
+        Ok(vec![Box::new(TriangleMesh::new(tris, xfrm))])
     }
 
     pub fn parse_geo_con(

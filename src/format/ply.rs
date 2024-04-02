@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
 
-use cgmath::InnerSpace;
+use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
@@ -144,7 +144,7 @@ impl<F: Float + Texel> PlyParser<F> {
             }
         }
 
-        let mesh = TriangleMesh::new(tris);
+        let mesh = TriangleMesh::new(tris, Matrix4::identity());
 
         let bb = mesh.aabb();
         info!("aabb {:?}", bb);

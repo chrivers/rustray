@@ -22,7 +22,7 @@ use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel
 use crate::scene::{BoxScene, Light, Scene};
 use crate::types::light::{DirectionalLight, PointLight};
 use crate::types::result::{Error, RResult};
-use crate::types::{vector::Vectorx, Camera, Color, Float, Point, Vector};
+use crate::types::{Camera, Color, Float, Point, Vector};
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
@@ -534,10 +534,11 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         let mut normals = vec![];
         let mut texture_uvs = vec![];
         let mut materials = vec![];
+        let mut pos_xfrm = Matrix4::identity();
 
         if let Ok(nmls) = dict.tuple("normals") {
             for normal in nmls {
-                normals.push(normal.tuple()?.vector3()?.xfrm_nml(&xfrm));
+                normals.push(normal.tuple()?.vector3()?);
             }
         }
         if let Ok(mats) = dict.tuple("materials") {
@@ -556,8 +557,11 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
             tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
-                points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm));
+                points.push(point.tuple()?.vector3()?);
             }
+            let center = points.iter().sum::<Vector<F>>() / F::from_usize(points.len());
+            pos_xfrm = Matrix4::from_translation(center);
+            points.iter_mut().for_each(|p| *p -= center);
             for point in dict.tuple("faces")? {
                 let tuple = point.tuple()?;
                 if tuple.len() == 4 {
@@ -613,7 +617,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
             ));
         }
 
-        Ok(vec![Box::new(TriangleMesh::new(tris))])
+        Ok(vec![Box::new(TriangleMesh::new(tris, xfrm * pos_xfrm))])
     }
 
     #[allow(clippy::too_many_lines)]
