@@ -49,14 +49,14 @@ impl<F: Float, M: Material<F>> Primitive for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F> + Clone> Geometry<F> for TriangleMesh<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         self.bvh
             .nearest_intersection(ray, &self.tris, &mut F::max_value())
     }
 }
 
-impl<F: Float, M: Material<F> + Clone> TriangleMesh<F, M> {
+impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
     pub fn new(tris: Vec<Triangle<F, M>>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 

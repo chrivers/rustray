@@ -104,7 +104,7 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F> + Clone> Geometry<F> for Triangle<F, M> {
+impl<F: Float, M: Material<F>> Geometry<F> for Triangle<F, M> {
     fn st(&self, hit: &mut Maxel<F>) -> Point<F> {
         let c1 = self.edge1.cross(hit.pos - self.b);
         let c2 = self.edge2.cross(hit.pos - self.c);
