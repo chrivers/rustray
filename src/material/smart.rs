@@ -99,22 +99,18 @@ where
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
         for light in rt.get_lights() {
-            let light_color = rt
-                .ray_shadow(maxel, light)
-                .unwrap_or_else(|| light.get_color());
+            let lixel = light.contribution(maxel);
 
-            let light_vec = maxel.pos.vector_to(light.get_position());
-            let light_dir = light_vec.normalize();
+            let light_color = rt.ray_shadow(maxel, &lixel).unwrap_or(lixel.color);
 
-            let lambert = normal.dot(light_dir);
+            let lambert = normal.dot(lixel.dir);
 
             if lambert > F::BIAS {
-                let light_color = light.attenuate(light_color, light_vec.magnitude());
                 res += (light_color * diff_color) * lambert;
 
                 if !spec_color.is_zero() {
-                    let spec_dir = (light_dir - maxel.dir).normalize();
-                    let spec_angle = spec_dir.dot(normal).clamp(F::ZERO, F::ONE);
+                    let spec_dir = normal.reflect(&lixel.dir).normalize();
+                    let spec_angle = lixel.dir.dot(spec_dir).clamp(F::ZERO, F::ONE);
                     let specular = spec_angle.pow(spec_pow);
                     res += (light_color * spec_color) * specular;
                 }
@@ -123,7 +119,7 @@ where
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>> {
+    fn shadow(&self, maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
         let uv = maxel.uv();
         let sha = self.kt.sample(uv);
 

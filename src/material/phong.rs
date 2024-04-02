@@ -38,20 +38,15 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
         let spec_adjust = self.pow.sample(maxel.uv()) / F::TWO;
 
         for light in rt.get_lights() {
-            let light_color = rt
-                .ray_shadow(maxel, light)
-                .unwrap_or_else(|| light.get_color());
+            let lixel = light.contribution(maxel);
 
-            let light_vec = maxel.pos.vector_to(light.get_position());
-            let light_dir = light_vec.normalize();
-
-            let lambert = maxel.nml().dot(light_dir);
+            let lambert = maxel.nml().dot(lixel.dir);
 
             if lambert.is_positive() {
-                let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
+                let light_color = lixel.color * self_color;
                 res += light_color * lambert;
 
-                let refl_dir = light_dir.reflect(&maxel.nml());
+                let refl_dir = lixel.dir.reflect(&maxel.nml());
                 let spec_angle = refl_dir.dot(maxel.dir).clamp(F::ZERO, F::ONE);
                 let specular = spec_angle.pow(spec_adjust);
                 res += light_color * specular;
@@ -60,8 +55,8 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, light)
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        self.mat.shadow(maxel, lixel)
     }
 
     #[cfg(feature = "gui")]

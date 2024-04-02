@@ -66,24 +66,23 @@ impl<'a, F: Float> Tracer<'a, F> {
 }
 
 impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
-    fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
+    fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         if maxel.lvl == 0 {
             return None;
         }
-        let light_pos = light.get_position();
-        let hitray = Ray::new(maxel.pos, maxel.pos.normal_to(light_pos), maxel.lvl - 1);
+        let hitray = Ray::new(maxel.pos, lixel.dir, maxel.lvl - 1);
 
-        let mut best_length = light_pos.distance2(maxel.pos);
+        let mut best_length = lixel.len2;
         let mut best_color = None;
 
         let mut r = hitray.into();
 
         #[allow(clippy::significant_drop_in_scrutinee)]
         for (curobj, _ray) in self.scene.bvh.traverse_iter(&mut r, &self.scene.objects) {
-            if let Some(curhit) = curobj.intersect(&hitray) {
+            if let Some(mut curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    if let Some(color) = maxel.mat.shadow(maxel, light) {
+                    if let Some(color) = curhit.mat.shadow(&mut curhit, lixel) {
                         best_color = Some(color);
                         best_length = cur_length;
                     }

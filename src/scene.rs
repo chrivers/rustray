@@ -26,28 +26,24 @@ pub trait Interactive<F: Float>: Debug {
     }
 }
 
-pub trait HasPosition<F: Float> {
-    fn get_position(&self) -> Vector<F>;
-    fn set_position(&mut self, value: Vector<F>);
+pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
+    fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
+        Lixel {
+            dir: Vector::unit_z(),
+            color: Color::BLACK,
+            len2: F::from_u32(100_000),
+        }
+    }
 }
 
-pub trait HasDirection<F: Float> {
-    fn get_direction(&self) -> Vector<F>;
-    fn set_direction(&mut self, value: Vector<F>);
+pub struct Lixel<F: Float> {
+    pub dir: Vector<F>,
+    pub color: Color<F>,
+    pub len2: F,
 }
 
-pub trait HasColor<F: Float> {
-    fn get_color(&self) -> Color<F>;
-    fn set_color(&mut self, value: Color<F>);
-}
-
-pub trait Light<F: Float>: HasPosition<F> + SceneObject<F> + Sync + Send {
-    fn get_color(&self) -> Color<F>;
-    fn attenuate(&self, color: Color<F>, d: F) -> Color<F>;
-}
-
-pub trait RayTracer<F: Float>: Sync {
-    fn ray_shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>>;
+pub trait RayTracer<F: Float> {
+    fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
     fn ambient(&self) -> Color<F>;
     fn background(&self) -> Color<F>;

@@ -52,8 +52,8 @@ where
         col / F::from_u32(self.rays)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, light)
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        self.mat.shadow(maxel, lixel)
     }
 
     #[cfg(feature = "gui")]

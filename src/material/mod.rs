@@ -3,12 +3,12 @@ use std::sync::Arc;
 
 use crate::types::{Color, Float, Maxel};
 
-use crate::scene::{Light, RayTracer};
+use crate::scene::{Lixel, RayTracer};
 
 pub trait Material<F: Float>: Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
-    fn shadow(&self, _maxel: &mut Maxel<F>, _light: &dyn Light<F>) -> Option<Color<F>> {
+    fn shadow(&self, _maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
         Some(Color::BLACK)
     }
 
@@ -60,7 +60,7 @@ pub(crate) mod mat_util {
     pub use crate::material::{DynMaterial, Material};
     pub use crate::sampler::Sampler;
     pub use crate::sampler::Texel;
-    pub use crate::scene::{Interactive, Light, RayTracer};
+    pub use crate::scene::{Interactive, Light, Lixel, RayTracer};
     pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 

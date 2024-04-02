@@ -100,48 +100,32 @@ impl<F: Float> SceneObject<F> for DirectionalLight<F> {
 }
 
 impl<F: Float> Light<F> for PointLight<F> {
-    fn get_color(&self) -> Color<F> {
-        self.color
-    }
-
-    fn attenuate(&self, color: Color<F>, d: F) -> Color<F> {
-        color / (F::ONE + self.a + (self.b * d) + (self.c * d * d))
+    fn contribution(&self, maxel: &Maxel<F>) -> Lixel<F> {
+        let dir = self.pos.vector_to(maxel.pos);
+        let len2 = dir.magnitude2();
+        let len = len2.sqrt();
+        let color = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
+        Lixel {
+            dir: -dir.normalize(),
+            color,
+            len2,
+        }
     }
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {
-    fn get_color(&self) -> Color<F> {
-        self.color
-    }
-
-    fn attenuate(&self, color: Color<F>, _: F) -> Color<F> {
-        color
-    }
-}
-
-impl<F: Float> HasPosition<F> for DirectionalLight<F> {
-    fn get_position(&self) -> Vector<F> {
-        self.dir * F::from_f32(-100_000.0)
-    }
-    fn set_position(&mut self, _: Vector<F>) {}
-}
-
-impl<F: Float> HasPosition<F> for PointLight<F> {
-    fn get_position(&self) -> Vector<F> {
-        self.pos
-    }
-    fn set_position(&mut self, value: Vector<F>) {
-        self.pos = value;
+    fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
+        Lixel {
+            dir: -self.dir.normalize(),
+            color: self.color,
+            len2: F::from_u32(100_000),
+        }
     }
 }
 
 impl<'a, F: Float> Light<F> for Box<dyn Light<F> + 'a> {
-    fn get_color(&self) -> Color<F> {
-        self.as_ref().get_color()
-    }
-
-    fn attenuate(&self, color: Color<F>, d: F) -> Color<F> {
-        self.as_ref().attenuate(color, d)
+    fn contribution(&self, maxel: &Maxel<F>) -> Lixel<F> {
+        (**self).contribution(maxel)
     }
 }
 
@@ -156,11 +140,4 @@ impl<'a, F: Float> SceneObject<F> for Box<dyn Light<F> + 'a> {
     fn get_id(&self) -> Option<usize> {
         Some(std::ptr::addr_of!(*self) as usize)
     }
-}
-
-impl<'a, F: Float> HasPosition<F> for Box<dyn Light<F> + 'a> {
-    fn get_position(&self) -> Vector<F> {
-        self.as_ref().get_position()
-    }
-    fn set_position(&mut self, _value: Vector<F>) {}
 }
