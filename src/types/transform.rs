@@ -1,8 +1,8 @@
 use super::float::Float;
 use crate::types::vector::Vector4x;
 use crate::types::Vector;
-use cgmath::Transform as cgTransform;
 use cgmath::{EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3};
+use cgmath::{SquareMatrix, Transform as _};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Transform<F: Float> {
@@ -20,6 +20,14 @@ impl<F: Float> Transform<F> {
         Self {
             xfrm,
             ifrm: xfrm.inverse_transform().unwrap(),
+        }
+    }
+
+    #[must_use]
+    pub fn identity() -> Self {
+        Self {
+            xfrm: Matrix4::identity(),
+            ifrm: Matrix4::identity(),
         }
     }
 
