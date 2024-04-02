@@ -15,21 +15,41 @@ impl<F: Float + Texel, S: Sampler<F, F>> Fresnel<F, S> {
     }
 }
 
+impl<F: Float + Texel, S: Sampler<F, F>> Fresnel<F, S> {
+    pub fn trace_fresnel(
+        maxel: &mut Maxel<F>,
+        ior: F,
+        rt: &dyn RayTracer<F>,
+    ) -> (Option<Color<F>>, Option<Color<F>>) {
+        let refl = maxel.reflected_ray().and_then(|refl| rt.ray_trace(&refl));
+        let refr = maxel
+            .refracted_ray(ior)
+            .and_then(|refr| rt.ray_trace(&refr));
+
+        (refl, refr)
+    }
+
+    pub fn blend_fresnel(
+        maxel: &mut Maxel<F>,
+        ior: F,
+        c_refl: Color<F>,
+        c_refr: Color<F>,
+    ) -> Color<F> {
+        let fr = maxel.fresnel(ior);
+
+        c_refr.lerp(c_refl, fr)
+    }
+}
+
 impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Fresnel<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let ior = self.ior.sample(maxel.uv());
 
-        let c_refl = maxel.reflected_ray()
-            .and_then(|refl| rt.ray_trace(&refl))
-            .unwrap_or_else(Color::black);
+        let (refl, refr) = Self::trace_fresnel(maxel, ior, rt);
+        let c_refl = refl.unwrap_or(Color::BLACK);
+        let c_refr = refr.unwrap_or(Color::BLACK);
 
-        let c_refr = maxel.refracted_ray(ior)
-            .and_then(|refr| rt.ray_trace(&refr))
-            .unwrap_or_else(Color::black);
-
-        let fr = maxel.fresnel(ior);
-
-        c_refr.lerp(c_refl, fr)
+        Self::blend_fresnel(maxel, ior, c_refl, c_refr)
     }
 
     #[cfg(feature = "gui")]
