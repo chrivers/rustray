@@ -33,15 +33,19 @@ impl<'a, F: Float> Tracer<'a, F> {
             let pixelx = px + F::from_u32(xa) / (fsx * fx);
             for ya in 0..self.sy {
                 let pixely = py + F::from_u32(ya) / (fsy * fy);
-                let ray = camera.get_ray(point!(pixelx, pixely));
-                if let Some(color) = self.ray_trace(&ray) {
-                    colors += color.clamped();
-                } else {
-                    colors += self.scene.background;
-                }
+                colors += self.render_pixel_single(camera, pixelx, pixely);
             }
         }
         colors / (fsx * fsy)
+    }
+
+    pub fn render_pixel_single(&self, camera: &Camera<F>, px: F, py: F) -> Color<F> {
+        let ray = camera.get_ray(point!(px, py), self.maxlvl);
+        if let Some(color) = self.ray_trace(&ray) {
+            color.clamped()
+        } else {
+            self.scene.background
+        }
     }
 
     pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
