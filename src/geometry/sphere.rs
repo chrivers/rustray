@@ -30,6 +30,23 @@ impl<F: Float, M: Material<F>> SceneObject<F> for Sphere<F, M> {
     }
 }
 
+impl<F: Float, M: Material<F>> HasTransform<F> for Sphere<F, M> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Sphere<F, M> {
+    fn recompute_aabb(&mut self) {
+        self.aabb = build_aabb_symmetric(&self.xfrm, F::ONE, F::ONE, F::ONE);
+    }
+}
+
 impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
@@ -48,9 +65,13 @@ impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
 
 impl<F: Float, M: Material<F>> Sphere<F, M> {
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
-        let xfrm = Transform::new(xfrm);
-        let aabb = build_aabb_symmetric(&xfrm, F::ONE, F::ONE, F::ONE);
-        Self { xfrm, mat, aabb }
+        let mut res = Self {
+            xfrm: Transform::new(xfrm),
+            mat,
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 
     pub fn place(pos: Vector<F>, radius: F, mat: M) -> Self {
