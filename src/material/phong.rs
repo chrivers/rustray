@@ -35,7 +35,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
         let mut res = Color::BLACK;
 
         let self_color = self.mat.render(maxel, rt);
-        let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);
+        let spec_adjust = self.pow.sample(maxel.uv()) / F::TWO;
 
         for light in rt.get_lights() {
             let light_color = rt
