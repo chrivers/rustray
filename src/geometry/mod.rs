@@ -23,7 +23,9 @@ pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     }
 }
 
-pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {}
+pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {
+    fn recompute_aabb(&mut self) {}
+}
 
 impl<F: Float, T> Geometry<F> for Box<T>
 where
@@ -119,7 +121,7 @@ macro_rules! aabb_impl_fm {
 }
 
 pub(crate) mod geo_util {
-    pub use super::Geometry;
+    pub use super::{Geometry, FiniteGeometry};
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
     pub use crate::material::Material;
     pub use crate::scene::{Interactive, SceneObject};
