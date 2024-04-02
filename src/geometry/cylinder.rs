@@ -40,6 +40,28 @@ impl<F: Float, M: Material<F>> SceneObject<F> for Cylinder<F, M> {
     }
 }
 
+impl<F: Float, M: Material<F>> HasTransform<F> for Cylinder<F, M> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
+    fn recompute_aabb(&mut self) {
+        self.aabb = build_aabb_ranged(
+            &self.xfrm,
+            [-F::ONE, F::ONE],
+            [-F::ONE, F::ONE],
+            [F::ZERO, F::ONE],
+        );
+    }
+}
+
 impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
@@ -149,18 +171,13 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 
 impl<F: Float, M: Material<F>> Cylinder<F, M> {
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
-        let xfrm = Transform::new(xfrm);
-        let aabb = build_aabb_ranged(
-            &xfrm,
-            [-F::ONE, F::ONE],
-            [-F::ONE, F::ONE],
-            [F::ZERO, F::ONE],
-        );
-        Self {
-            xfrm,
+        let mut res = Self {
+            xfrm: Transform::new(xfrm),
             capped,
             mat,
-            aabb,
-        }
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 }
