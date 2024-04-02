@@ -56,6 +56,7 @@ pub mod engine;
 pub mod format;
 pub mod frontend;
 pub mod geometry;
+pub mod light;
 pub mod material;
 pub mod sampler;
 pub mod scene;
