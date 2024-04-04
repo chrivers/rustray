@@ -378,11 +378,13 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
 
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
     let (t0, t1) = quadratic2(a, b, c)?;
-    if t0.is_negative() || t1.is_negative() {
-        None
-    } else {
-        Some(t0.min(t1))
+    if t0 > F::BIAS2 {
+        return Some(t0);
     }
+    if t1 > F::BIAS2 {
+        return Some(t1);
+    }
+    None
 }
 
 pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
