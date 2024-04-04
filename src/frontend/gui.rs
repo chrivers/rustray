@@ -141,7 +141,7 @@ impl<F: Float + From<f32>> RustRayGui<F> {
         &mut self,
         ctx: &egui::Context,
         ui: &mut egui::Ui,
-        scene: &RwLockWriteGuard<BoxScene<F>>,
+        scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
         let size = [self.img.width() as usize, self.img.height() as usize];
 
@@ -235,7 +235,7 @@ impl<F: Float + From<f32>> eframe::App for RustRayGui<F> {
                 );
             }
 
-            self.engine.render_lines(0, height);
+            self.engine.render_lines(self.lock.clone(), 0, height);
         }
 
         if ctx.input(|i| i.key_pressed(Key::F)) {
@@ -251,7 +251,7 @@ impl<F: Float + From<f32>> eframe::App for RustRayGui<F> {
             .resizable(true)
             .show(ctx, |ui| self.update_side_panel(ctx, ui, &mut scene));
 
-        egui::CentralPanel::default().show(ctx, |ui| self.update_center_panel(ctx, ui, &scene));
+        egui::CentralPanel::default().show(ctx, |ui| self.update_center_panel(ctx, ui, &mut scene));
     }
 }
 
@@ -273,8 +273,8 @@ where
     };
 
     let lock = Arc::new(RwLock::new(scene));
-    let engine = RenderEngine::new(lock.clone(), width, height);
-    engine.render_lines(0, height);
+    let engine = RenderEngine::new(width, height);
+    engine.render_lines(lock.clone(), 0, height);
     let rx = engine.rx.clone();
 
     Ok(eframe::run_native(

@@ -60,7 +60,33 @@ impl<'a, F: Float> Tracer<'a, F> {
             })
             .collect();
 
-        RenderSpan { line: y, pixels }
+        RenderSpan {
+            line: y,
+            mult_y: 1,
+            mult_x: 1,
+            pixels,
+        }
+    }
+
+    pub fn generate_span_coarse(&self, camera: &Camera<F>, y: u32, mult_x: u32) -> RenderSpan<F> {
+        let (xres, yres) = camera.size();
+        let fx = F::from_u32(xres);
+        let fy = F::from_u32(yres);
+        let py = F::from_u32(y);
+        let pixels = (0..xres)
+            .step_by(mult_x as usize)
+            .map(|x| {
+                let px = F::from_u32(x);
+                self.render_pixel_single(camera, (px + F::from_u32(mult_x) / F::TWO) / fx, py / fy)
+            })
+            .collect();
+
+        RenderSpan {
+            line: y,
+            mult_x,
+            mult_y: 1,
+            pixels,
+        }
     }
 
     #[must_use]
