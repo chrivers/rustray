@@ -74,33 +74,37 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         geometry: Vec<G>,
         lights: Vec<L>,
     ) -> RResult<Self> {
-        let bvh = if objects.is_empty() {
-            Bvh::default()
-        } else {
-            let aabbs = objects
-                .iter()
-                .map(rtbvh::Primitive::aabb)
-                .collect::<Vec<rtbvh::Aabb>>();
-
-            Builder {
-                aabbs: Some(aabbs.as_slice()),
-                primitives: objects.as_slice(),
-                primitives_per_leaf: NonZeroUsize::new(16),
-            }
-            /* .construct_spatial_sah()? */
-            /* .construct_locally_ordered_clustered()?; */
-            .construct_binned_sah()?
-        };
-
-        Ok(Self {
+        let mut res = Self {
             cameras,
             objects,
             geometry,
             lights,
-            bvh,
+            bvh: Bvh::default(),
             background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
-            ambient: Color::black(),
-        })
+            ambient: Color::BLACK,
+        };
+
+        res.recompute_bvh()?;
+
+        Ok(res)
+    }
+
+    pub fn recompute_bvh(&mut self) -> RResult<()> {
+        let aabbs = self
+            .objects
+            .iter()
+            .map(rtbvh::Primitive::aabb)
+            .collect::<Vec<rtbvh::Aabb>>();
+
+        let builder = Builder {
+            aabbs: Some(aabbs.as_slice()),
+            primitives: self.objects.as_slice(),
+            primitives_per_leaf: NonZeroUsize::new(16),
+        };
+
+        self.bvh = builder.construct_binned_sah()?;
+
+        Ok(())
     }
 
     pub fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
