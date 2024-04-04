@@ -17,30 +17,6 @@ pub struct Camera<F: Float> {
 }
 
 impl<F: Float> Camera<F> {
-    pub fn raw(
-        pos: Vector<F>,
-        lookat: Vector<F>,
-        hor: Vector<F>,
-        ver: Vector<F>,
-        xres: u32,
-        yres: u32,
-    ) -> Self {
-        let dir = (lookat - pos).normalize();
-
-        info!(
-            "Camera::raw [ pos:{:?},  dir:{:?},  hor:{:?},  ver:{:?} ]",
-            pos, dir, hor, ver
-        );
-        Self {
-            pos,
-            dir,
-            hor,
-            ver,
-            xres,
-            yres,
-        }
-    }
-
     pub fn parametric(
         pos: Vector<F>,
         lookat: Vector<F>,
