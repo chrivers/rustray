@@ -127,7 +127,7 @@ macro_rules! aabb_impl_fm {
 }
 
 pub(crate) mod geo_util {
-    pub use super::{Geometry, FiniteGeometry};
+    pub use super::{FiniteGeometry, Geometry};
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
     pub use crate::material::Material;
     pub use crate::scene::{Interactive, SceneObject};

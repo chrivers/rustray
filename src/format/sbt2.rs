@@ -511,8 +511,6 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
-        /* use crate::ColorNormal; let smart = ColorNormal::new(F::ONE).dynamic(); */
-
         match bump {
             None => smart.dynamic(),
             Some(b) => Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic(),
