@@ -89,6 +89,33 @@ impl<'a, F: Float> Tracer<'a, F> {
         }
     }
 
+    fn ray_trace_normal(&self, ray: &Ray<F>) -> Option<Color<F>> {
+        let mut maxel = self.scene.intersect(ray)?;
+
+        Some(ColorNormal::new(F::ONE).render(&mut maxel, self))
+    }
+
+    pub fn generate_normal_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
+        let (xres, yres) = camera.size();
+        let fx = F::from_u32(xres);
+        let fy = F::from_u32(yres);
+        let py = F::from_u32(y);
+        let pixels = (0..xres)
+            .map(|x| {
+                let px = F::from_u32(x);
+                let ray = camera.get_ray(Point::new(px / fx, py / fy), self.maxlvl);
+                self.ray_trace_normal(&ray).unwrap_or(Color::BLACK)
+            })
+            .collect();
+
+        RenderSpan {
+            line: y,
+            mult_x: 1,
+            mult_y: 1,
+            pixels,
+        }
+    }
+
     #[must_use]
     pub fn scene(&self) -> &BoxScene<F> {
         &self.scene

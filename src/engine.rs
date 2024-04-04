@@ -69,6 +69,22 @@ impl<F: Float> RenderEngine<F> {
         }
     }
 
+    pub fn render_normals(&self, lock: Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
+        for x in a..b {
+            let lock = lock.clone();
+            self.pool.execute_to(
+                self.tx.clone(),
+                Thunk::of(move || {
+                    let scene = lock.read().unwrap();
+                    let tracer = Tracer::new(scene);
+                    let camera = tracer.scene().cameras[0];
+
+                    tracer.generate_normal_span(&camera, x)
+                }),
+            );
+        }
+    }
+
     #[must_use]
     pub fn progress(&self) -> f32 {
         let act = self.pool.queued_count() as f32;
