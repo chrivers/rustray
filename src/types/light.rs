@@ -106,7 +106,7 @@ impl<F: Float> Light<F> for PointLight<F> {
         let len = len2.sqrt();
         let color = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
         Lixel {
-            dir: -dir.normalize(),
+            dir: -dir / len,
             color,
             len2,
         }
