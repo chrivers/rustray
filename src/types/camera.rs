@@ -1,4 +1,4 @@
-use cgmath::{Angle, Deg, InnerSpace, Matrix4, MetricSpace, Point3};
+use cgmath::{Angle, Deg, EuclideanSpace, InnerSpace, Matrix4, MetricSpace, Point3};
 
 #[cfg(feature = "gui")]
 use crate::frontend::gui::position_ui;
@@ -8,10 +8,11 @@ use crate::vec3;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float> {
+    pub model: Transform<F>,
+    pub projection: Transform<F>,
+    pub ndc: Transform<F>,
     pos: Vector<F>,
     dir: Vector<F>,
-    hor: Vector<F>,
-    ver: Vector<F>,
     xres: u32,
     yres: u32,
 }
@@ -51,21 +52,42 @@ impl<F: Float> Camera<F> {
         info!("x_inc_vector: {:8.4?}", x_inc_vector);
         info!("y_inc_vector: {:8.4?}", y_inc_vector);
 
+        let mat1 = cgmath::perspective(
+            Deg(fov),
+            aspect_ratio,
+            F::from_f32(1.0),
+            F::from_u32(10_000),
+        );
+
+        let mat2 = Matrix4::from_translation(vec3![F::HALF, F::HALF, F::ZERO]);
+        let mat3 = Matrix4::from_nonuniform_scale(F::HALF, -F::HALF, F::ONE);
+
+        let model = Transform::new(Matrix4::look_to_rh(Point3::from_vec(pos), viewdir, updir));
+        let projection = Transform::new(mat1);
+        let ndc = Transform::new(mat2 * mat3);
+
         Self {
+            model,
+            projection,
+            ndc,
             pos,
             dir,
-            hor: x_inc_vector,
-            ver: y_inc_vector,
             xres,
             yres,
         }
     }
 
     pub fn get_ray(self, point: Point<F>, lvl: u32) -> Ray<F> {
-        let x = point.x - F::HALF;
-        let y = -point.y + F::HALF;
-        let vpp = self.dir + (self.hor * x) + (self.ver * y);
-        Ray::new(self.pos, vpp.normalize(), lvl)
+        let pos = self.model.pos_inv(vec3![F::ZERO, F::ZERO, F::ZERO]);
+
+        let vpp = self
+            .model
+            .dir_inv(
+                self.projection
+                    .pos_inv(self.ndc.pos_inv(vec3![point.x, point.y, F::ONE])),
+            );
+
+        Ray::new(pos, vpp.normalize(), lvl)
     }
 
     pub const fn size(self) -> (u32, u32) {
