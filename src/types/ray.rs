@@ -89,6 +89,14 @@ impl<'a, F: Float> Ray<F> {
         quadratic(a, b, c)
     }
 
+    pub fn intersect_unit_sphere(&self) -> Option<F> {
+        let a = self.dir.dot(self.dir);
+        let b = F::TWO * self.dir.dot(self.pos);
+        let c = self.pos.dot(self.pos) - F::ONE;
+
+        quadratic(a, b, c)
+    }
+
     pub fn intersect_plane(
         &self,
         pos: &Vector<F>,
