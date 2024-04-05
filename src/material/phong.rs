@@ -63,6 +63,18 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
     fn ui(&mut self, ui: &mut egui::Ui) {
         CollapsingHeader::new("Phong")
             .default_open(true)
-            .show(ui, |_ui| {});
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        self.pow.ui(ui, "Power");
+                        ui.end_row();
+
+                        self.mat.ui(ui);
+                        ui.end_row();
+                    });
+            });
     }
 }
