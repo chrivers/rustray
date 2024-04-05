@@ -1,5 +1,6 @@
 use crate::geometry::{FiniteGeometry, Geometry};
-use crate::types::{BvhExt, Camera, Color, Float, Maxel, RResult, Ray, Vector};
+use crate::light::{Light, Lixel};
+use crate::types::{BvhExt, Camera, Color, Float, Maxel, RResult, Ray};
 
 use cgmath::MetricSpace;
 
@@ -24,22 +25,6 @@ pub trait Interactive<F: Float>: Debug {
     fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
         false
     }
-}
-
-pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
-    fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
-        Lixel {
-            dir: Vector::unit_z(),
-            color: Color::BLACK,
-            len2: F::from_u32(100_000),
-        }
-    }
-}
-
-pub struct Lixel<F: Float> {
-    pub dir: Vector<F>,
-    pub color: Color<F>,
-    pub len2: F,
 }
 
 pub trait RayTracer<F: Float> {

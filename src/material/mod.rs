@@ -1,9 +1,10 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
+use crate::light::Lixel;
 use crate::types::{Color, Float, Maxel};
 
-use crate::scene::{Lixel, RayTracer};
+use crate::scene::RayTracer;
 
 pub trait Material<F: Float>: Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
@@ -57,10 +58,11 @@ impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
 pub(crate) mod mat_util {
     /* These are convenience re-imports for modules, so skip warnings */
     #![allow(unused_imports)]
+    pub use crate::light::{Light, Lixel};
     pub use crate::material::{DynMaterial, Material};
     pub use crate::sampler::Sampler;
     pub use crate::sampler::Texel;
-    pub use crate::scene::{Interactive, Light, Lixel, RayTracer};
+    pub use crate::scene::{Interactive, RayTracer};
     pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 

@@ -1,0 +1,57 @@
+use cgmath::InnerSpace;
+
+use crate::light::{Light, Lixel};
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Color, Float, Maxel, Vector};
+
+#[cfg(feature = "gui")]
+use crate::frontend::gui::{color_ui, position_ui};
+
+#[derive(Debug)]
+pub struct DirectionalLight<F: Float> {
+    pub dir: Vector<F>,
+    pub color: Color<F>,
+}
+
+impl<F: Float> Interactive<F> for DirectionalLight<F> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) {
+        egui::CollapsingHeader::new("Directional light")
+            .default_open(true)
+            .show(ui, |ui| {
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        color_ui(ui, &mut self.color, "Color");
+                        ui.end_row();
+
+                        position_ui(ui, &mut self.dir, "Direction");
+                    })
+            });
+    }
+}
+
+impl<F: Float> SceneObject<F> for DirectionalLight<F> {
+    fn get_name(&self) -> &str {
+        "Directional Light"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
+impl<F: Float> Light<F> for DirectionalLight<F> {
+    fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
+        Lixel {
+            dir: -self.dir.normalize(),
+            color: self.color,
+            len2: F::from_u32(100_000),
+        }
+    }
+}

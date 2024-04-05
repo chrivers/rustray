@@ -7,12 +7,13 @@ use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
+use crate::light::{Light, PointLight};
 use crate::material::*;
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, Point, PointLight, RResult, TimeSlice, Vector};
+use crate::types::{Camera, Color, Float, Point, RResult, TimeSlice, Vector};
 
-use crate::scene::{BoxScene, Light, Scene};
+use crate::scene::{BoxScene, Scene};
 
 use crate::{point, vec3};
 

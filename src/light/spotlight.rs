@@ -2,7 +2,8 @@ use cgmath::{InnerSpace, Rad};
 
 use num_traits::FloatConst;
 
-use crate::scene::{Interactive, Light, Lixel, SceneObject};
+use crate::light::{Light, Lixel};
+use crate::scene::{Interactive, SceneObject};
 use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
 use crate::Vectorx;

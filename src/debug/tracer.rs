@@ -4,7 +4,8 @@ use std::sync::RwLockWriteGuard;
 
 use cgmath::MetricSpace;
 
-use crate::scene::{BoxScene, Light, Lixel, RayTracer};
+use crate::light::{Light, Lixel};
+use crate::scene::{BoxScene, RayTracer};
 use crate::types::{Color, Float, Maxel, Ray};
 
 #[derive(Debug)]

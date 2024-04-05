@@ -15,12 +15,12 @@ use pest_derive::Parser;
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
+use crate::light::{DirectionalLight, PointLight};
 use crate::material::{Bumpmap, Phong, Smart, Triblend};
 use crate::sampler::{NormalMap, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
 use crate::types::float::Lerp;
 use crate::types::{Camera, Error};
-use crate::types::{DirectionalLight, PointLight};
 use crate::types::{Error::ParseError, RResult};
 use crate::{
     point, Color, DynMaterial, DynSampler, Float, Light, Material, Point, Sampler, SamplerExt,

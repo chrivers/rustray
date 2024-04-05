@@ -63,9 +63,9 @@ pub mod scene;
 pub mod tracer;
 pub mod types;
 
+use crate::light::Light;
 use crate::material::*;
 use crate::sampler::{DynSampler, Sampler, SamplerExt};
-use crate::scene::Light;
 use crate::types::vector::Vectorx;
 use crate::types::{Color, Float, Point, Vector};
 

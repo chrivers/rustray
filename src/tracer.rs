@@ -1,5 +1,6 @@
 use crate::engine::RenderSpan;
-use crate::scene::{BoxScene, Interactive, Light, Lixel, RayTracer, SceneObject};
+use crate::light::{Light, Lixel};
+use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
 use crate::{point, ColorNormal, Material};
 use cgmath::MetricSpace;

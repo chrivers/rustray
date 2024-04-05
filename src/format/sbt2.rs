@@ -16,11 +16,10 @@ use super::sbt::{face_normals, spherical_uvs, SbtVersion};
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
-use crate::light::SpotLight;
+use crate::light::{DirectionalLight, Light, PointLight, SpotLight};
 use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
-use crate::scene::{BoxScene, Light, Scene};
-use crate::types::light::{DirectionalLight, PointLight};
+use crate::scene::{BoxScene, Scene};
 use crate::types::result::{Error, RResult};
 use crate::types::{Camera, Color, Float, Point, Vector};
 

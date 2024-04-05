@@ -6,11 +6,11 @@ use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
+use crate::light::PointLight;
 use crate::material::Phong;
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
 use crate::types::Camera;
-use crate::types::PointLight;
 use crate::types::{Error, RResult};
 use crate::vec3;
 use crate::{Color, Float, Light, Material, Point, Vector, Vectorx};
