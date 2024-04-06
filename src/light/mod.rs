@@ -1,10 +1,12 @@
 mod directional;
 mod pointlight;
 mod spotlight;
+mod arealight;
 
 pub use directional::DirectionalLight;
 pub use pointlight::PointLight;
 pub use spotlight::SpotLight;
+pub use arealight::AreaLight;
 
 use crate::mat_util::{RayTracer, Vectorx};
 use crate::scene::{Interactive, SceneObject};
