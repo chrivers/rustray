@@ -33,12 +33,16 @@ struct Cli {
     output: Option<PathBuf>,
 }
 
-fn load_scene<F: Float + FromStr + Texel>(
+fn load_scene<F>(
     time: &mut TimeSlice,
     path: PathBuf,
     width: u32,
     height: u32,
-) -> RResult<BoxScene<F>> {
+) -> RResult<BoxScene<F>>
+where
+    F: Float + FromStr + Texel,
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
+{
     let name = path
         .to_str()
         .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;

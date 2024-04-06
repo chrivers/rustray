@@ -67,7 +67,10 @@ pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) {
     color.b = F::from_f32(rgb[2]);
 }
 
-impl<F: Float + Texel + From<f32>> RustRayGui<F> {
+impl<F: Float + Texel + From<f32>> RustRayGui<F>
+where
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
+{
     /// Called once before the first frame.
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
@@ -303,7 +306,11 @@ fn update_top_panel(ctx: &egui::Context, ui: &mut egui::Ui) {
     });
 }
 
-impl<F: Float + Texel + From<f32>> eframe::App for RustRayGui<F> {
+impl<F> eframe::App for RustRayGui<F>
+where
+    F: Float + Texel + From<f32>,
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
+{
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let mut recv = false;
@@ -402,6 +409,7 @@ impl<F: Float + Texel + From<f32>> eframe::App for RustRayGui<F> {
 pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()

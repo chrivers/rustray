@@ -387,7 +387,11 @@ pub struct SbtBuilder<'a, F: Float> {
     material: SbtDict<'a, F>,
 }
 
-impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
+impl<'a, F> SbtBuilder<'a, F>
+where
+    F: Float + Texel,
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
+{
     #[must_use]
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
