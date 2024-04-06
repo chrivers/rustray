@@ -36,7 +36,13 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
         if maxel.lvl == 0 {
             return None;
         }
-        let hitray = Ray::new(maxel.pos + maxel.nml() * F::BIAS2, lixel.dir, maxel.lvl - 1, true);
+
+        let hitray = Ray::new(
+            maxel.pos + maxel.nml() * F::BIAS2,
+            lixel.dir,
+            maxel.lvl - 1,
+            true,
+        );
 
         let mut best_length = lixel.len2;
         let mut best_color = None;
