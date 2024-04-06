@@ -137,3 +137,42 @@ impl<F: Float> SceneObject<F> for Camera<F> {
         Some(std::ptr::addr_of!(*self) as usize)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::mat_util::Vectorx;
+    use crate::point;
+    use crate::Point;
+
+    use crate::types::Camera;
+    use crate::vec3;
+    use crate::Vector;
+
+    #[test]
+    fn test_camera() {
+        /* colog::init(); */
+        let camera = Camera::build(
+            vec3![0.0, -20.0, 0.0],
+            -Vector::UNIT_Z,
+            Vector::UNIT_Y,
+            50.0,
+            100,
+            100,
+            None,
+        );
+        for point in [
+            point!(0.0, 0.0),
+            point!(1.0, 0.0),
+            point!(0.5, 0.5),
+            point!(0.0, 1.0),
+            point!(1.0, 1.0),
+        ] {
+            let ray = camera.get_ray(point, 1);
+            info!("Point [{point:?}] | {:7.4?}", ray.dir);
+
+            /* let ray1 = camera.get_ray(point, 1); */
+            /* let ray2 = camera.get_ray2(point, 1); */
+            /* info!("Point [{point:?}] | {:7.4?} | {:7.4?}", ray1.dir, ray2.dir); */
+        }
+    }
+}

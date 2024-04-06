@@ -182,3 +182,58 @@ impl<F: Float, M: Material<F>> Cylinder<F, M> {
         res
     }
 }
+
+#[cfg(test)]
+mod test {
+    use assert_float_eq::{afe_is_f64_near, afe_near_error_msg, assert_f64_near};
+    use cgmath::{Matrix4, Zero};
+
+    use super::{Cylinder, Geometry, Ray, Vector};
+    use crate::types::Color;
+
+    macro_rules! assert_vec {
+        ($val:expr, $x:expr, $y:expr, $z:expr) => {
+            assert_f64_near!($val.x, $x);
+            assert_f64_near!($val.y, $y);
+            assert_f64_near!($val.z, $z);
+        };
+    }
+
+    #[test]
+    fn test_cylinder1() {
+        let c = Cylinder::new(Matrix4::from_scale(2.0), false, Color::WHITE);
+
+        let r0 = Ray {
+            pos: Vector::unit_x() * 4.0,
+            dir: -Vector::unit_x(),
+            lvl: 10,
+            grp: 10,
+            dbg: false,
+        };
+        let h0 = c.intersect(&r0).unwrap();
+        assert_vec!(h0.pos, 2.0, 0.0, 0.0);
+        assert_vec!(h0.dir, -1.0, 0.0, 0.0);
+
+        let r1 = Ray {
+            pos: Vector::zero(),
+            dir: Vector::unit_x(),
+            lvl: 10,
+            grp: 10,
+            dbg: false,
+        };
+        let h1 = c.intersect(&r1).unwrap();
+        assert_vec!(h1.pos, 2.0, 0.0, 0.0);
+        assert_vec!(h1.dir, 1.0, 0.0, 0.0);
+
+        let r2 = Ray {
+            pos: Vector::unit_x() * 1.99,
+            dir: -Vector::unit_x(),
+            lvl: 10,
+            grp: 10,
+            dbg: false,
+        };
+        let h2 = c.intersect(&r2).unwrap();
+        assert_vec!(h2.pos, -2.0, 0.0, 0.0);
+        assert_vec!(h2.dir, -1.0, 0.0, 0.0);
+    }
+}

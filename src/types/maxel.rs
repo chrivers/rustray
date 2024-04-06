@@ -142,3 +142,28 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_float_eq::{afe_is_f64_near, afe_near_error_msg, assert_f64_near};
+    use cgmath::InnerSpace;
+
+    use crate::mat_util::Vectorx;
+
+    use super::Vector;
+
+    macro_rules! assert_vec {
+        ($val:expr, $x:expr, $y:expr, $z:expr) => {
+            assert_f64_near!($val.x, $x);
+            assert_f64_near!($val.y, $y);
+            assert_f64_near!($val.z, $z);
+        };
+    }
+
+    #[test]
+    fn test_reflect() {
+        let dir = Vector::new(1.0, -1.0, 0.0).normalize();
+        let nml = Vector::new(0.0, 1.0, 0.0);
+        assert_vec!(dir.reflect(&nml), dir.x, -dir.y, 0.0);
+    }
+}
