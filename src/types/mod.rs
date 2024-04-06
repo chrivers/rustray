@@ -2,6 +2,7 @@ pub mod bvh;
 pub mod camera;
 pub mod color;
 pub mod float;
+pub mod iter;
 pub mod maxel;
 pub mod point;
 pub mod ray;
