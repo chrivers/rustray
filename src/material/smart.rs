@@ -109,16 +109,21 @@ where
 
             let lambert = normal.dot(lixel.dir);
 
-            if lambert > F::BIAS {
-                res += (light_color * diff_color) * lambert;
-
-                if !spec_color.is_zero() {
-                    let spec_dir = normal.reflect(&lixel.dir).normalize();
-                    let spec_angle = lixel.dir.dot(spec_dir).clamp(F::ZERO, F::ONE);
-                    let specular = spec_angle.pow(spec_pow);
-                    res += (light_color * spec_color) * specular;
-                }
+            if lambert < F::BIAS {
+                continue;
             }
+
+            res += (light_color * diff_color) * lambert;
+
+            if spec_color.is_zero() {
+                continue;
+            }
+
+            let refl_dir = lixel.dir.reflect(&maxel.nml());
+            let spec_angle = refl_dir.dot(maxel.dir).max(F::ZERO);
+            let specular = spec_angle.pow(spec_pow);
+
+            res += light_color * spec_color * specular;
         }
         res
     }
