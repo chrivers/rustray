@@ -318,7 +318,7 @@ where
     pub fn parse_camera(p: Pair<Rule>, width: u32, height: u32) -> RResult<Camera<F>> {
         let mut position: Vector<F> = Vector::zero();
         let mut viewdir: Option<Vector<F>> = None;
-        let mut updir: Vector<F> = Vector::unit_y();
+        let mut updir: Vector<F> = Vector::UNIT_Y;
         let mut look_at: RResult<Vector<F>> = Err(ParseError("look_at"));
         let mut aspectratio: Option<F> = None;
         let mut fov: F = F::from_u32(55);
@@ -338,7 +338,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z());
+            viewdir = Some(-Vector::UNIT_Z);
         }
 
         info!("Camera:");

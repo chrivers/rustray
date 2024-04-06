@@ -156,7 +156,7 @@ impl<F: Float + Texel> PlyParser<F> {
         let cam = Camera::build(
             pos,
             look - pos,
-            Vector::unit_y(),
+            Vector::UNIT_Y,
             F::from_f32(120.0),
             width,
             height,

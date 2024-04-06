@@ -80,9 +80,9 @@ impl<F: Float, M: Material<F>> Geometry<F> for Square<F, M> {
         }
 
         let normal = if r.dir.z.is_positive() {
-            -Vector::unit_z()
+            -Vector::UNIT_Z
         } else {
-            Vector::unit_z()
+            Vector::UNIT_Z
         };
 
         Some(

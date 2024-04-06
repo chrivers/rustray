@@ -17,6 +17,7 @@ use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
 use crate::light::{DirectionalLight, Light, PointLight, SpotLight};
+use crate::mat_util::Vectorx;
 use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
@@ -401,7 +402,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
     fn parse_camera(&mut self, dict: &impl SDict<F>) -> RResult<Camera<F>> {
         let position = dict.vector("position").unwrap_or_else(|_| Vector::zero());
         let mut viewdir = dict.vector("viewdir").ok();
-        let updir = dict.vector("updir").unwrap_or_else(|_| Vector::unit_y());
+        let updir = dict.vector("updir").unwrap_or(Vector::UNIT_Y);
         let look_at = dict.vector("look_at");
         let aspectratio = dict.float("aspectratio").ok();
         let fov = dict.float("fov").unwrap_or_else(|_| F::from_f32(55.0));
@@ -410,7 +411,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z());
+            viewdir = Some(-Vector::UNIT_Z);
         }
 
         info!("Camera:");

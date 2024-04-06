@@ -6,13 +6,14 @@ pub use directional::DirectionalLight;
 pub use pointlight::PointLight;
 pub use spotlight::SpotLight;
 
+use crate::mat_util::Vectorx;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Color, Float, Maxel, Vector};
 
 pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
     fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
         Lixel {
-            dir: Vector::unit_z(),
+            dir: Vector::UNIT_Z,
             color: Color::BLACK,
             len2: F::from_u32(100_000),
         }

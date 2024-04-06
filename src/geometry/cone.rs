@@ -113,7 +113,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
             gamma -= self.height;
         }
 
-        let mut normal: Vector<F> = Vector::unit_x();
+        let mut normal: Vector<F> = Vector::UNIT_X;
 
         let p = r.pos;
         let d = r.dir;
@@ -142,9 +142,9 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
             if p.x * p.x + p.y * p.y <= rad * rad {
                 *root = tx;
                 if dz.is_positive() {
-                    *normal = -Vector::unit_z();
+                    *normal = -Vector::UNIT_Z;
                 } else {
-                    *normal = Vector::unit_z();
+                    *normal = Vector::UNIT_Z;
                 }
             }
         }
