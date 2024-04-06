@@ -68,7 +68,8 @@ pub fn load<F: Float + Texel>(
                 /* let kr = obj_sampler(&obj.path, &omat.map_refl, &omat.kr); */
                 /* let ns = obj_sampler(&obj.path, &omat.map_ns, F::from_f32(omat.ns.unwrap_or(1.0)) */
 
-                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::white());
+                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::WHITE)
+                    .with_ambient(omat.ka.map(Into::into).unwrap_or(Color::BLACK));
 
                 if omat.map_bump.is_some() {
                     let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));
