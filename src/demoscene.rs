@@ -106,7 +106,7 @@ where
     let cameras = vec![Camera::parametric(
         vec3!(10.0, 4.5, 10.0),
         vec3!(0.0, 1.0, 0.0),
-        Vector::identity_y(),
+        Vector::UNIT_Y,
         F::from_f32(50.0),
         width,
         height,
