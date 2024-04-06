@@ -51,7 +51,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
-        let result = r.intersect_sphere(&Vector::zero(), F::ONE)?;
+        let result = r.intersect_unit_sphere()?;
         let normal = r.extend(result);
 
         let nml = self.xfrm.nml(normal);
