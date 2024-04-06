@@ -96,7 +96,10 @@ where
             ));
 
             let ax = cam.ndc.pos(cam.projection.pos(cam.model.pos(maxel.pos)));
-            let bx = cam.ndc.pos(cam.projection.pos(cam.model.pos(maxel.pos + maxel.nml() / F::FOUR )));
+            let bx = cam.ndc.pos(
+                cam.projection
+                    .pos(cam.model.pos(maxel.pos + maxel.nml() / F::FOUR)),
+            );
             let a = Pos2 {
                 x: ax.x.to_f32().unwrap(),
                 y: ax.y.to_f32().unwrap(),
