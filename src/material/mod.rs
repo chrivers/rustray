@@ -41,7 +41,11 @@ impl<F: Float> Material<F> for Color<F> {
 
 impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        self.as_ref().render(maxel, rt)
+        (**self).render(maxel, rt)
+    }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        (**self).shadow(maxel, lixel)
     }
 
     #[cfg(feature = "gui")]
