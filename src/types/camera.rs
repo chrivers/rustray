@@ -87,7 +87,7 @@ impl<F: Float> Camera<F> {
                     .pos_inv(self.ndc.pos_inv(vec3![point.x, point.y, F::ONE])),
             );
 
-        Ray::new(pos, vpp.normalize(), lvl)
+        Ray::new(pos, vpp.normalize(), lvl, false)
     }
 
     pub const fn size(self) -> (u32, u32) {
