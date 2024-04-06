@@ -3,7 +3,7 @@ use cgmath::{InnerSpace, Rad};
 use num_traits::FloatConst;
 
 use crate::light::{Light, Lixel};
-use crate::scene::{Interactive, SceneObject};
+use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
 use crate::Vectorx;
@@ -37,7 +37,7 @@ impl<F: Float> SceneObject<F> for SpotLight<F> {
 }
 
 impl<F: Float> Light<F> for SpotLight<F> {
-    fn contribution(&self, maxel: &Maxel<F>) -> Lixel<F> {
+    fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
         let dir = self.pos.normal_to(maxel.pos);
         let len2 = dir.magnitude2();
         let len = len2.sqrt();
@@ -56,7 +56,7 @@ impl<F: Float> Light<F> for SpotLight<F> {
             };
         }
 
-        if angle > inner_angle {
+        let lixel = if angle > inner_angle {
             let scale = F::ONE - (angle - inner_angle) / (outer_angle - inner_angle).max(F::BIAS);
             Lixel {
                 color: color * scale,
@@ -69,7 +69,9 @@ impl<F: Float> Light<F> for SpotLight<F> {
                 dir: -dir,
                 len2,
             }
-        }
+        };
+
+        rt.shadow(maxel, lixel)
     }
 }
 

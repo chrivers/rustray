@@ -38,7 +38,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
         let spec_adjust = self.pow.sample(maxel.uv()) / F::TWO;
 
         for light in rt.get_lights() {
-            let lixel = light.contribution(maxel);
+            let lixel = light.contribution(maxel, rt);
 
             let lambert = maxel.nml().dot(lixel.dir);
 

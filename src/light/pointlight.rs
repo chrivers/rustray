@@ -1,7 +1,7 @@
 use cgmath::InnerSpace;
 
 use crate::light::{Light, Lixel};
-use crate::scene::{Interactive, SceneObject};
+use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 #[cfg(feature = "gui")]
@@ -62,15 +62,19 @@ impl<F: Float> SceneObject<F> for PointLight<F> {
 }
 
 impl<F: Float> Light<F> for PointLight<F> {
-    fn contribution(&self, maxel: &Maxel<F>) -> Lixel<F> {
+    fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
         let dir = self.pos.vector_to(maxel.pos);
         let len2 = dir.magnitude2();
         let len = len2.sqrt();
         let color = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
-        Lixel {
-            dir: -dir / len,
-            color,
-            len2,
-        }
+
+        rt.shadow(
+            maxel,
+            Lixel {
+                dir: -dir / len,
+                color,
+                len2,
+            },
+        )
     }
 }

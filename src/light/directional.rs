@@ -1,7 +1,7 @@
 use cgmath::InnerSpace;
 
 use crate::light::{Light, Lixel};
-use crate::scene::{Interactive, SceneObject};
+use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::{Color, Float, Maxel, Vector};
 
 #[cfg(feature = "gui")]
@@ -56,12 +56,15 @@ impl<F: Float> SceneObject<F> for DirectionalLight<F> {
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {
-    fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
-        Lixel {
-            // FIXME: precalculate
-            dir: -self.dir.normalize(),
-            color: self.color,
-            len2: F::from_u32(100_000),
-        }
+    fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
+        rt.shadow(
+            maxel,
+            Lixel {
+                // FIXME: precalculate
+                dir: -self.dir.normalize(),
+                color: self.color,
+                len2: F::from_u32(100_000),
+            },
+        )
     }
 }

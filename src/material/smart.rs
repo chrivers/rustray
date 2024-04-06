@@ -103,9 +103,7 @@ where
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
         for light in rt.get_lights() {
-            let lixel = light.contribution(maxel);
-
-            let light_color = rt.ray_shadow(maxel, &lixel).unwrap_or(lixel.color);
+            let lixel = light.contribution(maxel, rt);
 
             let lambert = normal.dot(lixel.dir);
 
@@ -113,7 +111,7 @@ where
                 continue;
             }
 
-            res += (light_color * diff_color) * lambert;
+            res += (lixel.color * diff_color) * lambert;
 
             if spec_color.is_zero() {
                 continue;
@@ -123,7 +121,7 @@ where
             let spec_angle = refl_dir.dot(maxel.dir).max(F::ZERO);
             let specular = spec_angle.pow(spec_pow);
 
-            res += light_color * spec_color * specular;
+            res += lixel.color * spec_color * specular;
         }
         res
     }
