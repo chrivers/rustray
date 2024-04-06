@@ -4,6 +4,7 @@ use cgmath::InnerSpace;
 
 use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::types::iter::GridSamples;
 use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
 use crate::Vectorx;
@@ -114,28 +115,23 @@ where
 
         /* let mut rng = rand::thread_rng(); */
 
-        for ys in 0..self.yres {
-            /* let ry: F = (rng.gen::<F>() - F::HALF) * self.height; */
-            let ry = ((F::from_u32(ys) / F::from_u32(self.yres)) - F::HALF) * self.height;
-            for xs in 0..self.xres {
-                /* let rx: F = (rng.gen::<F>() - F::HALF) * self.width; */
-                let rx = ((F::from_u32(xs) / F::from_u32(self.xres)) - F::HALF) * self.width;
+        let dist = GridSamples::new(self.width, self.height, self.xres, self.yres);
 
-                let pos = self.pos + self.dir1 * rx + self.dir2 * ry;
+        for (rx, ry) in dist.iter() {
+            let pos = self.pos + self.dir1 * rx + self.dir2 * ry;
 
-                let dir = maxel.pos.vector_to(pos);
-                let len2 = dir.magnitude2();
-                let len = len2.sqrt();
-                let col = self.attn.attenuate(self.color, len, len2);
+            let dir = maxel.pos.vector_to(pos);
+            let len2 = dir.magnitude2();
+            let len = len2.sqrt();
+            let col = self.attn.attenuate(self.color, len, len2);
 
-                let lixel = Lixel {
-                    color: col,
-                    dir: dir / len,
-                    len2,
-                };
+            let lixel = Lixel {
+                color: col,
+                dir: dir / len,
+                len2,
+            };
 
-                color += rt.shadow(maxel, lixel).color;
-            }
+            color += rt.shadow(maxel, lixel).color;
         }
 
         color = color / F::from_u32(self.xres * self.yres);
