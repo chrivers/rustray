@@ -40,7 +40,8 @@ impl<F: Float> Light<F> for SpotLight<F> {
     fn contribution(&self, maxel: &Maxel<F>) -> Lixel<F> {
         let dir = self.pos.normal_to(maxel.pos);
         let len2 = dir.magnitude2();
-        let color = self.color / (F::ONE + self.a + (self.b * len2.sqrt()) + (self.c * len2));
+        let len = len2.sqrt();
+        let color = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
 
         let angle = self.dir.normalize().dot(dir.normalize()).acos();
 
