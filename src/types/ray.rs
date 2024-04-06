@@ -25,7 +25,7 @@ impl<'a, F: Float> Ray<F> {
     }
 
     #[must_use]
-    pub fn with_debug(mut self) -> Self {
+    pub const fn with_debug(mut self) -> Self {
         self.dbg = true;
         self
     }
