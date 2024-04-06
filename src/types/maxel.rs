@@ -17,6 +17,7 @@ pub struct Maxel<'a, F: Float> {
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
+    pub dbg: bool,
 }
 
 impl<'a, F: Float> Debug for Maxel<'a, F> {
@@ -42,6 +43,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         lvl: u32,
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
+        dbg: bool,
     ) -> Self {
         Maxel {
             pos,
@@ -52,6 +54,7 @@ impl<'a, F: Float> Maxel<'a, F> {
             nml: None,
             uv: None,
             st: None,
+            dbg,
         }
     }
 
@@ -60,7 +63,12 @@ impl<'a, F: Float> Maxel<'a, F> {
             return None;
         }
         let refl = self.dir.reflect(&self.nml());
-        Some(Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl - 1))
+        Some(Ray::new(
+            self.pos + refl * F::BIAS4,
+            refl,
+            self.lvl - 1,
+            self.dbg,
+        ))
     }
 
     pub fn refracted_ray(&mut self, ior: F) -> Option<Ray<F>> {
@@ -68,7 +76,12 @@ impl<'a, F: Float> Maxel<'a, F> {
             return None;
         }
         let refr = self.dir.refract(&self.nml(), ior);
-        Some(Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl - 1))
+        Some(Ray::new(
+            self.pos + refr * F::BIAS4,
+            refr,
+            self.lvl - 1,
+            self.dbg,
+        ))
     }
 
     pub fn fresnel(&mut self, ior: F) -> F {

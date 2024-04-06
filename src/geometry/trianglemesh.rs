@@ -101,6 +101,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
                 ray.lvl,
                 self,
                 self.mat.as_ref(),
+                ray.dbg,
             ))
         }
     }

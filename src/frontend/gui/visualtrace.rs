@@ -18,7 +18,9 @@ where
 {
     const TRACE_STEPS: u32 = 20;
 
-    let ray = scene.cameras[0].get_ray(point!(coord.x, coord.y), TRACE_STEPS);
+    let ray = scene.cameras[0]
+        .get_ray(point!(coord.x, coord.y), TRACE_STEPS)
+        .with_debug();
 
     let dt = DebugTracer::new(scene);
     dt.ray_trace(&ray);

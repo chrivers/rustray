@@ -10,16 +10,24 @@ pub struct Ray<F: Float> {
     pub dir: Vector<F>,
     pub lvl: u32,
     pub grp: u16,
+    pub dbg: bool,
 }
 
 impl<'a, F: Float> Ray<F> {
-    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
+    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32, dbg: bool) -> Self {
         Self {
             pos,
             dir,
             lvl,
             grp: lvl as u16,
+            dbg,
         }
+    }
+
+    #[must_use]
+    pub fn with_debug(mut self) -> Self {
+        self.dbg = true;
+        self
     }
 
     #[must_use]
@@ -33,7 +41,7 @@ impl<'a, F: Float> Ray<F> {
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
+        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.dbg)
     }
 
     pub const fn enter_group(mut self) -> Option<Self> {
