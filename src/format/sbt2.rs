@@ -16,7 +16,7 @@ use super::sbt::{face_normals, spherical_uvs, SbtVersion};
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
-use crate::light::{DirectionalLight, Light, PointLight, SpotLight};
+use crate::light::{AreaLight, DirectionalLight, Light, PointLight, SpotLight};
 use crate::mat_util::Vectorx;
 use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
@@ -475,6 +475,32 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         Ok(res)
     }
 
+    fn parse_area_light(dict: impl SDict<F>) -> RResult<AreaLight<F>> {
+        let pos = dict.vector("position")?;
+        let dir = dict.vector("direction")?.normalize();
+        let color = dict.color("color").or_else(|_| dict.color("colour"))?;
+        let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
+        let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
+        let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        let upd = dict.vector("updir")?.normalize();
+        let width  = dict.float("width").unwrap_or(F::ONE);
+        let height = dict.float("height").unwrap_or(F::ONE);
+
+        let res = AreaLight::new(
+            a,
+            b,
+            c,
+            pos,
+            dir,
+            upd,
+            color,
+            width,
+            height,
+        );
+        info!("{:7.3?}", res);
+        Ok(res)
+    }
+
     fn parse_directional_light(dict: &impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -783,8 +809,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
                 ("material", SbtValue::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
-                    warn!("Simulating {} using point_light", blk.name);
-                    lights.push(Box::new(Self::parse_point_light(&dict)?));
+                    lights.push(Box::new(Self::parse_area_light(dict)?));
                 }
 
                 (name, value) => {
