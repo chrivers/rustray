@@ -18,9 +18,26 @@ pub struct RenderEngine<F: Float> {
     pool: Pool<ThunkWorker<RenderSpan<F>>>,
     pub rx: crossbeam_channel::Receiver<RenderSpan<F>>,
     tx: crossbeam_channel::Sender<RenderSpan<F>>,
+    dirty: Vec<bool>,
     #[allow(dead_code)]
     width: u32,
     height: u32,
+}
+
+pub struct RenderEngineIter<'a, F: Float> {
+    engine: &'a mut RenderEngine<F>,
+}
+
+impl<'a, F: Float> Iterator for RenderEngineIter<'a, F> {
+    type Item = RenderSpan<F>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let span = self.engine.rx.try_recv().ok()?;
+        for x in 0..span.mult_y {
+            self.engine.dirty[(span.line + x) as usize] = false;
+        }
+        Some(span)
+    }
 }
 
 impl<F: Float> RenderEngine<F> {
@@ -34,17 +51,22 @@ impl<F: Float> RenderEngine<F> {
             pool,
             rx,
             tx,
+            dirty: vec![false; height as usize],
             width,
             height,
         }
     }
 
-    pub fn render_lines(&self, lock: Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
+    pub fn iter(&mut self) -> RenderEngineIter<F> {
+        RenderEngineIter { engine: self }
+    }
+
+    pub fn render_lines(&mut self, lock: Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
         self.render_lines_by_step(lock, a, b, 1, 1);
     }
 
     pub fn render_lines_by_step(
-        &self,
+        &mut self,
         lock: Arc<RwLock<BoxScene<F>>>,
         a: u32,
         b: u32,
@@ -52,6 +74,12 @@ impl<F: Float> RenderEngine<F> {
         step_y: u32,
     ) {
         for y in (a..b).step_by(step_y as usize) {
+            let dirty = &mut self.dirty[y as usize];
+            if *dirty {
+                continue;
+            }
+            *dirty = true;
+
             let lock = lock.clone();
             self.pool.execute_to(
                 self.tx.clone(),

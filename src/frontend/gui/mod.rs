@@ -31,7 +31,6 @@ use pest::Parser;
 pub use gizmo::gizmo_ui;
 
 pub struct RustRayGui<F: Float> {
-    beam: crossbeam_channel::Receiver<RenderSpan<F>>,
     engine: RenderEngine<F>,
     lock: Arc<RwLock<BoxScene<F>>>,
     img: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -72,7 +71,6 @@ impl<F: Float + Texel + From<f32>> RustRayGui<F> {
     /// Called once before the first frame.
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
-        beam: crossbeam_channel::Receiver<RenderSpan<F>>,
         engine: RenderEngine<F>,
         lock: Arc<RwLock<BoxScene<F>>>,
         img: ImageBuffer<Rgba<u8>, Vec<u8>>,
@@ -85,7 +83,6 @@ impl<F: Float + Texel + From<f32>> RustRayGui<F> {
         /* cc.egui_ctx.set_fonts(fonts); */
 
         Self {
-            beam,
             engine,
             lock,
             img,
@@ -310,7 +307,7 @@ impl<F: Float + Texel + From<f32>> eframe::App for RustRayGui<F> {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let mut recv = false;
-        while let Ok(res) = self.beam.try_recv() {
+        for res in self.engine.iter() {
             for (base_x, pixel) in res.pixels.iter().enumerate() {
                 let rgba = Rgba(pixel.to_array4());
                 for y in 0..res.mult_y {
@@ -420,9 +417,8 @@ where
     };
 
     let lock = Arc::new(RwLock::new(scene));
-    let engine = RenderEngine::new(width, height);
+    let mut engine = RenderEngine::new(width, height);
     engine.render_lines(lock.clone(), 0, height);
-    let rx = engine.rx.clone();
 
     Ok(eframe::run_native(
         "Rustray",
@@ -430,7 +426,6 @@ where
         Box::new(move |cc| {
             Box::new(RustRayGui::new(
                 cc,
-                rx,
                 engine,
                 lock,
                 ImageBuffer::new(width, height),
