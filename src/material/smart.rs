@@ -136,7 +136,7 @@ where
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) {
-        CollapsingHeader::new("Smart2")
+        CollapsingHeader::new("Smart")
             .default_open(true)
             .show(ui, |ui| {
                 egui::Grid::new("grid")
