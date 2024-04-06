@@ -128,7 +128,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
         if maxel.lvl == 0 {
             return None;
         }
-        let hitray = Ray::new(maxel.pos, lixel.dir, maxel.lvl - 1, false);
+        let hitray = Ray::new(maxel.pos + maxel.nml() * F::BIAS2, lixel.dir, maxel.lvl - 1, false);
 
         let mut best_length = lixel.len2;
         let mut best_color = None;
