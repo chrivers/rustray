@@ -478,7 +478,7 @@ impl<'a, F: Float + Texel> SbtBuilder<'a, F> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
-        let res = DirectionalLight { dir, color };
+        let res = DirectionalLight::new(dir, color);
         info!("{:7.3?}", res);
         Ok(res)
     }

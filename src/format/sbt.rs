@@ -632,7 +632,7 @@ where
         let dir = direction?;
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
-        let res = DirectionalLight { dir, color };
+        let res = DirectionalLight::new(dir, color);
         info!("{:7.3?}", res);
         Ok(res)
     }

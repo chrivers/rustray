@@ -9,8 +9,17 @@ use crate::frontend::gui::{color_ui, position_ui};
 
 #[derive(Debug)]
 pub struct DirectionalLight<F: Float> {
-    pub dir: Vector<F>,
+    dir: Vector<F>,
     pub color: Color<F>,
+}
+
+impl<F: Float> DirectionalLight<F> {
+    pub fn new(dir: Vector<F>, color: Color<F>) -> Self {
+        Self {
+            dir: dir.normalize(),
+            color,
+        }
+    }
 }
 
 impl<F: Float> Interactive<F> for DirectionalLight<F> {
@@ -49,6 +58,7 @@ impl<F: Float> SceneObject<F> for DirectionalLight<F> {
 impl<F: Float> Light<F> for DirectionalLight<F> {
     fn contribution(&self, _maxel: &Maxel<F>) -> Lixel<F> {
         Lixel {
+            // FIXME: precalculate
             dir: -self.dir.normalize(),
             color: self.color,
             len2: F::from_u32(100_000),
