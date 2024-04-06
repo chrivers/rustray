@@ -55,8 +55,7 @@ impl<'a, F: Float> Ray<F> {
         Some(Self {
             pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
             dir: xfrm.transform_vector(self.dir),
-            lvl: self.lvl,
-            grp: self.grp,
+            ..*self
         })
     }
 
@@ -65,8 +64,7 @@ impl<'a, F: Float> Ray<F> {
         Self {
             pos: xfrm.pos_inv(self.pos),
             dir: xfrm.dir_inv(self.dir),
-            lvl: self.lvl,
-            grp: self.grp,
+            ..*self
         }
     }
 
@@ -75,8 +73,7 @@ impl<'a, F: Float> Ray<F> {
         Self {
             pos: xfrm.pos(self.pos),
             dir: xfrm.dir(self.dir),
-            lvl: self.lvl,
-            grp: self.grp,
+            ..*self
         }
     }
 
