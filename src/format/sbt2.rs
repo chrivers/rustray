@@ -16,7 +16,7 @@ use super::sbt::{face_normals, spherical_uvs, SbtVersion};
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
-use crate::light::{AreaLight, DirectionalLight, Light, PointLight, SpotLight};
+use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
 use crate::mat_util::Vectorx;
 use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
@@ -491,9 +491,7 @@ where
         let height = dict.float("height").unwrap_or(F::ONE);
 
         let res = AreaLight::new(
-            a,
-            b,
-            c,
+            Attenuation { a, b, c },
             pos,
             dir,
             upd,

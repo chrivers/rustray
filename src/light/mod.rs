@@ -22,6 +22,19 @@ pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct Attenuation<F: Float> {
+    pub a: F,
+    pub b: F,
+    pub c: F,
+}
+
+impl<F: Float> Attenuation<F> {
+    pub fn attenuate(&self, color: Color<F>, len: F, len2: F) -> Color<F> {
+        color / (F::ONE + self.a + (self.b * len) + (self.c * len2))
+    }
+}
+
 pub struct Lixel<F: Float> {
     pub dir: Vector<F>,
     pub color: Color<F>,

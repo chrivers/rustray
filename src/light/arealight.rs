@@ -11,11 +11,11 @@ use crate::Vectorx;
 #[cfg(feature = "gui")]
 use crate::frontend::gui::{color_ui, position_ui};
 
+use super::Attenuation;
+
 #[derive(Debug)]
 pub struct AreaLight<F: Float> {
-    pub a: F,
-    pub b: F,
-    pub c: F,
+    pub attn: Attenuation<F>,
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub upd: Vector<F>,
@@ -29,12 +29,8 @@ pub struct AreaLight<F: Float> {
 }
 
 impl<F: Float> AreaLight<F> {
-
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
-        a: F,
-        b: F,
-        c: F,
+        attn: Attenuation<F>,
         pos: Vector<F>,
         dir: Vector<F>,
         upd: Vector<F>,
@@ -48,9 +44,7 @@ impl<F: Float> AreaLight<F> {
         let dir2 = dir.cross(dir1);
 
         Self {
-            a,
-            b,
-            c,
+            attn,
             width,
             height,
             pos,
@@ -93,15 +87,15 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
                         ui.end_row();
 
                         ui.label("Falloff d^0");
-                        ui.add(egui::Slider::new(&mut self.a, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.a, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         ui.label("Falloff d^1");
-                        ui.add(egui::Slider::new(&mut self.b, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.b, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         ui.label("Falloff d^2");
-                        ui.add(egui::Slider::new(&mut self.c, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.c, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         position_ui(ui, &mut self.pos, "Position");
@@ -122,16 +116,17 @@ where
 
         for ys in 0..self.yres {
             /* let ry: F = (rng.gen::<F>() - F::HALF) * self.height; */
-            let ry = F::from_u32(ys) * (self.height / F::from_u32(self.yres)) - (self.height / F::TWO);
+            let ry = ((F::from_u32(ys) / F::from_u32(self.yres)) - F::HALF) * self.height;
             for xs in 0..self.xres {
                 /* let rx: F = (rng.gen::<F>() - F::HALF) * self.width; */
-                let rx = F::from_u32(xs) * (self.width / F::from_u32(self.xres)) - (self.width / F::TWO);
+                let rx = ((F::from_u32(xs) / F::from_u32(self.xres)) - F::HALF) * self.width;
+
                 let pos = self.pos + self.dir1 * rx + self.dir2 * ry;
 
                 let dir = maxel.pos.vector_to(pos);
                 let len2 = dir.magnitude2();
                 let len = len2.sqrt();
-                let col = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
+                let col = self.attn.attenuate(self.color, len, len2);
 
                 let lixel = Lixel {
                     color: col,
