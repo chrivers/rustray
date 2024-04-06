@@ -113,7 +113,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
             gamma -= self.height;
         }
 
-        let mut normal: Vector<F> = Vector::UNIT_X;
+        let mut normal = Vector::UNIT_X;
 
         let p = r.pos;
         let d = r.dir;
@@ -126,96 +126,63 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
         let b = F::TWO * (p.x * d.x + p.y * d.y - beta2 * pzg * d.z);
         let c = p.x * p.x + p.y * p.y - beta2 * pzg * pzg;
 
-        fn test_cap<F: Float>(
-            root: &mut F,
-            normal: &mut Vector<F>,
-            tx: F,
-            r: &Ray<F>,
-            rad: F,
-            dz: F,
-        ) {
-            if tx >= *root || tx <= F::ZERO {
-                return;
+        let mut root = F::max_value();
+
+        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+
+        /* test side 1 */
+        if root1.is_positive() && (root1 < root) {
+            let point = r.extend(root1);
+            if point.z >= F::ZERO && point.z <= self.height {
+                root = root1;
+                normal = vec3!(-point.x, -point.y, F::TWO * beta2 * (point.z + gamma));
+            }
+        }
+
+        /* test side 2 */
+        if root2.is_positive() && (root2 < root) {
+            let point = r.extend(root2);
+            if point.z >= F::ZERO && point.z <= self.height {
+                root = root2;
+                normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
+            }
+        }
+
+        if self.capped {
+            let t1 = (-p.z) / d.z;
+            let t2 = (self.height - p.z) / d.z;
+            let cap_normal = if d.z.is_positive() {
+                -Vector::UNIT_Z
+            } else {
+                Vector::UNIT_Z
+            };
+
+            /* test bottom cap */
+            if t1 <= F::ZERO && t1 < root {
+                let p = r.extend(t1);
+                if p.x * p.x + p.y * p.y <= self.bot_r * self.bot_r {
+                    root = t1;
+                    normal = cap_normal;
+                }
             }
 
-            let p = r.extend(tx);
-            if p.x * p.x + p.y * p.y <= rad * rad {
-                *root = tx;
-                if dz.is_positive() {
-                    *normal = -Vector::UNIT_Z;
-                } else {
-                    *normal = Vector::UNIT_Z;
+            /* test top cap */
+            if t2 <= F::ZERO && t2 < root {
+                let p = r.extend(t2);
+                if p.x * p.x + p.y * p.y <= self.top_r * self.top_r {
+                    root = t2;
+                    normal = cap_normal;
                 }
             }
         }
 
-        #[allow(clippy::too_many_arguments)]
-        fn test_side<F: Float>(
-            root: &mut F,
-            normal: &mut Vector<F>,
-            tx: F,
-            func: impl Fn(F, F) -> bool,
-            r: &Ray<F>,
-            height: F,
-            beta2: F,
-            gamma: F,
-        ) {
-            let point = r.extend(tx);
-            let good = point.z >= F::ZERO && point.z <= height;
-            if good && func(tx, *root) {
-                *root = tx;
-                *normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
-            }
-        }
-
-        let mut root = F::BIAS;
-
-        let (root2, root1) = crate::types::ray::quadratic2(a, b, c)?;
-
-        test_side(
-            &mut root,
-            &mut normal,
-            root1,
-            |tx, root| (tx > root) && (tx > F::BIAS),
-            &r,
-            self.height,
-            beta2,
-            gamma,
-        );
-
-        test_side(
-            &mut root,
-            &mut normal,
-            root2,
-            |tx, root| (tx < root) || (tx > F::BIAS),
-            &r,
-            self.height,
-            beta2,
-            gamma,
-        );
-
-        if self.capped {
-            /* These are to help with finding caps */
-            let t1 = (-p.z) / d.z;
-            let t2 = (self.height - p.z) / d.z;
-
-            test_cap(&mut root, &mut normal, t1, &r, self.bot_r, d.z);
-            test_cap(&mut root, &mut normal, t2, &r, self.top_r, d.z);
-        } else if normal.dot(r.dir) > top_r * bot_r {
-            /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
-            /* Essentially, the cone in this case is a double-sided surface */
-            /* and has _2_ normals */
-            normal = -normal;
-        }
-
-        if root <= F::BIAS {
+        if root == F::max_value() {
             return None;
         }
 
-        Some(
-            ray.hit_at(root, self, &self.mat)
-                .with_normal(self.xfrm.nml_inv(normal)),
-        )
+        let nml = self.xfrm.nml(normal.normalize());
+
+        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
     }
 }
 

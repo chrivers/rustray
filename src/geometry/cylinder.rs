@@ -66,106 +66,102 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        fn isect_body<F: Float>(r: &Ray<F>, capped: bool) -> Option<(F, Vector<F>)> {
-            let p = r.pos;
-            let d = r.dir;
-
-            let a = d.x * d.x + d.y * d.y;
-            let b = F::TWO * (p.x * d.x + p.y * d.y);
-            let c = p.x * p.x + p.y * p.y - F::ONE;
-
-            let (t1, t2) = crate::types::ray::quadratic2(a, b, c)?;
-            if t1.is_negative() || t2.is_negative() {
-                return None;
-            }
-
-            fn isect_side<F: Float>(r: &Ray<F>, t: F, capped: bool) -> Option<(F, Vector<F>)> {
-                let p = r.extend(t);
-
-                if !p.z.is_unit() {
-                    return None;
-                }
-
-                let mut normal = vec3!(p.x, p.y, F::ZERO);
-
-                /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
-                /* Essentially, the cone in this case is a double-sided surface */
-                /* and has _2_ normals */
-                if !capped && r.dir.dot(normal).is_positive() {
-                    normal = -normal;
-                }
-                Some((t, normal))
-            }
-
-            isect_side(r, t1, capped).or_else(|| isect_side(r, t2, capped))
-        }
-
-        fn isect_caps<F: Float>(r: &Ray<F>) -> Option<(F, Vector<F>)> {
-            let pz = r.pos.z;
-            let dz = r.dir.z;
-
-            if dz.is_zero() {
-                return None;
-            }
-
-            let t1;
-            let t2;
-
-            if dz.is_positive() {
-                t1 = (-pz) / dz;
-                t2 = (F::ONE - pz) / dz;
-            } else {
-                t1 = (F::ONE - pz) / dz;
-                t2 = (-pz) / dz;
-            }
-
-            if t1 < F::BIAS {
-                return None;
-            }
-
-            let t = if t1 >= F::BIAS { t1 } else { t2 };
-
-            let p = r.extend(t);
-            if (p.x * p.x + p.y * p.y) <= F::ONE {
-                let n = if dz.is_positive() {
-                    /* Intersection with cap at z = 0. */
-                    -Vector::unit_z()
-                } else {
-                    Vector::unit_z()
-                };
-                return Some((t, n));
-            }
-            None
-        }
-
         let r = ray.xfrm_inv(&self.xfrm);
-        let body = isect_body(&r, self.capped);
+
+        let self_height = F::ONE;
+        let self_top_r = F::ONE;
+        let self_bot_r = F::ONE;
+
+        let bot_r = self_bot_r.abs().max(F::BIAS);
+        let top_r = self_top_r.abs().max(F::BIAS);
+
+        let mut beta = (top_r - bot_r) / self_height;
+
+        if beta.abs() < F::BIAS {
+            beta = F::BIAS;
+        }
+
+        let mut gamma;
+        gamma = if beta.is_negative() {
+            top_r / beta
+        } else {
+            bot_r / beta
+        };
+
+        if gamma.is_negative() {
+            gamma -= self_height;
+        }
+
+        let mut normal = Vector::UNIT_X;
+
+        let p = r.pos;
+        let d = r.dir;
+
+        let beta2 = beta * beta;
+
+        let pzg = p.z + gamma;
+
+        let a = d.x * d.x + d.y * d.y - beta2 * d.z * d.z;
+        let b = F::TWO * (p.x * d.x + p.y * d.y - beta2 * pzg * d.z);
+        let c = p.x * p.x + p.y * p.y - beta2 * pzg * pzg;
+
+        let mut root = F::max_value();
+
+        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+
+        /* test side 1 */
+        if root1.is_positive() && (root1 < root) {
+            let point = r.extend(root1);
+            if point.z >= F::ZERO && point.z <= self_height {
+                root = root1;
+                normal = vec3!(-point.x, -point.y, F::TWO * beta2 * (point.z + gamma));
+            }
+        }
+
+        /* test side 2 */
+        if root2.is_positive() && (root2 < root) {
+            let point = r.extend(root2);
+            if point.z >= F::ZERO && point.z <= self_height {
+                root = root2;
+                normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
+            }
+        }
 
         if self.capped {
-            if let Some((t1, n1)) = isect_caps(&r) {
-                if let Some((t2, n2)) = body {
-                    if t2 < t1 {
-                        return Some(
-                            ray.hit_at(t2, self, &self.mat)
-                                .with_normal(self.xfrm.nml(n2)),
-                        );
-                    }
+            let t1 = (-p.z) / d.z;
+            let t2 = (self_height - p.z) / d.z;
+            let cap_normal = if d.z.is_positive() {
+                -Vector::UNIT_Z
+            } else {
+                Vector::UNIT_Z
+            };
+
+            /* test bottom cap */
+            if t1 <= F::ZERO && t1 < root {
+                let p = r.extend(t1);
+                if p.x * p.x + p.y * p.y <= self_bot_r * self_bot_r {
+                    root = t1;
+                    normal = cap_normal;
                 }
-                return Some(
-                    ray.hit_at(t1, self, &self.mat)
-                        .with_normal(self.xfrm.nml(n1)),
-                );
+            }
+
+            /* test top cap */
+            if t2 <= F::ZERO && t2 < root {
+                let p = r.extend(t2);
+                if p.x * p.x + p.y * p.y <= self_top_r * self_top_r {
+                    root = t2;
+                    normal = cap_normal;
+                }
             }
         }
 
-        if let Some((t2, n2)) = body {
-            Some(
-                ray.hit_at(t2, self, &self.mat)
-                    .with_normal(self.xfrm.nml(n2)),
-            )
-        } else {
-            None
+        if root == F::max_value() {
+            return None;
         }
+
+        let nml = self.xfrm.nml(normal.normalize());
+
+        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
     }
 }
 

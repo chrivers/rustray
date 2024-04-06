@@ -374,7 +374,9 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
 /* Math functions */
 
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
-    let (t0, t1) = quadratic2(a, b, c)?;
+    let (ta, tb) = quadratic2(a, b, c)?;
+    let t0 = ta.min(tb);
+    let t1 = ta.max(tb);
     if t0 > F::BIAS2 {
         return Some(t0);
     }
@@ -391,16 +393,9 @@ pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
         return None;
     }
 
-    let q = if b.is_positive() {
-        -F::HALF * (b + discr.sqrt())
-    } else {
-        -F::HALF * (b - discr.sqrt())
-    };
-    let t0 = q / a;
-    let t1 = c / q;
-    if t0 < t1 {
-        Some((t0, t1))
-    } else {
-        Some((t1, t0))
-    }
+    let dsqrt = discr.sqrt();
+    let div = a * F::TWO;
+    let t0 = (-b + dsqrt) / div;
+    let t1 = (-b - dsqrt) / div;
+    Some((t0, t1))
 }
