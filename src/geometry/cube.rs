@@ -47,6 +47,10 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {
     }
 }
 
+impl<F: Float, M: Material<F>> Cube<F, M> {
+    const NORMALS: [Vector<F>; 3] = [Vector::UNIT_X, Vector::UNIT_Y, Vector::UNIT_Z];
+}
+
 impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
@@ -84,12 +88,10 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
 
         let best = best?;
 
-        let normals = [Vector::unit_x(), Vector::unit_y(), Vector::unit_z()];
-
         let normal = if best < 3 {
-            -normals[best % 3]
+            -Self::NORMALS[best % 3]
         } else {
-            normals[best % 3]
+            Self::NORMALS[best % 3]
         };
 
         let i1 = (best + 1) % 3;
