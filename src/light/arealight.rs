@@ -1,6 +1,6 @@
 use cgmath::InnerSpace;
 
-use rand::Rng;
+/* use rand::Rng; */
 
 use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
@@ -29,6 +29,8 @@ pub struct AreaLight<F: Float> {
 }
 
 impl<F: Float> AreaLight<F> {
+
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         a: F,
         b: F,

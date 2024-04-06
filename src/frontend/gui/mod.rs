@@ -9,7 +9,7 @@ use std::{
 };
 
 use crate::{
-    engine::{RenderEngine, RenderSpan},
+    engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::Geometry,
     point,
