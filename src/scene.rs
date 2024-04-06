@@ -33,6 +33,12 @@ pub trait RayTracer<F: Float> {
     fn ambient(&self) -> Color<F>;
     fn background(&self) -> Color<F>;
     fn get_lights(&self) -> &[Box<dyn Light<F>>];
+    fn shadow(&self, maxel: &mut Maxel<F>, mut lixel: Lixel<F>) -> Lixel<F> {
+        if let Some(color) = self.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
+    }
 }
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
