@@ -20,6 +20,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
                 self.mat.ui(ui);
             });
     }
+
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
+        gizmo_ui(ui, camera, self, rect)
+    }
 }
 
 impl<F: Float, M: Material<F>> SceneObject<F> for Square<F, M> {

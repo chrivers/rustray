@@ -25,6 +25,11 @@ pub struct TriangleMesh<F: Float, M: Material<F>> {
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, _ui: &mut egui::Ui) {}
+
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
+        gizmo_ui(ui, camera, self, rect)
+    }
 }
 
 impl<F: Float, M: Material<F>> SceneObject<F> for TriangleMesh<F, M> {

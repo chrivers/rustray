@@ -54,6 +54,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
         let m = self.bot_r.max(self.top_r);
         self.aabb = build_aabb_ranged(&self.xfrm, [-m, m], [-m, m], [F::ZERO, self.height]);
     }
+
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
+        gizmo_ui(ui, camera, self, rect)
+    }
 }
 
 impl<F: Float, M: Material<F>> SceneObject<F> for Cone<F, M> {
