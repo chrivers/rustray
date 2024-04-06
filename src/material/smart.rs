@@ -123,15 +123,10 @@ where
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         let uv = maxel.uv();
         let sha = self.kt.sample(uv);
-
-        if sha.is_zero() {
-            None
-        } else {
-            Some(sha)
-        }
+        Some(sha * lixel.color)
     }
 
     #[cfg(feature = "gui")]
