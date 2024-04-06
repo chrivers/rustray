@@ -236,7 +236,7 @@ where
         if k.is_negative() {
             Self::zero()
         } else {
-            self * eta + n * (eta * cosi - k.sqrt())
+            (self * eta + n * (eta * cosi - k.sqrt())).normalize()
         }
     }
 

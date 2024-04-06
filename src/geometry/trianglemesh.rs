@@ -91,7 +91,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
                 mxl.uv();
                 mxl.pos = self.xfrm.pos(mxl.pos);
                 mxl.dir = self.xfrm.dir(mxl.dir);
-                mxl.with_normal(self.xfrm.nml(mxl.nml()))
+                mxl.with_normal(self.xfrm.nml(mxl.nml()).normalize())
             })
         } else {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
