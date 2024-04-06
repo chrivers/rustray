@@ -1,18 +1,34 @@
+pub mod visualtrace;
+
+mod gizmo;
+
 use std::{
+    path::Path,
     sync::{Arc, RwLock, RwLockWriteGuard},
     time::Duration,
 };
 
 use crate::{
     engine::{RenderEngine, RenderSpan},
+    format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
+    geometry::Geometry,
+    point,
+    sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{Color, Float, Point},
+    types::RResult,
+    types::{Color, Error, Float, Point},
+    Vector,
 };
-use crate::{point, types::RResult, Vector};
 
 use eframe::egui::Key;
-use egui::{CollapsingHeader, Sense, TextureOptions};
+use egui::{
+    pos2, CollapsingHeader, Color32, KeyboardShortcut, Modifiers, Rect, Sense, TextureOptions,
+};
+use egui_file_dialog::FileDialog;
 use image::{ImageBuffer, Rgba};
+use pest::Parser;
+
+pub use gizmo::gizmo_ui;
 
 pub struct RustRayGui<F: Float> {
     beam: crossbeam_channel::Receiver<RenderSpan<F>>,
@@ -20,6 +36,9 @@ pub struct RustRayGui<F: Float> {
     lock: Arc<RwLock<BoxScene<F>>>,
     img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     obj: Option<usize>,
+    file_dialog: FileDialog,
+    shapes: Vec<egui::Shape>,
+    trace: bool,
 }
 
 pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) {
@@ -49,7 +68,7 @@ pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) {
     color.b = F::from_f32(rgb[2]);
 }
 
-impl<F: Float + From<f32>> RustRayGui<F> {
+impl<F: Float + Texel + From<f32>> RustRayGui<F> {
     /// Called once before the first frame.
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
@@ -71,7 +90,27 @@ impl<F: Float + From<f32>> RustRayGui<F> {
             lock,
             img,
             obj: None,
+            file_dialog: FileDialog::new().show_devices(false),
+            shapes: vec![],
+            trace: false,
         }
+    }
+
+    fn find_obj<'a>(
+        &self,
+        scene: &'a mut RwLockWriteGuard<BoxScene<F>>,
+    ) -> Option<&'a mut dyn Geometry<F>> {
+        scene
+            .objects
+            .iter_mut()
+            .find(|obj| obj.get_id() == self.obj)
+            .map(|m| m as &mut _)
+    }
+
+    fn render_preview(&mut self, scene: &mut RwLockWriteGuard<BoxScene<F>>) {
+        self.engine
+            .render_lines_by_step(self.lock.clone(), 0, self.img.height(), 4, 4);
+        scene.recompute_bvh().unwrap();
     }
 
     fn update_side_panel(
@@ -87,6 +126,7 @@ impl<F: Float + From<f32>> RustRayGui<F> {
                 let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))
                     .default_open(true)
                     .show(ui, |ui| {
+                        ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
                         if let Some(interactive) = obj.get_interactive() {
                             interactive.ui(ui);
                         } else {
@@ -95,7 +135,9 @@ impl<F: Float + From<f32>> RustRayGui<F> {
                     });
 
                 if self.obj == obj.get_id() {
-                    resp.header_response.highlight();
+                    resp.header_response
+                        .highlight()
+                        .scroll_to_me(Some(egui::Align::Center));
                 }
             });
 
@@ -150,7 +192,16 @@ impl<F: Float + From<f32>> RustRayGui<F> {
 
         let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);
 
-        let response = ui.image(&tex);
+        let (response, painter) = ui.allocate_painter(ui.available_size(), Sense::drag());
+        painter.image(
+            (&tex).into(),
+            painter.clip_rect(),
+            Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
+            Color32::WHITE,
+        );
+        for shape in &self.shapes {
+            painter.add(shape.clone());
+        }
 
         let to_screen = egui::emath::RectTransform::from_to(
             egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1.0, 1.0)),
@@ -158,22 +209,66 @@ impl<F: Float + From<f32>> RustRayGui<F> {
         );
         let from_screen = to_screen.inverse();
 
-        let act = ui.interact(response.rect, response.id, Sense::click());
+        let act = response.interact(Sense::click_and_drag());
+
         if act.clicked() {
             if let Some(pos) = act.interact_pointer_pos {
                 let coord = from_screen.transform_pos(pos);
-                let ray = scene.cameras[0].get_ray(point!(coord.x, coord.y));
+                let mut ray = scene.cameras[0].get_ray(point!(coord.x, coord.y), 1);
+                ray.grp = 0;
                 if let Some(maxel) = scene.intersect(&ray) {
-                    self.obj = maxel.obj.get_id();
-                    info!("Picked {:?}", &self.obj);
+                    let id = maxel.obj.get_id();
+                    if self.obj == id {
+                        info!("Deselect {:?}", maxel.obj.get_name());
+                        self.obj = None;
+                    } else {
+                        info!("Select {:?}", maxel.obj.get_name());
+                        self.obj = id;
+                    }
                 } else {
                     self.obj = None;
                 }
             }
         }
 
+        if act.clicked_by(egui::PointerButton::Secondary) {
+            self.trace = !self.trace;
+        }
+
+        if self.trace {
+            if let Some(pos) = act.hover_pos() {
+                let coord = from_screen.transform_pos(pos);
+                self.shapes =
+                    crate::frontend::gui::visualtrace::make_shapes(scene, coord, &to_screen);
+            }
+        }
+
+        let camera = scene.cameras[0];
+        if let Some(obj) = self.find_obj(scene) {
+            if let Some(int) = obj.get_interactive() {
+                if int.ui_center(ui, &camera, &response.rect) {
+                    self.render_preview(scene);
+                }
+            }
+        }
+
         let progress = self.engine.progress();
         ui_progress(ctx, ui, progress);
+    }
+
+    fn load_file(&self, path: &Path) -> RResult<BoxScene<F>> {
+        let data = std::fs::read_to_string(path)?;
+
+        let resdir = path.parent().ok_or(Error::ParseError("Invalid filename"))?;
+
+        let name = path
+            .to_str()
+            .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;
+        let p =
+            SbtParser2::<F>::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
+        let p = SbtParser2::<F>::ast(p)?;
+        let scene = SbtBuilder::new(self.img.width(), self.img.height(), resdir).build(p)?;
+        Ok(scene)
     }
 }
 
@@ -211,14 +306,26 @@ fn update_top_panel(ctx: &egui::Context, ui: &mut egui::Ui) {
     });
 }
 
-impl<F: Float + From<f32>> eframe::App for RustRayGui<F> {
+impl<F: Float + Texel + From<f32>> eframe::App for RustRayGui<F> {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let mut recv = false;
         while let Ok(res) = self.beam.try_recv() {
-            let y = res.line;
-            for (x, pixel) in res.pixels.iter().enumerate() {
-                self.img.put_pixel(x as u32, y, Rgba(pixel.to_array4()));
+            for (base_x, pixel) in res.pixels.iter().enumerate() {
+                let rgba = Rgba(pixel.to_array4());
+                for y in 0..res.mult_y {
+                    for x in 0..res.mult_x {
+                        self.img
+                            .put_pixel((base_x as u32) * res.mult_x + x, res.line + y, rgba);
+                    }
+                }
             }
+            recv = true;
+        }
+        if recv {
+            ctx.request_repaint_after(Duration::from_millis(100));
+        } else {
+            ctx.request_repaint_after(Duration::from_millis(500));
         }
 
         if ctx.input(|i| i.key_pressed(Key::Q)) {
@@ -231,15 +338,55 @@ impl<F: Float + From<f32>> eframe::App for RustRayGui<F> {
                 self.img.put_pixel(
                     0,
                     y,
-                    Rgba(Color::<F>::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
+                    Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
                 );
             }
 
             self.engine.render_lines(self.lock.clone(), 0, height);
         }
 
+        if ctx.input(|i| i.key_pressed(Key::T)) {
+            let height = self.img.height();
+            for y in 0..height {
+                self.img.put_pixel(
+                    0,
+                    y,
+                    Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
+                );
+            }
+
+            self.engine.render_normals(self.lock.clone(), 0, height);
+        }
+
         if ctx.input(|i| i.key_pressed(Key::F)) {
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+        }
+
+        if ctx.input(|i| i.key_pressed(Key::O)) {
+            self.file_dialog.select_file();
+        }
+
+        let kbd_space = KeyboardShortcut::new(Modifiers::NONE, Key::Space);
+        let kbd_shift_space = KeyboardShortcut::new(Modifiers::SHIFT, Key::Space);
+
+        if ctx.input_mut(|i| i.consume_shortcut(&kbd_shift_space)) {
+            ctx.data_mut(gizmo::switch_orientation);
+        }
+
+        if ctx.input_mut(|i| i.consume_shortcut(&kbd_space)) {
+            ctx.data_mut(gizmo::switch_mode);
+        }
+
+        self.file_dialog.update(ctx);
+
+        if let Some(path) = self.file_dialog.take_selected() {
+            info!("New file: {path:?}");
+            self.file_dialog.config_mut().initial_directory = path.parent().unwrap().to_path_buf();
+            if let Ok(scene) = self.load_file(&path) {
+                self.lock = Arc::new(RwLock::new(scene));
+                self.engine
+                    .render_lines(self.lock.clone(), 0, self.img.height());
+            }
         }
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| update_top_panel(ctx, ui));
@@ -257,7 +404,7 @@ impl<F: Float + From<f32>> eframe::App for RustRayGui<F> {
 
 pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32) -> RResult<()>
 where
-    F: Float + From<f32>,
+    F: Float + Texel + From<f32>,
 {
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
