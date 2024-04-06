@@ -487,18 +487,10 @@ where
         let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
         let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
         let upd = dict.vector("updir")?.normalize();
-        let width  = dict.float("width").unwrap_or(F::ONE);
+        let width = dict.float("width").unwrap_or(F::ONE);
         let height = dict.float("height").unwrap_or(F::ONE);
 
-        let res = AreaLight::new(
-            Attenuation { a, b, c },
-            pos,
-            dir,
-            upd,
-            color,
-            width,
-            height,
-        );
+        let res = AreaLight::new(Attenuation { a, b, c }, pos, dir, upd, color, width, height);
         info!("{:7.3?}", res);
         Ok(res)
     }
