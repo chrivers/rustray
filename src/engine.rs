@@ -61,13 +61,13 @@ impl<F: Float> RenderEngine<F> {
         RenderEngineIter { engine: self }
     }
 
-    pub fn render_lines(&mut self, lock: Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
+    pub fn render_lines(&mut self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
         self.render_lines_by_step(lock, a, b, 1, 1);
     }
 
     pub fn render_lines_by_step(
         &mut self,
-        lock: Arc<RwLock<BoxScene<F>>>,
+        lock: &Arc<RwLock<BoxScene<F>>>,
         a: u32,
         b: u32,
         step_x: u32,
@@ -97,7 +97,7 @@ impl<F: Float> RenderEngine<F> {
         }
     }
 
-    pub fn render_normals(&self, lock: Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
+    pub fn render_normals(&self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
         for x in a..b {
             let lock = lock.clone();
             self.pool.execute_to(

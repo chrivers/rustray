@@ -147,7 +147,7 @@ where
 
     fn render_preview(&mut self, scene: &mut RwLockWriteGuard<BoxScene<F>>) {
         self.engine
-            .render_lines_by_step(self.lock.clone(), 0, self.img.height(), 4, 4);
+            .render_lines_by_step(&self.lock, 0, self.img.height(), 4, 4);
         scene.recompute_bvh().unwrap();
     }
 
@@ -390,7 +390,7 @@ where
                 );
             }
 
-            self.engine.render_lines(self.lock.clone(), 0, height);
+            self.engine.render_lines(&self.lock, 0, height);
         }
 
         if ctx.input(|i| i.key_pressed(Key::T)) {
@@ -403,7 +403,7 @@ where
                 );
             }
 
-            self.engine.render_normals(self.lock.clone(), 0, height);
+            self.engine.render_normals(&self.lock, 0, height);
         }
 
         if ctx.input(|i| i.key_pressed(Key::F)) {
@@ -433,7 +433,7 @@ where
             if let Ok(scene) = self.load_file(&path) {
                 self.lock = Arc::new(RwLock::new(scene));
                 self.engine
-                    .render_lines(self.lock.clone(), 0, self.img.height());
+                    .render_lines(&self.lock, 0, self.img.height());
             }
         }
 
@@ -470,7 +470,7 @@ where
 
     let lock = Arc::new(RwLock::new(scene));
     let mut engine = RenderEngine::new(width, height);
-    engine.render_lines(lock.clone(), 0, height);
+    engine.render_lines(&lock, 0, height);
 
     Ok(eframe::run_native(
         "Rustray",
