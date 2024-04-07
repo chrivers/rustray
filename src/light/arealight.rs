@@ -94,10 +94,7 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
                         let mut res = false;
 
                         res |= color_ui(ui, &mut self.color, "Color");
-                        ui.end_row();
-
                         res |= attenuation_ui(ui, &mut self.attn);
-
                         res |= position_ui(ui, &mut self.pos, "Position");
                         res |= position_ui(ui, &mut self.dir, "Direction");
 

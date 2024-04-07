@@ -27,8 +27,10 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.label(name);
+        ui.end_row();
+        false
     }
 }
 
@@ -44,11 +46,12 @@ impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         match Arc::<Box<_>>::get_mut(self) {
             Some(samp) => samp.ui(ui, name),
             None => {
                 ui.label("nope :(");
+                false
             }
         }
     }
@@ -79,9 +82,13 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.label(name);
-        ui.add(egui::Slider::new(self, F::zero()..=F::from_u32(128)).clamp_to_range(false));
+        let res = ui
+            .add(egui::Slider::new(self, F::zero()..=F::from_u32(128)).clamp_to_range(false))
+            .changed();
+        ui.end_row();
+        res
     }
 }
 
@@ -95,8 +102,8 @@ impl<F: Float> Sampler<F, Self> for Color<F> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
-        crate::frontend::gui::color_ui(ui, self, name);
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        crate::frontend::gui::color_ui(ui, self, name)
     }
 }
 

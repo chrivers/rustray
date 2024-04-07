@@ -34,13 +34,15 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) {
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         egui::CollapsingHeader::new("Transform")
             .default_open(true)
             .show(ui, |ui| {
                 ui.add(Slider::new(&mut self.scale, F::ZERO..=F::from_u32(100)).text("Scaling"));
                 ui.add(Slider::new(&mut self.offset, F::ZERO..=F::from_u32(100)).text("Offset"));
-                self.samp.ui(ui, name);
-            });
+                self.samp.ui(ui, name)
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

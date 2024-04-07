@@ -36,8 +36,6 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
                         let mut res = false;
 
                         res |= color_ui(ui, &mut self.color, "Color");
-                        ui.end_row();
-
                         res |= position_ui(ui, &mut self.dir, "Direction");
 
                         res

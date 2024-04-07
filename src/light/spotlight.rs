@@ -91,8 +91,6 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                         let mut res = false;
 
                         res |= color_ui(ui, &mut self.color, "Color");
-                        ui.end_row();
-
                         res |= attenuation_ui(ui, &mut self.attn);
 
                         ui.label("Umbra");

@@ -30,14 +30,9 @@ impl<F: Float> Interactive<F> for PointLight<F> {
                     .striped(true)
                     .show(ui, |ui| {
                         let mut res = false;
-
                         res |= color_ui(ui, &mut self.color, "Color");
-                        ui.end_row();
-
                         res |= attenuation_ui(ui, &mut self.attn);
-
                         res |= position_ui(ui, &mut self.pos, "Position");
-
                         res
                     })
                     .inner

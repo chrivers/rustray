@@ -42,52 +42,67 @@ pub struct RustRayGui<F: Float> {
 
 #[must_use]
 pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) -> bool {
-    let old = *pos;
+    let mut res = false;
 
     ui.label(name);
     ui.end_row();
 
     ui.label("X");
-    ui.add(egui::DragValue::new(&mut pos.x).speed(0.1));
+    res |= ui
+        .add(egui::DragValue::new(&mut pos.x).speed(0.1))
+        .changed();
     ui.end_row();
 
     ui.label("Y");
-    ui.add(egui::DragValue::new(&mut pos.y).speed(0.1));
+    res |= ui
+        .add(egui::DragValue::new(&mut pos.y).speed(0.1))
+        .changed();
     ui.end_row();
 
     ui.label("Z");
-    ui.add(egui::DragValue::new(&mut pos.z).speed(0.1));
+    res |= ui
+        .add(egui::DragValue::new(&mut pos.z).speed(0.1))
+        .changed();
     ui.end_row();
 
-    *pos != old
+    res
 }
 
 pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> bool {
-    let old = *color;
-    let mut rgb: [f32; 3] = old.into();
+    let mut res = false;
+    let mut rgb: [f32; 3] = (*color).into();
+
     ui.label(name);
-    ui.color_edit_button_rgb(&mut rgb);
+    res |= ui.color_edit_button_rgb(&mut rgb).changed();
+    ui.end_row();
+
     *color = Color::from(rgb);
 
-    *color != old
+    res
 }
 
 pub fn attenuation_ui<F: Float>(ui: &mut egui::Ui, attn: &mut Attenuation<F>) -> bool {
-    let old = *attn;
+    let mut res = false;
 
     ui.label("Falloff d^0");
-    ui.add(egui::Slider::new(&mut attn.a, F::ZERO..=F::FOUR).logarithmic(true));
+    res |= ui
+        .add(egui::Slider::new(&mut attn.a, F::ZERO..=F::TWO).logarithmic(true))
+        .changed();
     ui.end_row();
 
     ui.label("Falloff d^1");
-    ui.add(egui::Slider::new(&mut attn.b, F::ZERO..=F::FOUR).logarithmic(true));
+    res |= ui
+        .add(egui::Slider::new(&mut attn.b, F::ZERO..=F::TWO).logarithmic(true))
+        .changed();
     ui.end_row();
 
     ui.label("Falloff d^2");
-    ui.add(egui::Slider::new(&mut attn.c, F::ZERO..=F::FOUR).logarithmic(true));
+    res |= ui
+        .add(egui::Slider::new(&mut attn.c, F::ZERO..=F::TWO).logarithmic(true))
+        .changed();
     ui.end_row();
 
-    *attn != old
+    res
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>
@@ -145,13 +160,15 @@ where
         ui.heading("Rustray");
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label("Objects");
+            let mut changed = false;
+
             scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
                 let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))
                     .default_open(true)
                     .show(ui, |ui| {
                         ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
                         if let Some(interactive) = obj.get_interactive() {
-                            interactive.ui(ui);
+                            changed |= interactive.ui(ui);
                         } else {
                             ui.label("Non-interactive object :(");
                         }
@@ -170,7 +187,7 @@ where
                     .default_open(true)
                     .show(ui, |ui| {
                         if let Some(interactive) = light.get_interactive() {
-                            interactive.ui(ui);
+                            changed |= interactive.ui(ui);
                         } else {
                             ui.label("Non-interactive light :(");
                         }
@@ -183,12 +200,16 @@ where
                     .default_open(true)
                     .show(ui, |ui| {
                         if let Some(interactive) = cam.get_interactive() {
-                            interactive.ui(ui);
+                            changed |= interactive.ui(ui);
                         } else {
                             ui.label("Non-interactive camera :(");
                         }
                     });
             });
+
+            if changed {
+                self.render_preview(scene);
+            }
 
             /* CollapsingHeader::new(format!("Raytracer")) */
             /*     .default_open(true) */

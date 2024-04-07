@@ -142,32 +142,15 @@ where
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
-                        let res = false;
-
-                        self.pow.ui(ui, "Power");
-                        ui.end_row();
-
-                        Sampler::ui(&mut self.ior, ui, "Index of refraction");
-                        ui.end_row();
-
-                        self.ke.ui(ui, "Emissive");
-                        ui.end_row();
-
-                        self.kd.ui(ui, "Diffuse");
-                        ui.end_row();
-
-                        self.ks.ui(ui, "Specular");
-                        ui.end_row();
-
-                        self.kt.ui(ui, "Translucense");
-                        ui.end_row();
-
-                        self.kr.ui(ui, "Reflection");
-                        ui.end_row();
-
-                        Sampler::ui(&mut self.ambient, ui, "ambient");
-                        ui.end_row();
-
+                        let mut res = false;
+                        res |= self.pow.ui(ui, "Power");
+                        res |= Sampler::ui(&mut self.ior, ui, "Index of refraction");
+                        res |= self.ke.ui(ui, "Emissive");
+                        res |= self.kd.ui(ui, "Diffuse");
+                        res |= self.ks.ui(ui, "Specular");
+                        res |= self.kt.ui(ui, "Translucense");
+                        res |= self.kr.ui(ui, "Reflection");
+                        res |= Sampler::ui(&mut self.ambient, ui, "ambient");
                         res
                     })
                     .inner
