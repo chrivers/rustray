@@ -20,9 +20,9 @@ use egui::emath::Numeric;
 impl<const P: u8> Numeric for FP<P> {
     const INTEGRAL: bool = false;
 
-    const MIN: Self = Self(i64::min_value());
+    const MIN: Self = Self(i64::MIN);
 
-    const MAX: Self = Self(i64::max_value());
+    const MAX: Self = Self(i64::MAX);
 
     fn to_f64(self) -> f64 {
         self.into_f64()

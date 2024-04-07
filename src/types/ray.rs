@@ -31,6 +31,7 @@ impl<'a, F: Float> Ray<F> {
     }
 
     #[must_use]
+    #[allow(clippy::assign_op_pattern)]
     pub const fn with_debug(mut self) -> Self {
         self.flags = self.flags | RF::Debug;
         self

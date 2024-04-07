@@ -58,7 +58,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
-    pub fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {
+    pub const fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {
         let mut ray = Ray::new(pos, dir);
         ray.lvl = self.lvl + 1;
         if self.dbg {

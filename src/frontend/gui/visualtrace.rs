@@ -54,8 +54,8 @@ where
             a + n * 0.05
         };
 
-        let a = to_screen.transform_pos(a.into());
-        let b = to_screen.transform_pos(b.into());
+        let a = to_screen.transform_pos(a);
+        let b = to_screen.transform_pos(b);
         let color = if step.shadow {
             if step.maxel.is_some() {
                 Color32::DARK_RED
