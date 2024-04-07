@@ -94,17 +94,21 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                         res |= attenuation_ui(ui, &mut self.attn);
 
                         ui.label("Umbra");
-                        ui.add(
-                            egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
-                                .step_by(f64::PI() / 180.0),
-                        );
+                        res |= ui
+                            .add(
+                                egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
+                                    .step_by(f64::PI() / 180.0),
+                            )
+                            .changed();
                         ui.end_row();
 
                         ui.label("Penumbra");
-                        ui.add(
-                            egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
-                                .step_by(f64::PI() / 180.0),
-                        );
+                        res |= ui
+                            .add(
+                                egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
+                                    .step_by(f64::PI() / 180.0),
+                            )
+                            .changed();
                         ui.end_row();
 
                         res |= position_ui(ui, &mut self.pos, "Position");

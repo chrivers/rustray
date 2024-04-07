@@ -63,9 +63,14 @@ impl<F: Float + Texel> Sampler<F, F> for Perlin {
         egui::CollapsingHeader::new("Perlin")
             .default_open(true)
             .show(ui, |ui| {
-                ui.add(Slider::new(&mut self.w, 0..=10).text("Width"));
-                ui.add(Slider::new(&mut self.h, 0..=10).text("Height"));
-                false
+                let mut res = false;
+                res |= ui
+                    .add(Slider::new(&mut self.w, 0..=10).text("Width"))
+                    .changed();
+                res |= ui
+                    .add(Slider::new(&mut self.h, 0..=10).text("Height"))
+                    .changed();
+                res
             })
             .body_returned
             .unwrap_or(false)

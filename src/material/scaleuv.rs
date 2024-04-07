@@ -34,20 +34,24 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
             .show(ui, |ui| {
                 let mut res = false;
 
-                ui.add(
-                    Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
-                        .logarithmic(true)
-                        .clamp_to_range(false)
-                        .trailing_fill(true)
-                        .text("u scaling factor"),
-                );
-                ui.add(
-                    Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
-                        .logarithmic(true)
-                        .clamp_to_range(false)
-                        .trailing_fill(true)
-                        .text("v scaling factor"),
-                );
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
+                            .logarithmic(true)
+                            .clamp_to_range(false)
+                            .trailing_fill(true)
+                            .text("u scaling factor"),
+                    )
+                    .changed();
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
+                            .logarithmic(true)
+                            .clamp_to_range(false)
+                            .trailing_fill(true)
+                            .text("v scaling factor"),
+                    )
+                    .changed();
                 res |= self.mat.ui(ui);
 
                 res

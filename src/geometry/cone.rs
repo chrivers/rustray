@@ -23,34 +23,39 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
             .show(ui, |ui| {
                 let mut res = false;
 
-                ui.add(
-                    Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
-                        .clamp_to_range(false)
-                        .smallest_positive(0.01)
-                        .text("Top radius"),
-                );
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Top radius"),
+                    )
+                    .changed();
                 ui.end_row();
 
-                ui.add(
-                    Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
-                        .clamp_to_range(false)
-                        .smallest_positive(0.01)
-                        .text("Bottom radius"),
-                );
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Bottom radius"),
+                    )
+                    .changed();
                 ui.end_row();
 
-                ui.add(
-                    Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
-                        .clamp_to_range(false)
-                        .smallest_positive(0.01)
-                        .text("Height"),
-                );
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Height"),
+                    )
+                    .changed();
                 ui.end_row();
 
-                ui.checkbox(&mut self.capped, "Capped");
+                res |= ui.checkbox(&mut self.capped, "Capped").changed();
                 ui.end_row();
 
-                /* position_ui(ui, &mut self.pos, "Position"); */
                 res |= self.mat.ui(ui);
 
                 res

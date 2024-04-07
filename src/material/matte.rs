@@ -63,7 +63,9 @@ where
             .show(ui, |ui| {
                 let mut res = false;
 
-                ui.add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"));
+                res |= ui
+                    .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
+                    .changed();
 
                 self.src.ui(ui, "Surface Roughness Coefficient");
                 res |= self.mat.ui(ui);
