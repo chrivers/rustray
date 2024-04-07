@@ -39,17 +39,6 @@ where
             .unwrap_or_else(|| ray.pos + ray.dir);
         let bx = cam.ndc.pos(cam.projection.pos(cam.model.pos(end_pos)));
 
-        /* ax.y = -ax.y; */
-        /* bx.y = -bx.y; */
-
-        /* ax.x += F::ONE; */
-        /* ax.y += F::ONE; */
-        /* bx.x += F::ONE; */
-        /* bx.y += F::ONE; */
-
-        /* ax *= F::HALF; */
-        /* bx *= F::HALF; */
-
         let a = Pos2 {
             x: ax.x.to_f32().unwrap(),
             y: ax.y.to_f32().unwrap(),
@@ -80,9 +69,6 @@ where
             let shape = egui::Shape::line_segment([a, b], Stroke::new(2.0, color));
             shapes.push(shape);
         }
-        /* let q = TRACE_STEPS - ray.lvl; */
-        /* let shape = egui::Shape::dashed_line(&[a, b], Stroke::new(2.0, color), q as f32, q as f32 + 1.0); */
-        /* shapes.extend(shape); */
 
         if let Some(mut maxel) = step.maxel {
             shapes.push(egui::Shape::circle_filled(
