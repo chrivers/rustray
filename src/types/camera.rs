@@ -97,6 +97,10 @@ impl<F: Float> Camera<F> {
     pub fn distance2(self, pos: Vector<F>) -> F {
         self.pos.distance2(pos)
     }
+
+    pub fn world_to_ndc(&self, pos: Vector<F>) -> Vector<F> {
+        self.ndc.pos(self.projection.pos(self.model.pos(pos)))
+    }
 }
 
 impl<F: Float> Interactive<F> for Camera<F> {
