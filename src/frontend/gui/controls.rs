@@ -42,7 +42,7 @@ pub fn color<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> b
     res
 }
 
-fn plot_attenuation<F: Float>(ui: &mut egui::Ui, attn: &Attenuation<F>) -> egui::Response {
+fn _plot_attenuation<F: Float>(ui: &mut egui::Ui, attn: &Attenuation<F>) -> egui::Response {
     use egui_plot::{Line, PlotPoints};
     let n = 128;
     let line_points: PlotPoints = (0..=n)
@@ -84,9 +84,9 @@ pub fn attenuation<F: Float>(ui: &mut egui::Ui, attn: &mut Attenuation<F>) -> bo
         .changed();
     ui.end_row();
 
-    ui.label("Falloff");
-    plot_attenuation(ui, attn);
-    ui.end_row();
+    /* ui.label("Falloff"); */
+    /* plot_attenuation(ui, attn); */
+    /* ui.end_row(); */
 
     res
 }
