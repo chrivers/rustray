@@ -11,6 +11,8 @@ pub struct GridSamplesIter<'a, F: Float> {
     samples: &'a GridSamples<F>,
     count: u32,
     total: u32,
+    xoffset: F,
+    yoffset: F,
 }
 
 impl<'a, F: Float> GridSamples<F> {
@@ -28,6 +30,8 @@ impl<'a, F: Float> GridSamples<F> {
             samples: self,
             count: 0,
             total: self.xres * self.yres,
+            xoffset: (self.width / F::from_u32(self.xres)) / F::TWO,
+            yoffset: (self.height / F::from_u32(self.yres)) / F::TWO,
         }
     }
 }
@@ -47,8 +51,8 @@ impl<'a, F: Float> Iterator for GridSamplesIter<'a, F> {
         let y = self.count / samples.xres;
         let x = self.count % samples.xres;
 
-        let ry = ((F::from_u32(y) / F::from_u32(samples.yres)) - F::HALF) * samples.height;
-        let rx = ((F::from_u32(x) / F::from_u32(samples.xres)) - F::HALF) * samples.width;
+        let rx = (F::from_u32(x) / F::from_u32(samples.xres) - F::HALF) * samples.width + self.xoffset;
+        let ry = (F::from_u32(y) / F::from_u32(samples.yres) - F::HALF) * samples.height + self.yoffset;
 
         Some((rx, ry))
     }
