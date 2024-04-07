@@ -80,6 +80,23 @@ impl<F: Float> From<(u32, u32)> for Point<F> {
 }
 
 #[cfg(feature = "gui")]
+impl<F: Float> From<egui::emath::Pos2> for Point<F> {
+    fn from(val: egui::emath::Pos2) -> Self {
+        Self::new(F::from_f32(val[0]), F::from_f32(val[1]))
+    }
+}
+
+#[cfg(feature = "gui")]
+impl<F: Float> From<Point<F>> for egui::emath::Pos2 {
+    fn from(val: Point<F>) -> Self {
+        Self {
+            x: val.x.to_f64() as f32,
+            y: val.y.to_f64() as f32,
+        }
+    }
+}
+
+#[cfg(feature = "gui")]
 impl<F: Float> From<egui::Vec2> for Point<F> {
     fn from(val: egui::Vec2) -> Self {
         Self::new(F::from_f32(val[0]), F::from_f32(val[1]))
