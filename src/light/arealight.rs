@@ -41,8 +41,7 @@ impl<F: Float> AreaLight<F> {
     ) -> Self {
         let dir = dir.normalize();
         let upd = upd.normalize();
-        let dir1 = dir.cross(upd);
-        let dir2 = dir.cross(dir1);
+        let (dir1, dir2) = Self::compute_dirs(dir, upd);
 
         Self {
             attn,
@@ -57,6 +56,12 @@ impl<F: Float> AreaLight<F> {
             xres: 8,
             yres: 8,
         }
+    }
+
+    fn compute_dirs(dir: Vector<F>, upd: Vector<F>) -> (Vector<F>, Vector<F>) {
+        let dir1 = dir.cross(upd);
+        let dir2 = dir.cross(dir1);
+        (dir1, dir2)
     }
 }
 
@@ -96,6 +101,11 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
                         res |= position_ui(ui, &mut self.pos, "Position");
                         res |= position_ui(ui, &mut self.dir, "Direction");
 
+                        if res {
+                            let (dir1, dir2) = Self::compute_dirs(self.dir, self.upd);
+                            self.dir1 = dir1;
+                            self.dir2 = dir2;
+                        }
                         res
                     })
                     .inner
