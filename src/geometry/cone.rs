@@ -15,12 +15,14 @@ aabb_impl_fm!(Cone<F, M>);
 
 impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::Grid::new("grid")
             .num_columns(2)
             .spacing([40.0, 4.0])
             .striped(true)
             .show(ui, |ui| {
+                let mut res = false;
+
                 ui.add(
                     Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
                         .clamp_to_range(false)
@@ -49,10 +51,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
                 ui.end_row();
 
                 /* position_ui(ui, &mut self.pos, "Position"); */
-                self.mat.ui(ui);
-            });
-        let m = self.bot_r.max(self.top_r);
-        self.aabb = build_aabb_ranged(&self.xfrm, [-m, m], [-m, m], [F::ZERO, self.height]);
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .inner
     }
 
     #[cfg(feature = "gui")]

@@ -31,9 +31,10 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, 
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Chessboard")
             .default_open(true)
             .show(ui, |_ui| {});
+        false
     }
 }

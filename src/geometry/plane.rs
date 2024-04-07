@@ -13,15 +13,20 @@ pub struct Plane<F: Float, M: Material<F>> {
 
 impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::Grid::new("grid")
             .num_columns(2)
             .spacing([40.0, 4.0])
             .striped(true)
             .show(ui, |ui| {
-                position_ui(ui, &mut self.pos, "Position");
-                self.mat.ui(ui);
-            });
+                let mut res = false;
+
+                res |= position_ui(ui, &mut self.pos, "Position");
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .inner
     }
 }
 

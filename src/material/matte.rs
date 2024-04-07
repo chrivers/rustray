@@ -57,13 +57,20 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Matte")
             .default_open(true)
             .show(ui, |ui| {
+                let mut res = false;
+
                 ui.add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"));
+
                 self.src.ui(ui, "Surface Roughness Coefficient");
-                self.mat.ui(ui);
-            });
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

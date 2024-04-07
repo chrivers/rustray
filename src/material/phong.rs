@@ -60,7 +60,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Phong")
             .default_open(true)
             .show(ui, |ui| {
@@ -69,12 +69,19 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
+                        let mut res = false;
+
                         self.pow.ui(ui, "Power");
                         ui.end_row();
 
-                        self.mat.ui(ui);
+                        res |= self.mat.ui(ui);
                         ui.end_row();
-                    });
-            });
+
+                        res
+                    })
+                    .inner
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

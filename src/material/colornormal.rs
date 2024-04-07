@@ -18,9 +18,10 @@ impl<F: Float> Material<F> for ColorNormal<F> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Color Normals")
             .default_open(true)
             .show(ui, |_ui| {});
+        false
     }
 }

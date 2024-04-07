@@ -133,7 +133,7 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Smart")
             .default_open(true)
             .show(ui, |ui| {
@@ -142,6 +142,8 @@ where
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
+                        let res = false;
+
                         self.pow.ui(ui, "Power");
                         ui.end_row();
 
@@ -165,7 +167,12 @@ where
 
                         Sampler::ui(&mut self.ambient, ui, "ambient");
                         ui.end_row();
-                    });
-            });
+
+                        res
+                    })
+                    .inner
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

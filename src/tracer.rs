@@ -188,7 +188,7 @@ impl<'a, F: Float> Debug for Tracer<'a, F> {
 
 #[cfg(feature = "gui")]
 impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::CollapsingHeader::new("Ray tracer")
             .default_open(true)
             .show(ui, |ui| {
@@ -203,8 +203,12 @@ impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
                         /* ui.end_row(); */
 
                         /* position_ui(ui, &mut self.dir, "Direction"); */
+                        false
                     })
-            });
+                    .inner
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }
 

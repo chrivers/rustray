@@ -12,11 +12,11 @@ use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::Geometry,
+    light::Attenuation,
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::RResult,
-    types::{Color, Error, Float, Point},
+    types::{Color, Error, Float, Point, RResult},
     Vector,
 };
 
@@ -40,8 +40,10 @@ pub struct RustRayGui<F: Float> {
     trace: bool,
 }
 
-pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) {
-    /* let mut rgb: [f32; 3] = (*pos).into(); */
+#[must_use]
+pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) -> bool {
+    let old = *pos;
+
     ui.label(name);
     ui.end_row();
 
@@ -56,15 +58,36 @@ pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str)
     ui.label("Z");
     ui.add(egui::DragValue::new(&mut pos.z).speed(0.1));
     ui.end_row();
+
+    *pos != old
 }
 
-pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) {
-    let mut rgb: [f32; 3] = (*color).into();
+pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> bool {
+    let old = *color;
+    let mut rgb: [f32; 3] = old.into();
     ui.label(name);
     ui.color_edit_button_rgb(&mut rgb);
-    color.r = F::from_f32(rgb[0]);
-    color.g = F::from_f32(rgb[1]);
-    color.b = F::from_f32(rgb[2]);
+    *color = Color::from(rgb);
+
+    *color != old
+}
+
+pub fn attenuation_ui<F: Float>(ui: &mut egui::Ui, attn: &mut Attenuation<F>) -> bool {
+    let old = *attn;
+
+    ui.label("Falloff d^0");
+    ui.add(egui::Slider::new(&mut attn.a, F::ZERO..=F::FOUR).logarithmic(true));
+    ui.end_row();
+
+    ui.label("Falloff d^1");
+    ui.add(egui::Slider::new(&mut attn.b, F::ZERO..=F::FOUR).logarithmic(true));
+    ui.end_row();
+
+    ui.label("Falloff d^2");
+    ui.add(egui::Slider::new(&mut attn.c, F::ZERO..=F::FOUR).logarithmic(true));
+    ui.end_row();
+
+    *attn != old
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>

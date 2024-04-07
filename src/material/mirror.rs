@@ -30,9 +30,10 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Mirror<F, S> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Mirror")
             .default_open(true)
             .show(ui, |_ui| {});
+        false
     }
 }

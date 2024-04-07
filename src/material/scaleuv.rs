@@ -28,10 +28,12 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("ScaleUV")
             .default_open(true)
             .show(ui, |ui| {
+                let mut res = false;
+
                 ui.add(
                     Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
                         .logarithmic(true)
@@ -46,7 +48,11 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
                         .trailing_fill(true)
                         .text("v scaling factor"),
                 );
-                self.mat.ui(ui);
-            });
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

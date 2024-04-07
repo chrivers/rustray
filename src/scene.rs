@@ -20,7 +20,7 @@ pub trait SceneObject<F: Float> {
 
 pub trait Interactive<F: Float>: Debug {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui);
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool;
     #[cfg(feature = "gui")]
     fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
         false

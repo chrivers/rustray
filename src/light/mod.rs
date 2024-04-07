@@ -22,7 +22,7 @@ pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Attenuation<F: Float> {
     pub a: F,
     pub b: F,

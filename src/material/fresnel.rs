@@ -53,11 +53,14 @@ impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Fresnel<F, S> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Fresnel")
             .default_open(true)
-            .show(ui, |ui| {
+            .show(ui, |ui| -> bool {
                 self.ior.ui(ui, "Index of refraction");
-            });
+                false
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

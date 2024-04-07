@@ -30,8 +30,8 @@ pub struct Triangle<F: Float, M: Material<F>> {
 
 impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
-        self.mat.ui(ui);
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        self.mat.ui(ui)
     }
 }
 

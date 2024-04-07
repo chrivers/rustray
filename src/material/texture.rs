@@ -37,10 +37,11 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material<F> for Texture<F, S> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Texture")
             .default_open(true)
             .show(ui, |_ui| {});
+        false
     }
 }
 

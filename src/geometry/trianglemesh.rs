@@ -24,7 +24,9 @@ pub struct TriangleMesh<F: Float, M: Material<F>> {
 
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, _ui: &mut egui::Ui) {}
+    fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
+        false
+    }
 
     #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {

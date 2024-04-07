@@ -24,7 +24,7 @@ impl<F: Float> DirectionalLight<F> {
 
 impl<F: Float> Interactive<F> for DirectionalLight<F> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::CollapsingHeader::new("Directional light")
             .default_open(true)
             .show(ui, |ui| {
@@ -33,12 +33,19 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
-                        color_ui(ui, &mut self.color, "Color");
+                        let mut res = false;
+
+                        res |= color_ui(ui, &mut self.color, "Color");
                         ui.end_row();
 
-                        position_ui(ui, &mut self.dir, "Direction");
+                        res |= position_ui(ui, &mut self.dir, "Direction");
+
+                        res
                     })
-            });
+                    .inner
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }
 

@@ -43,13 +43,19 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Triblend")
             .default_open(true)
             .show(ui, |ui| {
-                self.a.ui(ui);
-                self.b.ui(ui);
-                self.c.ui(ui);
-            });
+                let mut res = false;
+
+                res |= self.a.ui(ui);
+                res |= self.b.ui(ui);
+                res |= self.c.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

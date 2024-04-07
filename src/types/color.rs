@@ -9,7 +9,7 @@ use crate::sampler::Texel;
 
 use crate::types::float::{Float, Lerp};
 
-#[derive(Clone, Copy, Add, AddAssign, Sub, Rem)]
+#[derive(Clone, Copy, Add, AddAssign, Sub, Rem, PartialEq)]
 pub struct Color<F: Float> {
     pub r: F,
     pub g: F,

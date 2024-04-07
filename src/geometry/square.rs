@@ -11,14 +11,13 @@ aabb_impl_fm!(Square<F, M>);
 
 impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::Grid::new("grid")
             .num_columns(2)
             .spacing([40.0, 4.0])
             .striped(true)
-            .show(ui, |ui| {
-                self.mat.ui(ui);
-            });
+            .show(ui, |ui| self.mat.ui(ui))
+            .inner
     }
 
     #[cfg(feature = "gui")]

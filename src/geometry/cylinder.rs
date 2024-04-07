@@ -12,7 +12,7 @@ aabb_impl_fm!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::Grid::new("grid")
             .num_columns(2)
             .spacing([40.0, 4.0])
@@ -21,8 +21,9 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
                 ui.checkbox(&mut self.capped, "Capped");
                 ui.end_row();
 
-                self.mat.ui(ui);
-            });
+                self.mat.ui(ui)
+            })
+            .inner
     }
 
     #[cfg(feature = "gui")]

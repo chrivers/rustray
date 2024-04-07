@@ -77,7 +77,9 @@ impl<F: Float> Light<F> for SpotLight<F> {
 
 impl<F: Float> Interactive<F> for SpotLight<F> {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::frontend::gui::attenuation_ui;
+
         egui::CollapsingHeader::new("Spot light")
             .default_open(true)
             .show(ui, |ui| {
@@ -86,20 +88,12 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
-                        color_ui(ui, &mut self.color, "Color");
+                        let mut res = false;
+
+                        res |= color_ui(ui, &mut self.color, "Color");
                         ui.end_row();
 
-                        ui.label("Falloff d^0");
-                        ui.add(egui::Slider::new(&mut self.attn.a, F::ZERO..=F::FOUR).logarithmic(true));
-                        ui.end_row();
-
-                        ui.label("Falloff d^1");
-                        ui.add(egui::Slider::new(&mut self.attn.b, F::ZERO..=F::FOUR).logarithmic(true));
-                        ui.end_row();
-
-                        ui.label("Falloff d^2");
-                        ui.add(egui::Slider::new(&mut self.attn.c, F::ZERO..=F::FOUR).logarithmic(true));
-                        ui.end_row();
+                        res |= attenuation_ui(ui, &mut self.attn);
 
                         ui.label("Umbra");
                         ui.add(
@@ -115,9 +109,14 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                         );
                         ui.end_row();
 
-                        position_ui(ui, &mut self.pos, "Position");
-                        position_ui(ui, &mut self.dir, "Direction");
+                        res |= position_ui(ui, &mut self.pos, "Position");
+                        res |= position_ui(ui, &mut self.dir, "Direction");
+
+                        res
                     })
-            });
+                    .inner
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

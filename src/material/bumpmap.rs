@@ -61,10 +61,11 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Bumpmap")
             .default_open(true)
             .show(ui, |ui| {
+                let mut res = false;
                 egui::Grid::new("grid")
                     .num_columns(2)
                     .spacing([40.0, 4.0])
@@ -76,7 +77,11 @@ where
                         Sampler::ui(&mut self.img, ui, "Image");
                         ui.end_row();
                     });
-                self.mat.ui(ui);
-            });
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

@@ -21,9 +21,10 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for Blend<F, A, B> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         CollapsingHeader::new("Blend")
             .default_open(true)
             .show(ui, |_ui| {});
+        false
     }
 }
