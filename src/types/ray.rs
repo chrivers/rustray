@@ -1,5 +1,5 @@
 use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
-use flagset::{FlagSet, flags};
+use flagset::{flags, FlagSet};
 
 use crate::geometry::Geometry;
 use crate::material::Material;
@@ -47,7 +47,14 @@ impl<'a, F: Float> Ray<F> {
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags.contains(RF::Debug))
+        Maxel::new(
+            self.extend(ext),
+            self.dir,
+            self.lvl,
+            obj,
+            mat,
+            self.flags.contains(RF::Debug),
+        )
     }
 
     pub fn enter_group(self) -> Option<Self> {

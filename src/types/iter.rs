@@ -48,11 +48,11 @@ impl<'a, F: Float> Iterator for GridSamplesIter<'a, F> {
 
         let samples = self.samples;
 
-        let y = self.count / samples.xres;
-        let x = self.count % samples.xres;
+        let y = F::from_u32(self.count / samples.xres);
+        let x = F::from_u32(self.count % samples.xres);
 
-        let rx = (F::from_u32(x) / F::from_u32(samples.xres) - F::HALF) * samples.width + self.xoffset;
-        let ry = (F::from_u32(y) / F::from_u32(samples.yres) - F::HALF) * samples.height + self.yoffset;
+        let rx = (x / F::from_u32(samples.xres) - F::HALF) * samples.width + self.xoffset;
+        let ry = (y / F::from_u32(samples.yres) - F::HALF) * samples.height + self.yoffset;
 
         Some((rx, ry))
     }
