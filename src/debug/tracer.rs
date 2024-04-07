@@ -19,12 +19,12 @@ pub struct Step<'a, F: Float> {
 pub struct DebugTracer<'a, F: Float> {
     scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
     pub steps: RefCell<Vec<Step<'a, F>>>,
-    maxlvl: u32,
+    maxlvl: u16,
 }
 
 impl<'a, F: Float> DebugTracer<'a, F> {
     #[must_use]
-    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>, maxlvl: u32) -> Self {
+    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>, maxlvl: u16) -> Self {
         Self {
             scene,
             steps: RefCell::new(vec![]),

@@ -16,7 +16,7 @@ pub fn make_shapes<F>(
 where
     F: Float + From<f32>,
 {
-    const TRACE_STEPS: u32 = 20;
+    const TRACE_STEPS: u16 = 20;
 
     let ray = scene.cameras[0]
         .get_ray(point!(coord.x, coord.y))

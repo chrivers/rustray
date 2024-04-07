@@ -12,7 +12,7 @@ pub struct Tracer<'a, F: Float> {
     scene: RwLockReadGuard<'a, BoxScene<F>>,
     sx: u32,
     sy: u32,
-    maxlvl: u32,
+    maxlvl: u16,
 }
 
 impl<'a, F: Float> Tracer<'a, F> {

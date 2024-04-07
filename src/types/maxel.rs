@@ -13,10 +13,10 @@ pub struct Maxel<'a, F: Float> {
     pub dir: Vector<F>,
     pub obj: &'a dyn Geometry<F>,
     pub mat: &'a dyn Material<F>,
-    pub lvl: u32,
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
+    pub lvl: u16,
     pub dbg: bool,
 }
 
@@ -40,7 +40,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     pub fn new(
         pos: Vector<F>,
         dir: Vector<F>,
-        lvl: u32,
+        lvl: u16,
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
         dbg: bool,
