@@ -17,9 +17,9 @@ use super::Attenuation;
 #[derive(Debug)]
 pub struct AreaLight<F: Float> {
     pub attn: Attenuation<F>,
-    pub pos: Vector<F>,
-    pub dir: Vector<F>,
-    pub upd: Vector<F>,
+    pos: Vector<F>,
+    dir: Vector<F>,
+    upd: Vector<F>,
     pub color: Color<F>,
     pub width: F,
     pub height: F,
