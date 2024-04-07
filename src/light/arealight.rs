@@ -109,19 +109,19 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
 
                         ui.label("Width");
                         res |= ui
-                            .add(egui::Slider::new(
-                                &mut self.width,
-                                F::ZERO..=F::from_u32(10),
-                            ).clamp_to_range(false))
+                            .add(
+                                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10))
+                                    .clamp_to_range(false),
+                            )
                             .changed();
                         ui.end_row();
 
                         ui.label("Height");
                         res |= ui
-                            .add(egui::Slider::new(
-                                &mut self.height,
-                                F::ZERO..=F::from_u32(10),
-                            ).clamp_to_range(false))
+                            .add(
+                                egui::Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+                                    .clamp_to_range(false),
+                            )
                             .changed();
                         ui.end_row();
 

@@ -432,8 +432,7 @@ where
             self.file_dialog.config_mut().initial_directory = path.parent().unwrap().to_path_buf();
             if let Ok(scene) = self.load_file(&path) {
                 self.lock = Arc::new(RwLock::new(scene));
-                self.engine
-                    .render_lines(&self.lock, 0, self.img.height());
+                self.engine.render_lines(&self.lock, 0, self.img.height());
             }
         }
 
