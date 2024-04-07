@@ -51,12 +51,11 @@ impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        match Arc::<Box<_>>::get_mut(self) {
-            Some(mat) => mat.ui(ui),
-            None => {
-                ui.label("nope :(");
-                false
-            }
+        if let Some(mat) = Arc::get_mut(self) {
+            mat.ui(ui)
+        } else {
+            ui.label("nope :(");
+            false
         }
     }
 }

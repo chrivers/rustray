@@ -14,7 +14,7 @@ pub struct GridSamplesIter<'a, F: Float> {
 }
 
 impl<'a, F: Float> GridSamples<F> {
-    pub fn new(width: F, height: F, xres: u32, yres: u32) -> Self {
+    pub const fn new(width: F, height: F, xres: u32, yres: u32) -> Self {
         Self {
             width,
             height,
@@ -23,7 +23,7 @@ impl<'a, F: Float> GridSamples<F> {
         }
     }
 
-    pub fn iter(&'a self) -> GridSamplesIter<'a, F> {
+    pub const fn iter(&'a self) -> GridSamplesIter<'a, F> {
         GridSamplesIter {
             samples: self,
             count: 0,

@@ -47,12 +47,11 @@ impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        match Arc::<Box<_>>::get_mut(self) {
-            Some(samp) => samp.ui(ui, name),
-            None => {
-                ui.label("nope :(");
-                false
-            }
+        if let Some(samp) = Arc::get_mut(self) {
+            samp.ui(ui, name)
+        } else {
+            ui.label("nope :(");
+            false
         }
     }
 }
