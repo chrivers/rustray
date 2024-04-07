@@ -125,7 +125,8 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         let uv = maxel.uv();
         let sha = self.kt.sample(uv);
-        Some(sha * lixel.color)
+        let lambert = lixel.dir.dot(maxel.nml());
+        Some(sha * lixel.color * lambert)
     }
 
     #[cfg(feature = "gui")]
