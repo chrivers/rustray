@@ -148,7 +148,10 @@ where
 
         /* let mut rng = rand::thread_rng(); */
 
-        let dist = GridSamples::new(self.width, self.height, self.xres, self.yres);
+        let xres = (self.xres >> maxel.lvl).max(1);
+        let yres = (self.yres >> maxel.lvl).max(1);
+
+        let dist = GridSamples::new(self.width, self.height, xres, yres);
 
         for (rx, ry) in dist.iter() {
             let pos = self.pos + self.dir1 * rx + self.dir2 * ry;
@@ -167,7 +170,7 @@ where
             color += rt.shadow(maxel, lixel).color;
         }
 
-        color = color / F::from_u32(self.xres * self.yres);
+        color = color / F::from_u32(xres * yres);
 
         let dir = maxel.pos.vector_to(self.pos);
         let len2 = dir.magnitude2();
