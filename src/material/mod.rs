@@ -36,7 +36,7 @@ impl<F: Float> Material<F> for Color<F> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        crate::frontend::gui::color_ui(ui, self, "Color")
+        crate::frontend::gui::controls::color(ui, self, "Color")
     }
 }
 
@@ -72,7 +72,7 @@ pub(crate) mod mat_util {
     pub use crate::{point, vec3};
 
     #[cfg(feature = "gui")]
-    pub use crate::frontend::gui::color_ui;
+    pub use crate::frontend::gui::controls;
     #[cfg(feature = "gui")]
     pub use egui::{CollapsingHeader, Slider};
 

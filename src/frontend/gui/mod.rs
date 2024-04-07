@@ -1,6 +1,9 @@
+mod gizmo;
+
+pub mod controls;
 pub mod visualtrace;
 
-mod gizmo;
+pub use gizmo::gizmo_ui;
 
 use std::{
     path::Path,
@@ -12,12 +15,10 @@ use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::Geometry,
-    light::Attenuation,
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
     types::{Color, Error, Float, Point, RResult},
-    Vector,
 };
 
 use eframe::egui::Key;
@@ -28,8 +29,6 @@ use egui_file_dialog::FileDialog;
 use image::{ImageBuffer, Rgba};
 use pest::Parser;
 
-pub use gizmo::gizmo_ui;
-
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
     lock: Arc<RwLock<BoxScene<F>>>,
@@ -38,71 +37,6 @@ pub struct RustRayGui<F: Float> {
     file_dialog: FileDialog,
     shapes: Vec<egui::Shape>,
     trace: bool,
-}
-
-#[must_use]
-pub fn position_ui<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) -> bool {
-    let mut res = false;
-
-    ui.label(name);
-    ui.end_row();
-
-    ui.label("X");
-    res |= ui
-        .add(egui::DragValue::new(&mut pos.x).speed(0.1))
-        .changed();
-    ui.end_row();
-
-    ui.label("Y");
-    res |= ui
-        .add(egui::DragValue::new(&mut pos.y).speed(0.1))
-        .changed();
-    ui.end_row();
-
-    ui.label("Z");
-    res |= ui
-        .add(egui::DragValue::new(&mut pos.z).speed(0.1))
-        .changed();
-    ui.end_row();
-
-    res
-}
-
-pub fn color_ui<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> bool {
-    let mut res = false;
-    let mut rgb: [f32; 3] = (*color).into();
-
-    ui.label(name);
-    res |= ui.color_edit_button_rgb(&mut rgb).changed();
-    ui.end_row();
-
-    *color = Color::from(rgb);
-
-    res
-}
-
-pub fn attenuation_ui<F: Float>(ui: &mut egui::Ui, attn: &mut Attenuation<F>) -> bool {
-    let mut res = false;
-
-    ui.label("Falloff d^0");
-    res |= ui
-        .add(egui::Slider::new(&mut attn.a, F::ZERO..=F::TWO).logarithmic(true))
-        .changed();
-    ui.end_row();
-
-    ui.label("Falloff d^1");
-    res |= ui
-        .add(egui::Slider::new(&mut attn.b, F::ZERO..=F::TWO).logarithmic(true))
-        .changed();
-    ui.end_row();
-
-    ui.label("Falloff d^2");
-    res |= ui
-        .add(egui::Slider::new(&mut attn.c, F::ZERO..=F::TWO).logarithmic(true))
-        .changed();
-    ui.end_row();
-
-    res
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>

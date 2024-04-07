@@ -4,9 +4,6 @@ use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::{Color, Float, Maxel, Vector};
 
-#[cfg(feature = "gui")]
-use crate::frontend::gui::{color_ui, position_ui};
-
 #[derive(Debug)]
 pub struct DirectionalLight<F: Float> {
     dir: Vector<F>,
@@ -25,6 +22,8 @@ impl<F: Float> DirectionalLight<F> {
 impl<F: Float> Interactive<F> for DirectionalLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::frontend::gui::controls;
+
         egui::CollapsingHeader::new("Directional light")
             .default_open(true)
             .show(ui, |ui| {
@@ -35,8 +34,8 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
                     .show(ui, |ui| {
                         let mut res = false;
 
-                        res |= color_ui(ui, &mut self.color, "Color");
-                        res |= position_ui(ui, &mut self.dir, "Direction");
+                        res |= controls::color(ui, &mut self.color, "Color");
+                        res |= controls::position(ui, &mut self.dir, "Direction");
 
                         res
                     })

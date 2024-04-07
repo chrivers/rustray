@@ -102,7 +102,7 @@ impl<F: Float> Sampler<F, Self> for Color<F> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        crate::frontend::gui::color_ui(ui, self, name)
+        crate::frontend::gui::controls::color(ui, self, name)
     }
 }
 

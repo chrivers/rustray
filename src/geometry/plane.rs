@@ -20,10 +20,8 @@ impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
             .striped(true)
             .show(ui, |ui| {
                 let mut res = false;
-
-                res |= position_ui(ui, &mut self.pos, "Position");
+                res |= controls::position(ui, &mut self.pos, "Position");
                 res |= self.mat.ui(ui);
-
                 res
             })
             .inner

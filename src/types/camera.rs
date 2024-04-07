@@ -1,7 +1,7 @@
 use cgmath::{Angle, Deg, EuclideanSpace, InnerSpace, Matrix4, MetricSpace, Point3};
 
 #[cfg(feature = "gui")]
-use crate::frontend::gui::position_ui;
+use crate::frontend::gui::controls;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Point, Ray, Transform, Vector};
 use crate::vec3;
@@ -118,8 +118,8 @@ impl<F: Float> Interactive<F> for Camera<F> {
                         ui.label(format!("Y resolution: {}", self.yres));
                         ui.end_row();
 
-                        res |= position_ui(ui, &mut self.pos, "Position");
-                        res |= position_ui(ui, &mut self.dir, "Direction");
+                        res |= controls::position(ui, &mut self.pos, "Position");
+                        res |= controls::position(ui, &mut self.dir, "Direction");
                         self.dir = self.dir.normalize();
 
                         res

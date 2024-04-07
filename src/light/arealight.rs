@@ -9,9 +9,6 @@ use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
 use crate::Vectorx;
 
-#[cfg(feature = "gui")]
-use crate::frontend::gui::{color_ui, position_ui};
-
 use super::Attenuation;
 
 #[derive(Debug)]
@@ -81,7 +78,7 @@ impl<F: Float> SceneObject<F> for AreaLight<F> {
 impl<F: Float> Interactive<F> for AreaLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::attenuation_ui;
+        use crate::frontend::gui::controls;
 
         egui::CollapsingHeader::new("Area light")
             .default_open(true)
@@ -93,11 +90,11 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
                     .show(ui, |ui| {
                         let mut res = false;
 
-                        res |= color_ui(ui, &mut self.color, "Color");
-                        res |= attenuation_ui(ui, &mut self.attn);
-                        res |= position_ui(ui, &mut self.pos, "Position");
-                        res |= position_ui(ui, &mut self.dir, "Direction");
-                        res |= position_ui(ui, &mut self.upd, "Up direction");
+                        res |= controls::color(ui, &mut self.color, "Color");
+                        res |= controls::attenuation(ui, &mut self.attn);
+                        res |= controls::position(ui, &mut self.pos, "Position");
+                        res |= controls::position(ui, &mut self.dir, "Direction");
+                        res |= controls::position(ui, &mut self.upd, "Up direction");
 
                         ui.label("X resolution");
                         res |= ui.add(egui::Slider::new(&mut self.xres, 1..=32)).changed();

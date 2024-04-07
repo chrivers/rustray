@@ -4,9 +4,6 @@ use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
-#[cfg(feature = "gui")]
-use crate::frontend::gui::{color_ui, position_ui};
-
 use super::Attenuation;
 
 #[derive(Debug)]
@@ -19,7 +16,7 @@ pub struct PointLight<F: Float> {
 impl<F: Float> Interactive<F> for PointLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::attenuation_ui;
+        use crate::frontend::gui::controls;
 
         egui::CollapsingHeader::new("Point light")
             .default_open(true)
@@ -30,9 +27,9 @@ impl<F: Float> Interactive<F> for PointLight<F> {
                     .striped(true)
                     .show(ui, |ui| {
                         let mut res = false;
-                        res |= color_ui(ui, &mut self.color, "Color");
-                        res |= attenuation_ui(ui, &mut self.attn);
-                        res |= position_ui(ui, &mut self.pos, "Position");
+                        res |= controls::color(ui, &mut self.color, "Color");
+                        res |= controls::attenuation(ui, &mut self.attn);
+                        res |= controls::position(ui, &mut self.pos, "Position");
                         res
                     })
                     .inner

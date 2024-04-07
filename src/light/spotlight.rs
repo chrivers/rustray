@@ -8,9 +8,6 @@ use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
 use crate::Vectorx;
 
-#[cfg(feature = "gui")]
-use crate::frontend::gui::{color_ui, position_ui};
-
 use super::Attenuation;
 
 #[derive(Debug)]
@@ -78,7 +75,7 @@ impl<F: Float> Light<F> for SpotLight<F> {
 impl<F: Float> Interactive<F> for SpotLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::attenuation_ui;
+        use crate::frontend::gui::controls;
 
         egui::CollapsingHeader::new("Spot light")
             .default_open(true)
@@ -90,8 +87,8 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                     .show(ui, |ui| {
                         let mut res = false;
 
-                        res |= color_ui(ui, &mut self.color, "Color");
-                        res |= attenuation_ui(ui, &mut self.attn);
+                        res |= controls::color(ui, &mut self.color, "Color");
+                        res |= controls::attenuation(ui, &mut self.attn);
 
                         ui.label("Umbra");
                         res |= ui
@@ -111,8 +108,8 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                             .changed();
                         ui.end_row();
 
-                        res |= position_ui(ui, &mut self.pos, "Position");
-                        res |= position_ui(ui, &mut self.dir, "Direction");
+                        res |= controls::position(ui, &mut self.pos, "Position");
+                        res |= controls::position(ui, &mut self.dir, "Direction");
 
                         res
                     })

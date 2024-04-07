@@ -134,7 +134,7 @@ pub(crate) mod geo_util {
     pub use crate::{point, vec3};
 
     #[cfg(feature = "gui")]
-    pub use crate::frontend::gui::{gizmo_ui, position_ui};
+    pub use crate::frontend::gui::{controls, gizmo_ui};
     #[cfg(feature = "gui")]
     pub use crate::types::Camera;
     #[cfg(feature = "gui")]
