@@ -15,7 +15,7 @@ use pest_derive::Parser;
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
-use crate::light::{DirectionalLight, PointLight};
+use crate::light::{Attenuation, DirectionalLight, PointLight};
 use crate::material::{Bumpmap, Phong, Smart, Triblend};
 use crate::sampler::{NormalMap, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
@@ -607,9 +607,11 @@ where
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
         let res = PointLight {
-            a,
-            b,
-            c,
+            attn: Attenuation {
+                a,
+                b,
+                c,
+            },
             pos,
             color,
         };

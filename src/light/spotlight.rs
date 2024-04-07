@@ -11,11 +11,11 @@ use crate::Vectorx;
 #[cfg(feature = "gui")]
 use crate::frontend::gui::{color_ui, position_ui};
 
+use super::Attenuation;
+
 #[derive(Debug)]
 pub struct SpotLight<F: Float> {
-    pub a: F,
-    pub b: F,
-    pub c: F,
+    pub attn: Attenuation<F>,
     pub umbra: Rad<F>,
     pub penumbra: Rad<F>,
     pub pos: Vector<F>,
@@ -41,7 +41,7 @@ impl<F: Float> Light<F> for SpotLight<F> {
         let dir = self.pos.normal_to(maxel.pos);
         let len2 = dir.magnitude2();
         let len = len2.sqrt();
-        let color = self.color / (F::ONE + self.a + (self.b * len) + (self.c * len2));
+        let color = self.attn.attenuate(self.color, len, len2);
 
         let angle = self.dir.normalize().dot(dir.normalize()).acos();
 
@@ -90,15 +90,15 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
                         ui.end_row();
 
                         ui.label("Falloff d^0");
-                        ui.add(egui::Slider::new(&mut self.a, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.a, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         ui.label("Falloff d^1");
-                        ui.add(egui::Slider::new(&mut self.b, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.b, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         ui.label("Falloff d^2");
-                        ui.add(egui::Slider::new(&mut self.c, F::ZERO..=F::FOUR).logarithmic(true));
+                        ui.add(egui::Slider::new(&mut self.attn.c, F::ZERO..=F::FOUR).logarithmic(true));
                         ui.end_row();
 
                         ui.label("Umbra");

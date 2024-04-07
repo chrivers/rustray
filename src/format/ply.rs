@@ -6,7 +6,7 @@ use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::light::PointLight;
+use crate::light::{Attenuation, PointLight};
 use crate::material::Phong;
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
@@ -168,9 +168,11 @@ impl<F: Float + Texel> PlyParser<F> {
         objects.push(Box::new(mesh));
 
         let lgt = PointLight {
-            a: F::from_f32(0.1),
-            b: F::from_f32(0.0001),
-            c: F::from_f32(0.0),
+            attn: Attenuation {
+                a: F::from_f32(0.1),
+                b: F::from_f32(0.0001),
+                c: F::from_f32(0.0),
+            },
             pos,
             color: Color::WHITE,
         };

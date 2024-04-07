@@ -55,6 +55,7 @@ trait SDict<F: Float + Texel> {
     fn boolean(&self, name: &str) -> RResult<bool>;
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>>;
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>>;
+    fn attenuation(&self) -> RResult<Attenuation<F>>;
 }
 
 trait STuple<F: Float> {
@@ -159,6 +160,13 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
+    }
+
+    fn attenuation(&self) -> RResult<Attenuation<F>> {
+        let a = self.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
+        let b = self.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
+        let c = self.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        Ok(Attenuation { a, b, c })
     }
 }
 
@@ -440,14 +448,10 @@ where
     fn parse_point_light(dict: &impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
-        let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
-        let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
-        let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        let attn = dict.attenuation()?;
 
         let res = PointLight {
-            a,
-            b,
-            c,
+            attn,
             pos,
             color,
         };
@@ -459,16 +463,12 @@ where
         let pos = dict.vector("position")?;
         let dir = dict.vector("direction")?.normalize();
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
-        let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
-        let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
-        let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        let attn = dict.attenuation()?;
         let umbra = Deg(dict.float("umbra").unwrap_or_else(|_| F::from_f32(45.0))).into();
         let penumbra = Deg(dict.float("penumbra").unwrap_or_else(|_| F::from_f32(45.0))).into();
 
         let res = SpotLight {
-            a,
-            b,
-            c,
+            attn,
             umbra,
             penumbra,
             pos,
@@ -483,14 +483,11 @@ where
         let pos = dict.vector("position")?;
         let dir = dict.vector("direction")?.normalize();
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
-        let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
-        let b = dict.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
-        let c = dict.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
+        let attn = dict.attenuation()?;
         let upd = dict.vector("updir")?.normalize();
         let width = dict.float("width").unwrap_or(F::ONE);
         let height = dict.float("height").unwrap_or(F::ONE);
-
-        let res = AreaLight::new(Attenuation { a, b, c }, pos, dir, upd, color, width, height);
+        let res = AreaLight::new(attn, pos, dir, upd, color, width, height);
         info!("{:7.3?}", res);
         Ok(res)
     }

@@ -7,7 +7,7 @@ use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
-use crate::light::{Light, PointLight};
+use crate::light::{Attenuation, Light, PointLight};
 use crate::material::*;
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::types::vector::Vectorx;
@@ -23,12 +23,16 @@ fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
 where
     f32: Into<F>,
 {
-    PointLight {
-        pos,
-        color,
+    let attn = Attenuation {
         a: (0.3).into(),
         b: (0.2).into(),
         c: (0.01).into(),
+    };
+
+    PointLight {
+        attn,
+        pos,
+        color,
     }
 }
 
