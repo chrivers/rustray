@@ -143,7 +143,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
             };
 
             /* test bottom cap */
-            if t1 <= F::ZERO && t1 < root {
+            if t1 > F::ZERO && t1 < root {
                 let p = r.extend(t1);
                 if p.x * p.x + p.y * p.y <= self_bot_r * self_bot_r {
                     root = t1;
@@ -152,7 +152,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
             }
 
             /* test top cap */
-            if t2 <= F::ZERO && t2 < root {
+            if t2 > F::ZERO && t2 < root {
                 let p = r.extend(t2);
                 if p.x * p.x + p.y * p.y <= self_top_r * self_top_r {
                     root = t2;
