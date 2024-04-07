@@ -29,11 +29,7 @@ where
         c: (0.01).into(),
     };
 
-    PointLight {
-        attn,
-        pos,
-        color,
-    }
+    PointLight { attn, pos, color }
 }
 
 fn load_zip_tex<T: Read + Seek>(

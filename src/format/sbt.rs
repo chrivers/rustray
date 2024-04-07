@@ -607,11 +607,7 @@ where
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
         let res = PointLight {
-            attn: Attenuation {
-                a,
-                b,
-                c,
-            },
+            attn: Attenuation { a, b, c },
             pos,
             color,
         };
