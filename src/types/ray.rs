@@ -1,32 +1,38 @@
 use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
+use flagset::{FlagSet, flags};
 
 use crate::geometry::Geometry;
 use crate::material::Material;
 use crate::types::{Float, Maxel, Transform, Vector, Vectorx};
 
+flags! {
+    pub enum RF: u16 {
+        Debug,
+        StopAtGroup,
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
-    pub lvl: u32,
-    pub grp: u16,
-    pub dbg: bool,
+    pub lvl: u16,
+    pub flags: FlagSet<RF>,
 }
 
 impl<'a, F: Float> Ray<F> {
-    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32, dbg: bool) -> Self {
+    pub const fn new(pos: Vector<F>, dir: Vector<F>) -> Self {
         Self {
             pos,
             dir,
-            lvl,
-            grp: 100,
-            dbg,
+            lvl: 0,
+            flags: FlagSet::default(),
         }
     }
 
     #[must_use]
     pub const fn with_debug(mut self) -> Self {
-        self.dbg = true;
+        self.flags = self.flags | RF::Debug;
         self
     }
 
@@ -41,15 +47,15 @@ impl<'a, F: Float> Ray<F> {
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.dbg)
+        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags.contains(RF::Debug))
     }
 
-    pub const fn enter_group(mut self) -> Option<Self> {
-        if self.grp == 0 {
-            return None;
+    pub fn enter_group(self) -> Option<Self> {
+        if self.flags.contains(RF::StopAtGroup) {
+            None
+        } else {
+            Some(self)
         }
-        self.grp -= 1;
-        Some(self)
     }
 
     #[must_use]

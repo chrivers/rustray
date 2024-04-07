@@ -10,6 +10,7 @@ use std::num::NonZeroUsize;
 use crate::material::DynMaterial;
 use crate::sampler::Texel;
 use crate::types::bvh::BvhExt;
+use crate::types::ray::RF;
 use crate::types::result::RResult;
 use crate::types::Color;
 
@@ -81,7 +82,7 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
 
 impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        if ray.grp > 0 {
+        if !ray.flags.contains(RF::StopAtGroup) {
             let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
 
             let maxel = self
@@ -108,7 +109,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
                 ray.lvl,
                 self,
                 self.mat.as_ref(),
-                ray.dbg,
+                ray.flags.contains(RF::Debug),
             ))
         }
     }

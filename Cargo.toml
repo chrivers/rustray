@@ -54,3 +54,4 @@ clap = { version = "4.5.4", features = ["derive"] }
 egui-file-dialog = "0.4"
 egui-gizmo = "0.16.2"
 mint = "0.5.9"
+flagset = "0.4.5"
