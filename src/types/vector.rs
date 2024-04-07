@@ -1,6 +1,6 @@
 use num_traits::Zero;
 
-use super::transform::Transform;
+use super::{transform::Transform, Point};
 
 pub use cgmath::{
     EuclideanSpace, InnerSpace, Matrix, Matrix4, MetricSpace, Point3, Transform as cgTransform,
@@ -81,6 +81,13 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         .normalize();
 
         (u, self.cross(u))
+    }
+
+    fn point(self) -> Point<F> {
+        Point {
+            x: self.x,
+            y: self.y,
+        }
     }
 
     #[must_use]
@@ -189,6 +196,8 @@ where
     fn from_f32s(val: [f32; 3]) -> Self;
     fn from_f32(value: Vector<f32>) -> Self;
     fn into_f32(self) -> Vector<f32>;
+
+    fn point(self) -> Point<F>;
 
     #[inline]
     #[must_use]
