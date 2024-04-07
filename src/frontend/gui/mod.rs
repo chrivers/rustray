@@ -258,7 +258,7 @@ where
         if act.clicked() {
             if let Some(pos) = act.interact_pointer_pos {
                 let coord = from_screen.transform_pos(pos);
-                let mut ray = scene.cameras[0].get_ray(point!(coord.x, coord.y), 1);
+                let mut ray = scene.cameras[0].get_ray(point!(coord.x, coord.y));
                 ray.grp = 0;
                 if let Some(maxel) = scene.intersect(&ray) {
                     let id = maxel.obj.get_id();

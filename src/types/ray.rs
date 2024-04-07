@@ -19,7 +19,7 @@ impl<'a, F: Float> Ray<F> {
             pos,
             dir,
             lvl,
-            grp: lvl as u16,
+            grp: 100,
             dbg,
         }
     }

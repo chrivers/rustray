@@ -41,7 +41,7 @@ impl<'a, F: Float> Tracer<'a, F> {
     }
 
     pub fn render_pixel_single(&self, camera: &Camera<F>, px: F, py: F) -> Color<F> {
-        let ray = camera.get_ray(point!(px, py), self.maxlvl);
+        let ray = camera.get_ray(point!(px, py));
         if let Some(color) = self.ray_trace(&ray) {
             color.clamped()
         } else {
@@ -104,7 +104,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         let pixels = (0..xres)
             .map(|x| {
                 let px = F::from_u32(x);
-                let ray = camera.get_ray(Point::new(px / fx, py / fy), self.maxlvl);
+                let ray = camera.get_ray(Point::new(px / fx, py / fy));
                 self.ray_trace_normal(&ray).unwrap_or(Color::BLACK)
             })
             .collect();
@@ -125,14 +125,14 @@ impl<'a, F: Float> Tracer<'a, F> {
 
 impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        if maxel.lvl == 0 {
+        if maxel.lvl >= self.maxlvl {
             return None;
         }
 
         let hitray = Ray::new(
             maxel.pos + maxel.nml() * F::BIAS2,
             lixel.dir,
-            maxel.lvl - 1,
+            maxel.lvl + 1,
             false,
         );
 
@@ -157,6 +157,10 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>> {
+        if ray.lvl >= self.maxlvl {
+            return None;
+        }
+
         let mut maxel = self.scene.intersect(ray)?;
 
         Some(maxel.mat.render(&mut maxel, self))

@@ -79,9 +79,7 @@ where
         let refl_color = self.kr.sample(uv);
 
         let refl_term = if !refl_color.is_zero() {
-            maxel
-                .reflected_ray()
-                .and_then(|refl| rt.ray_trace(&refl))
+            rt.ray_trace(&maxel.reflected_ray())
                 .unwrap_or_else(|| rt.background())
                 * refl_color
         } else {
@@ -91,9 +89,7 @@ where
         let ior = self.ior.sample(uv);
 
         let refr_term = if !tran_color.is_zero() {
-            maxel
-                .refracted_ray(ior)
-                .and_then(|refr| rt.ray_trace(&refr))
+            rt.ray_trace(&maxel.refracted_ray(ior))
                 .unwrap_or_else(|| rt.background())
                 * tran_color
         } else {

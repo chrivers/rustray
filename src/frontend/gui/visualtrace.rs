@@ -19,10 +19,10 @@ where
     const TRACE_STEPS: u32 = 20;
 
     let ray = scene.cameras[0]
-        .get_ray(point!(coord.x, coord.y), TRACE_STEPS)
+        .get_ray(point!(coord.x, coord.y))
         .with_debug();
 
-    let dt = DebugTracer::new(scene);
+    let dt = DebugTracer::new(scene, TRACE_STEPS);
     dt.ray_trace(&ray);
 
     let mut shapes = vec![];
@@ -76,7 +76,7 @@ where
             Color32::from_gray(255_i32.saturating_sub(50 * (TRACE_STEPS - ray.lvl) as i32) as u8)
         };
 
-        if ray.lvl != TRACE_STEPS {
+        if ray.lvl != 0 {
             let shape = egui::Shape::line_segment([a, b], Stroke::new(2.0, color));
             shapes.push(shape);
         }

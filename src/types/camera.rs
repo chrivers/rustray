@@ -77,7 +77,7 @@ impl<F: Float> Camera<F> {
         }
     }
 
-    pub fn get_ray(self, point: Point<F>, lvl: u32) -> Ray<F> {
+    pub fn get_ray(self, point: Point<F>) -> Ray<F> {
         let pos = self.model.pos_inv(vec3![F::ZERO, F::ZERO, F::ZERO]);
 
         let vpp = self
@@ -87,7 +87,7 @@ impl<F: Float> Camera<F> {
                     .pos_inv(self.ndc.pos_inv(vec3![point.x, point.y, F::ONE])),
             );
 
-        Ray::new(pos, vpp.normalize(), lvl, false)
+        Ray::new(pos, vpp.normalize(), 0, false)
     }
 
     pub const fn size(self) -> (u32, u32) {

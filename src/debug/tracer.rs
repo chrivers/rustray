@@ -19,28 +19,30 @@ pub struct Step<'a, F: Float> {
 pub struct DebugTracer<'a, F: Float> {
     scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
     pub steps: RefCell<Vec<Step<'a, F>>>,
+    maxlvl: u32,
 }
 
 impl<'a, F: Float> DebugTracer<'a, F> {
     #[must_use]
-    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>) -> Self {
+    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>, maxlvl: u32) -> Self {
         Self {
             scene,
             steps: RefCell::new(vec![]),
+            maxlvl,
         }
     }
 }
 
 impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        if maxel.lvl == 0 {
+        if maxel.lvl == self.maxlvl {
             return None;
         }
 
         let hitray = Ray::new(
             maxel.pos + maxel.nml() * F::BIAS2,
             lixel.dir,
-            maxel.lvl - 1,
+            maxel.lvl + 1,
             true,
         );
 
@@ -77,7 +79,7 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>> {
-        if ray.lvl == 0 {
+        if ray.lvl == self.maxlvl {
             return None;
         }
 

@@ -21,10 +21,8 @@ impl<F: Float + Texel, S: Sampler<F, F>> Fresnel<F, S> {
         ior: F,
         rt: &dyn RayTracer<F>,
     ) -> (Option<Color<F>>, Option<Color<F>>) {
-        let refl = maxel.reflected_ray().and_then(|refl| rt.ray_trace(&refl));
-        let refr = maxel
-            .refracted_ray(ior)
-            .and_then(|refr| rt.ray_trace(&refr));
+        let refl = rt.ray_trace(&maxel.reflected_ray());
+        let refr = rt.ray_trace(&maxel.refracted_ray(ior));
 
         (refl, refr)
     }
