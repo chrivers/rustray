@@ -58,6 +58,14 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         z: F::ONE,
     };
 
+    #[cfg(debug_assertions)]
+    fn assert_normalized(self) {
+        if self != Self::zero() {
+            assert!(self.magnitude() < F::from_f32(1.01));
+            assert!(self.magnitude() > F::from_f32(0.99));
+        }
+    }
+
     #[must_use]
     fn surface_tangents(&self) -> (Self, Self) {
         let u = if self.x.abs() <= self.y.abs() && self.x.abs() <= self.z.abs() {
@@ -160,6 +168,9 @@ where
     const UNIT_X: Self;
     const UNIT_Y: Self;
     const UNIT_Z: Self;
+
+    #[cfg(debug_assertions)]
+    fn assert_normalized(self);
 
     #[must_use]
     fn min(&self, other: &Self) -> Self;
