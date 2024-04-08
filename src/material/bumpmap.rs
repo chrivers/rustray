@@ -71,11 +71,8 @@ where
                     .spacing([40.0, 4.0])
                     .striped(true)
                     .show(ui, |ui| {
-                        Sampler::ui(&mut self.pow, ui, "Power");
-                        ui.end_row();
-
-                        Sampler::ui(&mut self.img, ui, "Image");
-                        ui.end_row();
+                        res |= Sampler::ui(&mut self.pow, ui, "Power");
+                        res |= Sampler::ui(&mut self.img, ui, "Image");
                     });
                 res |= self.mat.ui(ui);
 
