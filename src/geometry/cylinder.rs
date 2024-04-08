@@ -18,10 +18,13 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
             .spacing([40.0, 4.0])
             .striped(true)
             .show(ui, |ui| {
-                ui.checkbox(&mut self.capped, "Capped");
+                let mut res = false;
+                res |= ui.checkbox(&mut self.capped, "Capped").changed();
                 ui.end_row();
 
-                self.mat.ui(ui)
+                res |= self.mat.ui(ui);
+
+                res
             })
             .inner
     }
