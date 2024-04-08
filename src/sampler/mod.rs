@@ -34,6 +34,7 @@ where
     }
 }
 
+pub type BoxSampler<F, T> = Box<dyn Sampler<F, T>>;
 pub type DynSampler<F, T> = Arc<dyn Sampler<F, T>>;
 
 impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'a> {

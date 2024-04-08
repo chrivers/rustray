@@ -27,6 +27,7 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     }
 }
 
+pub type BoxMaterial<F> = Box<dyn Material<F>>;
 pub type DynMaterial<F> = Arc<dyn Material<F>>;
 
 impl<F: Float> Material<F> for Color<F> {
