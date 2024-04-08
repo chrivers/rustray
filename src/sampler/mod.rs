@@ -23,7 +23,7 @@ where
     where
         Self: Sized + 'static,
     {
-        Arc::new(Box::new(self))
+        Arc::new(self)
     }
 
     #[cfg(feature = "gui")]
@@ -34,9 +34,9 @@ where
     }
 }
 
-pub type DynSampler<F, T> = Arc<Box<dyn Sampler<F, T>>>;
+pub type DynSampler<F, T> = Arc<dyn Sampler<F, T>>;
 
-impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<Box<dyn Sampler<F, T> + 'a>> {
+impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'a> {
     fn sample(&self, uv: Point<F>) -> T {
         self.as_ref().sample(uv)
     }

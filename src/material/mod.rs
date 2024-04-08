@@ -17,7 +17,7 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     where
         Self: Sized + 'static,
     {
-        Arc::new(Box::new(self))
+        Arc::new(self)
     }
 
     #[cfg(feature = "gui")]
@@ -27,7 +27,7 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     }
 }
 
-pub type DynMaterial<F> = Arc<Box<dyn Material<F>>>;
+pub type DynMaterial<F> = Arc<dyn Material<F>>;
 
 impl<F: Float> Material<F> for Color<F> {
     fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
@@ -40,7 +40,7 @@ impl<F: Float> Material<F> for Color<F> {
     }
 }
 
-impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
+impl<F: Float> Material<F> for Arc<dyn Material<F>> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         (**self).render(maxel, rt)
     }
