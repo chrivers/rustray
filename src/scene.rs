@@ -37,6 +37,7 @@ pub trait RayTracer<F: Float> {
         }
         lixel
     }
+    fn scene(&self) -> &BoxScene<F>;
 }
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
