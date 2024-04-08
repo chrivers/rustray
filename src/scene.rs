@@ -9,9 +9,7 @@ use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
 pub trait SceneObject<F: Float> {
-    fn get_name(&self) -> &str {
-        "Unknown object"
-    }
+    fn get_name(&self) -> &str;
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         None
     }
