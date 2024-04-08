@@ -11,8 +11,6 @@ use pest_derive::Parser;
 use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
 use num_traits::Zero;
 
-use super::sbt::{face_normals, spherical_uvs, SbtVersion};
-
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
@@ -23,6 +21,90 @@ use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel
 use crate::scene::{BoxScene, Scene};
 use crate::types::result::{Error, RResult};
 use crate::types::{Camera, Color, Float, Point, Vector};
+
+#[derive(Copy, Clone, Debug)]
+pub enum SbtVersion {
+    Sbt0_9,
+    Sbt1_0,
+}
+
+impl FromStr for SbtVersion {
+    type Err = crate::types::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "0.9" => Ok(Self::Sbt0_9),
+            "1.0" => Ok(Self::Sbt1_0),
+            _ => Err(Error::ParseError("internal parser error")),
+        }
+    }
+}
+
+fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
+    (
+        p.x.to_f64().to_bits(),
+        p.y.to_f64().to_bits(),
+        p.z.to_f64().to_bits(),
+    )
+}
+
+pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
+    let mut normals = vec![Vector::zero(); points.len()];
+    /* Single-face normals */
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] += n;
+        normals[face[1]] += n;
+        normals[face[2]] += n;
+    }
+    normals
+}
+
+pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
+    /* Vertex-smoothed normals */
+    let mut norms: HashMap<(u64, u64, u64), Vector<F>> = HashMap::new();
+    let mut normals = vec![Vector::zero(); points.len()];
+
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] = n;
+        normals[face[1]] = n;
+        normals[face[2]] = n;
+        *norms
+            .entry(hash(points[face[0]]))
+            .or_insert_with(Vector::zero) += n;
+        *norms
+            .entry(hash(points[face[1]]))
+            .or_insert_with(Vector::zero) += n;
+        *norms
+            .entry(hash(points[face[2]]))
+            .or_insert_with(Vector::zero) += n;
+    }
+    for face in faces {
+        normals[face[0]] = norms[&hash(points[face[0]])];
+        normals[face[1]] = norms[&hash(points[face[1]])];
+        normals[face[2]] = norms[&hash(points[face[2]])];
+    }
+    normals
+}
+
+pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
+    let mut center = Vector::zero();
+    for point in points {
+        center += *point;
+    }
+    center /= F::from_usize(points.len());
+
+    let mut uvs = vec![];
+    for point in points {
+        uvs.push((point - center).normalize().polar_uv().into());
+    }
+    uvs
+}
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
