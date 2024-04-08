@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::light::Lixel;
+use crate::types::matlib::MaterialId;
 use crate::types::{Color, Float, Maxel};
 
 use crate::scene::RayTracer;
@@ -38,6 +39,33 @@ impl<F: Float> Material<F> for Color<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         crate::frontend::gui::controls::color(ui, self, "Color")
+    }
+}
+
+impl<F: Float> Material<F> for MaterialId {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        let mat = &rt.scene().materials.mats[self];
+        mat.render(maxel, rt)
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.label(format!("Material id: {self:?}"));
+        false
+    }
+}
+
+impl<F: Float> Material<F> for Box<dyn Material<F>> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        (**self).render(maxel, rt)
+    }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        (**self).shadow(maxel, lixel)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        (**self).ui(ui)
     }
 }
 

@@ -16,11 +16,12 @@ use crate::geometry::{
 };
 use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
 use crate::mat_util::Vectorx;
-use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
+use crate::material::{Bumpmap, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
+use crate::types::matlib::MaterialId;
 use crate::types::result::{Error, RResult};
-use crate::types::{Camera, Color, Float, Point, Vector};
+use crate::types::{Camera, Color, Float, MaterialLib, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
 pub enum SbtVersion {
@@ -475,6 +476,7 @@ pub struct SbtBuilder<'a, F: Float> {
     resdir: &'a Path,
     version: SbtVersion,
     material: SbtDict<'a, F>,
+    materials: MaterialLib<F>,
 }
 
 impl<'a, F> SbtBuilder<'a, F>
@@ -490,6 +492,7 @@ where
             resdir,
             version: SbtVersion::Sbt1_0,
             material: SbtDict::new(),
+            materials: MaterialLib::new(),
         }
     }
 
@@ -579,7 +582,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
+    fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -606,13 +609,15 @@ where
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
-        match bump {
-            None => smart.dynamic(),
-            Some(b) => Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic(),
-        }
+        let res: Box<dyn Material<F>> = match bump {
+            None => Box::new(smart),
+            Some(b) => Box::new(Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart)),
+        };
+
+        self.materials.insert(res)
     }
 
-    fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
+    fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> MaterialId {
         self.parse_material(&dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
@@ -647,7 +652,7 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
+            tris = crate::format::obj::load(obj, &mut self.materials, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
                 points.push(point.tuple()?.vector3()?);
@@ -680,15 +685,15 @@ where
         }
 
         for face in &faces {
-            let m = if !materials.is_empty() {
-                Triblend::new(
-                    materials[face[0]].clone(),
-                    materials[face[1]].clone(),
-                    materials[face[2]].clone(),
-                )
-                .dynamic()
+            let m: MaterialId = if !materials.is_empty() {
+                let mat: Box<dyn Material<F>> = Box::new(Triblend::new(
+                    materials[face[0]],
+                    materials[face[1]],
+                    materials[face[2]],
+                ));
+                self.materials.insert(mat)
             } else {
-                mat.clone()
+                mat
             };
 
             /* let ab = points[face[0]] - points[face[1]]; */
@@ -852,7 +857,7 @@ where
         }
     }
 
-    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
+    pub fn build(mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -888,6 +893,7 @@ where
                 }
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights)?.with_ambient(ambient))
+
+        Ok(Scene::new(cameras, objects, vec![], self.materials, lights)?.with_ambient(ambient))
     }
 }

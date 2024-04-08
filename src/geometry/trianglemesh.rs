@@ -7,12 +7,12 @@ use obj::Obj;
 use rtbvh::{Bounds, Builder, Bvh};
 use std::num::NonZeroUsize;
 
-use crate::material::DynMaterial;
 use crate::sampler::Texel;
 use crate::types::bvh::BvhExt;
+use crate::types::matlib::MaterialId;
 use crate::types::ray::RF;
 use crate::types::result::RResult;
-use crate::types::Color;
+use crate::types::{Color, MaterialLib};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F>> {
@@ -143,9 +143,9 @@ impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float + Texel> TriangleMesh<F, DynMaterial<F>> {
-    pub fn load_obj(obj: Obj, pos: Vector<F>, scale: F) -> RResult<Self> {
-        let tris = crate::format::obj::load(obj, pos, scale)?;
-        Ok(TriangleMesh::new(tris, Matrix4::identity()))
+impl<F: Float + Texel> TriangleMesh<F, MaterialId> {
+    pub fn load_obj(obj: Obj, lib: &mut MaterialLib<F>, pos: Vector<F>, scale: F) -> RResult<Self> {
+        let tris = crate::format::obj::load(obj, lib, pos, scale)?;
+        Ok(Self::new(tris, Matrix4::identity()))
     }
 }

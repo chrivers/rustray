@@ -5,11 +5,13 @@ use obj::{Obj, ObjMaterial};
 use cgmath::InnerSpace;
 
 use crate::geometry::Triangle;
-use crate::material::{Bumpmap, DynMaterial, Material, Phong, Smart};
+use crate::material::{Bumpmap, Phong, Smart};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, Texel};
+use crate::types::matlib::MaterialId;
 use crate::types::result::RResult;
 use crate::types::vector::Vectorx;
-use crate::types::{Color, Float, Point, Vector};
+use crate::types::{Color, Float, MaterialLib, Point, Vector};
+use crate::BoxMaterial;
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
@@ -32,9 +34,10 @@ fn obj_sampler<F: Float + Texel>(
 
 pub fn load<F: Float + Texel>(
     mut obj: Obj,
+    lib: &mut MaterialLib<F>,
     pos: Vector<F>,
     scale: F,
-) -> RResult<Vec<Triangle<F, DynMaterial<F>>>> {
+) -> RResult<Vec<Triangle<F, MaterialId>>> {
     let mut corner = Vector::new(F::max_value(), F::max_value(), F::max_value());
 
     obj.load_mtls()?;
@@ -52,6 +55,8 @@ pub fn load<F: Float + Texel>(
             }
         }
     }
+
+    let mut mat0 = None;
 
     let mut tris = vec![];
     /* info!("mats: {:#?}", obj.data.material_libs); */
@@ -71,15 +76,19 @@ pub fn load<F: Float + Texel>(
                 let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::WHITE)
                     .with_ambient(omat.ka.map(Into::into).unwrap_or(Color::BLACK));
 
-                if omat.map_bump.is_some() {
+                let res: BoxMaterial<F> = if omat.map_bump.is_some() {
                     let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));
                     let bump = Bumpmap::new(F::ONE, bumpmap, smart);
-                    bump.dynamic()
+                    Box::new(bump)
                 } else {
-                    smart.dynamic()
-                }
+                    Box::new(smart)
+                };
+                lib.insert(res)
             } else {
-                Phong::white().dynamic()
+                *mat0.get_or_insert_with(|| {
+                    let mat = Box::new(Phong::white());
+                    lib.insert(mat)
+                })
             };
 
             for poly in &g.polys {
@@ -117,7 +126,7 @@ pub fn load<F: Float + Texel>(
                     tb.y = F::ONE - tb.y;
                     tc.y = F::ONE - tc.y;
 
-                    let tri = Triangle::new(a, b, c, na, nb, nc, ta, tb, tc, mat.clone());
+                    let tri = Triangle::new(a, b, c, na, nb, nc, ta, tb, tc, mat);
                     tris.push(tri);
                 }
             }

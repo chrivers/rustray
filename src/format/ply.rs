@@ -10,7 +10,7 @@ use crate::light::{Attenuation, PointLight};
 use crate::material::Phong;
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
-use crate::types::Camera;
+use crate::types::{Camera, MaterialLib};
 use crate::types::{Error, RResult};
 use crate::vec3;
 use crate::{Color, Float, Light, Material, Point, Vector, Vectorx};
@@ -179,6 +179,6 @@ impl<F: Float + Texel> PlyParser<F> {
 
         lights.push(Box::new(lgt));
 
-        Scene::new(cameras, objects, vec![], lights)
+        Scene::new(cameras, objects, vec![], MaterialLib::new(), lights)
     }
 }
