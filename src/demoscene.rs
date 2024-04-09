@@ -145,12 +145,12 @@ where
         (0.1).into(),
         ChessBoard::new(
             Bumpmap::new(
-                0.5.into(),
+                BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),
                 Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
             ),
             Bumpmap::new(
-                0.5.into(),
+                BumpPower(F::HALF),
                 NormalMap::new(tex1b.bilinear()),
                 Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
             ),
@@ -158,7 +158,7 @@ where
     );
 
     let mat_bmp2 = Bumpmap::new(
-        0.5.into(),
+        BumpPower(F::HALF),
         NormalMap::new(tex2b.bilinear()),
         Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
     );

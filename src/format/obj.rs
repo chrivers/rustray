@@ -11,7 +11,7 @@ use crate::types::matlib::MaterialId;
 use crate::types::result::RResult;
 use crate::types::vector::Vectorx;
 use crate::types::{Color, Float, MaterialLib, Point, Vector};
-use crate::BoxMaterial;
+use crate::{BoxMaterial, BumpPower};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
@@ -78,7 +78,7 @@ pub fn load<F: Float + Texel>(
 
                 let res: BoxMaterial<F> = if omat.map_bump.is_some() {
                     let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));
-                    let bump = Bumpmap::new(F::ONE, bumpmap, smart);
+                    let bump = Bumpmap::new(BumpPower(F::HALF), bumpmap, smart);
                     Box::new(bump)
                 } else {
                     Box::new(smart)

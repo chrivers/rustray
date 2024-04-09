@@ -22,6 +22,7 @@ use crate::scene::{BoxScene, Scene};
 use crate::types::matlib::MaterialId;
 use crate::types::result::{Error, RResult};
 use crate::types::{Camera, Color, Float, MaterialLib, Point, Vector};
+use crate::BumpPower;
 
 #[derive(Copy, Clone, Debug)]
 pub enum SbtVersion {
@@ -611,7 +612,7 @@ where
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
         let res: Box<dyn Material<F>> = match bump {
             None => Box::new(smart),
-            Some(b) => Box::new(Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart)),
+            Some(b) => Box::new(Bumpmap::new(BumpPower(F::from_f32(0.25)), NormalMap::new(b), smart)),
         };
 
         self.materials.insert(res)

@@ -1,6 +1,29 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
+pub struct BumpPower<F: Float>(pub F);
+
+impl<F: Float + Texel> Sampler<F, F> for BumpPower<F> {
+    fn sample(&self, _uv: Point<F>) -> F {
+        self.0
+    }
+
+    fn dimensions(&self) -> (u32, u32) {
+        (1, 1)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.label(name);
+        let res = ui
+            .add(egui::Slider::new(&mut self.0, F::ZERO..=F::TWO))
+            .changed();
+        ui.end_row();
+        res
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct Bumpmap<F, S1, S2, M>
 where
     F: Float + Texel,
