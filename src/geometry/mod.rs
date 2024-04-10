@@ -22,7 +22,7 @@ pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
 }
 
 pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {
-    fn recompute_aabb(&mut self) {}
+    fn recompute_aabb(&mut self);
 }
 
 impl<F: Float, T> Geometry<F> for Box<T>
