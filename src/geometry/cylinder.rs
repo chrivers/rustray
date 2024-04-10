@@ -36,17 +36,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
 }
 
 geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
-
-impl<F: Float, M: Material<F>> HasTransform<F> for Cylinder<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
+geometry_impl_hastransform!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
     fn recompute_aabb(&mut self) {

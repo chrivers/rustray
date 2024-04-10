@@ -36,17 +36,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
 }
 
 geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
-
-impl<F: Float, M: Material<F>> HasTransform<F> for TriangleMesh<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
+geometry_impl_hastransform!(TriangleMesh<F, M>);
 
 impl<F: Float, M: Material<F>> Primitive for TriangleMesh<F, M> {
     fn center(&self) -> Vec3 {

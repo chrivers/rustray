@@ -130,6 +130,21 @@ macro_rules! geometry_impl_sceneobject {
     }
 }
 
+macro_rules! geometry_impl_hastransform {
+    ( $type:ty ) => {
+        impl<F: Float, M: Material<F>> HasTransform<F> for $type {
+            fn get_transform(&self) -> &Transform<F> {
+                &self.xfrm
+            }
+
+            fn set_transform(&mut self, xfrm: &Transform<F>) {
+                self.xfrm = *xfrm;
+                self.recompute_aabb();
+            }
+        }
+    }
+}
+
 pub(crate) mod geo_util {
     pub use super::{FiniteGeometry, Geometry};
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
