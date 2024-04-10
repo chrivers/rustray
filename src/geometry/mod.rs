@@ -127,7 +127,7 @@ macro_rules! geometry_impl_sceneobject {
         impl<F: Float, M: Material<F>> SceneObject<F> for $type {
             crate::sceneobject_impl_body!($name);
         }
-    }
+    };
 }
 
 macro_rules! geometry_impl_hastransform {
@@ -142,7 +142,7 @@ macro_rules! geometry_impl_hastransform {
                 self.recompute_aabb();
             }
         }
-    }
+    };
 }
 
 pub(crate) mod geo_util {

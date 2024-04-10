@@ -30,7 +30,7 @@ macro_rules! sceneobject_impl_body {
         fn get_id(&self) -> Option<usize> {
             Some(std::ptr::addr_of!(*self) as usize)
         }
-    }
+    };
 }
 
 pub trait Interactive<F: Float>: Debug {
