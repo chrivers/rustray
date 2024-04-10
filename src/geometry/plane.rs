@@ -28,18 +28,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Plane<F, M> {
-    fn get_name(&self) -> &str {
-        "Plane"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(Plane<F, M>, "Plane");
 
 impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {

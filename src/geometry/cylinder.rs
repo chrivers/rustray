@@ -35,19 +35,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Cylinder<F, M> {
-    fn get_name(&self) -> &str {
-        "Cylinder"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
 
 impl<F: Float, M: Material<F>> HasTransform<F> for Cylinder<F, M> {
     fn get_transform(&self) -> &Transform<F> {

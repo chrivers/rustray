@@ -69,18 +69,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Cone<F, M> {
-    fn get_name(&self) -> &str {
-        "Cone"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(Cone<F, M>, "Cone");
 
 impl<F: Float, M: Material<F>> HasTransform<F> for Cone<F, M> {
     fn get_transform(&self) -> &Transform<F> {

@@ -35,18 +35,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Triangle<F, M> {
-    fn get_name(&self) -> &str {
-        "Triangle"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(Triangle<F, M>, "Triangle");
 
 impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {

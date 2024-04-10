@@ -16,6 +16,23 @@ pub trait SceneObject<F: Float> {
     fn get_id(&self) -> Option<usize>;
 }
 
+#[macro_export]
+macro_rules! sceneobject_impl_body {
+    ( $name:expr ) => {
+        fn get_name(&self) -> &str {
+            $name
+        }
+
+        fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+            Some(self)
+        }
+
+        fn get_id(&self) -> Option<usize> {
+            Some(std::ptr::addr_of!(*self) as usize)
+        }
+    }
+}
+
 pub trait Interactive<F: Float>: Debug {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool;

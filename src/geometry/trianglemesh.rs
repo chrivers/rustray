@@ -35,18 +35,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for TriangleMesh<F, M> {
-    fn get_name(&self) -> &str {
-        "Triangle mesh"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
 
 impl<F: Float, M: Material<F>> HasTransform<F> for TriangleMesh<F, M> {
     fn get_transform(&self) -> &Transform<F> {

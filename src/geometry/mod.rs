@@ -122,6 +122,14 @@ macro_rules! aabb_impl_fm {
     };
 }
 
+macro_rules! geometry_impl_sceneobject {
+    ( $type:ty, $name:expr ) => {
+        impl<F: Float, M: Material<F>> SceneObject<F> for $type {
+            crate::sceneobject_impl_body!($name);
+        }
+    }
+}
+
 pub(crate) mod geo_util {
     pub use super::{FiniteGeometry, Geometry};
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
