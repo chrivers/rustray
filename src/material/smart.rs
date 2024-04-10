@@ -1,4 +1,4 @@
-use super::Mirror;
+use crate::Fresnel;
 
 use super::mat_util::*;
 
@@ -15,13 +15,11 @@ where
     S5: Sampler<F, Color<F>>,
     S6: Sampler<F, Color<F>>,
 {
-    ior: F,
     pow: S1,
     ke: S2,
     kd: S3,
     ks: S4,
-    kt: S5,
-    kr: Mirror<F, S6>,
+    fresnel: Fresnel<F, F, S5, S6>,
     ambient: Color<F>,
 }
 
@@ -38,13 +36,11 @@ where
     #[must_use]
     pub const fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
         Self {
-            ior,
             pow,
             ke,
             kd,
             ks,
-            kt,
-            kr: Mirror::new(kr),
+            fresnel: Fresnel::new(ior, kt, kr),
             ambient: Color::BLACK,
         }
     }
@@ -75,19 +71,7 @@ where
 
         let mut res = self.ke.sample(uv) + ambi_color;
 
-        let ior = self.ior.sample(uv);
-        let refl_term = self.kr.render(maxel, rt);
-
-        let tran_color = self.kt.sample(uv);
-        let refr_term = if !tran_color.is_zero() {
-            rt.ray_trace(&maxel.refracted_ray(ior))
-                .map(|c| c * tran_color)
-                .unwrap_or(Color::BLACK)
-        } else {
-            Color::BLACK
-        };
-
-        res += refr_term.lerp(refl_term, maxel.fresnel(ior));
+        res += self.fresnel.render(maxel, rt);
 
         for light in rt.get_lights() {
             let lixel = light.contribution(maxel, rt);
@@ -114,10 +98,7 @@ where
     }
 
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        let uv = maxel.uv();
-        let sha = self.kt.sample(uv);
-        let lambert = lixel.dir.dot(maxel.nml());
-        Some(sha * lixel.color * lambert)
+        self.fresnel.shadow(maxel, lixel)
     }
 
     #[cfg(feature = "gui")]
@@ -131,14 +112,12 @@ where
                     .striped(true)
                     .show(ui, |ui| {
                         let mut res = false;
-                        res |= self.pow.ui(ui, "Power");
-                        res |= Sampler::ui(&mut self.ior, ui, "Index of refraction");
+                        res |= Sampler::ui(&mut self.ambient, ui, "Ambient");
                         res |= self.ke.ui(ui, "Emissive");
                         res |= self.kd.ui(ui, "Diffuse");
+                        res |= self.pow.ui(ui, "Specular power");
                         res |= self.ks.ui(ui, "Specular");
-                        res |= self.kt.ui(ui, "Translucense");
-                        res |= self.kr.ui(ui);
-                        res |= Sampler::ui(&mut self.ambient, ui, "ambient");
+                        res |= self.fresnel.ui(ui);
                         res
                     })
                     .inner

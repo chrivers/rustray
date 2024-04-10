@@ -137,7 +137,7 @@ where
     let (tex2a, tex2b, tex2r, tex2m) = load_tex3(time, &dl, "Wood069")?;
 
     time.set("construct");
-    let mat_sphere = Fresnel::new(1.6.into()).dynamic();
+    let mat_sphere = Fresnel::new(1.6.into(), Color::WHITE, Color::WHITE).dynamic();
     let mat_white = Phong::white().dynamic();
 
     let mat_plane = ScaleUV::new(
@@ -217,7 +217,7 @@ where
         Matte::new(
             Adjust::new((0.1).into(), (0.00).into(), Perlin::new(3, 3)),
             8,
-            Fresnel::new(0.1.into()),
+            Fresnel::new(0.1.into(), Color::WHITE, Color::WHITE),
         ),
     );
 
