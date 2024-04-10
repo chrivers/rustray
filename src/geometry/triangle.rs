@@ -201,8 +201,8 @@ mod tests {
     fn randdir() -> Vector<F> {
         let mut rng = rand::thread_rng();
         Vector::new(
-            rng.gen::<f64>() * 0.2 - 0.1,
-            rng.gen::<f64>() * 0.2 - 0.1,
+            rng.gen::<F>() * 0.2 - 0.1,
+            rng.gen::<F>() * 0.2 - 0.1,
             1.0,
         )
     }
@@ -271,8 +271,8 @@ mod tests {
             |_idx| {
                 let mut rng = rand::thread_rng();
                 Vector::new(
-                    rng.gen::<f64>() * 0.01 - 0.005,
-                    rng.gen::<f64>() * 0.01 - 0.005,
+                    rng.gen::<F>() * 0.01 - 0.005,
+                    rng.gen::<F>() * 0.01 - 0.005,
                     1.0,
                 )
             },
