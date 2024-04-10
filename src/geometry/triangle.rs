@@ -171,6 +171,8 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
 
 #[cfg(test)]
 mod tests {
+    extern crate test;
+
     use std::hint::black_box;
 
     use rand::Rng;

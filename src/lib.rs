@@ -1,6 +1,7 @@
 #![feature(box_patterns)]
 #![feature(const_trait_impl)]
 #![feature(effects)]
+#![feature(test)]
 #![warn(
     clippy::all,
     clippy::correctness,
