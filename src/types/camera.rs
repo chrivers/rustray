@@ -178,7 +178,7 @@ mod test {
             point!(0.0, 1.0),
             point!(1.0, 1.0),
         ] {
-            let ray = camera.get_ray(point, 1);
+            let ray = camera.get_ray(point);
             info!("Point [{point:?}] | {:7.4?}", ray.dir);
 
             /* let ray1 = camera.get_ray(point, 1); */

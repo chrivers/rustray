@@ -207,35 +207,26 @@ mod test {
     fn test_cylinder1() {
         let c = Cylinder::new(Matrix4::from_scale(2.0), false, Color::WHITE);
 
-        let r0 = Ray {
-            pos: Vector::unit_x() * 4.0,
-            dir: -Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r0 = Ray::new(
+            Vector::unit_x() * 4.0,
+            -Vector::unit_x(),
+            );
         let h0 = c.intersect(&r0).unwrap();
         assert_vec!(h0.pos, 2.0, 0.0, 0.0);
         assert_vec!(h0.dir, -1.0, 0.0, 0.0);
 
-        let r1 = Ray {
-            pos: Vector::zero(),
-            dir: Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r1 = Ray::new(
+            Vector::zero(),
+            Vector::unit_x(),
+        );
         let h1 = c.intersect(&r1).unwrap();
         assert_vec!(h1.pos, 2.0, 0.0, 0.0);
         assert_vec!(h1.dir, 1.0, 0.0, 0.0);
 
-        let r2 = Ray {
-            pos: Vector::unit_x() * 1.99,
-            dir: -Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r2 = Ray::new(
+            Vector::unit_x() * 1.99,
+            -Vector::unit_x(),
+        );
         let h2 = c.intersect(&r2).unwrap();
         assert_vec!(h2.pos, -2.0, 0.0, 0.0);
         assert_vec!(h2.dir, -1.0, 0.0, 0.0);
