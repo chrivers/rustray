@@ -286,28 +286,28 @@ mod tests {
     // benchmark methods with a mix of hit or miss rays
 
     #[bench]
-    fn bench_intersect_mixed1(bench: &mut Bencher) {
+    fn intersect_mixed1(bench: &mut Bencher) {
         bench_triangle_intersect_mixed(bench, |ray, tri| {
             ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_mixed2(bench: &mut Bencher) {
+    fn intersect_mixed2(bench: &mut Bencher) {
         bench_triangle_intersect_mixed(bench, |ray, tri| {
             ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_mixed3(bench: &mut Bencher) {
+    fn intersect_mixed3(bench: &mut Bencher) {
         bench_triangle_intersect_mixed(bench, |ray, tri| {
             ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_mixed4(bench: &mut Bencher) {
+    fn intersect_mixed4(bench: &mut Bencher) {
         bench_triangle_intersect_mixed(bench, |ray, tri| {
             ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
         });
@@ -316,28 +316,28 @@ mod tests {
     // benchmark methods for rays that miss the triangle
 
     #[bench]
-    fn bench_intersect_never1(bench: &mut Bencher) {
+    fn intersect_never1(bench: &mut Bencher) {
         bench_triangle_intersect_never(bench, |ray, tri| {
             ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_never2(bench: &mut Bencher) {
+    fn intersect_never2(bench: &mut Bencher) {
         bench_triangle_intersect_never(bench, |ray, tri| {
             ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_never3(bench: &mut Bencher) {
+    fn intersect_never3(bench: &mut Bencher) {
         bench_triangle_intersect_never(bench, |ray, tri| {
             ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_never4(bench: &mut Bencher) {
+    fn intersect_never4(bench: &mut Bencher) {
         bench_triangle_intersect_never(bench, |ray, tri| {
             ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
         });
@@ -346,28 +346,28 @@ mod tests {
     // benchmark methods for rays that miss the triangle
 
     #[bench]
-    fn bench_intersect_always1(bench: &mut Bencher) {
+    fn intersect_always1(bench: &mut Bencher) {
         bench_triangle_intersect_always(bench, |ray, tri| {
             ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_always2(bench: &mut Bencher) {
+    fn intersect_always2(bench: &mut Bencher) {
         bench_triangle_intersect_always(bench, |ray, tri| {
             ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_always3(bench: &mut Bencher) {
+    fn intersect_always3(bench: &mut Bencher) {
         bench_triangle_intersect_always(bench, |ray, tri| {
             ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
         });
     }
 
     #[bench]
-    fn bench_intersect_always4(bench: &mut Bencher) {
+    fn intersect_always4(bench: &mut Bencher) {
         bench_triangle_intersect_always(bench, |ray, tri| {
             ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
         });
