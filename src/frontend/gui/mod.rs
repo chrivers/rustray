@@ -35,6 +35,7 @@ pub struct RustRayGui<F: Float> {
     lock: Arc<RwLock<BoxScene<F>>>,
     img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     obj: Option<usize>,
+    obj_last: Option<usize>,
     file_dialog: FileDialog,
     shapes: Vec<egui::Shape>,
     coord: Option<Pos2>,
@@ -64,6 +65,7 @@ where
             lock,
             img,
             obj: None,
+            obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
             shapes: vec![],
             coord: None,
@@ -128,7 +130,7 @@ where
                         }
                     });
 
-                if self.obj == obj.get_id() {
+                if self.obj == obj.get_id() && self.obj != self.obj_last {
                     resp.header_response
                         .highlight()
                         .scroll_to_me(Some(egui::Align::Center));
@@ -228,6 +230,7 @@ where
                 }
             }
         }
+        self.obj_last = self.obj;
 
         if let Some(pos) = act.hover_pos() {
             let coord = from_screen.transform_pos(pos);
