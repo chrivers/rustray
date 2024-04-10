@@ -80,8 +80,8 @@ where
 
         let refl_term = if !refl_color.is_zero() {
             rt.ray_trace(&maxel.reflected_ray())
-                .unwrap_or_else(|| rt.background())
-                * refl_color
+                .map(|c| c * refl_color)
+                .unwrap_or(Color::BLACK)
         } else {
             Color::BLACK
         };
@@ -90,8 +90,8 @@ where
 
         let refr_term = if !tran_color.is_zero() {
             rt.ray_trace(&maxel.refracted_ray(ior))
-                .unwrap_or_else(|| rt.background())
-                * tran_color
+                .map(|c| c * tran_color)
+                .unwrap_or(Color::BLACK)
         } else {
             Color::BLACK
         };

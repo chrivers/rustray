@@ -105,9 +105,8 @@ pub(crate) mod mat_util {
     #[cfg(feature = "gui")]
     pub use egui::{CollapsingHeader, Slider};
 
-    pub use cgmath::{InnerSpace, VectorSpace};
+    pub use cgmath::{InnerSpace, VectorSpace, Zero};
 
-    use num_traits::Zero;
     pub use std::marker::PhantomData;
 }
 

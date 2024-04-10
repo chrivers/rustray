@@ -1,17 +1,17 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Mirror<F, S>
+pub struct Mirror<F, T>
 where
-    F: Float + Texel,
-    S: Sampler<F, F>,
+    F: Float,
+    T: Sampler<F, Color<F>>,
 {
-    refl: S,
+    refl: T,
     _p: PhantomData<F>,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S> {
-    pub const fn new(refl: S) -> Self {
+impl<F: Float, T: Sampler<F, Color<F>>> Mirror<F, T> {
+    pub const fn new(refl: T) -> Self {
         Self {
             refl,
             _p: PhantomData {},
@@ -19,13 +19,17 @@ impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S> {
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Mirror<F, S> {
+impl<F: Float, T: Sampler<F, Color<F>>> Material<F> for Mirror<F, T> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let c_refl = rt
-            .ray_trace(&maxel.reflected_ray())
-            .unwrap_or_else(|| rt.background());
+        let refl_color = self.refl.sample(maxel.uv());
 
-        c_refl * self.refl.sample(maxel.uv())
+        if !refl_color.is_zero() {
+            rt.ray_trace(&maxel.reflected_ray())
+                .map(|c| c * refl_color)
+                .unwrap_or(Color::BLACK)
+        } else {
+            Color::BLACK
+        }
     }
 
     #[cfg(feature = "gui")]
