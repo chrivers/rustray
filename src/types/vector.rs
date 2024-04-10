@@ -40,6 +40,12 @@ macro_rules! vec3 {
 pub type Vector<F> = cgmath::Vector3<F>;
 
 impl<F: Float> Vectorx<F> for Vector<F> {
+    const ZERO: Self = Self {
+        x: F::ZERO,
+        y: F::ZERO,
+        z: F::ZERO,
+    };
+
     const UNIT_X: Self = Self {
         x: F::ONE,
         y: F::ZERO,
@@ -172,6 +178,7 @@ pub trait Vectorx<F: Float>: InnerSpace<Scalar = F> + Zero
 where
     Self: Sized + std::ops::Neg<Output = Self>,
 {
+    const ZERO: Self;
     const UNIT_X: Self;
     const UNIT_Y: Self;
     const UNIT_Z: Self;
