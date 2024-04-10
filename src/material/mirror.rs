@@ -34,9 +34,14 @@ impl<F: Float, T: Sampler<F, Color<F>>> Material<F> for Mirror<F, T> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Mirror")
+        let res = CollapsingHeader::new("Mirror")
             .default_open(true)
-            .show(ui, |_ui| {});
-        false
+            .show(ui, |ui| {
+                self.refl.ui(ui, "Reflectance")
+            })
+            .body_returned
+            .unwrap_or(false);
+        ui.end_row();
+        res
     }
 }

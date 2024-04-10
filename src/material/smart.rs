@@ -1,6 +1,6 @@
-use super::mat_util::*;
+use super::Mirror;
 
-use num_traits::Zero;
+use super::mat_util::*;
 
 /// Smart material shader that supports ambient, diffuse, specular, translucent,
 /// and reflective light. Implements the Phong shader model for light transport.
@@ -21,7 +21,7 @@ where
     kd: S3,
     ks: S4,
     kt: S5,
-    kr: S6,
+    kr: Mirror<F, S6>,
     ambient: Color<F>,
 }
 
@@ -44,7 +44,7 @@ where
             kd,
             ks,
             kt,
-            kr,
+            kr: Mirror::new(kr),
             ambient: Color::BLACK,
         }
     }
@@ -75,19 +75,10 @@ where
 
         let mut res = self.ke.sample(uv) + ambi_color;
 
-        let tran_color = self.kt.sample(uv);
-        let refl_color = self.kr.sample(uv);
-
-        let refl_term = if !refl_color.is_zero() {
-            rt.ray_trace(&maxel.reflected_ray())
-                .map(|c| c * refl_color)
-                .unwrap_or(Color::BLACK)
-        } else {
-            Color::BLACK
-        };
-
         let ior = self.ior.sample(uv);
+        let refl_term = self.kr.render(maxel, rt);
 
+        let tran_color = self.kt.sample(uv);
         let refr_term = if !tran_color.is_zero() {
             rt.ray_trace(&maxel.refracted_ray(ior))
                 .map(|c| c * tran_color)
@@ -146,7 +137,7 @@ where
                         res |= self.kd.ui(ui, "Diffuse");
                         res |= self.ks.ui(ui, "Specular");
                         res |= self.kt.ui(ui, "Translucense");
-                        res |= self.kr.ui(ui, "Reflection");
+                        res |= self.kr.ui(ui);
                         res |= Sampler::ui(&mut self.ambient, ui, "ambient");
                         res
                     })
