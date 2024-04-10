@@ -24,7 +24,7 @@ use crate::{
 
 use eframe::egui::Key;
 use egui::{
-    pos2, CollapsingHeader, Color32, KeyboardShortcut, Modifiers, Rect, Sense, TextureOptions,
+    pos2, CollapsingHeader, Color32, KeyboardShortcut, Modifiers, Pos2, Rect, Sense, TextureOptions,
 };
 use egui_file_dialog::FileDialog;
 use image::{ImageBuffer, Rgba};
@@ -37,6 +37,7 @@ pub struct RustRayGui<F: Float> {
     obj: Option<usize>,
     file_dialog: FileDialog,
     shapes: Vec<egui::Shape>,
+    coord: Option<Pos2>,
     trace: bool,
 }
 
@@ -65,6 +66,7 @@ where
             obj: None,
             file_dialog: FileDialog::new().show_devices(false),
             shapes: vec![],
+            coord: None,
             trace: false,
         }
     }
@@ -227,16 +229,22 @@ where
             }
         }
 
-        if act.clicked_by(egui::PointerButton::Secondary) {
-            self.trace = !self.trace;
+        if let Some(pos) = act.hover_pos() {
+            let coord = from_screen.transform_pos(pos);
+            if act.double_clicked_by(egui::PointerButton::Secondary) {
+                self.coord = None;
+                self.shapes.clear();
+                self.trace = false;
+            } else if act.clicked_by(egui::PointerButton::Secondary) {
+                self.trace = !self.trace;
+            }
+            if self.trace {
+                self.coord = Some(coord);
+            }
         }
 
-        if self.trace {
-            if let Some(pos) = act.hover_pos() {
-                let coord = from_screen.transform_pos(pos);
-                self.shapes =
-                    crate::frontend::gui::visualtrace::make_shapes(scene, coord, &to_screen);
-            }
+        if let Some(coord) = self.coord {
+            self.shapes = crate::frontend::gui::visualtrace::make_shapes(scene, coord, &to_screen);
         }
 
         let camera = scene.cameras[0];
