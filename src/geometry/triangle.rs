@@ -168,3 +168,217 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
         res
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::hint::black_box;
+
+    use rand::Rng;
+    use test::Bencher;
+
+    use crate::geometry::Triangle;
+
+    use super::{Float, Point, Ray, Vector, Vectorx};
+    use crate::types::Color;
+
+    type F = f64;
+
+    fn triangle() -> Triangle<F, Color<F>> {
+        let a = Vector::new(0.0, -1.0, 10.0);
+        let b = Vector::new(-1.0, 1.0, 10.0);
+        let c = Vector::new(1.0, 1.0, 10.0);
+        let tri = Triangle::new(
+            a,
+            b,
+            c,
+            Vector::ZERO,
+            Vector::ZERO,
+            Vector::ZERO,
+            Point::ZERO,
+            Point::ZERO,
+            Point::ZERO,
+            Color::BLACK,
+        );
+        black_box(tri)
+    }
+
+    fn ray() -> Ray<F> {
+        let ray = Ray::<F>::new(-Vector::UNIT_Z * F::TWO, Vector::UNIT_Z);
+        black_box(ray)
+    }
+
+    fn randdir() -> Vector<F> {
+        let mut rng = rand::thread_rng();
+        Vector::new(
+            rng.gen::<f64>() * 0.2 - 0.1,
+            rng.gen::<f64>() * 0.2 - 0.1,
+            1.0,
+        )
+    }
+
+    fn bench_triangle_intersect<T>(
+        bench: &mut Bencher,
+        gendir: fn(idx: usize) -> Vector<F>,
+        test: fn(ray: &Ray<F>, tri: &Triangle<F, Color<F>>) -> Option<T>,
+        check: fn(hits: usize, rays: usize),
+    ) {
+        const ITERATIONS: usize = 100;
+        let mut ray = ray();
+        let tri = triangle();
+        let dirs: Vec<_> = (0..ITERATIONS).map(gendir).collect();
+        bench.iter(|| {
+            let mut hits: usize = 0;
+            for dir in &dirs {
+                ray.dir = *dir;
+                if test(&ray, &tri).is_some() {
+                    hits += 1;
+                }
+            }
+            check(hits, ITERATIONS);
+        })
+    }
+
+    fn bench_triangle_intersect_mixed<T>(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+    ) {
+        bench_triangle_intersect(
+            bench,
+            |_idx| randdir(),
+            test,
+            |hits, rays| {
+                assert_ne!(hits, 0);
+                assert_ne!(hits, rays);
+            },
+        )
+    }
+
+    fn bench_triangle_intersect_never<T>(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+    ) {
+        bench_triangle_intersect(
+            bench,
+            |_idx| {
+                let mut vec = randdir();
+                vec.z = -vec.z;
+                vec
+            },
+            test,
+            |hits, _rays| {
+                assert_eq!(hits, 0);
+            },
+        )
+    }
+
+    fn bench_triangle_intersect_always<T>(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+    ) {
+        bench_triangle_intersect(
+            bench,
+            |_idx| {
+                let mut rng = rand::thread_rng();
+                Vector::new(
+                    rng.gen::<f64>() * 0.01 - 0.005,
+                    rng.gen::<f64>() * 0.01 - 0.005,
+                    1.0,
+                )
+            },
+            test,
+            |hits, rays| {
+                assert_eq!(hits, rays);
+            },
+        )
+    }
+
+    // benchmark methods with a mix of hit or miss rays
+
+    #[bench]
+    fn bench_intersect1_mixed(bench: &mut Bencher) {
+        bench_triangle_intersect_mixed(bench, |ray, tri| {
+            ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect2_mixed(bench: &mut Bencher) {
+        bench_triangle_intersect_mixed(bench, |ray, tri| {
+            ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect3_mixed(bench: &mut Bencher) {
+        bench_triangle_intersect_mixed(bench, |ray, tri| {
+            ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect4_mixed(bench: &mut Bencher) {
+        bench_triangle_intersect_mixed(bench, |ray, tri| {
+            ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
+        });
+    }
+
+    // benchmark methods for rays that miss the triangle
+
+    #[bench]
+    fn bench_intersect1_never(bench: &mut Bencher) {
+        bench_triangle_intersect_never(bench, |ray, tri| {
+            ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect2_never(bench: &mut Bencher) {
+        bench_triangle_intersect_never(bench, |ray, tri| {
+            ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect3_never(bench: &mut Bencher) {
+        bench_triangle_intersect_never(bench, |ray, tri| {
+            ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect4_never(bench: &mut Bencher) {
+        bench_triangle_intersect_never(bench, |ray, tri| {
+            ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
+        });
+    }
+
+    // benchmark methods for rays that miss the triangle
+
+    #[bench]
+    fn bench_intersect1_always(bench: &mut Bencher) {
+        bench_triangle_intersect_always(bench, |ray, tri| {
+            ray.intersect_triangle(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect2_always(bench: &mut Bencher) {
+        bench_triangle_intersect_always(bench, |ray, tri| {
+            ray.intersect_triangle2(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect3_always(bench: &mut Bencher) {
+        bench_triangle_intersect_always(bench, |ray, tri| {
+            ray.intersect_triangle3(&tri.a, &tri.b, &tri.c)
+        });
+    }
+
+    #[bench]
+    fn bench_intersect4_always(bench: &mut Bencher) {
+        bench_triangle_intersect_always(bench, |ray, tri| {
+            ray.intersect_triangle4(&tri.edge1, &tri.edge2, &tri.a)
+        });
+    }
+}
