@@ -98,7 +98,7 @@ where
     ) {
         ui.heading("Rustray");
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.label("Objects");
+            ui.label("Materials");
             let mut changed = false;
 
             let mat_keys: Vec<MaterialId> = scene
@@ -118,6 +118,7 @@ where
                     });
             }
 
+            ui.label("Objects");
             scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
                 let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))
                     .default_open(true)
