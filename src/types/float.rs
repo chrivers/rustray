@@ -1,5 +1,6 @@
 use num::{clamp, pow};
 use num_traits::{float::FloatConst, NumAssignOps};
+use num_traits::{ConstOne, ConstZero};
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::ops::{Add, Mul, Sub};
@@ -31,15 +32,15 @@ where
         + RelativeEq
         + UlpsEq
         + FloatReq
+        + ConstZero
+        + ConstOne
         + pow::Pow<Self, Output = Self>,
 {
     const BIAS: Self; // Basic offset to account for numerical imprecision
     const BIAS2: Self; // Used for shadow rays
     const BIAS3: Self; // Used for reflected rays
     const BIAS4: Self; // Used for refracted rays
-    const ZERO: Self;
     const HALF: Self;
-    const ONE: Self;
     const TWO: Self;
     const FOUR: Self;
     fn from_i32(value: i32) -> Self;
@@ -91,9 +92,7 @@ impl Float for f32 {
     const BIAS2: Self = 1e-6;
     const BIAS3: Self = 1e-5;
     const BIAS4: Self = 1e-4;
-    const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
-    const ONE: Self = 1.0;
     const TWO: Self = 2.0;
     const FOUR: Self = 4.0;
 
@@ -135,9 +134,7 @@ impl Float for f64 {
     const BIAS2: Self = 1e-9;
     const BIAS3: Self = 1e-7;
     const BIAS4: Self = 1e-5;
-    const ZERO: Self = 0.0;
     const HALF: Self = 0.5;
-    const ONE: Self = 1.0;
     const TWO: Self = 2.0;
     const FOUR: Self = 4.0;
 

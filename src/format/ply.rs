@@ -135,9 +135,9 @@ impl<F: Float + Texel> PlyParser<F> {
                     a.1,
                     b.1,
                     c.1,
-                    Point::zero(),
-                    Point::zero(),
-                    Point::zero(),
+                    Point::ZERO,
+                    Point::ZERO,
+                    Point::ZERO,
                     mat.clone(),
                 );
                 tris.push(tri);

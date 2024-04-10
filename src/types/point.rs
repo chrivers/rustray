@@ -1,6 +1,7 @@
 use crate::types::Float;
 use derive_more::{Add, Mul, Sub};
 use num::Num;
+use num_traits::ConstZero;
 
 /**
 Convenience macro to construct a [`Point<F>`] from input values.
@@ -38,7 +39,12 @@ pub struct Point<F: Num> {
     pub y: F,
 }
 
-impl<F: Num + Copy> Point<F> {
+impl<F: Num + Copy + ConstZero> Point<F> {
+    pub const ZERO: Self = Self {
+        x: F::ZERO,
+        y: F::ZERO,
+    };
+
     #[must_use]
     pub const fn new(x: F, y: F) -> Self {
         Self { x, y }

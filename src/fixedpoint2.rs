@@ -3,7 +3,7 @@ use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{AddAssign, Neg, SubAssign};
 use fixed::FixedI64;
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{Bounded, FloatConst, Pow};
+use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Add, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub},
@@ -232,6 +232,14 @@ impl<const P: i32> Mul for FXP<P> {
         Self(self.0.saturating_mul(rhs.0))
         /* (self.into_f64() * rhs.into_f64()).into() */
     }
+}
+
+impl<const P: i32> ConstZero for FXP<P> {
+    const ZERO: Self = Self(FixedI64::<P>::ZERO);
+}
+
+impl<const P: i32> ConstOne for FXP<P> {
+    const ONE: Self = Self(FixedI64::<P>::const_from_int(1));
 }
 
 impl<const P: i32> Zero for FXP<P> {
@@ -617,8 +625,6 @@ impl<const P: i32> RelativeEq for FXP<P> {
 }
 
 impl<const P: i32> Float for FXP<P> {
-    const ZERO: Self = Self(FixedI64::<P>::ZERO);
-
     /* const BIAS:  Self = Self(Self::ONE.0.unwrapped_div_int(1_000_000)); */
     /* const BIAS2: Self = Self(Self::ONE.0.unwrapped_div_int(100_000)); */
     /* const BIAS3: Self = Self(Self::ONE.0.unwrapped_div_int(10_000)); */
@@ -640,8 +646,6 @@ impl<const P: i32> Float for FXP<P> {
     /* const BIAS4: Self = Self(0x1000); */
 
     const HALF: Self = Self(Self::ONE.0.unwrapped_div_int(2));
-
-    const ONE: Self = Self(FixedI64::<P>::const_from_int(1));
 
     const TWO: Self = Self(FixedI64::<P>::const_from_int(2));
 
@@ -679,7 +683,7 @@ mod test {
     use super::FXP as FPG;
     use crate::types::Float;
     use num::ToPrimitive;
-    use num_traits::{Float as _, FloatConst as _, Pow as _};
+    use num_traits::{ConstOne as _, ConstZero as _, Float as _, FloatConst as _, Pow as _};
 
     use assert_float_eq::{afe_is_f32_near, afe_near_error_msg, assert_f32_near};
 

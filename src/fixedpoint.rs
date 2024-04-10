@@ -1,7 +1,7 @@
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{FloatConst, Pow};
+use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
@@ -196,6 +196,14 @@ impl<const P: u8> Mul for FP<P> {
     fn mul(self, rhs: Self) -> Self::Output {
         (self.into_f64() * rhs.into_f64()).into()
     }
+}
+
+impl<const P: u8> ConstZero for FP<P> {
+    const ZERO: Self = Self(0);
+}
+
+impl<const P: u8> ConstOne for FP<P> {
+    const ONE: Self = Self(1i64 << P);
 }
 
 impl<const P: u8> Zero for FP<P> {
@@ -576,8 +584,6 @@ impl<const P: u8> RelativeEq for FP<P> {
 }
 
 impl<const P: u8> Float for FP<P> {
-    const ZERO: Self = Self(0);
-
     const BIAS: Self = Self(Self::ONE.0 / 1_000_000);
     const BIAS2: Self = Self(Self::ONE.0 / 100_000);
     const BIAS3: Self = Self(Self::ONE.0 / 10_000);
@@ -594,8 +600,6 @@ impl<const P: u8> Float for FP<P> {
     /* const BIAS4: Self = Self(0x1000); */
 
     const HALF: Self = Self(1i64 << (P - 1));
-
-    const ONE: Self = Self(1i64 << P);
 
     const TWO: Self = Self(1i64 << (P + 1));
 
@@ -632,7 +636,7 @@ impl<const P: u8> Float for FP<P> {
 mod test {
     use super::FP as FPG;
     use crate::types::Float;
-    use num_traits::{Float as _, FloatConst as _, Pow as _};
+    use num_traits::{ConstOne as _, ConstZero as _, Float as _, FloatConst as _, Pow as _};
 
     use assert_float_eq::{afe_is_f32_near, afe_near_error_msg, assert_f32_near};
 

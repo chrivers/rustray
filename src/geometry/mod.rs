@@ -4,8 +4,6 @@ use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
-use num_traits::Zero;
-
 use rtbvh::Aabb;
 
 use glam::f32::Vec3;
@@ -13,13 +11,13 @@ use glam::f32::Vec3;
 pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
-        Vector::zero()
+        Vector::ZERO
     }
     fn uv(&self, _maxel: &mut Maxel<F>) -> Point<F> {
-        Point::zero()
+        Point::ZERO
     }
     fn st(&self, _maxel: &mut Maxel<F>) -> Point<F> {
-        Point::zero()
+        Point::ZERO
     }
 }
 

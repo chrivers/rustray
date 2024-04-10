@@ -9,7 +9,6 @@ use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
 use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
-use num_traits::Zero;
 
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
@@ -51,7 +50,7 @@ fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
 }
 
 pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
-    let mut normals = vec![Vector::zero(); points.len()];
+    let mut normals = vec![Vector::ZERO; points.len()];
     /* Single-face normals */
     for face in faces {
         let ab = points[face[0]] - points[face[1]];
@@ -67,7 +66,7 @@ pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec
 pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
     /* Vertex-smoothed normals */
     let mut norms: HashMap<(u64, u64, u64), Vector<F>> = HashMap::new();
-    let mut normals = vec![Vector::zero(); points.len()];
+    let mut normals = vec![Vector::ZERO; points.len()];
 
     for face in faces {
         let ab = points[face[0]] - points[face[1]];
@@ -76,15 +75,9 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
         normals[face[0]] = n;
         normals[face[1]] = n;
         normals[face[2]] = n;
-        *norms
-            .entry(hash(points[face[0]]))
-            .or_insert_with(Vector::zero) += n;
-        *norms
-            .entry(hash(points[face[1]]))
-            .or_insert_with(Vector::zero) += n;
-        *norms
-            .entry(hash(points[face[2]]))
-            .or_insert_with(Vector::zero) += n;
+        *norms.entry(hash(points[face[0]])).or_insert(Vector::ZERO) += n;
+        *norms.entry(hash(points[face[1]])).or_insert(Vector::ZERO) += n;
+        *norms.entry(hash(points[face[2]])).or_insert(Vector::ZERO) += n;
     }
     for face in faces {
         normals[face[0]] = norms[&hash(points[face[0]])];
@@ -95,7 +88,7 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
 }
 
 pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
-    let mut center = Vector::zero();
+    let mut center = Vector::ZERO;
     for point in points {
         center += *point;
     }
@@ -498,7 +491,7 @@ where
     }
 
     fn parse_camera(&mut self, dict: &impl SDict<F>) -> RResult<Camera<F>> {
-        let position = dict.vector("position").unwrap_or_else(|_| Vector::zero());
+        let position = dict.vector("position").unwrap_or(Vector::ZERO);
         let mut viewdir = dict.vector("viewdir").ok();
         let updir = dict.vector("updir").unwrap_or(Vector::UNIT_Y);
         let look_at = dict.vector("look_at");
@@ -657,7 +650,7 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            tris = crate::format::obj::load(obj, &mut self.materials, Vector::zero(), F::ONE)?;
+            tris = crate::format::obj::load(obj, &mut self.materials, Vector::ZERO, F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
                 points.push(point.tuple()?.vector3()?);

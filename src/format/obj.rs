@@ -114,7 +114,7 @@ pub fn load<F: Float + Texel>(
                     };
 
                     let (mut ta, mut tb, mut tc) = if texture.is_empty() {
-                        (Point::zero(), Point::zero(), Point::zero())
+                        (Point::ZERO, Point::ZERO, Point::ZERO)
                     } else {
                         (
                             texture[poly.0[0].1.unwrap()].into(),
