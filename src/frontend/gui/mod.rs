@@ -268,11 +268,11 @@ where
     }
 }
 
-fn ui_progress(ctx: &egui::Context, ui: &mut egui::Ui, progress: f32) {
-    if progress != f32::ONE {
+fn ui_progress(ctx: &egui::Context, ui: &mut egui::Ui, (queued, max): (usize, usize)) {
+    if queued > 0 {
         ctx.request_repaint_after(Duration::from_millis(20));
 
-        let progress_bar = egui::ProgressBar::new(progress).show_percentage();
+        let progress_bar = egui::ProgressBar::new(1.0 - (queued as f32 / max as f32)).show_percentage();
 
         ui.add(progress_bar);
     }

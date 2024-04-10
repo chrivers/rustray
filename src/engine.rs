@@ -114,9 +114,9 @@ impl<F: Float> RenderEngine<F> {
     }
 
     #[must_use]
-    pub fn progress(&self) -> f32 {
-        let act = self.pool.queued_count() as f32;
-        let max = self.height as f32;
-        1.0 - (act / max)
+    pub fn progress(&self) -> (usize, usize) {
+        let act = self.pool.queued_count();
+        let max = self.height as usize;
+        (act, max)
     }
 }
