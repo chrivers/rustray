@@ -612,7 +612,11 @@ where
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
         let res: Box<dyn Material<F>> = match bump {
             None => Box::new(smart),
-            Some(b) => Box::new(Bumpmap::new(BumpPower(F::from_f32(0.25)), NormalMap::new(b), smart)),
+            Some(b) => Box::new(Bumpmap::new(
+                BumpPower(F::from_f32(0.25)),
+                NormalMap::new(b),
+                smart,
+            )),
         };
 
         self.materials.insert(res)

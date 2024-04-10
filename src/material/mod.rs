@@ -128,7 +128,7 @@ mod texture;
 mod triblend;
 
 pub use blend::Blend;
-pub use bumpmap::{Bumpmap, BumpPower};
+pub use bumpmap::{BumpPower, Bumpmap};
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
 pub use colornormal::ColorNormal;
