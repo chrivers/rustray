@@ -201,7 +201,6 @@ mod test {
         assert_vec!(h2.dir, -1.0, 0.0, 0.0);
     }
 
-
     extern crate test;
 
     use std::hint::black_box;
@@ -215,7 +214,9 @@ mod test {
     type F = f64;
 
     fn cylinder() -> Cylinder<F, Color<F>> {
-        let xfrm = Matrix4::from_translation(Vector::UNIT_Z) * Matrix4::from_angle_y(Deg(45.0)) * Matrix4::from_scale(0.3);
+        let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
+            * Matrix4::from_angle_y(Deg(45.0))
+            * Matrix4::from_scale(0.3);
         let sq = Cylinder::new(xfrm, true, Color::BLACK);
         black_box(sq)
     }
@@ -227,11 +228,7 @@ mod test {
 
     fn randdir() -> Vector<F> {
         let mut rng = rand::thread_rng();
-        Vector::new(
-            rng.gen::<F>() * 0.2 - 0.1,
-            rng.gen::<F>() * 0.2 - 0.1,
-            1.0,
-        )
+        Vector::new(rng.gen::<F>() * 0.2 - 0.1, rng.gen::<F>() * 0.2 - 0.1, 1.0)
     }
 
     fn bench_cylinder_intersect(

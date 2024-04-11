@@ -103,7 +103,9 @@ mod tests {
     type F = f64;
 
     fn square() -> Square<F, Color<F>> {
-        let xfrm = Matrix4::from_translation(Vector::UNIT_Z) * Matrix4::from_angle_y(Deg(45.0)) * Matrix4::from_scale(0.5);
+        let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
+            * Matrix4::from_angle_y(Deg(45.0))
+            * Matrix4::from_scale(0.5);
         let sq = Square::new(xfrm, Color::BLACK);
         black_box(sq)
     }
@@ -115,11 +117,7 @@ mod tests {
 
     fn randdir() -> Vector<F> {
         let mut rng = rand::thread_rng();
-        Vector::new(
-            rng.gen::<F>() * 0.2 - 0.1,
-            rng.gen::<F>() * 0.2 - 0.1,
-            1.0,
-        )
+        Vector::new(rng.gen::<F>() * 0.2 - 0.1, rng.gen::<F>() * 0.2 - 0.1, 1.0)
     }
 
     fn bench_square_intersect(

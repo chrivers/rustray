@@ -200,11 +200,7 @@ mod tests {
 
     fn randdir() -> Vector<F> {
         let mut rng = rand::thread_rng();
-        Vector::new(
-            rng.gen::<F>() * 0.2 - 0.1,
-            rng.gen::<F>() * 0.2 - 0.1,
-            1.0,
-        )
+        Vector::new(rng.gen::<F>() * 0.2 - 0.1, rng.gen::<F>() * 0.2 - 0.1, 1.0)
     }
 
     fn bench_triangle_intersect<T>(
