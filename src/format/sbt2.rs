@@ -1,8 +1,10 @@
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::path::Path;
 use std::str::FromStr;
 
+use itertools::Itertools;
 use obj::Obj;
 
 use pest::iterators::{Pair, Pairs};
@@ -133,6 +135,13 @@ trait SDict<F: Float + Texel> {
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>>;
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>>;
     fn attenuation(&self) -> RResult<Attenuation<F>>;
+    fn borrow(&self) -> &SbtDict<F>;
+    fn hash_item(&self, hasher: &mut impl Hasher);
+    fn hash(&self) -> u64 {
+        let mut hasher = std::hash::DefaultHasher::new();
+        self.hash_item(&mut hasher);
+        hasher.finish()
+    }
 }
 
 trait STuple<F: Float> {
@@ -245,9 +254,20 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
         let c = self.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
         Ok(Attenuation { a, b, c })
     }
+
+    fn borrow(&self) -> &SbtDict<F> {
+        self
+    }
+
+    fn hash_item(&self, hasher: &mut impl Hasher) {
+        for (k, v) in self.iter().sorted_by(|a, b| Ord::cmp(a.0, b.0)) {
+            hasher.write(k.as_bytes());
+            v.hash_item(hasher);
+        }
+    }
 }
 
-impl<'a, F: Float> STuple<F> for SbtTuple<'a, F> {
+impl<'a, F: Float + Texel> STuple<F> for SbtTuple<'a, F> {
     fn string(&self) -> RResult<&str> {
         match self.as_slice() {
             [SbtValue::Str(s)] => Ok(s),
@@ -314,7 +334,7 @@ pub enum SbtValue<'a, F: Float> {
     Bool(bool),
 }
 
-impl<'a, F: Float> SbtValue<'a, F> {
+impl<'a, F: Float + Texel> SbtValue<'a, F> {
     pub const fn int(&self) -> RResult<i64> {
         match self {
             SbtValue::Int(int) => Ok(*int),
@@ -344,6 +364,31 @@ impl<'a, F: Float> SbtValue<'a, F> {
         } else {
             Err(Error::ParseError("expected dictionary"))
         }
+    }
+
+    pub fn hash_item(&self, hasher: &mut impl Hasher) {
+        match self {
+            SbtValue::Int(i) => hasher.write_i64(*i),
+            SbtValue::Float(f) => hasher.write_u64(f.to_f64().expect("wat").to_bits()),
+            SbtValue::Str(s) => hasher.write(s.as_bytes()),
+            SbtValue::Dict(dict) => dict.hash_item(hasher),
+            SbtValue::Tuple(t) => {
+                for val in t {
+                    val.hash_item(hasher);
+                }
+            }
+            SbtValue::Block(b) => {
+                hasher.write(b.name.as_bytes());
+                b.value.hash_item(hasher);
+            }
+            SbtValue::Bool(b) => hasher.write_u8(*b as u8),
+        }
+    }
+
+    pub fn hash(&self) -> u64 {
+        let mut hasher = std::hash::DefaultHasher::new();
+        self.hash_item(&mut hasher);
+        hasher.finish()
     }
 }
 
@@ -471,6 +516,7 @@ pub struct SbtBuilder<'a, F: Float> {
     version: SbtVersion,
     material: SbtDict<'a, F>,
     materials: MaterialLib<F>,
+    hashmat: HashMap<u64, MaterialId>,
 }
 
 impl<'a, F> SbtBuilder<'a, F>
@@ -487,6 +533,7 @@ where
             version: SbtVersion::Sbt1_0,
             material: SbtDict::new(),
             materials: MaterialLib::new(),
+            hashmat: HashMap::new(),
         }
     }
 
@@ -576,7 +623,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
+    fn parse_material_props(&mut self, dict: &impl SDict<F>) -> MaterialId {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -613,6 +660,18 @@ where
         };
 
         self.materials.insert(res)
+    }
+
+    fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
+        let hash = dict.borrow().hash();
+
+        if let Some(id) = self.hashmat.get(&hash) {
+            *id
+        } else {
+            let id = self.parse_material_props(dict);
+            self.hashmat.insert(hash, id);
+            id
+        }
     }
 
     fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> MaterialId {
