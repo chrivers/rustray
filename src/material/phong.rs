@@ -1,31 +1,31 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Phong<F, S1, S2, S3, S4>
+pub struct Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
-    S1: Sampler<F, Color<F>>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, F>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
 {
-    ke: S1,
-    kd: S2,
-    ks: S3,
-    pow: S4,
+    ke: SE,
+    kd: SD,
+    ks: SS,
+    pow: SP,
     ambient: Color<F>,
 }
 
-impl<F, S1, S2, S3, S4> Phong<F, S1, S2, S3, S4>
+impl<F, SE, SD, SS, SP> Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
-    S1: Sampler<F, Color<F>>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, F>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
 {
     #[must_use]
-    pub const fn new(ke: S1, kd: S2, ks: S3, pow: S4) -> Self {
+    pub const fn new(ke: SE, kd: SD, ks: SS, pow: SP) -> Self {
         Self {
             ke,
             kd,
@@ -65,13 +65,13 @@ impl<F: Float + Texel> Phong<F, Color<F>, Color<F>, Color<F>, F> {
     }
 }
 
-impl<F, S1, S2, S3, S4> Material<F> for Phong<F, S1, S2, S3, S4>
+impl<F, SE, SD, SS, SP> Material<F> for Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
-    S1: Sampler<F, Color<F>>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, F>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
@@ -109,13 +109,13 @@ where
 }
 
 #[cfg(feature = "gui")]
-impl<F, S1, S2, S3, S4> Interactive<F> for Phong<F, S1, S2, S3, S4>
+impl<F, SE, SD, SS, SP> Interactive<F> for Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
-    S1: Sampler<F, Color<F>>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, F>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
 {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.strong("Phong");
@@ -129,13 +129,13 @@ where
     }
 }
 
-impl<F, S1, S2, S3, S4> SceneObject<F> for Phong<F, S1, S2, S3, S4>
+impl<F, SE, SD, SS, SP> SceneObject<F> for Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
-    S1: Sampler<F, Color<F>>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, F>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
 {
     sceneobject_impl_body!("Phong");
 }
