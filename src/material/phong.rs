@@ -58,30 +58,29 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> Material<F> for Phong<F
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, S, M> Interactive<F> for Phong<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F> + Interactive<F>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Phong")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
-
-                        self.pow.ui(ui, "Power");
-                        ui.end_row();
-
-                        res |= self.mat.ui(ui);
-                        ui.end_row();
-
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= self.pow.ui(ui, "Power");
+        res |= self.mat.ui(ui);
+        res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, S, M> SceneObject<F> for Phong<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F> + Interactive<F>,
+{
+    sceneobject_impl_body!("Phong");
 }

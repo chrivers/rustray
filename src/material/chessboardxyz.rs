@@ -29,12 +29,11 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoardXYZ<F, 
             self.b.render(maxel, rt)
         }
     }
+}
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Chessboard XYZ")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
-    }
+#[cfg(feature = "gui")]
+impl<F: Float, A: Material<F>, B: Material<F>> Interactive<F> for ChessBoardXYZ<F, A, B> {}
+
+impl<F: Float, A: Material<F>, B: Material<F>> SceneObject<F> for ChessBoardXYZ<F, A, B> {
+    sceneobject_impl_body!("ChessBoardXYZ");
 }

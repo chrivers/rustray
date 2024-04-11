@@ -100,29 +100,43 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         self.fresnel.shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, S1, S2, S3, S4, S5, S6> Interactive<F> for Smart<F, S1, S2, S3, S4, S5, S6>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Color<F>>,
+    S3: Sampler<F, Color<F>>,
+    S4: Sampler<F, Color<F>>,
+    S5: Sampler<F, Color<F>>,
+    S6: Sampler<F, Color<F>>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Smart")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
-                        res |= Sampler::ui(&mut self.ambient, ui, "Ambient");
-                        res |= self.ke.ui(ui, "Emissive");
-                        res |= self.kd.ui(ui, "Diffuse");
-                        res |= self.pow.ui(ui, "Specular power");
-                        res |= self.ks.ui(ui, "Specular");
-                        res |= self.fresnel.ui(ui);
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        ui.strong("Smart");
+        ui.end_row();
+
+        let mut res = false;
+        res |= Sampler::ui(&mut self.ambient, ui, "Ambient");
+        res |= self.ke.ui(ui, "Emissive");
+        res |= self.kd.ui(ui, "Diffuse");
+        res |= self.pow.ui(ui, "Specular power");
+        res |= self.ks.ui(ui, "Specular");
+        res |= self.fresnel.ui(ui);
+        res
     }
+}
+
+impl<F, S1, S2, S3, S4, S5, S6> SceneObject<F> for Smart<F, S1, S2, S3, S4, S5, S6>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Color<F>>,
+    S3: Sampler<F, Color<F>>,
+    S4: Sampler<F, Color<F>>,
+    S5: Sampler<F, Color<F>>,
+    S6: Sampler<F, Color<F>>,
+{
+    sceneobject_impl_body!("Smart material");
 }

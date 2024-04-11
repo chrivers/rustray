@@ -62,8 +62,16 @@ where
         let lambert = lixel.dir.dot(maxel.nml());
         Some(sha * lixel.color * lambert)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, S1, S2, S3> Interactive<F> for Fresnel<F, S1, S2, S3>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Color<F>>,
+    S3: Sampler<F, Color<F>>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         res |= self.ior.ui(ui, "Index of refraction");
@@ -71,4 +79,15 @@ where
         res |= self.refr.ui(ui, "Refraction");
         res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, S1, S2, S3> SceneObject<F> for Fresnel<F, S1, S2, S3>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Color<F>>,
+    S3: Sampler<F, Color<F>>,
+{
+    sceneobject_impl_body!("Fresnel");
 }

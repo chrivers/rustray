@@ -18,12 +18,11 @@ impl<F: Float> Material<F> for ColorPos<F> {
         n.y += F::ONE;
         Color::new(n.x, n.y, n.z) * self.scale
     }
+}
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Color Position")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
-    }
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for ColorPos<F> {}
+
+impl<F: Float> SceneObject<F> for ColorPos<F> {
+    sceneobject_impl_body!("ColorPos");
 }

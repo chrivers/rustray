@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::mat_util::Interactive;
 use crate::material::Material;
 use crate::types::Float;
 
@@ -36,5 +37,13 @@ impl<F: Float> MaterialLib<F> {
 impl<F: Float> Default for MaterialLib<F> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<F: Float> Interactive<F> for MaterialId {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.label(format!("Material id {}", self.0));
+        ui.end_row();
+        false
     }
 }

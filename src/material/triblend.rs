@@ -41,21 +41,34 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
 
         (a * w) + (b * u) + (c * v)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, A, B, C> Interactive<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F> + Interactive<F>,
+    B: Material<F> + Interactive<F>,
+    C: Material<F> + Interactive<F>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Triblend")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= self.a.ui(ui);
-                res |= self.b.ui(ui);
-                res |= self.c.ui(ui);
+        res |= self.a.ui(ui);
+        res |= self.b.ui(ui);
+        res |= self.c.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, A, B, C> SceneObject<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F> + Interactive<F>,
+    B: Material<F> + Interactive<F>,
+    C: Material<F> + Interactive<F>,
+{
+    sceneobject_impl_body!("Triblend");
 }

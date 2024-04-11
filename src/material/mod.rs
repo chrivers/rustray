@@ -2,12 +2,13 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::light::Lixel;
+use crate::sceneobject_impl_body;
 use crate::types::matlib::MaterialId;
 use crate::types::{Color, Float, Maxel};
 
-use crate::scene::RayTracer;
+use crate::scene::{Interactive, RayTracer, SceneObject};
 
-pub trait Material<F: Float>: Debug + Send + Sync {
+pub trait Material<F: Float>: SceneObject<F> + Interactive<F> + Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
     fn shadow(&self, _maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
@@ -20,12 +21,6 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     {
         Arc::new(self)
     }
-
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        ui.label("Unknown material");
-        false
-    }
 }
 
 pub type BoxMaterial<F> = Box<dyn Material<F>>;
@@ -35,11 +30,19 @@ impl<F: Float> Material<F> for Color<F> {
     fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
         *self
     }
+}
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        crate::frontend::gui::controls::color(ui, self, "Color")
-    }
+#[cfg(feature = "gui")]
+impl<F: Float> SceneObject<F> for Box<dyn Material<F>> {
+    sceneobject_impl_body!("Material");
+}
+
+impl<F: Float> SceneObject<F> for Color<F> {
+    sceneobject_impl_body!("Color");
+}
+
+impl<F: Float> SceneObject<F> for MaterialId {
+    sceneobject_impl_body!("Material ID");
 }
 
 impl<F: Float> Material<F> for MaterialId {
@@ -47,14 +50,12 @@ impl<F: Float> Material<F> for MaterialId {
         let mat = &rt.scene().materials.mats[self];
         mat.render(maxel, rt)
     }
-
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        ui.label(format!("Material id: {self:?}"));
-        false
-    }
 }
 
-impl<F: Float> Material<F> for Box<dyn Material<F>> {
+impl<F: Float> Material<F> for Box<dyn Material<F>>
+where
+    Self: Interactive<F>,
+{
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         (**self).render(maxel, rt)
     }
@@ -62,8 +63,10 @@ impl<F: Float> Material<F> for Box<dyn Material<F>> {
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         (**self).shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for Box<dyn Material<F>> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         (**self).ui(ui)
     }
@@ -77,8 +80,15 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         (**self).shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
+    sceneobject_impl_body!("Material");
+}
+
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for Arc<dyn Material<F>> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         if let Some(mat) = Arc::get_mut(self) {
             mat.ui(ui)
@@ -96,14 +106,14 @@ pub(crate) mod mat_util {
     pub use crate::material::{DynMaterial, Material};
     pub use crate::sampler::Sampler;
     pub use crate::sampler::Texel;
-    pub use crate::scene::{Interactive, RayTracer};
+    pub use crate::scene::{Interactive, RayTracer, SceneObject};
     pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
-    pub use crate::{point, vec3};
+    pub use crate::{point, sceneobject_impl_body, vec3};
 
     #[cfg(feature = "gui")]
     pub use crate::frontend::gui::controls;
     #[cfg(feature = "gui")]
-    pub use egui::{CollapsingHeader, Slider};
+    pub use egui::Slider;
 
     pub use cgmath::{InnerSpace, VectorSpace, Zero};
 

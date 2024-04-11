@@ -17,12 +17,11 @@ impl<F: Float> Material<F> for ColorST<F> {
         let w = F::ONE - st.x - st.y;
         Color::new(st.x, w, st.y) * self.scale
     }
+}
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Color ST")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
-    }
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for ColorST<F> {}
+
+impl<F: Float> SceneObject<F> for ColorST<F> {
+    sceneobject_impl_body!("ColorST");
 }

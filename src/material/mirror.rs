@@ -31,9 +31,16 @@ impl<F: Float, T: Sampler<F, Color<F>>> Material<F> for Mirror<F, T> {
             Color::BLACK
         }
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F: Float, T: Sampler<F, Color<F>>> Interactive<F> for Mirror<F, T> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.refl.ui(ui, "Reflectance")
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F: Float, T: Sampler<F, Color<F>>> SceneObject<F> for Mirror<F, T> {
+    sceneobject_impl_body!("Mirror");
 }

@@ -55,24 +55,35 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, S, M> Interactive<F> for Matte<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F> + Interactive<F>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Matte")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= ui
-                    .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
-                    .changed();
+        res |= ui
+            .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
+            .changed();
 
-                self.src.ui(ui, "Surface Roughness Coefficient");
-                res |= self.mat.ui(ui);
+        res |= self.src.ui(ui, "Surface Roughness Coefficient");
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, S, M> SceneObject<F> for Matte<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F> + Interactive<F>,
+{
+    sceneobject_impl_body!("Matte");
 }

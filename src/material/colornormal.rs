@@ -16,12 +16,11 @@ impl<F: Float> Material<F> for ColorNormal<F> {
         let n = maxel.nml();
         Color::new(n.x.abs(), n.y.abs(), n.z.abs()) * self.scale
     }
+}
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Color Normals")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
-    }
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for ColorNormal<F> {}
+
+impl<F: Float> SceneObject<F> for ColorNormal<F> {
+    sceneobject_impl_body!("Color Normal");
 }

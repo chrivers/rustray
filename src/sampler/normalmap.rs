@@ -35,4 +35,10 @@ where
     fn dimensions(&self) -> (u32, u32) {
         self.sampler.dimensions()
     }
+
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.strong("Normal map");
+        ui.end_row();
+        self.sampler.ui(ui, name)
+    }
 }

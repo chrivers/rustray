@@ -26,37 +26,46 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+#[cfg(feature = "gui")]
+impl<F, M> Interactive<F> for ScaleUV<F, M>
+where
+    F: Float,
+    M: Material<F> + Interactive<F>,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("ScaleUV")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
-                            .logarithmic(true)
-                            .clamp_to_range(false)
-                            .trailing_fill(true)
-                            .text("u scaling factor"),
-                    )
-                    .changed();
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
-                            .logarithmic(true)
-                            .clamp_to_range(false)
-                            .trailing_fill(true)
-                            .text("v scaling factor"),
-                    )
-                    .changed();
-                res |= self.mat.ui(ui);
+        res |= ui
+            .add(
+                Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
+                    .logarithmic(true)
+                    .clamp_to_range(false)
+                    .trailing_fill(true)
+                    .text("u scaling factor"),
+            )
+            .changed();
+        res |= ui
+            .add(
+                Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
+                    .logarithmic(true)
+                    .clamp_to_range(false)
+                    .trailing_fill(true)
+                    .text("v scaling factor"),
+            )
+            .changed();
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, M> SceneObject<F> for ScaleUV<F, M>
+where
+    F: Float,
+    M: Material<F> + Interactive<F>,
+{
+    sceneobject_impl_body!("Scale UV");
 }

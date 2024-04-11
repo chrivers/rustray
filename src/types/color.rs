@@ -5,6 +5,7 @@ use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
 
+use crate::mat_util::Interactive;
 use crate::sampler::Texel;
 
 use crate::types::float::{Float, Lerp};
@@ -27,6 +28,13 @@ impl<F: Float> Debug for Color<F> {
         write!(f, ", ")?;
         Debug::fmt(&self.b, f)?;
         f.write_str(")")
+    }
+}
+
+#[cfg(feature = "gui")]
+impl<F: Float> Interactive<F> for Color<F> {
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        crate::frontend::gui::controls::color(ui, self, "Color")
     }
 }
 

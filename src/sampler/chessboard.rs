@@ -36,4 +36,13 @@ impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> Sampler<F, T>
     fn dimensions(&self) -> (u32, u32) {
         self.a.dimensions()
     }
+
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.strong(name);
+        ui.end_row();
+        let mut res = false;
+        res |= self.a.ui(ui, name);
+        res |= self.b.ui(ui, name);
+        res
+    }
 }

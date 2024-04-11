@@ -64,4 +64,8 @@ where
     fn dimensions(&self) -> (u32, u32) {
         self.samp.dimensions()
     }
+
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        self.samp.ui(ui, &format!("{name} (bilinear)"))
+    }
 }

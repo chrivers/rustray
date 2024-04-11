@@ -82,26 +82,36 @@ where
     fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
         self.mat.shadow(maxel, lixel)
     }
+}
 
-    #[cfg(feature = "gui")]
+impl<F, S1, S2, M> Interactive<F> for Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F> + Interactive<F>,
+    Vector<F>: Texel,
+{
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Bumpmap")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        res |= Sampler::ui(&mut self.pow, ui, "Power");
-                        res |= Sampler::ui(&mut self.img, ui, "Image");
-                    });
-                res |= self.mat.ui(ui);
+        ui.strong("Bumpmap");
+        ui.end_row();
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= Sampler::ui(&mut self.pow, ui, "Power");
+        res |= Sampler::ui(&mut self.img, ui, "Image");
+        res |= self.mat.ui(ui);
+        res
     }
+}
+
+#[cfg(feature = "gui")]
+impl<F, S1, S2, M> SceneObject<F> for Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F> + Interactive<F>,
+    Vector<F>: Texel,
+{
+    sceneobject_impl_body!("Bumpmap");
 }

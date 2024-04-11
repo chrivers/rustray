@@ -17,4 +17,12 @@ impl<F: Float> Sampler<u32, Color<F>> for DynamicImage {
     fn dimensions(&self) -> (u32, u32) {
         GenericImageView::dimensions(self)
     }
+
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        let (w, h) = GenericImageView::dimensions(self);
+        ui.label(name);
+        ui.monospace(format!("Texture [{w}x{h}]"));
+        ui.end_row();
+        false
+    }
 }

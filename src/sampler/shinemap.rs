@@ -20,4 +20,17 @@ impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, F> for ShineMap<F, S> {
     fn dimensions(&self) -> (u32, u32) {
         self.sampler.dimensions()
     }
+
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.strong("Shine map");
+        ui.end_row();
+        let mut res = false;
+
+        ui.label("Scale");
+        ui.label("-");
+        ui.end_row();
+
+        res |= self.sampler.ui(ui, name);
+        res
+    }
 }

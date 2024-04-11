@@ -35,7 +35,9 @@ macro_rules! sceneobject_impl_body {
 
 pub trait Interactive<F: Float>: Debug {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool;
+    fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
+        false
+    }
     #[cfg(feature = "gui")]
     fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
         false

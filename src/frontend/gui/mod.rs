@@ -110,11 +110,27 @@ where
                 .collect();
 
             for (idx, id) in mat_keys.into_iter().enumerate() {
-                CollapsingHeader::new(format!("Material: {idx}"))
-                    .default_open(false)
+                let mat = scene.materials.mats.get_mut(&id).unwrap();
+                /* let name = format!("material-{}", mat.get_id().unwrap_or(0)); */
+                /* egui::collapsing_header::CollapsingState::load_with_default_open( */
+                /*     ui.ctx(), */
+                /*     name.into(), */
+                /*     true, */
+                /* ) */
+                /* .show_header(ui, |ui| { */
+                /*     ui.label(format!("Material: {idx}")); */
+                /* }) */
+                /* .body(|ui| { */
+                CollapsingHeader::new(format!("Material {idx}: {}", mat.get_name()))
+                    .default_open(true)
                     .show(ui, |ui| {
-                        let mat = scene.materials.mats.get_mut(&id).unwrap();
-                        changed |= mat.ui(ui);
+                        egui::Grid::new("grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                changed |= mat.ui(ui);
+                            })
                     });
             }
 

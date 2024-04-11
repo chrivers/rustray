@@ -27,11 +27,7 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        ui.label(name);
-        ui.end_row();
-        false
-    }
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool;
 }
 
 pub type BoxSampler<F, T> = Box<dyn Sampler<F, T>>;
@@ -120,7 +116,7 @@ pub(crate) mod samp_util {
     pub use num_traits::ToPrimitive;
 
     #[cfg(feature = "gui")]
-    pub use egui::{CollapsingHeader, Slider};
+    pub use egui::Slider;
 }
 
 pub mod bilinear;
