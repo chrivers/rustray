@@ -148,12 +148,12 @@ where
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),
-                Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+                Phong::new(tex0r.bilinear(), Color::WHITE, tex0a.bilinear()),
             ),
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex1b.bilinear()),
-                Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
+                Phong::new(tex1r.bilinear(), Color::WHITE, tex1a.bilinear()),
             ),
         ),
     );
@@ -161,7 +161,7 @@ where
     let mat_bmp2 = Bumpmap::new(
         BumpPower(F::HALF),
         NormalMap::new(tex2b.bilinear()),
-        Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
+        Phong::new(tex2r.bilinear(), Color::WHITE, tex2a.bilinear()),
     );
 
     time.set("objload");
