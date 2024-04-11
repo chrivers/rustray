@@ -144,6 +144,7 @@ where
         (0.1).into(),
         (0.1).into(),
         ChessBoard::new(
+            ChessBoardMode::UV,
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),

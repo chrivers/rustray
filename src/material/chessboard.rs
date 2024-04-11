@@ -1,17 +1,25 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
+pub enum ChessBoardMode {
+    UV,
+    XYZ,
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct ChessBoard<F: Float, A: Material<F>, B: Material<F>> {
     a: A,
     b: B,
+    mode: ChessBoardMode,
     _p: PhantomData<F>,
 }
 
 impl<F: Float, A: Material<F>, B: Material<F>> ChessBoard<F, A, B> {
-    pub const fn new(a: A, b: B) -> Self {
+    pub const fn new(mode: ChessBoardMode, a: A, b: B) -> Self {
         Self {
             a,
             b,
+            mode,
             _p: PhantomData,
         }
     }
@@ -19,11 +27,22 @@ impl<F: Float, A: Material<F>, B: Material<F>> ChessBoard<F, A, B> {
 
 impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, B> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let uv = maxel.uv();
-        let u = uv.x.abs().fract() > F::HALF;
-        let v = uv.y.abs().fract() > F::HALF;
+        let res = match self.mode {
+            ChessBoardMode::UV => {
+                let uv = maxel.uv();
+                let u = uv.x.abs().fract() > F::HALF;
+                let v = uv.y.abs().fract() > F::HALF;
+                u ^ v
+            }
+            ChessBoardMode::XYZ => {
+                let x = maxel.pos.x.abs().fract() > F::HALF;
+                let y = maxel.pos.y.abs().fract() > F::HALF;
+                let z = maxel.pos.z.abs().fract() > F::HALF;
+                x ^ y ^ z
+            }
+        };
 
-        if u ^ v {
+        if res {
             self.a.render(maxel, rt)
         } else {
             self.b.render(maxel, rt)

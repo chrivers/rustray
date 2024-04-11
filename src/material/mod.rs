@@ -123,7 +123,6 @@ pub(crate) mod mat_util {
 mod blend;
 mod bumpmap;
 mod chessboard;
-mod chessboardxyz;
 mod debug;
 mod fresnel;
 mod matte;
@@ -136,8 +135,7 @@ mod triblend;
 
 pub use blend::Blend;
 pub use bumpmap::{BumpPower, Bumpmap};
-pub use chessboard::ChessBoard;
-pub use chessboardxyz::ChessBoardXYZ;
+pub use chessboard::{ChessBoard, ChessBoardMode};
 pub use debug::ColorDebug;
 pub use fresnel::Fresnel;
 pub use matte::Matte;
