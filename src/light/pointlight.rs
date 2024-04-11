@@ -18,24 +18,11 @@ impl<F: Float> Interactive<F> for PointLight<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 
-        egui::CollapsingHeader::new("Point light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::attenuation(ui, &mut self.attn);
-                        res |= controls::position(ui, &mut self.pos, "Position");
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::attenuation(ui, &mut self.attn);
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res
     }
 }
 

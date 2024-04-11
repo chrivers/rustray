@@ -77,45 +77,32 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 
-        egui::CollapsingHeader::new("Spot light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
+        let mut res = false;
 
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::attenuation(ui, &mut self.attn);
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::attenuation(ui, &mut self.attn);
 
-                        ui.label("Umbra");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
-                                    .step_by(f64::PI() / 180.0),
-                            )
-                            .changed();
-                        ui.end_row();
+        ui.label("Umbra");
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
+                    .step_by(f64::PI() / 180.0),
+            )
+            .changed();
+        ui.end_row();
 
-                        ui.label("Penumbra");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
-                                    .step_by(f64::PI() / 180.0),
-                            )
-                            .changed();
-                        ui.end_row();
+        ui.label("Penumbra");
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
+                    .step_by(f64::PI() / 180.0),
+            )
+            .changed();
+        ui.end_row();
 
-                        res |= controls::position(ui, &mut self.pos, "Position");
-                        res |= controls::position(ui, &mut self.dir, "Direction");
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res |= controls::position(ui, &mut self.dir, "Direction");
 
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
 }

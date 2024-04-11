@@ -24,25 +24,12 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 
-        egui::CollapsingHeader::new("Directional light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
+        let mut res = false;
 
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::position(ui, &mut self.dir, "Direction");
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::position(ui, &mut self.dir, "Direction");
 
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
 }
 

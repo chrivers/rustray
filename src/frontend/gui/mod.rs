@@ -152,14 +152,20 @@ where
 
             ui.label("Lights");
             scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
-                CollapsingHeader::new(format!("Light {i}"))
+                CollapsingHeader::new(format!("Light {i}: {}", light.get_name()))
                     .default_open(true)
                     .show(ui, |ui| {
-                        if let Some(interactive) = light.get_interactive() {
-                            changed |= interactive.ui(ui);
-                        } else {
-                            ui.label("Non-interactive light :(");
-                        }
+                        Grid::new("grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                if let Some(interactive) = light.get_interactive() {
+                                    changed |= interactive.ui(ui);
+                                } else {
+                                    ui.label("Non-interactive light :(");
+                                }
+                            });
                     });
             });
 
@@ -168,11 +174,17 @@ where
                 CollapsingHeader::new(format!("Camera {i}"))
                     .default_open(true)
                     .show(ui, |ui| {
-                        if let Some(interactive) = cam.get_interactive() {
-                            changed |= interactive.ui(ui);
-                        } else {
-                            ui.label("Non-interactive camera :(");
-                        }
+                        Grid::new("grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                if let Some(interactive) = cam.get_interactive() {
+                                    changed |= interactive.ui(ui);
+                                } else {
+                                    ui.label("Non-interactive camera :(");
+                                }
+                            });
                     });
             });
 

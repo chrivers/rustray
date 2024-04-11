@@ -80,59 +80,46 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 
-        egui::CollapsingHeader::new("Area light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
+        let mut res = false;
 
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::attenuation(ui, &mut self.attn);
-                        res |= controls::position(ui, &mut self.pos, "Position");
-                        res |= controls::position(ui, &mut self.dir, "Direction");
-                        res |= controls::position(ui, &mut self.upd, "Up direction");
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::attenuation(ui, &mut self.attn);
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res |= controls::position(ui, &mut self.dir, "Direction");
+        res |= controls::position(ui, &mut self.upd, "Up direction");
 
-                        ui.label("X resolution");
-                        res |= ui.add(egui::Slider::new(&mut self.xres, 1..=32)).changed();
-                        ui.end_row();
+        ui.label("X resolution");
+        res |= ui.add(egui::Slider::new(&mut self.xres, 1..=32)).changed();
+        ui.end_row();
 
-                        ui.label("Y resolution");
-                        res |= ui.add(egui::Slider::new(&mut self.yres, 1..=32)).changed();
-                        ui.end_row();
+        ui.label("Y resolution");
+        res |= ui.add(egui::Slider::new(&mut self.yres, 1..=32)).changed();
+        ui.end_row();
 
-                        ui.label("Width");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10))
-                                    .clamp_to_range(false),
-                            )
-                            .changed();
-                        ui.end_row();
+        ui.label("Width");
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10))
+                    .clamp_to_range(false),
+            )
+            .changed();
+        ui.end_row();
 
-                        ui.label("Height");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
-                                    .clamp_to_range(false),
-                            )
-                            .changed();
-                        ui.end_row();
+        ui.label("Height");
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+                    .clamp_to_range(false),
+            )
+            .changed();
+        ui.end_row();
 
-                        if res {
-                            let (dir1, dir2) = Self::compute_dirs(self.dir, self.upd);
-                            self.dir1 = dir1;
-                            self.dir2 = dir2;
-                        }
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        if res {
+            let (dir1, dir2) = Self::compute_dirs(self.dir, self.upd);
+            self.dir1 = dir1;
+            self.dir2 = dir2;
+        }
+        res
     }
 }
 
