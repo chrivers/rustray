@@ -192,26 +192,13 @@ impl<'a, F: Float> Debug for Tracer<'a, F> {
 #[cfg(feature = "gui")]
 impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        egui::CollapsingHeader::new("Ray tracer")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        ui.add(egui::Slider::new(&mut self.sx, 0..=16).text("X supersampling"));
-                        ui.add(egui::Slider::new(&mut self.sy, 0..=16).text("Y supersampling"));
-                        /* color_ui(ui, &mut self.color, "Color"); */
-                        /* ui.end_row(); */
+        ui.add(egui::Slider::new(&mut self.sx, 0..=16).text("X supersampling"));
+        ui.add(egui::Slider::new(&mut self.sy, 0..=16).text("Y supersampling"));
+        /* color_ui(ui, &mut self.color, "Color"); */
+        /* ui.end_row(); */
 
-                        /* position_ui(ui, &mut self.dir, "Direction"); */
-                        false
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        /* position_ui(ui, &mut self.dir, "Direction"); */
+        false
     }
 }
 
