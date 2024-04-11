@@ -24,7 +24,9 @@ use crate::{
 
 use eframe::egui::Key;
 use egui::{
-    pos2, CollapsingHeader, Color32, KeyboardShortcut, Modifiers, Pos2, Rect, Sense, TextureOptions,
+    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, ColorImage,
+    Context, Grid, KeyboardShortcut, Modifiers, Pos2, ProgressBar, Rect, ScrollArea, Sense, Shape,
+    SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
 };
 use egui_file_dialog::FileDialog;
 use image::{ImageBuffer, Rgba};
@@ -37,7 +39,7 @@ pub struct RustRayGui<F: Float> {
     obj: Option<usize>,
     obj_last: Option<usize>,
     file_dialog: FileDialog,
-    shapes: Vec<egui::Shape>,
+    shapes: Vec<Shape>,
     coord: Option<Pos2>,
     trace: bool,
 }
@@ -92,12 +94,12 @@ where
 
     fn update_side_panel(
         &mut self,
-        _ctx: &egui::Context,
-        ui: &mut egui::Ui,
+        _ctx: &Context,
+        ui: &mut Ui,
         scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
         ui.heading("Rustray");
-        egui::ScrollArea::vertical().show(ui, |ui| {
+        ScrollArea::vertical().show(ui, |ui| {
             ui.label("Materials");
             let mut changed = false;
 
@@ -124,7 +126,7 @@ where
                 CollapsingHeader::new(format!("Material {idx}: {}", mat.get_name()))
                     .default_open(true)
                     .show(ui, |ui| {
-                        egui::Grid::new("grid")
+                        Grid::new("grid")
                             .num_columns(2)
                             .spacing([40.0, 4.0])
                             .striped(true)
@@ -150,7 +152,7 @@ where
                 if self.obj == obj.get_id() && self.obj != self.obj_last {
                     resp.header_response
                         .highlight()
-                        .scroll_to_me(Some(egui::Align::Center));
+                        .scroll_to_me(Some(Align::Center));
                 }
             });
 
@@ -198,14 +200,13 @@ where
 
     fn update_center_panel(
         &mut self,
-        ctx: &egui::Context,
-        ui: &mut egui::Ui,
+        ctx: &Context,
+        ui: &mut Ui,
         scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
         let size = [self.img.width() as usize, self.img.height() as usize];
 
-        let img =
-            egui::ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice());
+        let img = ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice());
 
         let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);
 
@@ -220,8 +221,8 @@ where
             painter.add(shape.clone());
         }
 
-        let to_screen = egui::emath::RectTransform::from_to(
-            egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1.0, 1.0)),
+        let to_screen = RectTransform::from_to(
+            Rect::from_min_size(Pos2::ZERO, vec2(1.0, 1.0)),
             response.rect,
         );
         let from_screen = to_screen.inverse();
@@ -251,11 +252,11 @@ where
 
         if let Some(pos) = act.hover_pos() {
             let coord = from_screen.transform_pos(pos);
-            if act.double_clicked_by(egui::PointerButton::Secondary) {
+            if act.double_clicked_by(PointerButton::Secondary) {
                 self.coord = None;
                 self.shapes.clear();
                 self.trace = false;
-            } else if act.clicked_by(egui::PointerButton::Secondary) {
+            } else if act.clicked_by(PointerButton::Secondary) {
                 self.trace = !self.trace;
             }
             if self.trace {
@@ -296,33 +297,32 @@ where
     }
 }
 
-fn ui_progress(ctx: &egui::Context, ui: &mut egui::Ui, (queued, max): (usize, usize)) {
+fn ui_progress(ctx: &Context, ui: &mut Ui, (queued, max): (usize, usize)) {
     if queued > 0 {
         ctx.request_repaint_after(Duration::from_millis(20));
 
-        let progress_bar =
-            egui::ProgressBar::new(1.0 - (queued as f32 / max as f32)).show_percentage();
+        let progress_bar = ProgressBar::new(1.0 - (queued as f32 / max as f32)).show_percentage();
 
         ui.add(progress_bar);
     }
 }
 
-fn update_top_panel(ctx: &egui::Context, ui: &mut egui::Ui) {
+fn update_top_panel(ctx: &Context, ui: &mut Ui) {
     egui::menu::bar(ui, |ui| {
         ui.menu_button("File", |ui| {
             if ui.button("Quit").clicked() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                ctx.send_viewport_cmd(ViewportCommand::Close);
             }
         });
 
         ui.add_space(16.0);
 
         if ui.button("Full screen").clicked() {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+            ctx.send_viewport_cmd(ViewportCommand::Fullscreen(true));
         }
 
         if ui.button("Window").clicked() {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(false));
+            ctx.send_viewport_cmd(ViewportCommand::Fullscreen(false));
         }
 
         ui.add_space(16.0);
@@ -337,7 +337,7 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     /// Called each time the UI needs repainting, which may be many times per second.
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let mut recv = false;
         for res in self.engine.iter() {
             for (base_x, pixel) in res.pixels.iter().enumerate() {
@@ -358,7 +358,7 @@ where
         }
 
         if ctx.input(|i| i.key_pressed(Key::Q)) {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            ctx.send_viewport_cmd(ViewportCommand::Close);
         }
 
         if ctx.input(|i| i.key_pressed(Key::R)) {
@@ -388,7 +388,7 @@ where
         }
 
         if ctx.input(|i| i.key_pressed(Key::F)) {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(true));
+            ctx.send_viewport_cmd(ViewportCommand::Fullscreen(true));
         }
 
         if ctx.input(|i| i.key_pressed(Key::O)) {
@@ -417,16 +417,16 @@ where
             }
         }
 
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| update_top_panel(ctx, ui));
+        TopBottomPanel::top("top_panel").show(ctx, |ui| update_top_panel(ctx, ui));
 
         let lock = self.lock.clone();
         let mut scene = lock.write().unwrap();
 
-        egui::SidePanel::left("Scene controls")
+        SidePanel::left("Scene controls")
             .resizable(true)
             .show(ctx, |ui| self.update_side_panel(ctx, ui, &mut scene));
 
-        egui::CentralPanel::default().show(ctx, |ui| self.update_center_panel(ctx, ui, &mut scene));
+        CentralPanel::default().show(ctx, |ui| self.update_center_panel(ctx, ui, &mut scene));
     }
 }
 
@@ -436,7 +436,7 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     let native_options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
+        viewport: ViewportBuilder::default()
             /* .with_fullscreen(true) */
             /* .with_min_inner_size([300.0, 220.0]), */
             /* .with_icon( */
