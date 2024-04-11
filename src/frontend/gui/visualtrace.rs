@@ -5,7 +5,8 @@ use egui::{Color32, Pos2, Rect, Rounding, Shape, Stroke};
 
 use crate::debug::tracer::DebugTracer;
 use crate::scene::{BoxScene, RayTracer};
-use crate::{point, Float, Point, Vectorx};
+use crate::types::Camera;
+use crate::{point, Float, Point, Vector, Vectorx};
 
 fn color_square(b: Pos2) -> Rect {
     Rect {
@@ -17,6 +18,51 @@ fn color_square(b: Pos2) -> Rect {
             x: b.x + 50.0,
             y: b.y + 15.0,
         },
+    }
+}
+
+pub struct VisualTracer<'a, F: Float> {
+    to_screen: &'a RectTransform,
+    camera: &'a Camera<F>,
+    shapes: Vec<Shape>,
+}
+
+impl<'a, F: Float> VisualTracer<'a, F> {
+    pub const fn new(to_screen: &'a RectTransform, camera: &'a Camera<F>) -> Self {
+        Self {
+            to_screen,
+            camera,
+            shapes: vec![],
+        }
+    }
+
+    #[must_use]
+    pub fn to_screen(&self, a: Pos2, b: Pos2) -> (Pos2, Pos2) {
+        (
+            self.to_screen.transform_pos(a),
+            self.to_screen.transform_pos(b),
+        )
+    }
+
+    #[must_use]
+    pub fn line(&self, a: Vector<F>, b: Vector<F>) -> (Pos2, Pos2) {
+        let a: Pos2 = self.camera.world_to_ndc(a).point().into();
+        let b: Pos2 = self.camera.world_to_ndc(b).point().into();
+        self.to_screen(a, b)
+    }
+
+    #[must_use]
+    pub fn normal(&self, pos: Vector<F>, dir: Vector<F>) -> (Pos2, Pos2) {
+        let end = pos + dir;
+        let a: Pos2 = self.camera.world_to_ndc(pos).point().into();
+        let b: Pos2 = self.camera.world_to_ndc(end).point().into();
+        let n = (b - a).normalized();
+        self.to_screen(a, a + n * 0.03)
+    }
+
+    #[must_use]
+    pub fn into_inner(self) -> Vec<Shape> {
+        self.shapes
     }
 }
 
@@ -41,21 +87,17 @@ where
     let mut shapes = vec![];
     let cam = &scene.cameras[0];
 
+    let vt = VisualTracer::new(to_screen, cam);
+
     #[allow(clippy::significant_drop_in_scrutinee)]
     for step in dt.steps.borrow().iter() {
         let ray = &step.ray;
 
-        let a: Pos2 = cam.world_to_ndc(ray.pos).point().into();
-        let b: Pos2 = if let Some(maxel) = step.maxel {
-            cam.world_to_ndc(maxel.pos).point().into()
-        } else {
-            let q: Pos2 = cam.world_to_ndc(ray.pos + ray.dir).point().into();
-            let n = (q - a).normalized();
-            a + n * 0.05
+        let (a, b) = match step.maxel {
+            Some(maxel) => vt.line(ray.pos, maxel.pos),
+            None => vt.normal(ray.pos, ray.dir),
         };
 
-        let a = to_screen.transform_pos(a);
-        let b = to_screen.transform_pos(b);
         let color = if step.shadow {
             if step.maxel.is_some() {
                 Color32::DARK_RED
@@ -86,10 +128,8 @@ where
             },
         ));
 
-        let ax = cam.world_to_ndc(maxel.pos);
-        let bx = cam.world_to_ndc(maxel.pos + (maxel.nml() / F::FOUR));
-        let a = to_screen.transform_pos(ax.point().into());
-        let b = to_screen.transform_pos(bx.point().into());
+        let (a, b) = vt.normal(maxel.pos, maxel.nml());
+
         let shape = egui::Shape::line_segment([b, a], Stroke::new(1.0, Color32::BLUE));
         shapes.push(shape);
 
