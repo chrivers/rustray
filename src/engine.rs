@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use image::{ImageBuffer, Rgba};
 use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
 
@@ -16,6 +17,7 @@ pub struct RenderSpan<F: Float> {
 
 pub struct RenderEngine<F: Float> {
     pool: Pool<ThunkWorker<RenderSpan<F>>>,
+    pub img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     pub rx: crossbeam_channel::Receiver<RenderSpan<F>>,
     tx: crossbeam_channel::Sender<RenderSpan<F>>,
     dirty: Vec<bool>,
@@ -49,6 +51,7 @@ impl<F: Float> RenderEngine<F> {
 
         Self {
             pool,
+            img: ImageBuffer::new(width, height),
             rx,
             tx,
             dirty: vec![false; height as usize],
@@ -118,5 +121,27 @@ impl<F: Float> RenderEngine<F> {
         let act = self.pool.queued_count();
         let max = self.height as usize;
         (act, max)
+    }
+
+    pub fn update(&mut self) -> bool {
+        let mut recv = false;
+
+        while let Ok(span) = self.rx.try_recv() {
+            for x in 0..span.mult_y {
+                self.dirty[(span.line + x) as usize] = false;
+            }
+
+            for (base_x, pixel) in span.pixels.iter().enumerate() {
+                let rgba = Rgba(pixel.to_array4());
+                for y in 0..span.mult_y {
+                    for x in 0..span.mult_x {
+                        self.img
+                            .put_pixel((base_x as u32) * span.mult_x + x, span.line + y, rgba);
+                    }
+                }
+            }
+            recv = true;
+        }
+        recv
     }
 }

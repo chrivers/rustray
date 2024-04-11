@@ -25,17 +25,16 @@ use crate::{
 use eframe::egui::Key;
 use egui::{
     emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, ColorImage,
-    Context, Grid, KeyboardShortcut, Modifiers, Pos2, ProgressBar, Rect, ScrollArea, Sense, Shape,
-    SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
+    Context, Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, ScrollArea,
+    Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
 };
 use egui_file_dialog::FileDialog;
-use image::{ImageBuffer, Rgba};
+use image::Rgba;
 use pest::Parser;
 
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
     lock: Arc<RwLock<BoxScene<F>>>,
-    img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     obj: Option<usize>,
     obj_last: Option<usize>,
     file_dialog: FileDialog,
@@ -53,7 +52,6 @@ where
         _cc: &eframe::CreationContext<'_>,
         engine: RenderEngine<F>,
         lock: Arc<RwLock<BoxScene<F>>>,
-        img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     ) -> Self {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
@@ -65,7 +63,6 @@ where
         Self {
             engine,
             lock,
-            img,
             obj: None,
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
@@ -88,7 +85,7 @@ where
 
     fn render_preview(&mut self, scene: &mut RwLockWriteGuard<BoxScene<F>>) {
         self.engine
-            .render_lines_by_step(&self.lock, 0, self.img.height(), 4, 4);
+            .render_lines_by_step(&self.lock, 0, self.engine.img.height(), 4, 4);
         scene.recompute_bvh().unwrap();
     }
 
@@ -204,9 +201,13 @@ where
         ui: &mut Ui,
         scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
-        let size = [self.img.width() as usize, self.img.height() as usize];
+        let size = [
+            self.engine.img.width() as usize,
+            self.engine.img.height() as usize,
+        ];
 
-        let img = ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice());
+        let img =
+            ColorImage::from_rgba_unmultiplied(size, self.engine.img.as_flat_samples().as_slice());
 
         let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);
 
@@ -292,7 +293,8 @@ where
         let p =
             SbtParser2::<F>::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
         let p = SbtParser2::<F>::ast(p)?;
-        let scene = SbtBuilder::new(self.img.width(), self.img.height(), resdir).build(p)?;
+        let scene =
+            SbtBuilder::new(self.engine.img.width(), self.engine.img.height(), resdir).build(p)?;
         Ok(scene)
     }
 }
@@ -338,19 +340,7 @@ where
 {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        let mut recv = false;
-        for res in self.engine.iter() {
-            for (base_x, pixel) in res.pixels.iter().enumerate() {
-                let rgba = Rgba(pixel.to_array4());
-                for y in 0..res.mult_y {
-                    for x in 0..res.mult_x {
-                        self.img
-                            .put_pixel((base_x as u32) * res.mult_x + x, res.line + y, rgba);
-                    }
-                }
-            }
-            recv = true;
-        }
+        let recv = self.engine.update();
         if recv {
             ctx.request_repaint_after(Duration::from_millis(100));
         } else {
@@ -362,9 +352,9 @@ where
         }
 
         if ctx.input(|i| i.key_pressed(Key::R)) {
-            let height = self.img.height();
+            let height = self.engine.img.height();
             for y in 0..height {
-                self.img.put_pixel(
+                self.engine.img.put_pixel(
                     0,
                     y,
                     Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
@@ -375,9 +365,9 @@ where
         }
 
         if ctx.input(|i| i.key_pressed(Key::T)) {
-            let height = self.img.height();
+            let height = self.engine.img.height();
             for y in 0..height {
-                self.img.put_pixel(
+                self.engine.img.put_pixel(
                     0,
                     y,
                     Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
@@ -413,7 +403,8 @@ where
             self.file_dialog.config_mut().initial_directory = path.parent().unwrap().to_path_buf();
             if let Ok(scene) = self.load_file(&path) {
                 self.lock = Arc::new(RwLock::new(scene));
-                self.engine.render_lines(&self.lock, 0, self.img.height());
+                self.engine
+                    .render_lines(&self.lock, 0, self.engine.img.height());
             }
         }
 
@@ -455,13 +446,6 @@ where
     Ok(eframe::run_native(
         "Rustray",
         native_options,
-        Box::new(move |cc| {
-            Box::new(RustRayGui::new(
-                cc,
-                engine,
-                lock,
-                ImageBuffer::new(width, height),
-            ))
-        }),
+        Box::new(move |cc| Box::new(RustRayGui::new(cc, engine, lock))),
     )?)
 }
