@@ -56,11 +56,12 @@ where
         refr_term.lerp(refl_term, maxel.fresnel(ior))
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+    fn shadow(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
         let uv = maxel.uv();
         let sha = self.refr.sample(uv);
         let lambert = lixel.dir.dot(maxel.nml());
-        Some(sha * lixel.color * lambert)
+
+        sha * lixel.color * lambert
     }
 }
 

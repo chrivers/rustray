@@ -59,13 +59,12 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
             if let Some(mut curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    if let Some(color) = curhit.mat.shadow(&mut curhit, lixel) {
-                        best_color = Some(color);
-                        best_length = cur_length;
+                    let color = curhit.mat.shadow(&mut curhit, self, lixel);
+                    best_color = Some(color);
+                    best_length = cur_length;
 
-                        step.color = best_color;
-                        step.maxel = Some(curhit);
-                    }
+                    step.color = best_color;
+                    step.maxel = Some(curhit);
                 }
             }
         }

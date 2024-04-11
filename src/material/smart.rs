@@ -97,8 +97,8 @@ where
         res
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        self.fresnel.shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        self.fresnel.shadow(maxel, rt, lixel)
     }
 }
 

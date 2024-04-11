@@ -19,6 +19,12 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for Blend<F, A, B> {
         let b = self.b.render(maxel, rt);
         a.lerp(b, self.pct)
     }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        let a = self.a.shadow(maxel, rt, lixel);
+        let b = self.b.shadow(maxel, rt, lixel);
+        a.lerp(b, self.pct)
+    }
 }
 
 #[cfg(feature = "gui")]

@@ -23,8 +23,10 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
         self.mat.render(&mut smaxel, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        let uv = maxel.uv();
+        let mut smaxel = maxel.with_uv(self.uv.dot(uv));
+        self.mat.shadow(&mut smaxel, rt, lixel)
     }
 }
 

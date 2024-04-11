@@ -25,9 +25,9 @@ impl<F: Float, A: Material<F>, B: Material<F>> ChessBoard<F, A, B> {
     }
 }
 
-impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, B> {
-    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let res = match self.mode {
+impl<F: Float, A: Material<F>, B: Material<F>> ChessBoard<F, A, B> {
+    fn select(&self, maxel: &mut Maxel<F>) -> bool {
+        match self.mode {
             ChessBoardMode::UV => {
                 let uv = maxel.uv();
                 let u = uv.x.abs().fract() > F::HALF;
@@ -40,12 +40,24 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, 
                 let z = maxel.pos.z.abs().fract() > F::HALF;
                 x ^ y ^ z
             }
-        };
+        }
+    }
+}
 
-        if res {
+impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, B> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        if self.select(maxel) {
             self.a.render(maxel, rt)
         } else {
             self.b.render(maxel, rt)
+        }
+    }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        if self.select(maxel) {
+            self.a.shadow(maxel, rt, lixel)
+        } else {
+            self.b.shadow(maxel, rt, lixel)
         }
     }
 }

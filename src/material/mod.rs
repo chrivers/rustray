@@ -2,17 +2,16 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::light::Lixel;
+use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::matlib::MaterialId;
 use crate::types::{Color, Float, Maxel};
 
-use crate::scene::{Interactive, RayTracer, SceneObject};
-
 pub trait Material<F: Float>: SceneObject<F> + Interactive<F> + Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
-    fn shadow(&self, _maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
-        Some(Color::BLACK)
+    fn shadow(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>, _lixel: &Lixel<F>) -> Color<F> {
+        Color::BLACK
     }
 
     fn dynamic(self) -> DynMaterial<F>
@@ -50,6 +49,11 @@ impl<F: Float> Material<F> for MaterialId {
         let mat = &rt.scene().materials.mats[self];
         mat.render(maxel, rt)
     }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        let mat = &rt.scene().materials.mats[self];
+        mat.shadow(maxel, rt, lixel)
+    }
 }
 
 impl<F: Float> Material<F> for Box<dyn Material<F>>
@@ -60,8 +64,8 @@ where
         (**self).render(maxel, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        (**self).shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        (**self).shadow(maxel, rt, lixel)
     }
 }
 
@@ -77,8 +81,8 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
         (**self).render(maxel, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        (**self).shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        (**self).shadow(maxel, rt, lixel)
     }
 }
 
