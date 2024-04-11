@@ -74,6 +74,9 @@ where
     SR: Sampler<F, Color<F>>,
 {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.strong("Fresnel");
+        ui.end_row();
+
         let mut res = false;
         res |= self.ior.ui(ui, "Index of refraction");
         res |= self.refl.ui(ui);
