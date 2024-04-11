@@ -3,26 +3,26 @@ use crate::Mirror;
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Fresnel<F, S1, S2, S3>
+pub struct Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
+    SI: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
-    ior: S1,
-    refr: S2,
-    refl: Mirror<F, S3>,
+    ior: SI,
+    refr: ST,
+    refl: Mirror<F, SR>,
 }
 
-impl<F, S1, S2, S3> Fresnel<F, S1, S2, S3>
+impl<F, SI, ST, SR> Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
+    SI: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
-    pub const fn new(ior: S1, refr: S2, refl: S3) -> Self {
+    pub const fn new(ior: SI, refr: ST, refl: SR) -> Self {
         Self {
             ior,
             refl: Mirror::new(refl),
@@ -31,12 +31,12 @@ where
     }
 }
 
-impl<F, S1, S2, S3> Material<F> for Fresnel<F, S1, S2, S3>
+impl<F, SI, ST, SR> Material<F> for Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
+    SI: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
@@ -66,12 +66,12 @@ where
 }
 
 #[cfg(feature = "gui")]
-impl<F, S1, S2, S3> Interactive<F> for Fresnel<F, S1, S2, S3>
+impl<F, SI, ST, SR> Interactive<F> for Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
+    SI: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
@@ -83,12 +83,12 @@ where
 }
 
 #[cfg(feature = "gui")]
-impl<F, S1, S2, S3> SceneObject<F> for Fresnel<F, S1, S2, S3>
+impl<F, SI, ST, SR> SceneObject<F> for Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
+    SI: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
     sceneobject_impl_body!("Fresnel");
 }
