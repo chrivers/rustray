@@ -87,7 +87,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
 
         Some(
             ray.hit_at(best_t, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal).normalize())
+                .with_normal(self.xfrm.nml(normal))
                 .with_uv(uv),
         )
     }
