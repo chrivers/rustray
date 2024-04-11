@@ -19,7 +19,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{matlib::MaterialId, ray::RF, Color, Error, Float, Point, RResult},
+    types::{matlib::MaterialId, ray::RF, Error, Float, Point, RResult},
 };
 
 use eframe::egui::Key;
@@ -29,7 +29,6 @@ use egui::{
     Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
 };
 use egui_file_dialog::FileDialog;
-use image::Rgba;
 use pest::Parser;
 
 pub struct RustRayGui<F: Float> {
@@ -346,29 +345,11 @@ where
         }
 
         if ctx.input(|i| i.key_pressed(Key::R)) {
-            let height = self.engine.img.height();
-            for y in 0..height {
-                self.engine.img.put_pixel(
-                    0,
-                    y,
-                    Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
-                );
-            }
-
-            self.engine.render_lines(&self.lock, 0, height);
+            self.engine.render_all(&self.lock);
         }
 
         if ctx.input(|i| i.key_pressed(Key::T)) {
-            let height = self.engine.img.height();
-            for y in 0..height {
-                self.engine.img.put_pixel(
-                    0,
-                    y,
-                    Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4()),
-                );
-            }
-
-            self.engine.render_normals(&self.lock, 0, height);
+            self.engine.render_normals(&self.lock);
         }
 
         if ctx.input(|i| i.key_pressed(Key::F)) {

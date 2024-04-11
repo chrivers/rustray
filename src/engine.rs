@@ -65,7 +65,17 @@ impl<F: Float> RenderEngine<F> {
         RenderEngineIter { engine: self }
     }
 
+    pub fn render_all(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
+        self.render_lines(lock, 0, self.img.height());
+    }
+
     pub fn render_lines(&mut self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
+        let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
+
+        for y in 0..self.img.height() {
+            self.img.put_pixel(0, y, color);
+        }
+
         self.render_lines_by_step(lock, a, b, 1, 1);
     }
 
@@ -117,8 +127,13 @@ impl<F: Float> RenderEngine<F> {
         ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice())
     }
 
-    pub fn render_normals(&self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
-        for x in a..b {
+    pub fn render_normals(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
+        let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
+        for y in 0..self.img.height() {
+            self.img.put_pixel(0, y, color);
+        }
+
+        for y in 0..self.img.height() {
             let lock = lock.clone();
             self.pool.execute_to(
                 self.tx.clone(),
@@ -127,7 +142,7 @@ impl<F: Float> RenderEngine<F> {
                     let tracer = Tracer::new(scene);
                     let camera = tracer.scene().cameras[0];
 
-                    tracer.generate_normal_span(&camera, x)
+                    tracer.generate_normal_span(&camera, y)
                 }),
             );
         }
