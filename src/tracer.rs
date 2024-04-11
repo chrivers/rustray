@@ -2,7 +2,7 @@ use crate::engine::RenderSpan;
 use crate::light::{Light, Lixel};
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
-use crate::{point, ColorNormal, Material};
+use crate::{point, ColorDebug, Material};
 use cgmath::MetricSpace;
 use std::sync::RwLockReadGuard;
 
@@ -93,7 +93,7 @@ impl<'a, F: Float> Tracer<'a, F> {
     fn ray_trace_normal(&self, ray: &Ray<F>) -> Option<Color<F>> {
         let mut maxel = self.scene.intersect(ray)?;
 
-        Some(ColorNormal::new(F::ONE).render(&mut maxel, self))
+        Some(ColorDebug::normal().render(&mut maxel, self))
     }
 
     pub fn generate_normal_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
