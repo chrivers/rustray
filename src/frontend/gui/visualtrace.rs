@@ -8,19 +8,6 @@ use crate::scene::{BoxScene, RayTracer};
 use crate::types::Camera;
 use crate::{point, Float, Point, Vector, Vectorx};
 
-fn color_square(b: Pos2) -> Rect {
-    Rect {
-        min: Pos2 {
-            x: b.x + 20.0,
-            y: b.y - 15.0,
-        },
-        max: Pos2 {
-            x: b.x + 50.0,
-            y: b.y + 15.0,
-        },
-    }
-}
-
 pub struct VisualTracer<'a, F: Float> {
     to_screen: &'a RectTransform,
     camera: &'a Camera<F>,
@@ -37,6 +24,20 @@ impl<'a, F: Float> VisualTracer<'a, F> {
     }
 
     #[must_use]
+    pub fn color_square(b: Pos2) -> Rect {
+        Rect {
+            min: Pos2 {
+                x: b.x + 20.0,
+                y: b.y - 15.0,
+            },
+            max: Pos2 {
+                x: b.x + 50.0,
+                y: b.y + 15.0,
+            },
+        }
+    }
+
+    #[must_use]
     pub fn to_screen(&self, a: Pos2, b: Pos2) -> (Pos2, Pos2) {
         (
             self.to_screen.transform_pos(a),
@@ -45,14 +46,14 @@ impl<'a, F: Float> VisualTracer<'a, F> {
     }
 
     #[must_use]
-    pub fn line(&self, a: Vector<F>, b: Vector<F>) -> (Pos2, Pos2) {
+    pub fn calc_line(&self, a: Vector<F>, b: Vector<F>) -> (Pos2, Pos2) {
         let a: Pos2 = self.camera.world_to_ndc(a).point().into();
         let b: Pos2 = self.camera.world_to_ndc(b).point().into();
         self.to_screen(a, b)
     }
 
     #[must_use]
-    pub fn normal(&self, pos: Vector<F>, dir: Vector<F>) -> (Pos2, Pos2) {
+    pub fn calc_normal(&self, pos: Vector<F>, dir: Vector<F>) -> (Pos2, Pos2) {
         let end = pos + dir;
         let a: Pos2 = self.camera.world_to_ndc(pos).point().into();
         let b: Pos2 = self.camera.world_to_ndc(end).point().into();
@@ -63,6 +64,25 @@ impl<'a, F: Float> VisualTracer<'a, F> {
     #[must_use]
     pub fn into_inner(self) -> Vec<Shape> {
         self.shapes
+    }
+
+    pub fn draw_line(&mut self, a: Pos2, b: Pos2, stroke: impl Into<Stroke>) {
+        self.shapes.push(Shape::line_segment([a, b], stroke));
+    }
+
+    pub fn draw_color_box(&mut self, p: Pos2, color: impl Into<Color32>) {
+        let color_sample = Self::color_square(p);
+        self.shapes
+            .push(Shape::rect_filled(color_sample, Rounding::ZERO, color));
+        self.shapes.push(Shape::rect_stroke(
+            color_sample,
+            Rounding::ZERO,
+            Stroke::new(2.0, Color32::WHITE),
+        ));
+    }
+
+    pub fn dot(&mut self, p: Pos2, size: f32, color: impl Into<Color32>) {
+        self.shapes.push(Shape::circle_filled(p, size, color));
     }
 }
 
@@ -77,25 +97,22 @@ where
 {
     const TRACE_STEPS: u16 = 7;
 
-    let ray = scene.cameras[0]
-        .get_ray(point!(coord.x, coord.y))
-        .with_debug();
+    let cam = &scene.cameras[0];
+
+    let ray = cam.get_ray(point!(coord.x, coord.y)).with_debug();
 
     let dt = DebugTracer::new(scene, TRACE_STEPS);
     dt.ray_trace(&ray);
 
-    let mut shapes = vec![];
-    let cam = &scene.cameras[0];
-
-    let vt = VisualTracer::new(to_screen, cam);
+    let mut vt = VisualTracer::new(to_screen, cam);
 
     #[allow(clippy::significant_drop_in_scrutinee)]
     for step in dt.steps.borrow().iter() {
         let ray = &step.ray;
 
         let (a, b) = match step.maxel {
-            Some(maxel) => vt.line(ray.pos, maxel.pos),
-            None => vt.normal(ray.pos, ray.dir),
+            Some(maxel) => vt.calc_line(ray.pos, maxel.pos),
+            None => vt.calc_normal(ray.pos, ray.dir),
         };
 
         let color = if step.shadow {
@@ -109,16 +126,15 @@ where
         };
 
         if ray.lvl != 0 {
-            let shape = egui::Shape::line_segment([a, b], Stroke::new(2.0, color));
-            shapes.push(shape);
+            vt.draw_line(a, b, Stroke::new(2.0, color));
         }
 
         let Some(mut maxel) = step.maxel else {
-            shapes.push(egui::Shape::circle_filled(b, 3.0, Color32::GREEN));
+            vt.dot(b, 3.0, Color32::GREEN);
             continue;
         };
 
-        shapes.push(egui::Shape::circle_filled(
+        vt.dot(
             b,
             5.0,
             if step.shadow {
@@ -126,27 +142,16 @@ where
             } else {
                 Color32::BLUE
             },
-        ));
+        );
 
-        let (a, b) = vt.normal(maxel.pos, maxel.nml());
+        let (a, b) = vt.calc_normal(maxel.pos, maxel.nml());
 
-        let shape = egui::Shape::line_segment([b, a], Stroke::new(1.0, Color32::BLUE));
-        shapes.push(shape);
+        vt.draw_line(b, a, Stroke::new(1.0, Color32::BLUE));
 
         if let Some(color) = step.color {
-            let color_sample = color_square(b);
-            shapes.push(egui::Shape::rect_filled(
-                color_sample,
-                Rounding::ZERO,
-                Color32::from(color),
-            ));
-            shapes.push(egui::Shape::rect_stroke(
-                color_sample,
-                Rounding::ZERO,
-                Stroke::new(2.0, Color32::WHITE),
-            ));
+            vt.draw_color_box(b, Color32::from(color));
         }
     }
 
-    shapes
+    vt.into_inner()
 }
