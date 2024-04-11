@@ -146,7 +146,7 @@ where
 
         let (a, b) = vt.calc_normal(maxel.pos, maxel.nml());
 
-        vt.draw_line(b, a, Stroke::new(1.0, Color32::BLUE));
+        vt.draw_line(a, b, Stroke::new(1.0, Color32::BLUE));
 
         if let Some(color) = step.color {
             vt.draw_color_box(b, Color32::from(color));
