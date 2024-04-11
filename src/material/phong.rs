@@ -122,9 +122,11 @@ where
         ui.end_row();
 
         let mut res = false;
-        res |= self.pow.ui(ui, "Power");
-        res |= self.ks.ui(ui, "Specular");
+        res |= Sampler::ui(&mut self.ambient, ui, "Ambient");
+        res |= self.ke.ui(ui, "Emissive");
         res |= self.kd.ui(ui, "Diffuse");
+        res |= self.pow.ui(ui, "Specular power");
+        res |= self.ks.ui(ui, "Specular");
         res
     }
 }
