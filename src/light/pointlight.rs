@@ -6,6 +6,8 @@ use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 use super::Attenuation;
 
+use crate::sceneobject_impl_body;
+
 #[derive(Debug)]
 pub struct PointLight<F: Float> {
     pub attn: Attenuation<F>,
@@ -27,16 +29,7 @@ impl<F: Float> Interactive<F> for PointLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for PointLight<F> {
-    fn get_name(&self) -> &str {
-        "Point Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Point Light");
 }
 
 impl<F: Float> Light<F> for PointLight<F> {

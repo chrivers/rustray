@@ -4,7 +4,7 @@ use cgmath::{Angle, Deg, EuclideanSpace, InnerSpace, Matrix4, MetricSpace, Point
 use crate::frontend::gui::controls;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Point, Ray, Transform, Vector};
-use crate::vec3;
+use crate::{sceneobject_impl_body, vec3};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Camera<F: Float> {
@@ -123,17 +123,7 @@ impl<F: Float> Interactive<F> for Camera<F> {
 }
 
 impl<F: Float> SceneObject<F> for Camera<F> {
-    fn get_name(&self) -> &str {
-        "Camera"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Camera");
 }
 
 #[cfg(test)]

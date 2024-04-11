@@ -7,7 +7,7 @@ use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::iter::GridSamples;
 use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
-use crate::Vectorx;
+use crate::{sceneobject_impl_body, Vectorx};
 
 use super::Attenuation;
 
@@ -63,16 +63,7 @@ impl<F: Float> AreaLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for AreaLight<F> {
-    fn get_name(&self) -> &str {
-        "Area Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Area Light");
 }
 
 impl<F: Float> Interactive<F> for AreaLight<F> {
@@ -99,8 +90,7 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
         ui.label("Width");
         res |= ui
             .add(
-                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10))
-                    .clamp_to_range(false),
+                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10)).clamp_to_range(false),
             )
             .changed();
         ui.end_row();

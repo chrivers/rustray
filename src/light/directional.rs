@@ -2,6 +2,7 @@ use cgmath::InnerSpace;
 
 use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
 use crate::types::{Color, Float, Maxel, Vector};
 
 #[derive(Debug)]
@@ -34,16 +35,7 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for DirectionalLight<F> {
-    fn get_name(&self) -> &str {
-        "Directional Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Directional Light");
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {

@@ -6,7 +6,7 @@ use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::types::maxel::Maxel;
 use crate::types::{Color, Float, Vector};
-use crate::Vectorx;
+use crate::{sceneobject_impl_body, Vectorx};
 
 use super::Attenuation;
 
@@ -21,16 +21,7 @@ pub struct SpotLight<F: Float> {
 }
 
 impl<F: Float> SceneObject<F> for SpotLight<F> {
-    fn get_name(&self) -> &str {
-        "Spot Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Spot Light");
 }
 
 impl<F: Float> Light<F> for SpotLight<F> {
@@ -84,10 +75,7 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
 
         ui.label("Umbra");
         res |= ui
-            .add(
-                egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
-                    .step_by(f64::PI() / 180.0),
-            )
+            .add(egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
             .changed();
         ui.end_row();
 

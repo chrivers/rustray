@@ -2,7 +2,7 @@ use crate::engine::RenderSpan;
 use crate::light::{Light, Lixel};
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
-use crate::{point, ColorDebug, Material};
+use crate::{point, sceneobject_impl_body, ColorDebug, Material};
 use cgmath::MetricSpace;
 use std::sync::RwLockReadGuard;
 
@@ -217,15 +217,5 @@ impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
 
 #[cfg(feature = "gui")]
 impl<'a, F: Float> SceneObject<F> for Tracer<'a, F> {
-    fn get_name(&self) -> &str {
-        "Ray tracer"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Ray tracer");
 }
