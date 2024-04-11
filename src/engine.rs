@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use egui::ColorImage;
 use image::{ImageBuffer, Rgba};
 use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
@@ -98,6 +99,22 @@ impl<F: Float> RenderEngine<F> {
                 }),
             );
         }
+    }
+
+    pub fn render_all_by_step(
+        &mut self,
+        lock: &Arc<RwLock<BoxScene<F>>>,
+        step_x: u32,
+        step_y: u32,
+    ) {
+        self.render_lines_by_step(lock, 0, self.img.height(), step_x, step_y);
+    }
+
+    #[must_use]
+    pub fn get_epaint_image(&self) -> ColorImage {
+        let size = [self.img.width() as usize, self.img.height() as usize];
+
+        ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice())
     }
 
     pub fn render_normals(&self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {

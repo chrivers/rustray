@@ -24,9 +24,9 @@ use crate::{
 
 use eframe::egui::Key;
 use egui::{
-    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, ColorImage,
-    Context, Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, ScrollArea,
-    Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
+    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
+    Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, ScrollArea, Sense,
+    Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
 };
 use egui_file_dialog::FileDialog;
 use image::Rgba;
@@ -83,10 +83,8 @@ where
             .map(|m| m as &mut _)
     }
 
-    fn render_preview(&mut self, scene: &mut RwLockWriteGuard<BoxScene<F>>) {
-        self.engine
-            .render_lines_by_step(&self.lock, 0, self.engine.img.height(), 4, 4);
-        scene.recompute_bvh().unwrap();
+    fn render_preview(&mut self) {
+        self.engine.render_all_by_step(&self.lock, 4, 4);
     }
 
     fn update_side_panel(
@@ -180,7 +178,8 @@ where
             });
 
             if changed {
-                self.render_preview(scene);
+                scene.recompute_bvh().unwrap();
+                self.render_preview();
             }
 
             /* CollapsingHeader::new(format!("Raytracer")) */
@@ -201,13 +200,7 @@ where
         ui: &mut Ui,
         scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
-        let size = [
-            self.engine.img.width() as usize,
-            self.engine.img.height() as usize,
-        ];
-
-        let img =
-            ColorImage::from_rgba_unmultiplied(size, self.engine.img.as_flat_samples().as_slice());
+        let img = self.engine.get_epaint_image();
 
         let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);
 
@@ -266,14 +259,15 @@ where
         }
 
         if let Some(coord) = self.coord {
-            self.shapes = crate::frontend::gui::visualtrace::make_shapes(scene, coord, &to_screen);
+            self.shapes = visualtrace::make_shapes(scene, coord, &to_screen);
         }
 
         let camera = scene.cameras[0];
         if let Some(obj) = self.find_obj(scene) {
             if let Some(int) = obj.get_interactive() {
                 if int.ui_center(ui, &camera, &response.rect) {
-                    self.render_preview(scene);
+                    scene.recompute_bvh().unwrap();
+                    self.render_preview();
                 }
             }
         }
