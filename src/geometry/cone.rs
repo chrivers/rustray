@@ -58,6 +58,10 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
 
                 res |= self.mat.ui(ui);
 
+                if res {
+                    self.recompute_aabb();
+                }
+
                 res
             })
             .inner
