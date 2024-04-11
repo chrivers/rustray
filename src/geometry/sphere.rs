@@ -36,12 +36,12 @@ impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
 
         let result = r.intersect_unit_sphere()?;
         let normal = r.extend(result);
+        let uv = normal.polar_uv();
 
-        let nml = self.xfrm.nml(normal);
         Some(
             ray.hit_at(result, self, &self.mat)
-                .with_normal(nml.normalize())
-                .with_uv(nml.polar_uv().into()),
+                .with_normal(self.xfrm.nml(normal))
+                .with_uv(uv.into()),
         )
     }
 }
