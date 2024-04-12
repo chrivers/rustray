@@ -13,11 +13,10 @@ use crate::material::Material;
 use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    bvh::BvhExt,
     matlib::MaterialId,
     ray::RF,
-    result::RResult,
     transform::{HasTransform, Transform},
+    BvhExt, RResult,
 };
 use crate::types::{Color, Float, MaterialLib, Maxel, Ray, Vector, Vectorx};
 
@@ -43,16 +42,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
 
 geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
 geometry_impl_hastransform!(TriangleMesh<F, M>);
-
-impl<F: Float, M: Material<F>> Primitive for TriangleMesh<F, M> {
-    fn center(&self) -> Vec3 {
-        self.aabb.center()
-    }
-
-    fn aabb(&self) -> Aabb {
-        self.aabb
-    }
-}
+aabb_impl_fm!(TriangleMesh<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
     fn recompute_aabb(&mut self) {
