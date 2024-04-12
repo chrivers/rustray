@@ -25,9 +25,9 @@ use crate::{
 use eframe::egui::Key;
 use egui::{
     emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
-    Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, ScrollArea, Sense,
-    Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
-    Visuals,
+    Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText,
+    ScrollArea, Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
+    ViewportCommand, Visuals,
 };
 use egui_file_dialog::FileDialog;
 use pest::Parser;
@@ -100,7 +100,8 @@ where
         ui: &mut Ui,
         scene: &mut RwLockWriteGuard<BoxScene<F>>,
     ) {
-        ui.heading("Rustray");
+        ui.label(RichText::new("RustRay").heading().strong());
+
         ScrollArea::vertical().show(ui, |ui| {
             ui.label("Materials");
             let mut changed = false;
