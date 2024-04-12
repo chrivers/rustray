@@ -33,13 +33,13 @@ where
 pub type BoxSampler<F, T> = Box<dyn Sampler<F, T>>;
 pub type DynSampler<F, T> = Arc<dyn Sampler<F, T>>;
 
-impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'a> {
+impl<F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'static> {
     fn sample(&self, uv: Point<F>) -> T {
-        self.as_ref().sample(uv)
+        (**self).sample(uv)
     }
 
     fn dimensions(&self) -> (u32, u32) {
-        self.as_ref().dimensions()
+        (**self).dimensions()
     }
 
     #[cfg(feature = "gui")]

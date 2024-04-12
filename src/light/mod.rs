@@ -40,21 +40,21 @@ pub struct Lixel<F: Float> {
     pub len2: F,
 }
 
-impl<'a, F: Float> Light<F> for Box<dyn Light<F> + 'a> {
+impl<F: Float> Light<F> for Box<dyn Light<F> + 'static> {
     fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
         (**self).contribution(maxel, rt)
     }
 }
 
-impl<'a, F: Float> SceneObject<F> for Box<dyn Light<F> + 'a> {
+impl<F: Float> SceneObject<F> for Box<dyn Light<F> + 'static> {
     fn get_name(&self) -> &str {
-        self.as_ref().get_name()
+        (**self).get_name()
     }
 
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        self.as_mut().get_interactive()
+        (**self).get_interactive()
     }
     fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
+        (**self).get_id()
     }
 }
