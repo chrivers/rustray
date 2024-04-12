@@ -1,13 +1,8 @@
+use cgmath::{InnerSpace, Matrix4};
 use num_traits::Zero;
 
-use super::{transform::Transform, Point};
-
-pub use cgmath::{
-    EuclideanSpace, InnerSpace, Matrix, Matrix4, MetricSpace, Point3, Transform as cgTransform,
-};
-
-use super::Float;
 use crate::sampler::Texel;
+use crate::types::{transform::Transform, Float, Point};
 
 /**
 Convenience macro to construct a [`Vector<F>`] from input values.

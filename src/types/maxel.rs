@@ -1,11 +1,8 @@
-use core::fmt::Debug;
-
-use super::vector::Vectorx;
-use super::{Float, Point, Vector};
+use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
 use crate::material::Material;
-use crate::types::ray::Ray;
+use crate::types::{Float, Point, Ray, Vector, Vectorx};
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
@@ -21,7 +18,7 @@ pub struct Maxel<'a, F: Float> {
 }
 
 impl<'a, F: Float> Debug for Maxel<'a, F> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Maxel")
             .field("pos", &self.pos)
             .field("dir", &self.dir)
@@ -143,9 +140,7 @@ mod tests {
     use assert_float_eq::{afe_is_f64_near, afe_near_error_msg, assert_f64_near};
     use cgmath::InnerSpace;
 
-    use crate::mat_util::Vectorx;
-
-    use super::Vector;
+    use crate::types::{Vector, Vectorx};
 
     macro_rules! assert_vec {
         ($val:expr, $x:expr, $y:expr, $z:expr) => {

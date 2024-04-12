@@ -1,8 +1,7 @@
-use super::float::Float;
-use crate::types::vector::Vector4x;
-use crate::types::Vector;
 use cgmath::{EuclideanSpace, InnerSpace, Matrix, Matrix4, Point3};
 use cgmath::{SquareMatrix, Transform as _};
+
+use crate::types::{Float, Vector, Vector4x};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Transform<F: Float> {

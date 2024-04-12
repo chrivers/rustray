@@ -1,12 +1,9 @@
 use cgmath::InnerSpace;
 
-use crate::light::{Light, Lixel};
+use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
-use crate::types::{Color, Float, Maxel, Vector, Vectorx};
-
-use super::Attenuation;
-
 use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct PointLight<F: Float> {

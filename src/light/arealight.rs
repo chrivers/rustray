@@ -1,15 +1,10 @@
 use cgmath::InnerSpace;
 
-/* use rand::Rng; */
-
-use crate::light::{Light, Lixel};
+use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
-use crate::types::iter::GridSamples;
-use crate::types::maxel::Maxel;
+use crate::types::{iter::GridSamples, maxel::Maxel};
 use crate::types::{Color, Float, Vector};
 use crate::{sceneobject_impl_body, Vectorx};
-
-use super::Attenuation;
 
 #[derive(Debug)]
 pub struct AreaLight<F: Float> {

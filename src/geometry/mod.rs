@@ -1,12 +1,11 @@
 use std::fmt::Debug;
 
+use glam::f32::Vec3;
+use rtbvh::Aabb;
+
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
-
-use rtbvh::Aabb;
-
-use glam::f32::Vec3;
 
 pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;

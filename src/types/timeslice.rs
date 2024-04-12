@@ -1,6 +1,7 @@
-use itertools::Itertools;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
+
+use itertools::Itertools;
 
 pub struct TimeSlice {
     map: HashMap<String, Duration>,

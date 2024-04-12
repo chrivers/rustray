@@ -1,12 +1,12 @@
-use cgmath::VectorSpace;
-use derive_more::{Add, AddAssign, Rem, Sub};
-use num_traits::Zero;
 use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
 
-use crate::sampler::Texel;
+use cgmath::VectorSpace;
+use derive_more::{Add, AddAssign, Rem, Sub};
+use num_traits::Zero;
 
+use crate::sampler::Texel;
 use crate::scene::Interactive;
 use crate::types::float::{Float, Lerp};
 

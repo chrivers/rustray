@@ -1,7 +1,8 @@
-use crate::types::Float;
 use derive_more::{Add, Mul, Sub};
 use num::Num;
 use num_traits::ConstZero;
+
+use crate::types::Float;
 
 /**
 Convenience macro to construct a [`Point<F>`] from input values.

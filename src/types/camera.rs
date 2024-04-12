@@ -128,13 +128,8 @@ impl<F: Float> SceneObject<F> for Camera<F> {
 
 #[cfg(test)]
 mod test {
-    use crate::mat_util::Vectorx;
-    use crate::point;
-    use crate::Point;
-
-    use crate::types::Camera;
-    use crate::vec3;
-    use crate::Vector;
+    use crate::types::{Camera, Point, Vector, Vectorx};
+    use crate::{point, vec3};
 
     #[test]
     fn test_camera() {
