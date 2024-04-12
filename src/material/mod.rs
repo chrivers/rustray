@@ -33,7 +33,13 @@ impl<F: Float> Material<F> for Color<F> {
 
 #[cfg(feature = "gui")]
 impl<F: Float> SceneObject<F> for Box<dyn Material<F>> {
-    sceneobject_impl_body!("Material");
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
+    }
 }
 
 impl<F: Float> SceneObject<F> for Color<F> {
@@ -88,7 +94,13 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
 
 #[cfg(feature = "gui")]
 impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
-    sceneobject_impl_body!("Material");
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
+    }
 }
 
 #[cfg(feature = "gui")]
