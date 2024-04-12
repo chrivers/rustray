@@ -4,6 +4,7 @@ use std::ops;
 
 use cgmath::VectorSpace;
 use derive_more::{Add, AddAssign, Rem, Sub};
+use num::NumCast;
 use num_traits::Zero;
 
 use crate::sampler::Texel;
@@ -129,9 +130,9 @@ impl<F: Float> Color<F> {
         let clamped = self.clamped();
         let max = F::from_u32(u8::MAX as u32);
         [
-            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
         ]
     }
 
@@ -139,9 +140,9 @@ impl<F: Float> Color<F> {
         let clamped = self.clamped();
         let max = F::from_u32(u8::MAX as u32);
         [
-            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
             255,
         ]
     }
