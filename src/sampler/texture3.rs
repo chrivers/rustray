@@ -1,6 +1,7 @@
 use image::{DynamicImage, GenericImageView, Pixel};
 
-use super::samp_util::*;
+use crate::sampler::Sampler;
+use crate::types::{Color, Float, Point};
 
 impl<F: Float> Sampler<u32, Color<F>> for DynamicImage {
     fn sample(&self, uv: Point<u32>) -> Color<F> {

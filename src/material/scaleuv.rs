@@ -1,4 +1,8 @@
-use super::mat_util::*;
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::types::{Color, Float, Maxel, Point};
+use crate::{point, sceneobject_impl_body};
 
 /// Proxy material that scales UV coordinates, before rendering backing material.
 #[derive(Copy, Clone, Debug)]
@@ -41,7 +45,7 @@ where
 
         res |= ui
             .add(
-                Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
+                egui::Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
                     .logarithmic(true)
                     .clamp_to_range(false)
                     .trailing_fill(true)
@@ -50,7 +54,7 @@ where
             .changed();
         res |= ui
             .add(
-                Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
+                egui::Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
                     .logarithmic(true)
                     .clamp_to_range(false)
                     .trailing_fill(true)

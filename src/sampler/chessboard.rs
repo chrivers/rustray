@@ -1,4 +1,7 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct ChessBoardSampler<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> {

@@ -1,4 +1,10 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 pub trait TextureSampler<F: Float>
 where

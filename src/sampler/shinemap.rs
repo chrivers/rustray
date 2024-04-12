@@ -1,4 +1,5 @@
-use super::samp_util::*;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct ShineMap<F: Float + Texel, S: Sampler<F, F>> {

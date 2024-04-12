@@ -1,4 +1,8 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use crate::point;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Nearest<P: Texel, S: Sampler<u32, P>> {

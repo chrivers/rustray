@@ -5,9 +5,9 @@ use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
 
-use crate::mat_util::Interactive;
 use crate::sampler::Texel;
 
+use crate::scene::Interactive;
 use crate::types::float::{Float, Lerp};
 
 #[derive(Clone, Copy, Add, AddAssign, Sub, Rem, PartialEq, Eq)]

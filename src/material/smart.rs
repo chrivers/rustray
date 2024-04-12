@@ -1,6 +1,9 @@
-use crate::{Fresnel, Phong};
-
-use super::mat_util::*;
+use crate::light::Lixel;
+use crate::material::{Fresnel, Material, Phong};
+use crate::sampler::{Sampler, Texel};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 /// Smart material shader that supports ambient, diffuse, specular, translucent,
 /// and reflective light. Implements the Phong shader model for light transport.

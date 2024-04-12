@@ -103,27 +103,6 @@ impl<F: Float> Interactive<F> for Arc<dyn Material<F>> {
     }
 }
 
-pub(crate) mod mat_util {
-    /* These are convenience re-imports for modules, so skip warnings */
-    #![allow(unused_imports)]
-    pub use crate::light::{Light, Lixel};
-    pub use crate::material::{DynMaterial, Material};
-    pub use crate::sampler::Sampler;
-    pub use crate::sampler::Texel;
-    pub use crate::scene::{Interactive, RayTracer, SceneObject};
-    pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
-    pub use crate::{point, sceneobject_impl_body, vec3};
-
-    #[cfg(feature = "gui")]
-    pub use crate::frontend::gui::controls;
-    #[cfg(feature = "gui")]
-    pub use egui::Slider;
-
-    pub use cgmath::{InnerSpace, VectorSpace, Zero};
-
-    pub use std::marker::PhantomData;
-}
-
 mod blend;
 mod bumpmap;
 mod chessboard;

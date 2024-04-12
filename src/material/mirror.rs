@@ -1,4 +1,12 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use num::Zero;
+
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mirror<F, T>

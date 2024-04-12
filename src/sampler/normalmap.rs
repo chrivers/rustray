@@ -1,4 +1,9 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Color, Float, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
 pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>> {

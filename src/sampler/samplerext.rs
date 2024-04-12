@@ -1,6 +1,4 @@
-use super::samp_util::*;
-use super::Bilinear;
-use super::Nearest;
+use crate::sampler::{Bilinear, Nearest, Sampler, Texel};
 
 pub trait SamplerExt<T>
 where

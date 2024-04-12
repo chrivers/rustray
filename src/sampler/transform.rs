@@ -1,4 +1,11 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::float::Lerp;
+use crate::types::{Float, Point};
+
+#[cfg(feature = "gui")]
+use egui::Slider;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>> {

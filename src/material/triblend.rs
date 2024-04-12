@@ -1,4 +1,9 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 /// Material blender, that interpolates between three materials.
 ///

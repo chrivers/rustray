@@ -8,9 +8,8 @@ pub use directional::DirectionalLight;
 pub use pointlight::PointLight;
 pub use spotlight::SpotLight;
 
-use crate::mat_util::{RayTracer, Vectorx};
-use crate::scene::{Interactive, SceneObject};
-use crate::types::{Color, Float, Maxel, Vector};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
     fn contribution(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Lixel<F> {

@@ -103,22 +103,6 @@ impl<F: Float> Sampler<F, Self> for Color<F> {
     }
 }
 
-pub(crate) mod samp_util {
-    pub use std::marker::PhantomData;
-
-    pub use super::{Sampler, Texel};
-    pub use crate::point;
-    pub use crate::types::float::Lerp;
-    pub use crate::types::{Color, Float, Point, Vector};
-
-    pub use cgmath::{InnerSpace, VectorSpace};
-
-    pub use num_traits::ToPrimitive;
-
-    #[cfg(feature = "gui")]
-    pub use egui::Slider;
-}
-
 pub mod bilinear;
 pub mod chessboard;
 pub mod heightnormal;

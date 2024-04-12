@@ -1,4 +1,10 @@
-use super::mat_util::*;
+use cgmath::VectorSpace;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Blend<F: Float, A: Material<F>, B: Material<F>> {

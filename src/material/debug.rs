@@ -1,4 +1,7 @@
-use super::mat_util::*;
+pub use crate::material::Material;
+pub use crate::scene::{Interactive, RayTracer, SceneObject};
+pub use crate::sceneobject_impl_body;
+pub use crate::types::{Color, Float, Maxel, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub enum DebugType {

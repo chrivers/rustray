@@ -1,19 +1,23 @@
-use az::Cast;
-use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
-use derive_more::{AddAssign, Neg, SubAssign};
-use fixed::FixedI64;
-use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Add, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub},
     str::FromStr,
 };
 
+use az::Cast;
+use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
+use derive_more::{AddAssign, Neg, SubAssign};
+use fixed::FixedI64;
+use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
+use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
+
 #[cfg(feature = "gui")]
 use egui::emath::Numeric;
 
-use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
+use crate::{
+    sampler::Texel,
+    types::float::{Float, Lerp},
+};
 
 #[derive(Clone, Copy, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FXP<const P: i32>(FixedI64<P>);

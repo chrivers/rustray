@@ -16,13 +16,12 @@ use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
 use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
-use crate::mat_util::Vectorx;
 use crate::material::{Bumpmap, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
 use crate::types::matlib::MaterialId;
 use crate::types::result::{Error, RResult};
-use crate::types::{Camera, Color, Float, MaterialLib, Point, Vector};
+use crate::types::{Camera, Color, Float, MaterialLib, Point, Vector, Vectorx};
 use crate::BumpPower;
 
 #[derive(Copy, Clone, Debug)]

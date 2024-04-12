@@ -1,6 +1,13 @@
-use crate::Mirror;
+use cgmath::{InnerSpace, VectorSpace};
+use num::Zero;
 
-use super::mat_util::*;
+use crate::light::Lixel;
+use crate::material::{Material, Mirror};
+use crate::sampler::Sampler;
+use crate::sampler::Texel;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Fresnel<F, SI, ST, SR>

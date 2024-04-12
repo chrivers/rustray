@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::mat_util::Interactive;
 use crate::material::Material;
+use crate::scene::Interactive;
 use crate::types::Float;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]

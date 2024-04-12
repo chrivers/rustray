@@ -1,5 +1,15 @@
-use super::mat_util::*;
 use rand::Rng;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::sampler::Texel;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> {

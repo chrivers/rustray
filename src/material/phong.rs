@@ -1,4 +1,11 @@
-use super::mat_util::*;
+use cgmath::InnerSpace;
+use num::Zero;
+
+use crate::material::Material;
+use crate::sampler::{Sampler, Texel};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Phong<F, SE, SD, SS, SP>

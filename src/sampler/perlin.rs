@@ -1,9 +1,12 @@
-use super::samp_util::*;
+use std::fmt::{self, Debug};
 
-use std::fmt;
-use std::fmt::Debug;
+#[cfg(feature = "gui")]
+use egui::Slider;
 
 use perlin2d::PerlinNoise2D;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 pub struct Perlin {
     w: u32,

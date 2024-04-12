@@ -1,6 +1,12 @@
 use std::fmt::{self, Debug};
+use std::marker::PhantomData;
 
-use super::samp_util::*;
+use crate::point;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{
+    float::{Float, Lerp},
+    Point,
+};
 
 #[derive(Copy, Clone)]
 pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {

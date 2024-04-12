@@ -1,4 +1,8 @@
-use super::samp_util::*;
+use cgmath::InnerSpace;
+
+use crate::point;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
 pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>> {

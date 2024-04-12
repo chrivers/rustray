@@ -1,14 +1,18 @@
-use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
-use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
-use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
     str::FromStr,
 };
 
-use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
+use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
+use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
+use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
+use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
+
+use crate::{
+    sampler::Texel,
+    types::float::{Float, Lerp},
+};
 
 #[derive(Clone, Copy, Add, Sub, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FP<const P: u8>(i64);

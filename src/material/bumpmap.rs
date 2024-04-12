@@ -1,4 +1,14 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::sampler::Texel;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Point, Vector, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BumpPower<F: Float>(pub F);
