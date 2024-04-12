@@ -22,17 +22,10 @@ impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                res |= controls::position(ui, &mut self.pos, "Position");
-                res |= self.mat.ui(ui);
-                res
-            })
-            .inner
+        let mut res = false;
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res |= self.mat.ui(ui);
+        res
     }
 }
 

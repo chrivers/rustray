@@ -23,15 +23,6 @@ aabb_impl_fm!(Square<F, M>);
 
 #[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| self.mat.ui(ui))
-            .inner
-    }
-
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
         crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }

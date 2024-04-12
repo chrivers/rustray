@@ -143,12 +143,20 @@ where
                 let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))
                     .default_open(true)
                     .show(ui, |ui| {
-                        ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
-                        if let Some(interactive) = obj.get_interactive() {
-                            changed |= interactive.ui(ui);
-                        } else {
-                            ui.label("Non-interactive object :(");
-                        }
+                        Grid::new("grid")
+                            .num_columns(2)
+                            .spacing([40.0, 4.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
+                                ui.end_row();
+
+                                if let Some(interactive) = obj.get_interactive() {
+                                    changed |= interactive.ui(ui);
+                                } else {
+                                    ui.label("Non-interactive object :(");
+                                }
+                            });
                     });
 
                 if self.obj == obj.get_id() && self.obj != self.obj_last {

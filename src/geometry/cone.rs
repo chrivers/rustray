@@ -28,57 +28,43 @@ aabb_impl_fm!(Cone<F, M>);
 #[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use egui::Slider;
+        use egui::{Slider, Widget};
+        let mut res = false;
 
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        res |= Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Top radius")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Top radius"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Bottom radius")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Bottom radius"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Height")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Height"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= ui.checkbox(&mut self.capped, "Capped").changed();
+        ui.end_row();
 
-                res |= ui.checkbox(&mut self.capped, "Capped").changed();
-                ui.end_row();
+        res |= self.mat.ui(ui);
 
-                res |= self.mat.ui(ui);
+        if res {
+            self.recompute_aabb();
+        }
 
-                if res {
-                    self.recompute_aabb();
-                }
-
-                res
-            })
-            .inner
+        res
     }
 
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
