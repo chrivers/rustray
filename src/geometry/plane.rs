@@ -1,4 +1,10 @@
-use super::geo_util::*;
+use cgmath::InnerSpace;
+
+use crate::geometry::Geometry;
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Float, Maxel, Point, Ray, Vector};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Plane<F: Float, M: Material<F>> {
@@ -11,9 +17,11 @@ pub struct Plane<F: Float, M: Material<F>> {
     mat: M,
 }
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::frontend::gui::controls;
+
         egui::Grid::new("grid")
             .num_columns(2)
             .spacing([40.0, 4.0])

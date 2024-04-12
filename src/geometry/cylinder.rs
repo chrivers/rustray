@@ -1,4 +1,16 @@
-use super::geo_util::*;
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use cgmath::{InnerSpace, Matrix4};
+use glam::Vec3;
+use rtbvh::Aabb;
+
+use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::transform::{HasTransform, Transform};
+use crate::types::{Float, Maxel, Ray, Vector, Vectorx};
+use crate::vec3;
 
 #[derive(Debug)]
 pub struct Cylinder<F: Float, M: Material<F>> {
@@ -10,8 +22,8 @@ pub struct Cylinder<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cylinder<F, M>);
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         egui::Grid::new("grid")
             .num_columns(2)
@@ -29,9 +41,8 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
             .inner
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }
 }
 

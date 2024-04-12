@@ -1,4 +1,16 @@
-use super::geo_util::*;
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use cgmath::Matrix4;
+use glam::Vec3;
+use rtbvh::Aabb;
+
+use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::transform::{HasTransform, Transform};
+use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct Cube<F: Float, M: Material<F>> {
@@ -9,15 +21,14 @@ pub struct Cube<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cube<F, M>);
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cube<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.mat.ui(ui)
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }
 }
 

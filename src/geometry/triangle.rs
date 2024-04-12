@@ -1,9 +1,14 @@
-use super::geo_util::*;
+use std::fmt::{self, Debug};
 
-use std::fmt;
-use std::fmt::Debug;
+use cgmath::InnerSpace;
+use glam::Vec3;
+use rtbvh::{Aabb, SpatialTriangle};
 
-use rtbvh::SpatialTriangle;
+use crate::geometry::{FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
 
 #[derive(Clone, Debug)]
 pub struct Triangle<F: Float, M: Material<F>> {
@@ -28,8 +33,8 @@ pub struct Triangle<F: Float, M: Material<F>> {
     mat: M,
 }
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.mat.ui(ui)
     }

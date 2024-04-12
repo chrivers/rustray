@@ -145,31 +145,6 @@ macro_rules! geometry_impl_hastransform {
     };
 }
 
-pub(crate) mod geo_util {
-    pub use super::{FiniteGeometry, Geometry};
-    pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
-    pub use crate::material::Material;
-    pub use crate::scene::{Interactive, SceneObject};
-    pub use crate::types::transform::{HasTransform, Transform};
-    pub use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
-    pub use crate::{point, vec3};
-
-    #[cfg(feature = "gui")]
-    pub use crate::frontend::gui::{controls, gizmo_ui};
-    #[cfg(feature = "gui")]
-    pub use crate::types::Camera;
-    #[cfg(feature = "gui")]
-    pub use egui::Slider;
-
-    pub use cgmath::{InnerSpace, Matrix4};
-
-    pub use num_traits::Zero;
-
-    pub use glam::Vec3;
-    pub use rtbvh::Aabb;
-    pub use rtbvh::Primitive;
-}
-
 pub mod cone;
 pub mod cube;
 pub mod cylinder;

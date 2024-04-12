@@ -1,18 +1,25 @@
-use super::geo_util::*;
-use super::triangle::Triangle;
-
-use cgmath::SquareMatrix;
-use obj::Obj;
-
-use rtbvh::{Bounds, Builder, Bvh};
 use std::num::NonZeroUsize;
 
+use cgmath::{Matrix4, SquareMatrix};
+use glam::Vec3;
+use obj::Obj;
+use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
+
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use crate::geometry::{build_aabb_ranged, triangle::Triangle, FiniteGeometry, Geometry};
+use crate::material::Material;
 use crate::sampler::Texel;
-use crate::types::bvh::BvhExt;
-use crate::types::matlib::MaterialId;
-use crate::types::ray::RF;
-use crate::types::result::RResult;
-use crate::types::{Color, MaterialLib};
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{
+    bvh::BvhExt,
+    matlib::MaterialId,
+    ray::RF,
+    result::RResult,
+    transform::{HasTransform, Transform},
+};
+use crate::types::{Color, Float, MaterialLib, Maxel, Ray, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F>> {
@@ -23,15 +30,14 @@ pub struct TriangleMesh<F: Float, M: Material<F>> {
     aabb: Aabb,
 }
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
         false
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }
 }
 
