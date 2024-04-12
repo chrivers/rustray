@@ -1,10 +1,10 @@
-pub use std::marker::PhantomData;
+use std::marker::PhantomData;
 
-pub use crate::light::Lixel;
-pub use crate::material::Material;
-pub use crate::scene::{Interactive, RayTracer, SceneObject};
-pub use crate::sceneobject_impl_body;
-pub use crate::types::{Color, Float, Maxel};
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
 pub enum ChessBoardMode {
