@@ -66,7 +66,6 @@ impl<F: Float> Material<F> for ColorDebug<F> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float> Interactive<F> for ColorDebug<F> {}
 
 impl<F: Float> SceneObject<F> for ColorDebug<F> {

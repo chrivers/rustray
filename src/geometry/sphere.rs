@@ -19,12 +19,13 @@ pub struct Sphere<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Sphere<F, M>);
 
-#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.mat.ui(ui)
     }
 
+    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
         crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }

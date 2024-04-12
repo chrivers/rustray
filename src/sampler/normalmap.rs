@@ -41,6 +41,7 @@ where
         self.sampler.dimensions()
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.strong("Normal map");
         ui.end_row();

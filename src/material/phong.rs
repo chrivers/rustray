@@ -115,7 +115,6 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, SE, SD, SS, SP> Interactive<F> for Phong<F, SE, SD, SS, SP>
 where
     F: Float + Texel,
@@ -124,6 +123,7 @@ where
     SS: Sampler<F, Color<F>>,
     SP: Sampler<F, F>,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.strong("Phong");
         ui.end_row();

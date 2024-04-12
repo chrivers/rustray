@@ -12,6 +12,7 @@ pub struct Camera<F: Float> {
     pub projection: Transform<F>,
     pub ndc: Transform<F>,
     pos: Vector<F>,
+    #[allow(dead_code)]
     dir: Vector<F>,
     xres: u32,
     yres: u32,

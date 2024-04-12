@@ -40,6 +40,7 @@ impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> Sampler<F, T>
         self.a.dimensions()
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.strong(name);
         ui.end_row();

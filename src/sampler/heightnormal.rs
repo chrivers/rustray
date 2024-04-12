@@ -35,6 +35,7 @@ where
         self.sampler.dimensions()
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.strong("Height normal");
         ui.end_row();

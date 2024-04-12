@@ -1,8 +1,9 @@
 use crate::light::Lixel;
 use crate::material::Material;
+use crate::point;
 use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
 use crate::types::{Color, Float, Maxel, Point};
-use crate::{point, sceneobject_impl_body};
 
 /// Proxy material that scales UV coordinates, before rendering backing material.
 #[derive(Copy, Clone, Debug)]
@@ -34,12 +35,12 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, M> Interactive<F> for ScaleUV<F, M>
 where
     F: Float,
     M: Material<F> + Interactive<F>,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
 
@@ -67,7 +68,6 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, M> SceneObject<F> for ScaleUV<F, M>
 where
     F: Float,

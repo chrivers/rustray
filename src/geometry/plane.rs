@@ -17,8 +17,8 @@ pub struct Plane<F: Float, M: Material<F>> {
     mat: M,
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
 

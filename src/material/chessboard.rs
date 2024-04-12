@@ -68,7 +68,6 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, 
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float, A: Material<F>, B: Material<F>> Interactive<F> for ChessBoard<F, A, B> {}
 
 impl<F: Float, A: Material<F>, B: Material<F>> SceneObject<F> for ChessBoard<F, A, B> {

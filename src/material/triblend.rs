@@ -31,8 +31,12 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Triblend<F, A, B,
     }
 }
 
-impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
-    for Triblend<F, A, B, C>
+impl<F, A, B, C> Material<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let a = self.a.render(maxel, rt);
@@ -48,14 +52,14 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, A, B, C> Interactive<F> for Triblend<F, A, B, C>
 where
     F: Float,
-    A: Material<F> + Interactive<F>,
-    B: Material<F> + Interactive<F>,
-    C: Material<F> + Interactive<F>,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
 
@@ -67,13 +71,12 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, A, B, C> SceneObject<F> for Triblend<F, A, B, C>
 where
     F: Float,
-    A: Material<F> + Interactive<F>,
-    B: Material<F> + Interactive<F>,
-    C: Material<F> + Interactive<F>,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
 {
     sceneobject_impl_body!("Triblend");
 }

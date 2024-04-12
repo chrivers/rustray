@@ -23,8 +23,14 @@ macro_rules! sceneobject_impl_body {
             $name
         }
 
+        #[cfg(feature = "gui")]
         fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
             Some(self)
+        }
+
+        #[cfg(not(feature = "gui"))]
+        fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+            None
         }
 
         fn get_id(&self) -> Option<usize> {

@@ -99,9 +99,10 @@ where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F> + Interactive<F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.strong("Bumpmap");
         ui.end_row();
@@ -114,13 +115,12 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, S1, S2, M> SceneObject<F> for Bumpmap<F, S1, S2, M>
 where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F> + Interactive<F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
     sceneobject_impl_body!("Bumpmap");

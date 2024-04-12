@@ -68,6 +68,7 @@ where
         self.samp.dimensions()
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         self.samp.ui(ui, &format!("{name} (bilinear)"))
     }

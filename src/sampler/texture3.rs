@@ -19,6 +19,7 @@ impl<F: Float> Sampler<u32, Color<F>> for DynamicImage {
         GenericImageView::dimensions(self)
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         let (w, h) = GenericImageView::dimensions(self);
         ui.label(name);

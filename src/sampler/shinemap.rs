@@ -22,6 +22,7 @@ impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, F> for ShineMap<F, S> {
         self.sampler.dimensions()
     }
 
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.strong("Shine map");
         ui.end_row();

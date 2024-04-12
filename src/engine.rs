@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+#[cfg(feature = "gui")]
 use egui::ColorImage;
 use image::{ImageBuffer, Rgba};
 use workerpool::thunk::{Thunk, ThunkWorker};
@@ -121,6 +122,7 @@ impl<F: Float> RenderEngine<F> {
     }
 
     #[must_use]
+    #[cfg(feature = "gui")]
     pub fn get_epaint_image(&self) -> ColorImage {
         let size = [self.img.width() as usize, self.img.height() as usize];
 

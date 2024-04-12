@@ -1,13 +1,15 @@
+use std::fmt::{self, Debug};
+use std::sync::RwLockReadGuard;
+
+use cgmath::MetricSpace;
+
 use crate::engine::RenderSpan;
 use crate::light::{Light, Lixel};
 use crate::material::{ColorDebug, Material};
+use crate::point;
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
-use crate::{point, sceneobject_impl_body};
-use cgmath::MetricSpace;
-use std::sync::RwLockReadGuard;
-
-use std::fmt::{self, Debug};
 
 pub struct Tracer<'a, F: Float> {
     scene: RwLockReadGuard<'a, BoxScene<F>>,
@@ -190,8 +192,8 @@ impl<'a, F: Float> Debug for Tracer<'a, F> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.add(egui::Slider::new(&mut self.sx, 0..=16).text("X supersampling"));
         ui.add(egui::Slider::new(&mut self.sy, 0..=16).text("Y supersampling"));
@@ -203,7 +205,6 @@ impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<'a, F: Float> SceneObject<F> for Tracer<'a, F> {
     sceneobject_impl_body!("Ray tracer");
 }

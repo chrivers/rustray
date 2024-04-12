@@ -104,9 +104,17 @@ fn main() -> RResult<()> {
         scene.lights.len()
     );
 
-    /* rustray::frontend::cli::run(scene, cli.width, cli.height, cli.output.unwrap_or_else(|| PathBuf::from_str("output.png").unwrap())) */
+    #[cfg(feature = "gui")]
+    return rustray::frontend::gui::run(scene, cli.width, cli.height);
 
-    rustray::frontend::gui::run(scene, cli.width, cli.height)
+    #[cfg(not(feature = "gui"))]
+    return rustray::frontend::cli::run(
+        scene,
+        cli.width,
+        cli.height,
+        cli.output
+            .unwrap_or_else(|| PathBuf::from_str("output.png").unwrap()),
+    );
 }
 
 #[cfg(test)]

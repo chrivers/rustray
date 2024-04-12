@@ -21,8 +21,8 @@ pub struct Cylinder<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cylinder<F, M>);
 
-#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         res |= ui.checkbox(&mut self.capped, "Capped").changed();
@@ -33,6 +33,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
         res
     }
 
+    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
         crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
     }

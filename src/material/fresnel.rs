@@ -72,7 +72,6 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, SI, ST, SR> Interactive<F> for Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,
@@ -80,6 +79,7 @@ where
     ST: Sampler<F, Color<F>>,
     SR: Sampler<F, Color<F>>,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.strong("Fresnel");
         ui.end_row();
@@ -92,7 +92,6 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, SI, ST, SR> SceneObject<F> for Fresnel<F, SI, ST, SR>
 where
     F: Float + Texel,

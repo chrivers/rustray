@@ -41,6 +41,7 @@ impl<F: Float> Default for MaterialLib<F> {
 }
 
 impl<F: Float> Interactive<F> for MaterialId {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.label(format!("Material id {}", self.0));
         ui.end_row();

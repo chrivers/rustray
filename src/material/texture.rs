@@ -44,6 +44,7 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material<F> for Texture<F, S> {
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> Interactive<F> for Texture<F, S> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         ui.strong("Texture");
         ui.end_row();

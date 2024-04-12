@@ -1,8 +1,6 @@
-use std::{
-    fmt::{Debug, Display},
-    ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
-    str::FromStr,
-};
+use std::fmt::{Debug, Display};
+use std::ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
+use std::str::FromStr;
 
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};

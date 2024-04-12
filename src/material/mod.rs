@@ -30,7 +30,6 @@ impl<F: Float> Material<F> for Color<F> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float> SceneObject<F> for Box<dyn Material<F>> {
     fn get_name(&self) -> &str {
         (**self).get_name()
@@ -74,8 +73,8 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float> Interactive<F> for Box<dyn Material<F>> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         (**self).ui(ui)
     }
@@ -91,7 +90,6 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
     fn get_name(&self) -> &str {
         (**self).get_name()
@@ -102,8 +100,8 @@ impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F: Float> Interactive<F> for Arc<dyn Material<F>> {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         if let Some(mat) = Arc::get_mut(self) {
             mat.ui(ui)

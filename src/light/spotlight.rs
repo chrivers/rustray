@@ -1,7 +1,5 @@
 use cgmath::{InnerSpace, Rad};
 
-use num_traits::FloatConst;
-
 use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
@@ -64,6 +62,7 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use crate::frontend::gui::controls;
+        use num_traits::FloatConst;
 
         let mut res = false;
 

@@ -1,12 +1,11 @@
-use rand::Rng;
 use std::marker::PhantomData;
 
 use cgmath::InnerSpace;
+use rand::Rng;
 
 use crate::light::Lixel;
 use crate::material::Material;
-use crate::sampler::Sampler;
-use crate::sampler::Texel;
+use crate::sampler::{Sampler, Texel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::{Color, Float, Maxel, Vectorx};
@@ -67,13 +66,13 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, S, M> Interactive<F> for Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
     M: Material<F> + Interactive<F>,
 {
+    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
 
@@ -88,7 +87,6 @@ where
     }
 }
 
-#[cfg(feature = "gui")]
 impl<F, S, M> SceneObject<F> for Matte<F, S, M>
 where
     F: Float + Texel,

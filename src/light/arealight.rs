@@ -9,7 +9,9 @@ use crate::types::{Color, Float, GridSamples, Maxel, Vector, Vectorx};
 pub struct AreaLight<F: Float> {
     pub attn: Attenuation<F>,
     pos: Vector<F>,
+    #[allow(dead_code)]
     dir: Vector<F>,
+    #[allow(dead_code)]
     upd: Vector<F>,
     pub color: Color<F>,
     pub width: F,
