@@ -1,4 +1,4 @@
-use egui::{DragValue, Slider};
+use egui::{CollapsingHeader, CollapsingResponse, DragValue, Grid, InnerResponse, Slider, Ui};
 
 use crate::{
     light::Attenuation,
@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[must_use]
-pub fn position<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) -> bool {
+pub fn position<F: Float>(ui: &mut Ui, pos: &mut Vector<F>, name: &str) -> bool {
     let mut res = false;
 
     ui.label(name);
@@ -29,7 +29,7 @@ pub fn position<F: Float>(ui: &mut egui::Ui, pos: &mut Vector<F>, name: &str) ->
 }
 
 #[must_use]
-pub fn color<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> bool {
+pub fn color<F: Float>(ui: &mut Ui, color: &mut Color<F>, name: &str) -> bool {
     let mut res = false;
     let mut rgb: [f32; 3] = (*color).into();
 
@@ -42,7 +42,7 @@ pub fn color<F: Float>(ui: &mut egui::Ui, color: &mut Color<F>, name: &str) -> b
     res
 }
 
-fn _plot_attenuation<F: Float>(ui: &mut egui::Ui, attn: &Attenuation<F>) -> egui::Response {
+fn _plot_attenuation<F: Float>(ui: &mut Ui, attn: &Attenuation<F>) -> egui::Response {
     use egui_plot::{Line, PlotPoints};
     let n = 128;
     let line_points: PlotPoints = (0..=n)
@@ -63,7 +63,7 @@ fn _plot_attenuation<F: Float>(ui: &mut egui::Ui, attn: &Attenuation<F>) -> egui
 }
 
 #[must_use]
-pub fn attenuation<F: Float>(ui: &mut egui::Ui, attn: &mut Attenuation<F>) -> bool {
+pub fn attenuation<F: Float>(ui: &mut Ui, attn: &mut Attenuation<F>) -> bool {
     let mut res = false;
 
     ui.label("Falloff d^0");
