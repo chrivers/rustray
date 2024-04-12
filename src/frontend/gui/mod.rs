@@ -27,6 +27,7 @@ use egui::{
     emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
     Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, ScrollArea, Sense,
     Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
+    Visuals,
 };
 use egui_file_dialog::FileDialog;
 use pest::Parser;
@@ -48,7 +49,7 @@ where
 {
     /// Called once before the first frame.
     pub fn new(
-        _cc: &eframe::CreationContext<'_>,
+        cc: &eframe::CreationContext<'_>,
         engine: RenderEngine<F>,
         lock: Arc<RwLock<BoxScene<F>>>,
     ) -> Self {
@@ -58,6 +59,13 @@ where
         /* let mut fonts = egui::FontDefinitions::default(); */
         /* egui_nerdfonts::add_to_fonts(&mut fonts, egui_nerdfonts::Variant::Regular); */
         /* cc.egui_ctx.set_fonts(fonts); */
+
+        let visuals = Visuals {
+            slider_trailing_fill: true,
+            ..Visuals::default()
+        };
+
+        cc.egui_ctx.set_visuals(visuals);
 
         Self {
             engine,
