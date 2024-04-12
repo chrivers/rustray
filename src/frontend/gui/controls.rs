@@ -6,6 +6,22 @@ use crate::{
     Vector,
 };
 
+pub fn property_list<R>(
+    name: &str,
+    ui: &mut Ui,
+    add_contents: impl FnOnce(&mut Ui) -> R,
+) -> CollapsingResponse<InnerResponse<R>> {
+    CollapsingHeader::new(name)
+        .default_open(true)
+        .show(ui, |ui| {
+            Grid::new(name)
+                .num_columns(2)
+                .spacing([40.0, 4.0])
+                .striped(true)
+                .show(ui, add_contents)
+        })
+}
+
 #[must_use]
 pub fn position<F: Float>(ui: &mut Ui, pos: &mut Vector<F>, name: &str) -> bool {
     let mut res = false;

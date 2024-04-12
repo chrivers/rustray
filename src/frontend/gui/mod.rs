@@ -126,39 +126,25 @@ where
                 /*     ui.label(format!("Material: {idx}")); */
                 /* }) */
                 /* .body(|ui| { */
-                CollapsingHeader::new(format!("Material {idx}: {}", mat.get_name()))
-                    .default_open(true)
-                    .show(ui, |ui| {
-                        Grid::new("grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                changed |= mat.ui(ui);
-                            })
-                    });
+                let name = format!("Material {idx}: {}", mat.get_name());
+                controls::property_list(&name, ui, |ui| {
+                    changed |= mat.ui(ui);
+                });
             }
 
             ui.label("Objects");
             scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
-                let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))
-                    .default_open(true)
-                    .show(ui, |ui| {
-                        Grid::new("grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
-                                ui.end_row();
+                let name = format!("Object {i}: {}", obj.get_name());
+                let resp = controls::property_list(&name, ui, |ui| {
+                    ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
+                    ui.end_row();
 
-                                if let Some(interactive) = obj.get_interactive() {
-                                    changed |= interactive.ui(ui);
-                                } else {
-                                    ui.label("Non-interactive object :(");
-                                }
-                            });
-                    });
+                    if let Some(interactive) = obj.get_interactive() {
+                        changed |= interactive.ui(ui);
+                    } else {
+                        ui.label("Non-interactive object :(");
+                    }
+                });
 
                 if self.obj == obj.get_id() && self.obj != self.obj_last {
                     resp.header_response
@@ -169,40 +155,26 @@ where
 
             ui.label("Lights");
             scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
-                CollapsingHeader::new(format!("Light {i}: {}", light.get_name()))
-                    .default_open(true)
-                    .show(ui, |ui| {
-                        Grid::new("grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                if let Some(interactive) = light.get_interactive() {
-                                    changed |= interactive.ui(ui);
-                                } else {
-                                    ui.label("Non-interactive light :(");
-                                }
-                            });
-                    });
+                let name = format!("Light {i}: {}", light.get_name());
+                controls::property_list(&name, ui, |ui| {
+                    if let Some(interactive) = light.get_interactive() {
+                        changed |= interactive.ui(ui);
+                    } else {
+                        ui.label("Non-interactive light :(");
+                    }
+                });
             });
 
             ui.label("Cameras");
             scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
-                CollapsingHeader::new(format!("Camera {i}"))
-                    .default_open(true)
-                    .show(ui, |ui| {
-                        Grid::new("grid")
-                            .num_columns(2)
-                            .spacing([40.0, 4.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                if let Some(interactive) = cam.get_interactive() {
-                                    changed |= interactive.ui(ui);
-                                } else {
-                                    ui.label("Non-interactive camera :(");
-                                }
-                            });
-                    });
+                let name = format!("Camera {i}");
+                controls::property_list(&name, ui, |ui| {
+                    if let Some(interactive) = cam.get_interactive() {
+                        changed |= interactive.ui(ui);
+                    } else {
+                        ui.label("Non-interactive camera :(");
+                    }
+                });
             });
 
             if changed {
