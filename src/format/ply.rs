@@ -6,14 +6,12 @@ use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::light::{Attenuation, PointLight};
-use crate::material::Phong;
+use crate::light::{Attenuation, Light, PointLight};
+use crate::material::{Material, Phong};
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
-use crate::types::{Camera, MaterialLib};
-use crate::types::{Error, RResult};
+use crate::types::{Camera, Color, Error, Float, MaterialLib, Point, RResult, Vector, Vectorx};
 use crate::vec3;
-use crate::{Color, Float, Light, Material, Point, Vector, Vectorx};
 
 use ply_rs::{parser, ply};
 use rtbvh::Primitive;

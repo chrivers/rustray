@@ -105,7 +105,7 @@ impl<'a, F: Float> Ray<F> {
         let b = F::TWO * l.dot(self.dir);
         let c = l.dot(l) - radius2;
 
-        quadratic(a, b, c)
+        super::quadratic(a, b, c)
     }
 
     pub fn intersect_unit_sphere(&self) -> Option<F> {
@@ -113,7 +113,7 @@ impl<'a, F: Float> Ray<F> {
         let b = F::TWO * self.dir.dot(self.pos);
         let c = self.pos.dot(self.pos) - F::ONE;
 
-        quadratic(a, b, c)
+        super::quadratic(a, b, c)
     }
 
     pub fn intersect_plane(
@@ -391,33 +391,4 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
     fn from(ray: &Ray<F>) -> Self {
         From::from(*ray)
     }
-}
-
-/* Math functions */
-
-pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
-    let (ta, tb) = quadratic2(a, b, c)?;
-    let t0 = ta.min(tb);
-    let t1 = ta.max(tb);
-    if t0 > F::BIAS2 {
-        return Some(t0);
-    }
-    if t1 > F::BIAS2 {
-        return Some(t1);
-    }
-    None
-}
-
-pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
-    let discr = b * b - F::FOUR * a * c;
-
-    if discr.is_negative() {
-        return None;
-    }
-
-    let dsqrt = discr.sqrt();
-    let div = a * F::TWO;
-    let t0 = (-b + dsqrt) / div;
-    let t1 = (-b - dsqrt) / div;
-    Some((t0, t1))
 }

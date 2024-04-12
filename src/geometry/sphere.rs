@@ -8,8 +8,7 @@ use rtbvh::Aabb;
 use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
 use crate::material::Material;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::transform::{HasTransform, Transform};
-use crate::types::{Float, Maxel, Ray, Vector, Vectorx};
+use crate::types::{Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct Sphere<F: Float, M: Material<F>> {

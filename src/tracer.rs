@@ -1,8 +1,9 @@
 use crate::engine::RenderSpan;
 use crate::light::{Light, Lixel};
+use crate::material::{ColorDebug, Material};
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
-use crate::{point, sceneobject_impl_body, ColorDebug, Material};
+use crate::{point, sceneobject_impl_body};
 use cgmath::MetricSpace;
 use std::sync::RwLockReadGuard;
 

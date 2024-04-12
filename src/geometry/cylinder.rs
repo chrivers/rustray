@@ -8,8 +8,7 @@ use rtbvh::Aabb;
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
 use crate::material::Material;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::transform::{HasTransform, Transform};
-use crate::types::{Float, Maxel, Ray, Vector, Vectorx};
+use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 #[derive(Debug)]
@@ -98,7 +97,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 
         let mut root = F::max_value();
 
-        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+        let (root1, root2) = types::quadratic2(a, b, c)?;
 
         /* test side 1 */
         if root1.is_positive() && (root1 < root) {

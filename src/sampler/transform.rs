@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::sampler::{Sampler, Texel};
-use crate::types::float::Lerp;
-use crate::types::{Float, Point};
+use crate::types::{Float, Lerp, Point};
 
 #[cfg(feature = "gui")]
 use egui::Slider;

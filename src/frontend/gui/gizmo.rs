@@ -1,4 +1,4 @@
-use crate::types::{transform::HasTransform, Camera, Float};
+use crate::types::{Camera, Float, HasTransform};
 
 use egui_gizmo::{Gizmo, GizmoMode, GizmoOrientation};
 

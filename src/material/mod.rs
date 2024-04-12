@@ -4,8 +4,7 @@ use std::sync::Arc;
 use crate::light::Lixel;
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
-use crate::types::matlib::MaterialId;
-use crate::types::{Color, Float, Maxel};
+use crate::types::{Color, Float, MaterialId, Maxel};
 
 pub trait Material<F: Float>: SceneObject<F> + Interactive<F> + Debug + Send + Sync {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;

@@ -1,8 +1,11 @@
 #![allow(unused_variables)]
-use obj::Obj;
-use rand::distributions::{Distribution, Standard};
+
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
+
+use image::{DynamicImage, ImageFormat};
+use obj::Obj;
+use rand::distributions::{Distribution, Standard};
 use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
@@ -10,14 +13,9 @@ use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, Triangl
 use crate::light::{Attenuation, Light, PointLight};
 use crate::material::*;
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
-use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector};
-
 use crate::scene::{BoxScene, Scene};
-
+use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector, Vectorx};
 use crate::{point, vec3};
-
-use image::{DynamicImage, ImageFormat};
 
 fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
 where

@@ -1,10 +1,7 @@
 use egui::{CollapsingHeader, CollapsingResponse, DragValue, Grid, InnerResponse, Slider, Ui};
 
-use crate::{
-    light::Attenuation,
-    types::{Color, Float},
-    Vector,
-};
+use crate::light::Attenuation;
+use crate::types::{Color, Float, Vector};
 
 pub fn property_list<R>(
     name: &str,

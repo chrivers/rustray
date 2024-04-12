@@ -9,10 +9,8 @@ use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
 use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
 
-use crate::{
-    sampler::Texel,
-    types::float::{Float, Lerp},
-};
+use crate::sampler::Texel;
+use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, Add, Sub, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FP<const P: u8>(i64);

@@ -5,13 +5,9 @@ use obj::{Obj, ObjMaterial};
 use cgmath::InnerSpace;
 
 use crate::geometry::Triangle;
-use crate::material::{Bumpmap, Phong, Smart};
+use crate::material::{BoxMaterial, BumpPower, Bumpmap, Phong, Smart};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, Texel};
-use crate::types::matlib::MaterialId;
-use crate::types::result::RResult;
-use crate::types::vector::Vectorx;
-use crate::types::{Color, Float, MaterialLib, Point, Vector};
-use crate::{BoxMaterial, BumpPower};
+use crate::types::{Color, Float, MaterialId, MaterialLib, Point, RResult, Vector, Vectorx};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,

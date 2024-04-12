@@ -4,9 +4,9 @@ use egui::emath::RectTransform;
 use egui::{Color32, Pos2, Rect, Rounding, Shape, Stroke};
 
 use crate::debug::tracer::DebugTracer;
+use crate::point;
 use crate::scene::{BoxScene, RayTracer};
-use crate::types::Camera;
-use crate::{point, Float, Point, Vector, Vectorx};
+use crate::types::{Camera, Float, Point, Vector, Vectorx};
 
 pub struct VisualTracer<'a, F: Float> {
     to_screen: &'a RectTransform,

@@ -1,6 +1,7 @@
 use thiserror::Error;
 
-use crate::{engine::RenderSpan, Float};
+use crate::engine::RenderSpan;
+use crate::types::Float;
 
 #[derive(Error, Debug)]
 pub enum Error {

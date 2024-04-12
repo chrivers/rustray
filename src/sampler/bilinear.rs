@@ -3,10 +3,7 @@ use std::marker::PhantomData;
 
 use crate::point;
 use crate::sampler::{Sampler, Texel};
-use crate::types::{
-    float::{Float, Lerp},
-    Point,
-};
+use crate::types::{Float, Lerp, Point};
 
 #[derive(Copy, Clone)]
 pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {

@@ -2,9 +2,8 @@ use cgmath::InnerSpace;
 
 use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
-use crate::types::{iter::GridSamples, maxel::Maxel};
-use crate::types::{Color, Float, Vector};
-use crate::{sceneobject_impl_body, Vectorx};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, GridSamples, Maxel, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct AreaLight<F: Float> {

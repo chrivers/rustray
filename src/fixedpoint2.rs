@@ -14,10 +14,8 @@ use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
 #[cfg(feature = "gui")]
 use egui::emath::Numeric;
 
-use crate::{
-    sampler::Texel,
-    types::float::{Float, Lerp},
-};
+use crate::sampler::Texel;
+use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FXP<const P: i32>(FixedI64<P>);

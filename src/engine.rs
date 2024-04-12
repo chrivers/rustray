@@ -7,7 +7,7 @@ use workerpool::Pool;
 
 use crate::scene::BoxScene;
 use crate::tracer::Tracer;
-use crate::{Color, Float};
+use crate::types::{Color, Float};
 
 pub struct RenderSpan<F: Float> {
     pub line: u32,

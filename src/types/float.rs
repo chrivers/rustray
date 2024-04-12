@@ -170,3 +170,32 @@ impl Float for f64 {
         self as f64
     }
 }
+
+/* Math functions */
+
+pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
+    let (ta, tb) = quadratic2(a, b, c)?;
+    let t0 = ta.min(tb);
+    let t1 = ta.max(tb);
+    if t0 > F::BIAS2 {
+        return Some(t0);
+    }
+    if t1 > F::BIAS2 {
+        return Some(t1);
+    }
+    None
+}
+
+pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
+    let discr = b * b - F::FOUR * a * c;
+
+    if discr.is_negative() {
+        return None;
+    }
+
+    let dsqrt = discr.sqrt();
+    let div = a * F::TWO;
+    let t0 = (-b + dsqrt) / div;
+    let t1 = (-b - dsqrt) / div;
+    Some((t0, t1))
+}

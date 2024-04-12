@@ -9,8 +9,7 @@ use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
 use crate::material::Material;
 use crate::point;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::transform::{HasTransform, Transform};
-use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
+use crate::types::{Float, HasTransform, Maxel, Point, Ray, Transform, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct Square<F: Float, M: Material<F>> {
