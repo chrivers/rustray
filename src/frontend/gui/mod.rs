@@ -24,9 +24,10 @@ use crate::{
 
 use eframe::egui::Key;
 use egui::{
-    emath::RectTransform, pos2, vec2, Align, CentralPanel, Color32, Context, KeyboardShortcut,
-    Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText, ScrollArea, Sense, Shape,
-    SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand, Visuals,
+    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
+    KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText, ScrollArea,
+    Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
+    Visuals,
 };
 use egui_file_dialog::FileDialog;
 use pest::Parser;
@@ -102,79 +103,91 @@ where
         ui.label(RichText::new("RustRay").heading().strong());
 
         ScrollArea::vertical().show(ui, |ui| {
-            ui.label("Materials");
             let mut changed = false;
 
-            let mat_keys: Vec<MaterialId> = scene
-                .materials
-                .mats
-                .keys()
-                .copied()
-                .sorted_by(|a, b| Ord::cmp(&a, &b))
-                .collect();
+            CollapsingHeader::new(RichText::new("Materials").heading().strong())
+                .default_open(true)
+                .show(ui, |ui| {
+                    let mat_keys: Vec<MaterialId> = scene
+                        .materials
+                        .mats
+                        .keys()
+                        .copied()
+                        .sorted_by(|a, b| Ord::cmp(&a, &b))
+                        .collect();
 
-            for (idx, id) in mat_keys.into_iter().enumerate() {
-                let mat = scene.materials.mats.get_mut(&id).unwrap();
-                /* let name = format!("material-{}", mat.get_id().unwrap_or(0)); */
-                /* egui::collapsing_header::CollapsingState::load_with_default_open( */
-                /*     ui.ctx(), */
-                /*     name.into(), */
-                /*     true, */
-                /* ) */
-                /* .show_header(ui, |ui| { */
-                /*     ui.label(format!("Material: {idx}")); */
-                /* }) */
-                /* .body(|ui| { */
-                let name = format!("Material {idx}: {}", mat.get_name());
-                controls::property_list(&name, ui, |ui| {
-                    changed |= mat.ui(ui);
-                });
-            }
-
-            ui.label("Objects");
-            scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
-                let name = format!("Object {i}: {}", obj.get_name());
-                let resp = controls::property_list(&name, ui, |ui| {
-                    ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
-                    ui.end_row();
-
-                    if let Some(interactive) = obj.get_interactive() {
-                        changed |= interactive.ui(ui);
-                    } else {
-                        ui.label("Non-interactive object :(");
+                    for (idx, id) in mat_keys.into_iter().enumerate() {
+                        let mat = scene.materials.mats.get_mut(&id).unwrap();
+                        /* let name = format!("material-{}", mat.get_id().unwrap_or(0)); */
+                        /* egui::collapsing_header::CollapsingState::load_with_default_open( */
+                        /*     ui.ctx(), */
+                        /*     name.into(), */
+                        /*     true, */
+                        /* ) */
+                        /* .show_header(ui, |ui| { */
+                        /*     ui.label(format!("Material: {idx}")); */
+                        /* }) */
+                        /* .body(|ui| { */
+                        let name = format!("Material {idx}: {}", mat.get_name());
+                        controls::property_list(&name, ui, |ui| {
+                            changed |= mat.ui(ui);
+                        });
                     }
                 });
 
-                if self.obj == obj.get_id() && self.obj != self.obj_last {
-                    resp.header_response
-                        .highlight()
-                        .scroll_to_me(Some(Align::Center));
-                }
-            });
+            CollapsingHeader::new(RichText::new("Objects").heading().strong())
+                .default_open(true)
+                .show(ui, |ui| {
+                    scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
+                        let name = format!("Object {i}: {}", obj.get_name());
+                        let resp = controls::property_list(&name, ui, |ui| {
+                            ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
+                            ui.end_row();
 
-            ui.label("Lights");
-            scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
-                let name = format!("Light {i}: {}", light.get_name());
-                controls::property_list(&name, ui, |ui| {
-                    if let Some(interactive) = light.get_interactive() {
-                        changed |= interactive.ui(ui);
-                    } else {
-                        ui.label("Non-interactive light :(");
-                    }
-                });
-            });
+                            if let Some(interactive) = obj.get_interactive() {
+                                changed |= interactive.ui(ui);
+                            } else {
+                                ui.label("Non-interactive object :(");
+                            }
+                        });
 
-            ui.label("Cameras");
-            scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
-                let name = format!("Camera {i}");
-                controls::property_list(&name, ui, |ui| {
-                    if let Some(interactive) = cam.get_interactive() {
-                        changed |= interactive.ui(ui);
-                    } else {
-                        ui.label("Non-interactive camera :(");
-                    }
+                        if self.obj == obj.get_id() && self.obj != self.obj_last {
+                            resp.header_response
+                                .highlight()
+                                .scroll_to_me(Some(Align::Center));
+                        }
+                    });
                 });
-            });
+
+            CollapsingHeader::new(RichText::new("Lights").heading().strong())
+                .default_open(true)
+                .show(ui, |ui| {
+                    scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
+                        let name = format!("Light {i}: {}", light.get_name());
+                        controls::property_list(&name, ui, |ui| {
+                            if let Some(interactive) = light.get_interactive() {
+                                changed |= interactive.ui(ui);
+                            } else {
+                                ui.label("Non-interactive light :(");
+                            }
+                        });
+                    });
+                });
+
+            CollapsingHeader::new(RichText::new("Cameras").heading().strong())
+                .default_open(true)
+                .show(ui, |ui| {
+                    scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
+                        let name = format!("Camera {i}");
+                        controls::property_list(&name, ui, |ui| {
+                            if let Some(interactive) = cam.get_interactive() {
+                                changed |= interactive.ui(ui);
+                            } else {
+                                ui.label("Non-interactive camera :(");
+                            }
+                        });
+                    });
+                });
 
             if changed {
                 scene.recompute_bvh().unwrap();
