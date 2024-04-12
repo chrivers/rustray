@@ -19,15 +19,14 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{matlib::MaterialId, ray::RF, Error, Float, Point, RResult},
+    types::{Error, Float, MaterialId, Point, RResult, RF},
 };
 
 use eframe::egui::Key;
 use egui::{
-    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
-    Grid, KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText,
-    ScrollArea, Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
-    ViewportCommand, Visuals,
+    emath::RectTransform, pos2, vec2, Align, CentralPanel, Color32, Context, KeyboardShortcut,
+    Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText, ScrollArea, Sense, Shape,
+    SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand, Visuals,
 };
 use egui_file_dialog::FileDialog;
 use pest::Parser;

@@ -8,17 +8,14 @@ use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 #[cfg(feature = "gui")]
 use crate::types::Camera;
 
-use crate::geometry::{build_aabb_ranged, triangle::Triangle, FiniteGeometry, Geometry};
+use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
 use crate::material::Material;
 use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    matlib::MaterialId,
-    ray::RF,
-    transform::{HasTransform, Transform},
-    BvhExt, RResult,
+    BvhExt, Color, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform,
+    Vector, Vectorx, RF,
 };
-use crate::types::{Color, Float, MaterialLib, Maxel, Ray, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F>> {
