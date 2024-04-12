@@ -74,7 +74,7 @@ impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
     }
 }
 
-impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
+impl<F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'static> {
     fn center(&self) -> Vec3 {
         (**self).center()
     }
