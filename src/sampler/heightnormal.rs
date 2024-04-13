@@ -1,25 +1,22 @@
 use cgmath::InnerSpace;
 
 use crate::point;
-use crate::sampler::{Sampler, Texel};
+use crate::sampler::Sampler;
 use crate::types::{Float, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
-pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>> {
+pub struct HeightNormal<F: Float, S: Sampler<F, F>> {
     delta: F,
     sampler: S,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> HeightNormal<F, S> {
+impl<F: Float, S: Sampler<F, F>> HeightNormal<F, S> {
     pub const fn new(delta: F, sampler: S) -> Self {
         Self { delta, sampler }
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S>
-where
-    Vector<F>: Texel,
-{
+impl<F: Float, S: Sampler<F, F>> Sampler<F, Vector<F>> for HeightNormal<F, S> {
     fn sample(&self, uv: Point<F>) -> Vector<F> {
         let d = self.delta;
         let a = self.sampler.sample(point!(uv.x - d, uv.y));

@@ -14,7 +14,6 @@ use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
 #[cfg(feature = "gui")]
 use egui::emath::Numeric;
 
-use crate::sampler::Texel;
 use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
@@ -275,8 +274,6 @@ impl<const P: i32> FromStr for FXP<P> {
         todo!()
     }
 }
-
-impl<const P: i32> Texel for FXP<P> {}
 
 impl<const P: i32> FloatConst for FXP<P> {
     #[doc = "Return Euler’s number."]

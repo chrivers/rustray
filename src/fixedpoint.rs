@@ -7,7 +7,6 @@ use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
 use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
 
-use crate::sampler::Texel;
 use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, Add, Sub, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
@@ -237,8 +236,6 @@ impl<const P: u8> FromStr for FP<P> {
         todo!()
     }
 }
-
-impl<const P: u8> Texel for FP<P> {}
 
 impl<const P: u8> FloatConst for FP<P> {
     #[doc = "Return Euler’s number."]

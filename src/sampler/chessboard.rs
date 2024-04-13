@@ -22,8 +22,12 @@ impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> ChessBoardSampler<F
     }
 }
 
-impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> Sampler<F, T>
-    for ChessBoardSampler<F, T, A, B>
+impl<F, T, A, B> Sampler<F, T> for ChessBoardSampler<F, T, A, B>
+where
+    F: Float,
+    T: Texel,
+    A: Sampler<F, T>,
+    B: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {
         let u = uv.x.abs().fract() > F::HALF;

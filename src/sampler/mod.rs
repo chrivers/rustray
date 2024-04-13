@@ -55,18 +55,18 @@ impl<F: Num, T: Texel> Sampler<F, T> for DynSampler<F, T> {
 
 pub trait Texel: Debug + Send + Sync {}
 
-impl Texel for f32 {}
-impl Texel for f64 {}
+impl<F: Float + Debug + Send + Sync> Texel for F {}
 
 /**
-Blanket implementation: [`Sync`] + [`Copy`] types can sample themselves, returning
+Blanket implementation: [`Texel`] types can sample themselves, returning
 self as their value.
 
 This is useful to make e.g. a [`crate::Float`] or [`crate::Color<F>`] a viable substitute for a real
 texture sampler.
 */
-impl<F: Float + Texel> Sampler<F, F> for F
+impl<F> Sampler<F, F> for F
 where
+    F: Float + Texel,
     Self: Debug,
 {
     fn sample(&self, _uv: Point<F>) -> F {

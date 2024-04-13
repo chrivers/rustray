@@ -5,7 +5,7 @@ use egui::Slider;
 
 use perlin2d::PerlinNoise2D;
 
-use crate::sampler::{Sampler, Texel};
+use crate::sampler::Sampler;
 use crate::types::{Float, Point};
 
 pub struct Perlin {
@@ -49,7 +49,7 @@ impl Perlin {
     }
 }
 
-impl<F: Float + Texel> Sampler<F, F> for Perlin {
+impl<F: Float> Sampler<F, F> for Perlin {
     fn sample(&self, uv: Point<F>) -> F {
         let x = uv.x.to_f32().unwrap() as f64;
         let y = uv.y.to_f32().unwrap() as f64;

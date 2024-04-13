@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use cgmath::InnerSpace;
 
-use crate::sampler::{Sampler, Texel};
+use crate::sampler::Sampler;
 use crate::types::{Color, Float, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
@@ -29,10 +29,7 @@ impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S> {
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S>
-where
-    Vector<F>: Texel,
-{
+impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S> {
     fn sample(&self, uv: Point<F>) -> Vector<F> {
         Self::color_to_vector(&self.sampler.sample(uv))
     }

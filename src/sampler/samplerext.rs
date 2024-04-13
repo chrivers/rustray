@@ -21,7 +21,7 @@ pub trait SamplerExt<T: Texel> {
     fn scale<F>(self, scale: F, offset: F) -> Adjust<F, T, Self>
     where
         F: Float,
-        T: Texel + Add<F, Output = T> + Lerp<Ratio = F>,
+        T: Add<F, Output = T> + Lerp<Ratio = F>,
         Self: Sampler<F, T> + Sized,
     {
         Adjust::new(scale, offset, self)

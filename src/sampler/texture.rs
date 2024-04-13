@@ -1,8 +1,8 @@
-use crate::sampler::{Sampler, Texel};
+use crate::sampler::Sampler;
 use crate::types::{Color, Float, Point};
 use image::{DynamicImage, GenericImageView, Pixel};
 
-impl<F: Float + Texel> Sampler<u32, F> for DynamicImage {
+impl<F: Float> Sampler<u32, F> for DynamicImage {
     fn sample(&self, uv: Point<u32>) -> F {
         let (w, h) = Sampler::<u32, F>::dimensions(self);
         let c = self.get_pixel(uv.x % w, uv.y % h).to_rgb();

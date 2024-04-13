@@ -1,19 +1,19 @@
-use crate::sampler::{Sampler, Texel};
+use crate::sampler::Sampler;
 use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
-pub struct ShineMap<F: Float + Texel, S: Sampler<F, F>> {
+pub struct ShineMap<F: Float, S: Sampler<F, F>> {
     sampler: S,
     scale: F,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> ShineMap<F, S> {
+impl<F: Float, S: Sampler<F, F>> ShineMap<F, S> {
     pub const fn new(sampler: S, scale: F) -> Self {
         Self { sampler, scale }
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Sampler<F, F> for ShineMap<F, S> {
+impl<F: Float, S: Sampler<F, F>> Sampler<F, F> for ShineMap<F, S> {
     fn sample(&self, uv: Point<F>) -> F {
         self.sampler.sample(uv) * self.scale
     }
