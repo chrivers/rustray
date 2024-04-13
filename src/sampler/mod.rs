@@ -81,7 +81,7 @@ where
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.label(name);
         let res = ui
-            .add(egui::Slider::new(self, F::zero()..=F::from_u32(128)).clamp_to_range(false))
+            .add(egui::Slider::new(self, F::ZERO..=F::from_u32(128)).clamp_to_range(false))
             .changed();
         ui.end_row();
         res

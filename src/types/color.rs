@@ -121,7 +121,7 @@ impl<F: Float> Color<F> {
 
     pub fn mixed(input: &[Self]) -> Self {
         match input.len() {
-            0 => Self::zero(),
+            0 => Self::BLACK,
             n => input.iter().copied().sum::<Self>() / F::from_usize(n),
         }
     }
@@ -150,7 +150,7 @@ impl<F: Float> Color<F> {
 
 impl<F: Float> Zero for Color<F> {
     fn zero() -> Self {
-        Self::black()
+        Self::BLACK
     }
 
     fn is_zero(&self) -> bool {
@@ -160,7 +160,7 @@ impl<F: Float> Zero for Color<F> {
 
 impl<F: Float> Sum for Color<F> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::zero(), |a, ref c| a + *c)
+        iter.fold(Self::BLACK, |a, ref c| a + *c)
     }
 }
 

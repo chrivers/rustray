@@ -52,7 +52,7 @@ where
         for _n in 0..self.rays {
             let rx = (rng.gen() - F::HALF) * src;
             let ry = (rng.gen() - F::HALF) * src;
-            let rz = (rng.gen() / F::TWO) * (F::one() - src) + src;
+            let rz = (rng.gen() / F::TWO) * (F::ONE - src) + src;
             let (normalu, normalv) = normal.surface_tangents();
             mxl = mxl.with_normal((normal * rz + normalu * rx + normalv * ry).normalize());
 

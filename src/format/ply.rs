@@ -31,8 +31,9 @@ struct Face<F: Float> {
 
 impl<F: Float> ply::PropertyAccess for Vertex<F> {
     fn new() -> Self {
-        Self(Vector::<F>::zero(), Vector::<F>::zero())
+        Self(Vector::ZERO, Vector::ZERO)
     }
+
     fn set_property(&mut self, key: String, property: ply::Property) {
         match property {
             ply::Property::Float(v) => match key.as_ref() {

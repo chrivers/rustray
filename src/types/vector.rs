@@ -61,7 +61,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
 
     #[cfg(debug_assertions)]
     fn assert_normalized(self) {
-        if self != Self::zero() {
+        if self != Self::ZERO {
             assert!(self.magnitude() < F::from_f32(1.01));
             assert!(self.magnitude() > F::from_f32(0.99));
         }
@@ -256,7 +256,7 @@ where
         let k = F::ONE - eta * eta * (F::ONE - cosi * cosi);
 
         if k.is_negative() {
-            Self::zero()
+            Self::ZERO
         } else {
             (self * eta + n * (eta * cosi - k.sqrt())).normalize()
         }

@@ -62,8 +62,8 @@ impl<F: Num + Copy + ConstZero> Point<F> {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
-            x: F::zero(),
-            y: F::zero(),
+            x: F::ZERO,
+            y: F::ZERO,
         }
     }
 }
