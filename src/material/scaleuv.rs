@@ -35,11 +35,7 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
     }
 }
 
-impl<F, M> Interactive<F> for ScaleUV<F, M>
-where
-    F: Float,
-    M: Material<F> + Interactive<F>,
-{
+impl<F: Float, M: Material<F>> Interactive<F> for ScaleUV<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
@@ -68,10 +64,6 @@ where
     }
 }
 
-impl<F, M> SceneObject<F> for ScaleUV<F, M>
-where
-    F: Float,
-    M: Material<F> + Interactive<F>,
-{
+impl<F: Float, M: Material<F>> SceneObject<F> for ScaleUV<F, M> {
     sceneobject_impl_body!("Scale UV");
 }

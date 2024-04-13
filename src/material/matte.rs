@@ -70,7 +70,7 @@ impl<F, S, M> Interactive<F> for Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F> + Interactive<F>,
+    M: Material<F>,
 {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
@@ -91,7 +91,7 @@ impl<F, S, M> SceneObject<F> for Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F> + Interactive<F>,
+    M: Material<F>,
 {
     sceneobject_impl_body!("Matte");
 }
