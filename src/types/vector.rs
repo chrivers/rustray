@@ -2,7 +2,7 @@ use cgmath::{InnerSpace, Matrix4};
 use num_traits::Zero;
 
 use crate::sampler::Texel;
-use crate::types::{transform::Transform, Float, Point};
+use crate::types::{transform::Transform, Float, Lerp, Point};
 
 /**
 Convenience macro to construct a [`Vector<F>`] from input values.
@@ -294,6 +294,10 @@ where
             (r_s * r_s + r_p * r_p) * F::HALF
         }
     }
+}
+
+impl<F: Float> Lerp for Vector<F> {
+    type Ratio = F;
 }
 
 impl<F: Float> Texel for Vector<F> {}

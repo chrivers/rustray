@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::ops::Add;
 
 use crate::sampler::{Sampler, Texel};
-use crate::types::{Float, Lerp, Point};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>> {
@@ -26,7 +26,7 @@ impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
 impl<F, T, S> Sampler<F, T> for Adjust<F, T, S>
 where
     F: Float,
-    T: Texel + Add<F, Output = T> + Lerp<Ratio = F>,
+    T: Texel<Ratio = F> + Add<F, Output = T>,
     S: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {

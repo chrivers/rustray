@@ -52,7 +52,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     pub const fn new(pow: S1, img: S2, mat: M) -> Self {
         Self {
@@ -70,7 +69,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
@@ -99,7 +97,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
@@ -120,7 +117,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     sceneobject_impl_body!("Bumpmap");
 }

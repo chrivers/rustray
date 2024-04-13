@@ -1,7 +1,5 @@
-use std::ops::Add;
-
 use crate::sampler::{Adjust, Bilinear, Nearest, Sampler, Texel};
-use crate::types::{Float, Lerp};
+use crate::types::Float;
 
 pub trait SamplerExt<T: Texel> {
     fn bilinear(self) -> Bilinear<T, Self>
@@ -21,7 +19,7 @@ pub trait SamplerExt<T: Texel> {
     fn scale<F>(self, scale: F, offset: F) -> Adjust<F, T, Self>
     where
         F: Float,
-        T: Add<F, Output = T> + Lerp<Ratio = F>,
+        T: Texel<Ratio = F>,
         Self: Sampler<F, T> + Sized,
     {
         Adjust::new(scale, offset, self)

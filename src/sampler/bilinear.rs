@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 
 use crate::point;
 use crate::sampler::{Sampler, Texel};
-use crate::types::{Float, Lerp, Point};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone)]
 pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {
@@ -31,7 +31,7 @@ impl<P: Texel, S: Sampler<u32, P>> Debug for Bilinear<P, S> {
 impl<F, P, S> Sampler<F, P> for Bilinear<P, S>
 where
     F: Float,
-    P: Texel + Lerp<Ratio = F>,
+    P: Texel<Ratio = F>,
     S: Sampler<u32, P>,
 {
     fn sample(&self, uv: Point<F>) -> P {

@@ -1,9 +1,11 @@
-use std::fmt::Debug;
+use std::ops::Sub;
 use std::sync::Arc;
+use std::{fmt::Debug, ops::Add};
 
+use num::Zero;
 use num_traits::Num;
 
-use crate::types::{Color, Float, Point};
+use crate::types::{Color, Float, Lerp, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -53,7 +55,11 @@ impl<F: Num, T: Texel> Sampler<F, T> for DynSampler<F, T> {
     }
 }
 
-pub trait Texel: Debug + Send + Sync {}
+pub trait Texel
+where
+    Self: Debug + Send + Sync + Zero + Add<Self, Output = Self> + Sub<Self, Output = Self> + Lerp,
+{
+}
 
 impl<F: Float + Debug + Send + Sync> Texel for F {}
 
