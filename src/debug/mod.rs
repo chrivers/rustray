@@ -1,1 +1,3 @@
-pub mod tracer;
+mod tracer;
+
+pub use tracer::{DebugTracer, Step};
