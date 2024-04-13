@@ -35,6 +35,10 @@ impl<F: Float> SceneObject<F> for Box<dyn Material<F>> {
         (**self).get_name()
     }
 
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        (**self).get_interactive()
+    }
+
     fn get_id(&self) -> Option<usize> {
         (**self).get_id()
     }
@@ -93,6 +97,10 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
 impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
     fn get_name(&self) -> &str {
         (**self).get_name()
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        Arc::get_mut(self)?.get_interactive()
     }
 
     fn get_id(&self) -> Option<usize> {
