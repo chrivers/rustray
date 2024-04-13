@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::material::Material;
+use crate::material::BoxMaterial;
 use crate::scene::Interactive;
 use crate::types::Float;
 
@@ -8,7 +8,7 @@ use crate::types::Float;
 pub struct MaterialId(pub u32);
 
 pub struct MaterialLib<F: Float> {
-    pub mats: HashMap<MaterialId, Box<dyn Material<F>>>,
+    pub mats: HashMap<MaterialId, BoxMaterial<F>>,
     idx: u32,
 }
 
@@ -26,7 +26,7 @@ impl<F: Float> MaterialLib<F> {
         format!("material-{}", mat.0)
     }
 
-    pub fn insert(&mut self, material: Box<dyn Material<F>>) -> MaterialId {
+    pub fn insert(&mut self, material: BoxMaterial<F>) -> MaterialId {
         let next = MaterialId(self.idx);
         self.mats.insert(next, material);
         self.idx += 1;

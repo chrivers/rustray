@@ -16,7 +16,7 @@ use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
 use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
-use crate::material::{BumpPower, Bumpmap, Material, Smart, Triblend};
+use crate::material::{BoxMaterial, BumpPower, Bumpmap, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
 use crate::types::{
@@ -648,7 +648,7 @@ where
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
-        let res: Box<dyn Material<F>> = match bump {
+        let res: BoxMaterial<F> = match bump {
             None => Box::new(smart),
             Some(b) => Box::new(Bumpmap::new(
                 BumpPower(F::from_f32(0.25)),
@@ -741,7 +741,7 @@ where
 
         for face in &faces {
             let m: MaterialId = if !materials.is_empty() {
-                let mat: Box<dyn Material<F>> = Box::new(Triblend::new(
+                let mat: BoxMaterial<F> = Box::new(Triblend::new(
                     materials[face[0]],
                     materials[face[1]],
                     materials[face[2]],

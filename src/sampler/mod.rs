@@ -33,7 +33,7 @@ where
 pub type BoxSampler<F, T> = Box<dyn Sampler<F, T>>;
 pub type DynSampler<F, T> = Arc<dyn Sampler<F, T>>;
 
-impl<F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'static> {
+impl<F: Num, T: Texel> Sampler<F, T> for DynSampler<F, T> {
     fn sample(&self, uv: Point<F>) -> T {
         (**self).sample(uv)
     }

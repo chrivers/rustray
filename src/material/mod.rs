@@ -30,7 +30,7 @@ impl<F: Float> Material<F> for Color<F> {
     }
 }
 
-impl<F: Float> SceneObject<F> for Box<dyn Material<F>> {
+impl<F: Float> SceneObject<F> for BoxMaterial<F> {
     fn get_name(&self) -> &str {
         (**self).get_name()
     }
@@ -64,10 +64,7 @@ impl<F: Float> Material<F> for MaterialId {
     }
 }
 
-impl<F: Float> Material<F> for Box<dyn Material<F>>
-where
-    Self: Interactive<F>,
-{
+impl<F: Float> Material<F> for BoxMaterial<F> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         (**self).render(maxel, rt)
     }
@@ -77,14 +74,14 @@ where
     }
 }
 
-impl<F: Float> Interactive<F> for Box<dyn Material<F>> {
+impl<F: Float> Interactive<F> for BoxMaterial<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         (**self).ui(ui)
     }
 }
 
-impl<F: Float> Material<F> for Arc<dyn Material<F>> {
+impl<F: Float> Material<F> for DynMaterial<F> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         (**self).render(maxel, rt)
     }
@@ -94,7 +91,7 @@ impl<F: Float> Material<F> for Arc<dyn Material<F>> {
     }
 }
 
-impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
+impl<F: Float> SceneObject<F> for DynMaterial<F> {
     fn get_name(&self) -> &str {
         (**self).get_name()
     }
@@ -108,7 +105,7 @@ impl<F: Float> SceneObject<F> for Arc<dyn Material<F>> {
     }
 }
 
-impl<F: Float> Interactive<F> for Arc<dyn Material<F>> {
+impl<F: Float> Interactive<F> for DynMaterial<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         if let Some(mat) = Arc::get_mut(self) {

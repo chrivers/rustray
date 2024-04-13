@@ -9,7 +9,7 @@ use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 use crate::types::Camera;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
-use crate::material::Material;
+use crate::material::{BoxMaterial, Material};
 use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
@@ -20,7 +20,7 @@ use crate::types::{
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
-    mat: Box<dyn Material<F>>,
+    mat: BoxMaterial<F>,
     pub tris: Vec<Triangle<F, M>>,
     bvh: Bvh,
     aabb: Aabb,
