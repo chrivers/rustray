@@ -1,6 +1,6 @@
 use crate::geometry::{FiniteGeometry, Geometry};
 use crate::light::{Light, Lixel};
-use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray};
+use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib};
 
 use cgmath::MetricSpace;
 
@@ -67,6 +67,7 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub cameras: Vec<Camera<F>>,
     pub objects: Vec<B>,
     pub geometry: Vec<G>,
+    pub textures: TextureLib,
     pub materials: MaterialLib<F>,
     pub lights: Vec<L>,
     pub bvh: Bvh,
@@ -93,6 +94,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             cameras,
             objects,
             geometry,
+            textures: TextureLib::new(),
             materials,
             lights,
             bvh: Bvh::default(),
