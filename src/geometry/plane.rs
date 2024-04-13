@@ -20,7 +20,7 @@ pub struct Plane<F: Float, M: Material<F>> {
 impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use crate::gui::controls;
 
         let mut res = false;
         res |= controls::position(ui, &mut self.pos, "Position");

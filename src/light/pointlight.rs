@@ -15,7 +15,7 @@ pub struct PointLight<F: Float> {
 impl<F: Float> Interactive<F> for PointLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use crate::gui::controls;
 
         let mut res = false;
         res |= controls::color(ui, &mut self.color, "Color");

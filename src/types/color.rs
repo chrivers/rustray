@@ -35,7 +35,7 @@ impl<F: Float> Debug for Color<F> {
 impl<F: Float> Interactive<F> for Color<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        crate::frontend::gui::controls::color(ui, self, "Color")
+        crate::gui::controls::color(ui, self, "Color")
     }
 }
 

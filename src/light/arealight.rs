@@ -65,7 +65,9 @@ impl<F: Float> SceneObject<F> for AreaLight<F> {
 impl<F: Float> Interactive<F> for AreaLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use egui::Slider;
+
+        use crate::gui::controls;
 
         let mut res = false;
 
@@ -76,27 +78,22 @@ impl<F: Float> Interactive<F> for AreaLight<F> {
         res |= controls::position(ui, &mut self.upd, "Up direction");
 
         ui.label("X resolution");
-        res |= ui.add(egui::Slider::new(&mut self.xres, 1..=32)).changed();
+        res |= ui.add(Slider::new(&mut self.xres, 1..=32)).changed();
         ui.end_row();
 
         ui.label("Y resolution");
-        res |= ui.add(egui::Slider::new(&mut self.yres, 1..=32)).changed();
+        res |= ui.add(Slider::new(&mut self.yres, 1..=32)).changed();
         ui.end_row();
 
         ui.label("Width");
         res |= ui
-            .add(
-                egui::Slider::new(&mut self.width, F::ZERO..=F::from_u32(10)).clamp_to_range(false),
-            )
+            .add(Slider::new(&mut self.width, F::ZERO..=F::from_u32(10)).clamp_to_range(false))
             .changed();
         ui.end_row();
 
         ui.label("Height");
         res |= ui
-            .add(
-                egui::Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
-                    .clamp_to_range(false),
-            )
+            .add(Slider::new(&mut self.height, F::ZERO..=F::from_u32(10)).clamp_to_range(false))
             .changed();
         ui.end_row();
 

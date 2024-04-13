@@ -64,6 +64,9 @@ pub mod scene;
 pub mod tracer;
 pub mod types;
 
+#[cfg(feature = "gui")]
+pub mod gui;
+
 #[cfg(feature = "fixedpoint1")]
 pub mod fixedpoint;
 #[cfg(feature = "fixedpoint2")]

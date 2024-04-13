@@ -23,13 +23,11 @@ impl<F: Float> DirectionalLight<F> {
 impl<F: Float> Interactive<F> for DirectionalLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use crate::gui::controls;
 
         let mut res = false;
-
         res |= controls::color(ui, &mut self.color, "Color");
         res |= controls::position(ui, &mut self.dir, "Direction");
-
         res
     }
 }

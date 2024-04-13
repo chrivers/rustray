@@ -1,9 +1,3 @@
-mod gizmo;
-
-pub mod controls;
-pub mod visualtrace;
-
-pub use gizmo::gizmo_ui;
 use itertools::Itertools;
 
 use std::{
@@ -16,6 +10,7 @@ use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::Geometry,
+    gui::{controls, gizmo, visualtrace},
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},

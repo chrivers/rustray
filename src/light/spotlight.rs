@@ -61,8 +61,10 @@ impl<F: Float> Light<F> for SpotLight<F> {
 impl<F: Float> Interactive<F> for SpotLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use egui::Slider;
         use num_traits::FloatConst;
+
+        use crate::gui::controls;
 
         let mut res = false;
 
@@ -71,16 +73,13 @@ impl<F: Float> Interactive<F> for SpotLight<F> {
 
         ui.label("Umbra");
         res |= ui
-            .add(egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
+            .add(Slider::new(&mut self.umbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
             .changed();
         ui.end_row();
 
         ui.label("Penumbra");
         res |= ui
-            .add(
-                egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
-                    .step_by(f64::PI() / 180.0),
-            )
+            .add(Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
             .changed();
         ui.end_row();
 

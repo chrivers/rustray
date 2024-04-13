@@ -67,7 +67,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     }
 
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        crate::frontend::gui::gizmo_ui(ui, camera, self, rect)
+        crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
 }
 

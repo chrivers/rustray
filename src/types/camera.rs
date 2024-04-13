@@ -1,7 +1,5 @@
 use cgmath::{Angle, Deg, EuclideanSpace, InnerSpace, Matrix4, MetricSpace, Point3};
 
-#[cfg(feature = "gui")]
-use crate::frontend::gui::controls;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Point, Ray, Transform, Vector};
 use crate::{sceneobject_impl_body, vec3};
@@ -107,6 +105,8 @@ impl<F: Float> Camera<F> {
 impl<F: Float> Interactive<F> for Camera<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::gui::controls;
+
         let mut res = false;
 
         ui.label(format!("X resolution: {}", self.xres));
