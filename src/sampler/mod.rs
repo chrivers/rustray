@@ -103,16 +103,16 @@ impl<F: Float> Sampler<F, Self> for Color<F> {
     }
 }
 
-pub mod bilinear;
-pub mod chessboard;
-pub mod heightnormal;
-pub mod nearest;
-pub mod normalmap;
-pub mod perlin;
-pub mod samplerext;
-pub mod shinemap;
-pub mod texture;
-pub mod transform;
+mod bilinear;
+mod chessboard;
+mod heightnormal;
+mod nearest;
+mod normalmap;
+mod perlin;
+mod samplerext;
+mod shinemap;
+mod texture;
+mod transform;
 
 pub use bilinear::Bilinear;
 pub use chessboard::ChessBoardSampler;
