@@ -111,8 +111,7 @@ pub mod normalmap;
 pub mod perlin;
 pub mod samplerext;
 pub mod shinemap;
-pub mod texture1;
-pub mod texture3;
+pub mod texture;
 pub mod transform;
 
 pub use bilinear::Bilinear;
