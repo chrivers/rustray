@@ -3,8 +3,7 @@ use num::Zero;
 
 use crate::light::Lixel;
 use crate::material::{Material, Mirror};
-use crate::sampler::Sampler;
-use crate::sampler::Texel;
+use crate::sampler::{Sampler, Texel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::{Color, Float, Maxel};
