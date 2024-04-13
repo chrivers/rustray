@@ -19,7 +19,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{Error, Float, MaterialId, Point, RResult, RF},
+    types::{Error, Float, Point, RResult, RF},
 };
 
 use eframe::egui::Key;
@@ -108,13 +108,12 @@ where
             CollapsingHeader::new(RichText::new("Materials").heading().strong())
                 .default_open(true)
                 .show(ui, |ui| {
-                    let mat_keys: Vec<MaterialId> = scene
+                    let mat_keys = scene
                         .materials
                         .mats
                         .keys()
                         .copied()
-                        .sorted_by(|a, b| Ord::cmp(&a, &b))
-                        .collect();
+                        .sorted_by(|a, b| Ord::cmp(&a, &b));
 
                     for (idx, id) in mat_keys.into_iter().enumerate() {
                         let mat = scene.materials.mats.get_mut(&id).unwrap();
