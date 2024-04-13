@@ -1,22 +1,19 @@
 use crate::sampler::{Bilinear, Nearest, Sampler, Texel};
 
-pub trait SamplerExt<T>
-where
-    Self: Sampler<u32, T> + Sized,
-    T: Texel,
-{
-    fn bilinear(self) -> Bilinear<T, Self> {
+pub trait SamplerExt<T: Texel> {
+    fn bilinear(self) -> Bilinear<T, Self>
+    where
+        Self: Sampler<u32, T> + Sized,
+    {
         Bilinear::new(self)
     }
 
-    fn nearest(self) -> Nearest<T, Self> {
+    fn nearest(self) -> Nearest<T, Self>
+    where
+        Self: Sampler<u32, T> + Sized,
+    {
         Nearest::new(self)
     }
 }
 
-impl<T, S> SamplerExt<T> for S
-where
-    T: Texel,
-    S: Sampler<u32, T>,
-{
-}
+impl<T: Texel, S: Sampler<u32, T>> SamplerExt<T> for S {}
