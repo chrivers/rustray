@@ -144,14 +144,14 @@ macro_rules! geometry_impl_hastransform {
     };
 }
 
-pub mod cone;
-pub mod cube;
-pub mod cylinder;
-pub mod plane;
-pub mod sphere;
-pub mod square;
-pub mod triangle;
-pub mod trianglemesh;
+mod cone;
+mod cube;
+mod cylinder;
+mod plane;
+mod sphere;
+mod square;
+mod triangle;
+mod trianglemesh;
 
 pub use cone::Cone;
 pub use cube::Cube;
