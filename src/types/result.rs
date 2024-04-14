@@ -32,13 +32,13 @@ pub enum Error {
     #[error(transparent)]
     MtlLibsLoadError(#[from] obj::MtlLibsLoadError),
 
-    #[error("parse error")]
-    ParseError(&'static str),
+    #[error("parse error: {0}")]
+    ParseError(String),
 
-    #[error("missing attribute {0:?}")]
+    #[error("missing attribute {0}")]
     ParseMissingKey(String),
 
-    #[error("unsupported parse element {0:?}")]
+    #[error("unsupported parse element {0}")]
     ParseUnsupported(String),
 
     #[error(transparent)]

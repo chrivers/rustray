@@ -45,7 +45,7 @@ where
 {
     let name = path
         .to_str()
-        .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;
+        .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
 
     info!("=={:=<60}==", format!("[ {:50} ]", name));
     let resdir = path.parent().unwrap();

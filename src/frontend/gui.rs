@@ -280,11 +280,13 @@ where
     fn load_file(&self, path: &Path) -> RResult<BoxScene<F>> {
         let data = std::fs::read_to_string(path)?;
 
-        let resdir = path.parent().ok_or(Error::ParseError("Invalid filename"))?;
+        let resdir = path
+            .parent()
+            .ok_or(Error::ParseError("Invalid filename".into()))?;
 
         let name = path
             .to_str()
-            .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;
+            .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
         let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
         let p = SbtParser2::ast(p)?;
         let scene =

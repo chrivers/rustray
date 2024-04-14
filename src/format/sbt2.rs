@@ -35,7 +35,7 @@ impl FromStr for SbtVersion {
         match s {
             "0.9" => Ok(Self::Sbt0_9),
             "1.0" => Ok(Self::Sbt1_0),
-            _ => Err(Error::ParseError("internal parser error")),
+            _ => Err(Error::ParseError("internal parser error".into())),
         }
     }
 }
@@ -144,7 +144,7 @@ trait STuple<F: Float> {
 impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
     fn get_result(&self, name: &str) -> RResult<&SbtValue<'a, F>> {
         self.get(name)
-            .ok_or_else(|| Error::ParseMissingKey(name.to_string()))
+            .ok_or_else(|| Error::ParseMissingKey(name.into()))
     }
 
     fn float(&self, name: &str) -> RResult<F> {
@@ -190,7 +190,9 @@ impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
             SbtValue::Float(float) => Ok((*float).dynsampler()),
             SbtValue::Str(name) => load(name),
             SbtValue::Block(box SbtBlock { name: "map", value }) => load(&value.tuple()?.string()?),
-            _ => Err(Error::ParseError("some")),
+            _ => Err(Error::ParseError(format!(
+                "Could not parse sampler, found {self:?}"
+            ))),
         }
     }
 
@@ -206,7 +208,9 @@ impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
                 info!("name: {:#?}", name);
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
             }
-            _ => Err(Error::ParseError("some")),
+            _ => Err(Error::ParseError(format!(
+                "Could not parse sampler, found {self:?}"
+            ))),
         }
     }
 
@@ -229,21 +233,23 @@ impl<'a, F: Float + Texel> STuple<F> for SbtTuple<'a, F> {
     fn string(&self) -> RResult<&str> {
         match self.as_slice() {
             [SbtValue::Str(s)] => Ok(s),
-            _ => Err(Error::ParseError("expected vector3")),
+            _ => Err(Error::ParseError(format!(
+                "expected vector3, found {self:?}"
+            ))),
         }
     }
 
     fn color(&self) -> RResult<Color<F>> {
         match self.as_slice() {
             [x, y, z] => Ok(Color::new(x.float()?, y.float()?, z.float()?)),
-            _ => Err(Error::ParseError("expected color")),
+            _ => Err(Error::ParseError(format!("expected color, found {self:?}"))),
         }
     }
 
     fn int3(&self) -> RResult<[usize; 3]> {
         match self.as_slice() {
             [a, b, c] => Ok([a.int()? as usize, b.int()? as usize, c.int()? as usize]),
-            _ => Err(Error::ParseError("expected int3")),
+            _ => Err(Error::ParseError(format!("expected int3, found {self:?}"))),
         }
     }
 
@@ -255,28 +261,32 @@ impl<'a, F: Float + Texel> STuple<F> for SbtTuple<'a, F> {
                 c.int()? as usize,
                 d.int()? as usize,
             ]),
-            _ => Err(Error::ParseError("expected int4")),
+            _ => Err(Error::ParseError(format!("expected int4, found {self:?}"))),
         }
     }
 
     fn point(&self) -> RResult<Point<F>> {
         match self.as_slice() {
             [x, y] => Ok(Point::new(x.float()?, y.float()?)),
-            _ => Err(Error::ParseError("expected point")),
+            _ => Err(Error::ParseError(format!("expected point, found {self:?}"))),
         }
     }
 
     fn vector3(&self) -> RResult<Vector<F>> {
         match self.as_slice() {
             [x, y, z] => Ok(Vector::new(x.float()?, y.float()?, z.float()?)),
-            _ => Err(Error::ParseError("expected vector3")),
+            _ => Err(Error::ParseError(format!(
+                "expected vector3, found {self:?}"
+            ))),
         }
     }
 
     fn vector4(&self) -> RResult<Vector4<F>> {
         match self.as_slice() {
             [x, y, z, w] => Ok(Vector4::new(x.float()?, y.float()?, z.float()?, w.float()?)),
-            _ => Err(Error::ParseError("expected vector4")),
+            _ => Err(Error::ParseError(format!(
+                "expected vector4, found {self:?}"
+            ))),
         }
     }
 }
@@ -293,27 +303,33 @@ pub enum SbtValue<'a, F: Float> {
 }
 
 impl<'a, F: Float + Texel> SbtValue<'a, F> {
-    pub const fn int(&self) -> RResult<i64> {
+    pub fn int(&self) -> RResult<i64> {
         if let SbtValue::Int(int) = self {
             Ok(*int)
         } else {
-            Err(Error::ParseError("number expected"))
+            Err(Error::ParseError(format!(
+                "number expected, found {self:?}"
+            )))
         }
     }
 
-    pub const fn boolean(&self) -> RResult<bool> {
+    pub fn boolean(&self) -> RResult<bool> {
         if let SbtValue::Bool(b) = self {
             Ok(*b)
         } else {
-            Err(Error::ParseError("expected boolean"))
+            Err(Error::ParseError(format!(
+                "expected boolean, found {self:?}"
+            )))
         }
     }
 
-    pub const fn string(&self) -> RResult<&'a str> {
+    pub fn string(&self) -> RResult<&'a str> {
         if let SbtValue::Str(s) = self {
             Ok(s)
         } else {
-            Err(Error::ParseError("expected boolean"))
+            Err(Error::ParseError(format!(
+                "expected boolean, found {self:?}"
+            )))
         }
     }
 
@@ -321,23 +337,27 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
         match self {
             SbtValue::Int(int) => Ok(F::from_f64(*int as f64)),
             SbtValue::Float(float) => Ok(*float),
-            _ => Err(Error::ParseError("number expected")),
+            _ => Err(Error::ParseError(format!(
+                "number expected, found {self:?}"
+            ))),
         }
     }
 
-    pub const fn tuple(&self) -> RResult<&'a SbtTuple<F>> {
+    pub fn tuple(&self) -> RResult<&'a SbtTuple<F>> {
         if let SbtValue::Tuple(ref tuple) = self {
             Ok(tuple)
         } else {
-            Err(Error::ParseError("expected tuple"))
+            Err(Error::ParseError(format!("expected tuple, found {self:?}")))
         }
     }
 
-    pub const fn dict(&self) -> RResult<&'a SbtDict<F>> {
+    pub fn dict(&self) -> RResult<&'a SbtDict<F>> {
         if let SbtValue::Dict(ref dict) = self {
             Ok(dict)
         } else {
-            Err(Error::ParseError("expected dictionary"))
+            Err(Error::ParseError(format!(
+                "expected dictionary, found {self:?}"
+            )))
         }
     }
 
@@ -412,7 +432,7 @@ impl SbtParser2 {
         match pr.as_str() {
             "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
-            _ => Err(Error::ParseError("internal parser error")),
+            _ => Err(Error::ParseError("internal parser error".into())),
         }
     }
 
@@ -792,10 +812,7 @@ where
                     self.build_geometry(blk, xfrm * x2)
                 }
 
-                other => {
-                    info!("unhandled: {:#?}", other);
-                    Err(Error::ParseUnsupported((*name).to_string()))
-                }
+                other => Err(Error::ParseUnsupported(format!("unhandled: {other:#?}"))),
             },
 
             SbtValue::Block(box SbtBlock {
@@ -851,10 +868,7 @@ where
 
                     ("polymesh", dict) => self.parse_polymesh(xfrm, dict),
 
-                    _ => {
-                        error!("unparsed block: {:?}", blk);
-                        Err(Error::ParseUnsupported("foo1".to_string()))
-                    }
+                    _ => Err(Error::ParseUnsupported(format!("unparsed block: {blk:?}"))),
                 }
             }
 
@@ -866,10 +880,7 @@ where
                 Ok(res)
             }
 
-            _ => {
-                error!("unparsed block: {:?}", blk);
-                Err(Error::ParseUnsupported("foo2".to_string()))
-            }
+            _ => Err(Error::ParseUnsupported(format!("unparsed block: {blk:?}"))),
         }
     }
 
