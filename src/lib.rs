@@ -21,7 +21,6 @@
     clippy::inline_always,
     clippy::items_after_statements,
     clippy::many_single_char_names,
-    clippy::mismatching_type_param_order,
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::module_name_repetitions,

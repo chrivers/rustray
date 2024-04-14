@@ -48,6 +48,7 @@ where
     }
 }
 
+#[allow(clippy::mismatching_type_param_order)]
 impl<F: Float + Texel> Phong<F, Color<F>, Color<F>, Color<F>, F> {
     #[must_use]
     pub fn white() -> Self {
