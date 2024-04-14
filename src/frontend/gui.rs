@@ -103,12 +103,7 @@ where
             CollapsingHeader::new(RichText::new("Materials").heading().strong())
                 .default_open(true)
                 .show(ui, |ui| {
-                    let mat_keys = scene
-                        .materials
-                        .mats
-                        .keys()
-                        .copied()
-                        .sorted_by(|a, b| Ord::cmp(&a, &b));
+                    let mat_keys = scene.materials.mats.keys().copied().sorted();
 
                     for (idx, id) in mat_keys.into_iter().enumerate() {
                         let mat = scene.materials.mats.get_mut(&id).unwrap();

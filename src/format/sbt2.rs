@@ -258,7 +258,7 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     }
 
     fn hash_item(&self, hasher: &mut impl Hasher) {
-        for (k, v) in self.iter().sorted_by(|a, b| Ord::cmp(a.0, b.0)) {
+        for (k, v) in self.iter().sorted_by_key(|kv| kv.0) {
             hasher.write(k.as_bytes());
             v.hash_item(hasher);
         }
