@@ -31,7 +31,6 @@
     clippy::option_if_let_else,
     clippy::significant_drop_tightening,
     clippy::similar_names,
-    clippy::wildcard_imports,
     /* clippy::fallible_impl_from, */
     /* clippy::significant_drop_in_scrutinee, */
     /* clippy::must_use_candidate, */

@@ -11,7 +11,9 @@ use zip::ZipArchive;
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
 use crate::light::{Attenuation, Light, PointLight};
-use crate::material::*;
+use crate::material::{
+    BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Material, Matte, Phong, ScaleUV,
+};
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::scene::{BoxScene, Scene};
 use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector, Vectorx};
