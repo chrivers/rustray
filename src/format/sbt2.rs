@@ -41,14 +41,6 @@ impl FromStr for SbtVersion {
     }
 }
 
-fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
-    (
-        p.x.to_f64().to_bits(),
-        p.y.to_f64().to_bits(),
-        p.z.to_f64().to_bits(),
-    )
-}
-
 pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
     let mut normals = vec![Vector::ZERO; points.len()];
     /* Single-face normals */
@@ -65,7 +57,7 @@ pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec
 
 pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
     /* Vertex-smoothed normals */
-    let mut norms: HashMap<(u64, u64, u64), Vector<F>> = HashMap::new();
+    let mut norms: HashMap<u64, Vector<F>> = HashMap::new();
     let mut normals = vec![Vector::ZERO; points.len()];
 
     for face in faces {
@@ -75,14 +67,14 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
         normals[face[0]] = n;
         normals[face[1]] = n;
         normals[face[2]] = n;
-        *norms.entry(hash(points[face[0]])).or_insert(Vector::ZERO) += n;
-        *norms.entry(hash(points[face[1]])).or_insert(Vector::ZERO) += n;
-        *norms.entry(hash(points[face[2]])).or_insert(Vector::ZERO) += n;
+        *norms.entry(points[face[0]].hash()).or_insert(Vector::ZERO) += n;
+        *norms.entry(points[face[1]].hash()).or_insert(Vector::ZERO) += n;
+        *norms.entry(points[face[2]].hash()).or_insert(Vector::ZERO) += n;
     }
     for face in faces {
-        normals[face[0]] = norms[&hash(points[face[0]])];
-        normals[face[1]] = norms[&hash(points[face[1]])];
-        normals[face[2]] = norms[&hash(points[face[2]])];
+        normals[face[0]] = norms[&points[face[0]].hash()];
+        normals[face[1]] = norms[&points[face[1]].hash()];
+        normals[face[2]] = norms[&points[face[2]].hash()];
     }
     normals
 }
