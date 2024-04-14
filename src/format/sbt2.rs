@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::marker::PhantomData;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -95,9 +94,7 @@ pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
-pub struct SbtParser2<F: Float> {
-    _p: PhantomData<F>,
-}
+pub struct SbtParser2 {}
 
 #[derive(Debug)]
 pub struct SbtProgram<'a, F: Float> {
@@ -366,7 +363,7 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
     }
 }
 
-impl<F: Float> SbtParser2<F> {
+impl SbtParser2 {
     pub fn dump(pr: Pairs<Rule>) -> RResult<()> {
         pub fn _dump(pr: Pair<Rule>, lvl: usize) -> RResult<()> {
             print!("{}{:?}", "    ".repeat(lvl), pr.as_rule(),);
@@ -389,10 +386,10 @@ impl<F: Float> SbtParser2<F> {
         Ok(())
     }
 
-    pub fn parse_dict(pr: Pairs<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_dict<F: Float>(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         let mut hash = HashMap::new();
         let mut key = "";
-        for p in pr {
+        for p in pr.into_inner() {
             match p.as_rule() {
                 Rule::ident => key = p.as_span().as_str(),
                 _value => {
@@ -403,7 +400,8 @@ impl<F: Float> SbtParser2<F> {
         Ok(SbtValue::Dict(hash))
     }
 
-    pub fn parse_tuple(pr: Pairs<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_tuple<F: Float>(p: Pair<Rule>) -> RResult<SbtValue<F>> {
+        let pr = p.into_inner();
         let mut tuple = vec![];
 
         /* Manual iteration is significantly faster than map()+collect() */
@@ -414,17 +412,17 @@ impl<F: Float> SbtParser2<F> {
         Ok(SbtValue::Tuple(tuple))
     }
 
-    pub fn parse_float<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
+    pub fn parse_float<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         Ok(SbtValue::Float(F::from_f64(
             pr.as_span().as_str().trim().parse::<f64>()?,
         )))
     }
 
-    pub fn parse_int<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
+    pub fn parse_int<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         Ok(SbtValue::Int(pr.as_span().as_str().trim().parse()?))
     }
 
-    pub fn parse_boolean<'a>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
+    pub fn parse_boolean<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
         match pr.as_span().as_str() {
             "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
@@ -432,34 +430,35 @@ impl<F: Float> SbtParser2<F> {
         }
     }
 
-    pub fn parse_string<'a>(pr: &Pair<'a, Rule>) -> RResult<SbtValue<'a, F>> {
+    pub fn parse_string<'a, F: Float>(pr: &Pair<'a, Rule>) -> RResult<SbtValue<'a, F>> {
         let val = pr.as_span().as_str();
         Ok(SbtValue::Str(&val[1..val.len() - 1]))
     }
 
-    pub fn parse_value(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
+    pub fn parse_value<F: Float>(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         let value = match pr.as_rule() {
             Rule::group | Rule::tuple | Rule::tuple_i3 | Rule::tuple_f3 | Rule::tuple_f2 => {
-                Self::parse_tuple(pr.into_inner())?
+                Self::parse_tuple(pr)?
             }
-            Rule::dict => Self::parse_dict(pr.into_inner())?,
+            Rule::dict => Self::parse_dict(pr)?,
             Rule::int => Self::parse_int(&pr)?,
             Rule::float => Self::parse_float(&pr)?,
             Rule::string => Self::parse_string(&pr)?,
             Rule::boolean => Self::parse_boolean(&pr)?,
-            Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
+            Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr)?)),
             other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
         };
         Ok(value)
     }
 
-    pub fn parse_block(mut pr: Pairs<Rule>) -> RResult<SbtBlock<F>> {
+    pub fn parse_block<F: Float>(pr: Pair<Rule>) -> RResult<SbtBlock<F>> {
+        let mut pr = pr.into_inner();
         let name = pr.next().unwrap().as_str();
         let value = Self::parse_value(pr.next().unwrap())?;
         Ok(SbtBlock { name, value })
     }
 
-    pub fn ast(pr: Pairs<Rule>) -> RResult<SbtProgram<F>> {
+    pub fn ast<F: Float>(pr: Pairs<Rule>) -> RResult<SbtProgram<F>> {
         let mut prog = SbtProgram {
             version: SbtVersion::Sbt1_0,
             blocks: vec![],
@@ -468,11 +467,11 @@ impl<F: Float> SbtParser2<F> {
         for p in pr {
             match p.as_rule() {
                 Rule::VERSION => prog.version = SbtVersion::from_str(p.as_str())?,
-                Rule::block => prog.blocks.push(Self::parse_block(p.into_inner())?),
+                Rule::block => prog.blocks.push(Self::parse_block(p)?),
                 Rule::ident => name = p.as_span().as_str(),
                 Rule::dict => {
                     /* warn!("Workaround for malformed file"); */
-                    let value = Self::parse_dict(p.into_inner())?;
+                    let value = Self::parse_dict(p)?;
                     prog.blocks.push(SbtBlock { name, value });
                 }
                 Rule::EOI => break,

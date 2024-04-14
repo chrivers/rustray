@@ -285,9 +285,8 @@ where
         let name = path
             .to_str()
             .ok_or(Error::ParseError("Invalid UTF-8 filename"))?;
-        let p =
-            SbtParser2::<F>::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
-        let p = SbtParser2::<F>::ast(p)?;
+        let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
+        let p = SbtParser2::ast(p)?;
         let scene =
             SbtBuilder::new(self.engine.img.width(), self.engine.img.height(), resdir).build(p)?;
         Ok(scene)

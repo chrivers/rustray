@@ -62,17 +62,17 @@ where
     file.read_to_string(&mut data)?;
 
     /* /\* Option 2a: Scene from .ray file (old parser) *\/ */
-    /* let p = SbtParser::<F>::parse(Rule::program, &data).map_err(|err| err.with_path(&name))?; */
+    /* let p = SbtParser::parse(Rule::program, &data).map_err(|err| err.with_path(&name))?; */
 
     /* time.set("construct"); */
-    /* let scene = SbtParser::<F>::parse_file(p, resdir, width, height)?; */
+    /* let scene = SbtParser::parse_file(p, resdir, width, height)?; */
 
     /* Option 2b: Scene from .ray file (new parser) */
 
-    let p = SbtParser2::<F>::parse(Rule2::program, &data).map_err(|err| err.with_path(name))?;
+    let p = SbtParser2::parse(Rule2::program, &data).map_err(|err| err.with_path(name))?;
     time.set("ast");
     /* SbtParser2::<F>::dump(p.clone())?; */
-    let p = SbtParser2::<F>::ast(p)?;
+    let p = SbtParser2::ast(p)?;
     /* info!("AST {:#?}", p); */
     time.set("build");
     let scene = SbtBuilder::new(width, height, resdir).build(p)?;
