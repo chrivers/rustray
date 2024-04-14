@@ -31,7 +31,7 @@ mod pbar {
 
 fn draw_image<F: Float>(
     time: &mut TimeSlice,
-    tracer: Tracer<F>,
+    tracer: &Tracer<F>,
     width: u32,
     height: u32,
 ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -73,7 +73,12 @@ where
 
     let scene = RwLock::new(scene);
 
-    let img = draw_image(&mut time, Tracer::new(scene.read().unwrap()), width, height);
+    let img = draw_image(
+        &mut time,
+        &Tracer::new(scene.read().unwrap()),
+        width,
+        height,
+    );
 
     time.set("write");
     image::save_buffer(output, &img, img.width(), img.height(), ColorType::Rgb8)?;
