@@ -4,7 +4,7 @@ use std::sync::RwLockReadGuard;
 use cgmath::MetricSpace;
 
 use crate::engine::RenderSpan;
-use crate::light::{Light, Lixel};
+use crate::light::Lixel;
 use crate::material::{ColorDebug, Material};
 use crate::point;
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
@@ -119,11 +119,6 @@ impl<'a, F: Float> Tracer<'a, F> {
             pixels,
         }
     }
-
-    #[must_use]
-    pub fn scene(&self) -> &BoxScene<F> {
-        &self.scene
-    }
 }
 
 impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
@@ -162,18 +157,6 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
         let mut maxel = self.scene.intersect(ray)?;
 
         Some(maxel.mat.render(&mut maxel, self))
-    }
-
-    fn ambient(&self) -> Color<F> {
-        self.scene.ambient
-    }
-
-    fn get_lights(&self) -> &[Box<dyn Light<F>>] {
-        &self.scene.lights
-    }
-
-    fn background(&self) -> Color<F> {
-        self.scene.background
     }
 
     fn scene(&self) -> &BoxScene<F> {

@@ -51,9 +51,6 @@ pub trait Interactive<F: Float>: Debug {
 pub trait RayTracer<F: Float> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
-    fn ambient(&self) -> Color<F>;
-    fn background(&self) -> Color<F>;
-    fn get_lights(&self) -> &[Box<dyn Light<F>>];
     fn shadow(&self, maxel: &mut Maxel<F>, mut lixel: Lixel<F>) -> Lixel<F> {
         if let Some(color) = self.ray_shadow(maxel, &lixel) {
             lixel.color = color;

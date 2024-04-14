@@ -11,7 +11,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use image::{ColorType, ImageBuffer, Rgb};
 
-use crate::scene::BoxScene;
+use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
 use crate::types::{Float, RResult, TimeSlice};
 

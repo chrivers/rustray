@@ -4,7 +4,7 @@ use std::sync::RwLockWriteGuard;
 
 use cgmath::MetricSpace;
 
-use crate::light::{Light, Lixel};
+use crate::light::Lixel;
 use crate::scene::{BoxScene, RayTracer};
 use crate::types::{Color, Float, Maxel, Ray};
 
@@ -94,18 +94,6 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
         self.steps.borrow_mut().push(step);
 
         res
-    }
-
-    fn ambient(&self) -> Color<F> {
-        self.scene.ambient
-    }
-
-    fn get_lights(&self) -> &[Box<dyn Light<F>>] {
-        &self.scene.lights
-    }
-
-    fn background(&self) -> Color<F> {
-        self.scene.background
     }
 
     fn scene(&self) -> &BoxScene<F> {

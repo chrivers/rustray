@@ -87,10 +87,10 @@ where
         let spec_color = self.ks.sample(uv);
         let spec_pow = self.pow.sample(uv);
 
-        let ambi_color = self.ambient * rt.ambient();
+        let ambi_color = self.ambient * rt.scene().ambient;
         let mut res = self.ke.sample(uv) + ambi_color;
 
-        for light in rt.get_lights() {
+        for light in &rt.scene().lights {
             let lixel = light.contribution(maxel, rt);
 
             let lambert = maxel.nml().dot(lixel.dir);

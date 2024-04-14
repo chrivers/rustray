@@ -6,7 +6,7 @@ use image::{ImageBuffer, Rgba};
 use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
 
-use crate::scene::BoxScene;
+use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
 use crate::types::{Color, Float};
 
