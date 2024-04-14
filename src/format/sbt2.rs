@@ -197,16 +197,18 @@ impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
     }
 
     fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
+        let load = |filename| {
+            let file = resdir.join(filename);
+            info!("name: {file:?}");
+            Ok(image::open(file)?.bilinear().dynsampler())
+        };
+
         match self.get_result(name)? {
-            SbtValue::Tuple(tuple) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
-            SbtValue::Str(name) => {
-                info!("{:?}", resdir.join(name));
-                Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
-            }
+            SbtValue::Tuple(tuple) => Ok(tuple.color()?.dynsampler()),
+            SbtValue::Str(name) => load(*name),
             SbtValue::Block(box SbtBlock { name: "map", value }) => {
                 let name = value.tuple()?.string()?;
-                info!("name: {:#?}", name);
-                Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
+                load(name)
             }
             _ => Err(Error::ParseError(format!(
                 "Could not parse sampler, found {self:?}"
@@ -603,6 +605,7 @@ where
     }
 
     fn parse_material_props(&mut self, dict: &impl SDict<F>) -> MaterialId {
+        let black = |_| Color::BLACK.dynsampler();
         let float = |name| dict.float(name).or_else(|_| self.material.float(name));
         let color = |name| dict.color(name).or_else(|_| self.material.color(name));
 
@@ -619,17 +622,17 @@ where
         let idx = float("index").unwrap_or(F::ZERO);
         let ambi = color("ambient").unwrap_or(Color::BLACK);
         let shi = shinemap("shininess").unwrap_or_else(|_| F::ZERO.dynsampler());
-        let emis = colormap("emissive").unwrap_or_else(|_| Color::BLACK.dynsampler());
-        let diff = colormap("diffuse").unwrap_or_else(|_| Color::BLACK.dynsampler());
-        let spec = colormap("specular").unwrap_or_else(|_| Color::BLACK.dynsampler());
-        let tran = colormap("transmissive").unwrap_or_else(|_| Color::BLACK.dynsampler());
+        let emis = colormap("emissive").unwrap_or_else(black);
+        let diff = colormap("diffuse").unwrap_or_else(black);
+        let spec = colormap("specular").unwrap_or_else(black);
+        let tran = colormap("transmissive").unwrap_or_else(black);
         let refl = colormap("reflective")
             .or_else(|_| colormap("specular"))
-            .unwrap_or_else(|_| Color::BLACK.dynsampler());
-        let bump = colormap("bump").ok();
+            .unwrap_or_else(black);
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
-        let res: BoxMaterial<F> = match bump {
+
+        let res: BoxMaterial<F> = match colormap("bump").ok() {
             None => Box::new(smart),
             Some(b) => Box::new(Bumpmap::new(
                 BumpPower(F::from_f32(0.25)),
@@ -670,20 +673,14 @@ where
         let mut materials = vec![];
         let mut pos_xfrm = Matrix4::identity();
 
-        if let Ok(nmls) = dict.tuple("normals") {
-            for normal in nmls {
-                normals.push(normal.tuple()?.vector3()?);
-            }
+        for normal in dict.tuple("normals").into_iter().flatten() {
+            normals.push(normal.tuple()?.vector3()?);
         }
-        if let Ok(mats) = dict.tuple("materials") {
-            for mat in mats {
-                materials.push(self.parse_material(mat.dict()?));
-            }
+        for mat in dict.tuple("materials").into_iter().flatten() {
+            materials.push(self.parse_material(mat.dict()?));
         }
-        if let Ok(uvs) = dict.tuple("texture_uv") {
-            for uv in uvs {
-                texture_uvs.push(uv.tuple()?.point()?);
-            }
+        for uv in dict.tuple("texture_uv").into_iter().flatten() {
+            texture_uvs.push(uv.tuple()?.point()?);
         }
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
