@@ -164,17 +164,27 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     }
 
     fn string(&self, name: &str) -> RResult<&str> {
-        match self.get_result(name)? {
-            SbtValue::Str(string) => Ok(string),
-            _ => Err(Error::ParseError("some")),
-        }
+        self.get_result(name)?.string()
     }
 
     fn color(&self, name: &str) -> RResult<Color<F>> {
-        match self.get_result(name)? {
-            SbtValue::Tuple(tuple) if tuple.len() == 3 => tuple.color(),
-            _ => Err(Error::ParseError("some")),
-        }
+        self.get_result(name)?.tuple()?.color()
+    }
+
+    fn vector(&self, name: &str) -> RResult<Vector<F>> {
+        self.get_result(name)?.tuple()?.vector3()
+    }
+
+    fn boolean(&self, name: &str) -> RResult<bool> {
+        self.get_result(name)?.boolean()
+    }
+
+    fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
+        self.get_result(name)?.dict()
+    }
+
+    fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>> {
+        self.get_result(name)?.tuple()
     }
 
     fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>> {
@@ -213,22 +223,6 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
             Some(_) => Err(Error::ParseError("some")),
             None => Err(Error::ParseMissingKey(name.to_string())),
         }
-    }
-
-    fn vector(&self, name: &str) -> RResult<Vector<F>> {
-        self.get_result(name)?.tuple()?.vector3()
-    }
-
-    fn boolean(&self, name: &str) -> RResult<bool> {
-        self.get_result(name)?.boolean()
-    }
-
-    fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
-        self.get_result(name)?.dict()
-    }
-
-    fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>> {
-        self.get_result(name)?.tuple()
     }
 
     fn attenuation(&self) -> RResult<Attenuation<F>> {
@@ -329,6 +323,14 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
     pub const fn boolean(&self) -> RResult<bool> {
         if let SbtValue::Bool(b) = self {
             Ok(*b)
+        } else {
+            Err(Error::ParseError("expected boolean"))
+        }
+    }
+
+    pub const fn string(&self) -> RResult<&'a str> {
+        if let SbtValue::Str(s) = self {
+            Ok(s)
         } else {
             Err(Error::ParseError("expected boolean"))
         }
