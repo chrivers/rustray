@@ -1,3 +1,5 @@
+use std::hash::{DefaultHasher, Hasher};
+
 use cgmath::{InnerSpace, Matrix4};
 use num_traits::Zero;
 
@@ -167,6 +169,15 @@ impl<F: Float> Vectorx<F> for Vector<F> {
     fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self {
         Transform::new(*xfrm).nml(*self)
     }
+
+    #[must_use]
+    fn hash(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        hasher.write_u64(self.x.to_f64().to_bits());
+        hasher.write_u64(self.y.to_f64().to_bits());
+        hasher.write_u64(self.z.to_f64().to_bits());
+        hasher.finish()
+    }
 }
 
 pub trait Vectorx<F: Float>: InnerSpace<Scalar = F> + Zero
@@ -294,6 +305,8 @@ where
             (r_s * r_s + r_p * r_p) * F::HALF
         }
     }
+
+    fn hash(&self) -> u64;
 }
 
 impl<F: Float> Lerp for Vector<F> {
