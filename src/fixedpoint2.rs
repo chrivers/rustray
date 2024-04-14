@@ -168,13 +168,13 @@ impl<const P: i32> From<i64> for FXP<P> {
 
 impl<const P: i32> From<i32> for FXP<P> {
     fn from(value: i32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
 impl<const P: i32> From<u32> for FXP<P> {
     fn from(value: u32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 

@@ -140,12 +140,12 @@ impl Float for f64 {
 
     #[inline(always)]
     fn from_i32(value: i32) -> Self {
-        value as Self
+        Self::from(value)
     }
 
     #[inline(always)]
     fn from_u32(value: u32) -> Self {
-        value as Self
+        Self::from(value)
     }
 
     #[inline(always)]
@@ -155,7 +155,7 @@ impl Float for f64 {
 
     #[inline(always)]
     fn from_f32(value: f32) -> Self {
-        value as Self
+        Self::from(value)
     }
 
     #[inline(always)]

@@ -154,13 +154,13 @@ impl<const P: u8> From<i64> for FP<P> {
 
 impl<const P: u8> From<i32> for FP<P> {
     fn from(value: i32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
 impl<const P: u8> From<u32> for FP<P> {
     fn from(value: u32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
@@ -173,7 +173,7 @@ impl<const P: u8> From<usize> for FP<P> {
 impl<const P: u8> From<f32> for FP<P> {
     fn from(value: f32) -> Self {
         /* FIXME: f32 */
-        Self((value as f64 * Self::SCALING as f64) as i64)
+        Self((Into::<f64>::into(value) * Self::SCALING as f64) as i64)
     }
 }
 

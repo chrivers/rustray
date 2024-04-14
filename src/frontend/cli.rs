@@ -35,7 +35,7 @@ fn draw_image<F: Float>(
     width: u32,
     height: u32,
 ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-    let pb = pbar::init(height as u64);
+    let pb = pbar::init(u64::from(height));
 
     let mut img = ImageBuffer::new(width, height);
 

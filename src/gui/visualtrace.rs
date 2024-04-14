@@ -122,7 +122,7 @@ where
                 Color32::DARK_GREEN
             }
         } else {
-            Color32::from_gray(255_i32.saturating_sub(50 * ray.lvl as i32) as u8)
+            Color32::from_gray(255_i32.saturating_sub(50 * i32::from(ray.lvl)) as u8)
         };
 
         if ray.lvl != 0 {

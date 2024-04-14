@@ -1,6 +1,7 @@
 use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
+use std::convert::From;
 
 use cgmath::VectorSpace;
 use derive_more::{Add, AddAssign, Rem, Sub};
@@ -128,7 +129,7 @@ impl<F: Float> Color<F> {
 
     pub fn to_array(&self) -> [u8; 3] {
         let clamped = self.clamped();
-        let max = F::from_u32(u8::MAX as u32);
+        let max = F::from_u32(u8::MAX.into());
         [
             <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
             <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
@@ -138,7 +139,7 @@ impl<F: Float> Color<F> {
 
     pub fn to_array4(&self) -> [u8; 4] {
         let clamped = self.clamped();
-        let max = F::from_u32(u8::MAX as u32);
+        let max = F::from_u32(u8::MAX.into());
         [
             <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
             <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),

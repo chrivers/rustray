@@ -379,7 +379,7 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
                 hasher.write(b.name.as_bytes());
                 b.value.hash_item(hasher);
             }
-            SbtValue::Bool(b) => hasher.write_u8(*b as u8),
+            SbtValue::Bool(b) => hasher.write_u8(u8::from(*b)),
         }
     }
 

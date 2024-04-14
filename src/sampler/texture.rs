@@ -7,7 +7,7 @@ impl<F: Float> Sampler<u32, F> for DynamicImage {
         let (w, h) = Sampler::<u32, F>::dimensions(self);
         let c = self.get_pixel(uv.x % w, uv.y % h).to_rgb();
         let max = F::from_u32(0xFF);
-        F::from_u32(c[0] as u32) / max
+        F::from_u32(u32::from(c[0])) / max
     }
 
     fn dimensions(&self) -> (u32, u32) {
@@ -30,9 +30,9 @@ impl<F: Float> Sampler<u32, Color<F>> for DynamicImage {
         let c = self.get_pixel(uv.x % w, uv.y % h).to_rgb();
         let max = F::from_u32(0xFF);
         Color::new(
-            F::from_u32(c[0] as u32),
-            F::from_u32(c[1] as u32),
-            F::from_u32(c[2] as u32),
+            F::from_u32(u32::from(c[0])),
+            F::from_u32(u32::from(c[1])),
+            F::from_u32(u32::from(c[2])),
         ) / max
     }
 
