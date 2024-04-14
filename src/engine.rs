@@ -99,11 +99,11 @@ impl<F: Float> RenderEngine<F> {
             self.pool.execute_to(
                 self.tx.clone(),
                 Thunk::of(move || {
-                    let scene = lock.read().unwrap();
-                    let tracer = Tracer::new(scene);
-                    let camera = &tracer.scene().cameras[0];
-
-                    let mut span = tracer.generate_span_coarse(camera, y + step_y / 2, step_x);
+                    let mut span = {
+                        let tracer = Tracer::new(lock.read().unwrap());
+                        let camera = &tracer.scene().cameras[0];
+                        tracer.generate_span_coarse(camera, y + step_y / 2, step_x)
+                    };
                     span.mult_y = step_y;
                     span.line -= step_y / 2;
                     span
@@ -140,8 +140,7 @@ impl<F: Float> RenderEngine<F> {
             self.pool.execute_to(
                 self.tx.clone(),
                 Thunk::of(move || {
-                    let scene = lock.read().unwrap();
-                    let tracer = Tracer::new(scene);
+                    let tracer = Tracer::new(lock.read().unwrap());
                     let camera = tracer.scene().cameras[0];
 
                     tracer.generate_normal_span(&camera, y)
