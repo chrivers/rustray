@@ -123,6 +123,7 @@ pub type SbtDict<'a, F> = HashMap<String, SbtValue<'a, F>>;
 pub type SbtTuple<'a, F> = Vec<SbtValue<'a, F>>;
 
 trait SDict<F: Float + Texel> {
+    fn get_result(&self, name: &str) -> RResult<&SbtValue<'_, F>>;
     fn float(&self, name: &str) -> RResult<F>;
     fn color(&self, name: &str) -> RResult<Color<F>>;
     fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>>;
@@ -153,26 +154,26 @@ trait STuple<F: Float> {
 }
 
 impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
+    fn get_result(&self, name: &str) -> RResult<&SbtValue<'a, F>> {
+        self.get(name)
+            .ok_or_else(|| Error::ParseMissingKey(name.to_string()))
+    }
+
     fn float(&self, name: &str) -> RResult<F> {
-        match self.get(name) {
-            Some(val) => val.float(),
-            None => Err(Error::ParseMissingKey(name.to_string())),
-        }
+        self.get_result(name)?.float()
     }
 
     fn string(&self, name: &str) -> RResult<&str> {
-        match self.get(name) {
-            Some(SbtValue::Str(string)) => Ok(string),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
+        match self.get_result(name)? {
+            SbtValue::Str(string) => Ok(string),
+            _ => Err(Error::ParseError("some")),
         }
     }
 
     fn color(&self, name: &str) -> RResult<Color<F>> {
-        match self.get(name) {
-            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => tuple.color(),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
+        match self.get_result(name)? {
+            SbtValue::Tuple(tuple) if tuple.len() == 3 => tuple.color(),
+            _ => Err(Error::ParseError("some")),
         }
     }
 
@@ -370,11 +371,7 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
             SbtValue::Float(f) => hasher.write_u64(f.to_f64().expect("wat").to_bits()),
             SbtValue::Str(s) => hasher.write(s.as_bytes()),
             SbtValue::Dict(dict) => dict.hash_item(hasher),
-            SbtValue::Tuple(t) => {
-                for val in t {
-                    val.hash_item(hasher);
-                }
-            }
+            SbtValue::Tuple(t) => t.into_iter().for_each(|val| val.hash_item(hasher)),
             SbtValue::Block(b) => {
                 hasher.write(b.name.as_bytes());
                 b.value.hash_item(hasher);
@@ -579,7 +576,7 @@ where
         Ok(res)
     }
 
-    fn parse_spot_light(dict: impl SDict<F>) -> RResult<SpotLight<F>> {
+    fn parse_spot_light(dict: &impl SDict<F>) -> RResult<SpotLight<F>> {
         let pos = dict.vector("position")?;
         let dir = dict.vector("direction")?.normalize();
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -599,7 +596,7 @@ where
         Ok(res)
     }
 
-    fn parse_area_light(dict: impl SDict<F>) -> RResult<AreaLight<F>> {
+    fn parse_area_light(dict: &impl SDict<F>) -> RResult<AreaLight<F>> {
         let pos = dict.vector("position")?;
         let dir = dict.vector("direction")?.normalize();
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
@@ -933,12 +930,12 @@ where
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
                 ("spot_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_spot_light(dict)?));
+                    lights.push(Box::new(Self::parse_spot_light(&dict)?));
                 }
                 ("material", SbtValue::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_area_light(dict)?));
+                    lights.push(Box::new(Self::parse_area_light(&dict)?));
                 }
 
                 (name, value) => {
