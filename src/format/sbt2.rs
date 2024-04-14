@@ -126,7 +126,6 @@ trait SDict<F: Float + Texel> {
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>>;
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>>;
     fn attenuation(&self) -> RResult<Attenuation<F>>;
-    fn borrow(&self) -> &SbtDict<F>;
     fn hash_item(&self, hasher: &mut impl Hasher);
     fn hash(&self) -> u64 {
         let mut hasher = std::hash::DefaultHasher::new();
@@ -145,7 +144,7 @@ trait STuple<F: Float> {
     fn vector4(&self) -> RResult<Vector4<F>>;
 }
 
-impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
+impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
     fn get_result(&self, name: &str) -> RResult<&SbtValue<'a, F>> {
         self.get(name)
             .ok_or_else(|| Error::ParseMissingKey(name.to_string()))
@@ -171,6 +170,7 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
         self.get_result(name)?.boolean()
     }
 
+    #[allow(clippy::use_self)] // false positive
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
         self.get_result(name)?.dict()
     }
@@ -218,10 +218,6 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
         let b = self.float("linear_attenuation_coeff").unwrap_or(F::ZERO);
         let c = self.float("quadratic_attenuation_coeff").unwrap_or(F::ONE);
         Ok(Attenuation { a, b, c })
-    }
-
-    fn borrow(&self) -> &SbtDict<F> {
-        self
     }
 
     fn hash_item(&self, hasher: &mut impl Hasher) {
@@ -602,17 +598,17 @@ where
     }
 
     fn parse_material_props(&mut self, dict: &impl SDict<F>) -> MaterialId {
-        let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
-        let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
+        let float = |name| dict.float(name).or_else(|_| self.material.float(name));
+        let color = |name| dict.color(name).or_else(|_| self.material.color(name));
 
         let shinemap = |name| {
             dict.shinemap(name, self.resdir)
-                .or_else(|_| (&self.material).shinemap(name, self.resdir))
+                .or_else(|_| self.material.shinemap(name, self.resdir))
         };
 
         let colormap = |name| {
             dict.sampler3(name, self.resdir)
-                .or_else(|_| (&self.material).sampler3(name, self.resdir))
+                .or_else(|_| self.material.sampler3(name, self.resdir))
         };
 
         let idx = float("index").unwrap_or(F::ZERO);
@@ -641,7 +637,7 @@ where
     }
 
     fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
-        let hash = dict.borrow().hash();
+        let hash = dict.hash();
 
         if let Some(id) = self.hashmat.get(&hash) {
             *id
@@ -653,7 +649,7 @@ where
     }
 
     fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> MaterialId {
-        self.parse_material(&dict.dict("material").unwrap_or(&SbtDict::new()))
+        self.parse_material(dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
     fn parse_polymesh(
@@ -676,7 +672,7 @@ where
         }
         if let Ok(mats) = dict.tuple("materials") {
             for mat in mats {
-                materials.push(self.parse_material(&mat.dict()?));
+                materials.push(self.parse_material(mat.dict()?));
             }
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {
@@ -827,7 +823,7 @@ where
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
                         Ok(vec![Box::new(Sphere::new(
                             xfrm,
-                            self.parse_material_obj(&dict),
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -835,7 +831,7 @@ where
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Cube::new(
                             xfrm,
-                            self.parse_material_obj(&dict),
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -847,7 +843,7 @@ where
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
-                            self.parse_material_obj(&dict),
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -855,7 +851,7 @@ where
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Square::new(
                             xfrm,
-                            self.parse_material_obj(&dict),
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -864,11 +860,11 @@ where
                         Ok(vec![Box::new(Cylinder::new(
                             xfrm,
                             dict.boolean("capped").unwrap_or(true),
-                            self.parse_material_obj(&dict),
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
-                    ("polymesh", dict) => self.parse_polymesh(xfrm, &dict),
+                    ("polymesh", dict) => self.parse_polymesh(xfrm, dict),
 
                     _ => {
                         error!("unparsed block: {:?}", blk);
@@ -902,23 +898,23 @@ where
 
         for blk in prog.blocks {
             match (blk.name, blk.value) {
-                ("camera", SbtValue::Dict(ref dict)) => cameras.push(self.parse_camera(&dict)?),
+                ("camera", SbtValue::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
                 ("directional_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_directional_light(&dict)?));
+                    lights.push(Box::new(Self::parse_directional_light(dict)?));
                 }
                 ("point_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_point_light(&dict)?));
+                    lights.push(Box::new(Self::parse_point_light(dict)?));
                 }
                 ("ambient_light", SbtValue::Dict(ref dict)) => {
                     ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
                 ("spot_light", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_spot_light(&dict)?));
+                    lights.push(Box::new(Self::parse_spot_light(dict)?));
                 }
                 ("material", SbtValue::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", SbtValue::Dict(ref dict)) => {
-                    lights.push(Box::new(Self::parse_area_light(&dict)?));
+                    lights.push(Box::new(Self::parse_area_light(dict)?));
                 }
 
                 (name, value) => {
