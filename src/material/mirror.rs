@@ -33,8 +33,7 @@ impl<F: Float, T: Sampler<F, Color<F>>> Material<F> for Mirror<F, T> {
 
         if !refl_color.is_zero() {
             rt.ray_trace(&maxel.reflected_ray())
-                .map(|c| c * refl_color)
-                .unwrap_or(Color::BLACK)
+                .map_or(Color::BLACK, |c| c * refl_color)
         } else {
             Color::BLACK
         }

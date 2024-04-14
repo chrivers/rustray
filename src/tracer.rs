@@ -45,11 +45,8 @@ impl<'a, F: Float> Tracer<'a, F> {
 
     pub fn render_pixel_single(&self, camera: &Camera<F>, px: F, py: F) -> Color<F> {
         let ray = camera.get_ray(point!(px, py));
-        if let Some(color) = self.ray_trace(&ray) {
-            color.clamped()
-        } else {
-            self.scene.background
-        }
+        self.ray_trace(&ray)
+            .map_or_else(|| self.scene.background, Color::clamped)
     }
 
     pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {

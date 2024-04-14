@@ -61,11 +61,9 @@ pub fn gizmo_ui<F: Float>(
         .mode(mode)
         .orientation(orient);
 
-    if let Some(response) = gizmo.interact(ui) {
+    gizmo.interact(ui).map_or(false, |response| {
         let f = response.transform();
         obj.set_transform(&f.into());
         true
-    } else {
-        false
-    }
+    })
 }

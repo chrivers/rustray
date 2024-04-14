@@ -6,26 +6,29 @@ use cgmath::InnerSpace;
 
 use crate::geometry::Triangle;
 use crate::material::{BoxMaterial, BumpPower, Bumpmap, Phong, Smart};
-use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, Texel};
+use crate::sampler::{NormalMap, Sampler, SamplerExt, Texel};
 use crate::types::{Color, Float, MaterialId, MaterialLib, Point, RResult, Vector, Vectorx};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
     map: &Option<String>,
     col: &Option<[f32; 3]>,
-) -> DynSampler<F, Color<F>> {
-    match map {
-        Some(ref kd) => {
-            info!("loading [{}]", kd);
-            image::open(resdir.join(kd))
-                .map(|m| m.bilinear().dynsampler())
-                .unwrap_or_else(|_| {
+) -> impl Sampler<F, Color<F>> {
+    map.as_ref().map_or_else(
+        || col.map_or(Color::BLACK, Color::from).dynsampler(),
+        |kd| {
+            image::open(resdir.join(kd)).map_or_else(
+                |_| {
                     warn!("Missing texture [{}]", kd);
                     Color::WHITE.dynsampler()
-                })
-        }
-        None => col.map(Color::from).unwrap_or(Color::BLACK).dynsampler(),
-    }
+                },
+                |img| {
+                    info!("Loading [{}]", kd);
+                    img.bilinear().dynsampler()
+                },
+            )
+        },
+    )
 }
 
 pub fn load<F: Float + Texel>(
@@ -70,7 +73,7 @@ pub fn load<F: Float + Texel>(
                 /* let ns = obj_sampler(&obj.path, &omat.map_ns, F::from_f32(omat.ns.unwrap_or(1.0)) */
 
                 let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::WHITE)
-                    .with_ambient(omat.ka.map(Into::into).unwrap_or(Color::BLACK));
+                    .with_ambient(omat.ka.map_or(Color::BLACK, Into::into));
 
                 let res: BoxMaterial<F> = if omat.map_bump.is_some() {
                     let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));

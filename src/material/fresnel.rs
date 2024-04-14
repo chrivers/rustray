@@ -53,8 +53,7 @@ where
         let tran_color = self.refr.sample(uv);
         let refr_term = if !tran_color.is_zero() {
             rt.ray_trace(&maxel.refracted_ray(ior))
-                .map(|c| c * tran_color)
-                .unwrap_or(Color::BLACK)
+                .map_or(Color::BLACK, |c| c * tran_color)
         } else {
             Color::BLACK
         };

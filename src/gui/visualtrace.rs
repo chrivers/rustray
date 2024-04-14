@@ -110,10 +110,10 @@ where
     for step in dt.steps.borrow().iter() {
         let ray = &step.ray;
 
-        let (a, b) = match step.maxel {
-            Some(maxel) => vt.calc_line(ray.pos, maxel.pos),
-            None => vt.calc_normal(ray.pos, ray.dir),
-        };
+        let (a, b) = step.maxel.map_or_else(
+            || vt.calc_normal(ray.pos, ray.dir),
+            |maxel| vt.calc_line(ray.pos, maxel.pos),
+        );
 
         let color = if step.shadow {
             if step.maxel.is_some() {
