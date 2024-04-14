@@ -188,32 +188,28 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
             )
         };
 
-        match self.get(name) {
-            Some(SbtValue::Int(int)) => Ok((F::from_f64(*int as f64)).dynsampler()),
-            Some(SbtValue::Float(float)) => Ok((*float).dynsampler()),
-            Some(SbtValue::Str(name)) => load(name),
-            Some(SbtValue::Block(box SbtBlock { name: "map", value })) => {
-                load(&value.tuple()?.string()?)
-            }
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
+        match self.get_result(name)? {
+            SbtValue::Int(int) => Ok((F::from_f64(*int as f64)).dynsampler()),
+            SbtValue::Float(float) => Ok((*float).dynsampler()),
+            SbtValue::Str(name) => load(name),
+            SbtValue::Block(box SbtBlock { name: "map", value }) => load(&value.tuple()?.string()?),
+            _ => Err(Error::ParseError("some")),
         }
     }
 
     fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
-        match self.get(name) {
-            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
-            Some(SbtValue::Str(name)) => {
+        match self.get_result(name)? {
+            SbtValue::Tuple(tuple) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
+            SbtValue::Str(name) => {
                 info!("{:?}", resdir.join(name));
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
             }
-            Some(SbtValue::Block(box SbtBlock { name: "map", value })) => {
+            SbtValue::Block(box SbtBlock { name: "map", value }) => {
                 let name = value.tuple()?.string()?;
                 info!("name: {:#?}", name);
                 Ok(image::open(resdir.join(name))?.bilinear().dynsampler())
             }
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
+            _ => Err(Error::ParseError("some")),
         }
     }
 
