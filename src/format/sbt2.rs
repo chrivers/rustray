@@ -216,35 +216,19 @@ impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     }
 
     fn vector(&self, name: &str) -> RResult<Vector<F>> {
-        match self.get(name) {
-            Some(SbtValue::Tuple(tuple)) if tuple.len() == 3 => tuple.vector3(),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
-        }
+        self.get_result(name)?.tuple()?.vector3()
     }
 
     fn boolean(&self, name: &str) -> RResult<bool> {
-        match self.get(name) {
-            Some(SbtValue::Bool(b)) => Ok(*b),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
-        }
+        self.get_result(name)?.boolean()
     }
 
     fn dict(&self, name: &str) -> RResult<&SbtDict<F>> {
-        match self.get(name) {
-            Some(SbtValue::Dict(dict)) => Ok(dict),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
-        }
+        self.get_result(name)?.dict()
     }
 
     fn tuple(&self, name: &str) -> RResult<&SbtTuple<F>> {
-        match self.get(name) {
-            Some(SbtValue::Tuple(tuple)) => Ok(tuple),
-            Some(_) => Err(Error::ParseError("some")),
-            None => Err(Error::ParseMissingKey(name.to_string())),
-        }
+        self.get_result(name)?.tuple()
     }
 
     fn attenuation(&self) -> RResult<Attenuation<F>> {
@@ -335,9 +319,18 @@ pub enum SbtValue<'a, F: Float> {
 
 impl<'a, F: Float + Texel> SbtValue<'a, F> {
     pub const fn int(&self) -> RResult<i64> {
-        match self {
-            SbtValue::Int(int) => Ok(*int),
-            _ => Err(Error::ParseError("number expected")),
+        if let SbtValue::Int(int) = self {
+            Ok(*int)
+        } else {
+            Err(Error::ParseError("number expected"))
+        }
+    }
+
+    pub const fn boolean(&self) -> RResult<bool> {
+        if let SbtValue::Bool(b) = self {
+            Ok(*b)
+        } else {
+            Err(Error::ParseError("expected boolean"))
         }
     }
 
@@ -371,7 +364,7 @@ impl<'a, F: Float + Texel> SbtValue<'a, F> {
             SbtValue::Float(f) => hasher.write_u64(f.to_f64().expect("wat").to_bits()),
             SbtValue::Str(s) => hasher.write(s.as_bytes()),
             SbtValue::Dict(dict) => dict.hash_item(hasher),
-            SbtValue::Tuple(t) => t.into_iter().for_each(|val| val.hash_item(hasher)),
+            SbtValue::Tuple(t) => t.iter().for_each(|val| val.hash_item(hasher)),
             SbtValue::Block(b) => {
                 hasher.write(b.name.as_bytes());
                 b.value.hash_item(hasher);
