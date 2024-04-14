@@ -39,7 +39,7 @@ impl<F: Float> Light<F> for SpotLight<F> {
             };
         }
 
-        let lixel = if angle > inner_angle {
+        let mut lixel = if angle > inner_angle {
             let scale = F::ONE - (angle - inner_angle) / (outer_angle - inner_angle).max(F::BIAS);
             Lixel {
                 color: color * scale,
@@ -54,7 +54,10 @@ impl<F: Float> Light<F> for SpotLight<F> {
             }
         };
 
-        rt.shadow(maxel, lixel)
+        if let Some(color) = rt.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
     }
 }
 

@@ -134,7 +134,7 @@ where
                 len2,
             };
 
-            color += rt.shadow(maxel, lixel).color;
+            color += rt.ray_shadow(maxel, &lixel).unwrap_or(lixel.color);
         }
 
         color = color / F::from_u32(xres * yres);

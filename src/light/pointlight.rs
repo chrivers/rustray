@@ -36,13 +36,15 @@ impl<F: Float> Light<F> for PointLight<F> {
         let len = len2.sqrt();
         let color = self.attn.attenuate(self.color, len, len2);
 
-        rt.shadow(
-            maxel,
-            Lixel {
-                dir: -dir / len,
-                color,
-                len2,
-            },
-        )
+        let mut lixel = Lixel {
+            dir: -dir / len,
+            color,
+            len2,
+        };
+
+        if let Some(color) = rt.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
     }
 }

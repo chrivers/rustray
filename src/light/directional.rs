@@ -38,14 +38,15 @@ impl<F: Float> SceneObject<F> for DirectionalLight<F> {
 
 impl<F: Float> Light<F> for DirectionalLight<F> {
     fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
-        rt.shadow(
-            maxel,
-            Lixel {
-                // FIXME: precalculate
-                dir: -self.dir.normalize(),
-                color: self.color,
-                len2: F::from_u32(100_000),
-            },
-        )
+        let mut lixel = Lixel {
+            // FIXME: precalculate
+            dir: -self.dir.normalize(),
+            color: self.color,
+            len2: F::from_u32(100_000),
+        };
+        if let Some(color) = rt.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
     }
 }
