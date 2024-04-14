@@ -1,7 +1,7 @@
+use std::convert::From;
 use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
-use std::convert::From;
 
 use cgmath::VectorSpace;
 use derive_more::{Add, AddAssign, Rem, Sub};

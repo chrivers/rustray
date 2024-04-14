@@ -61,7 +61,10 @@ fn _plot_attenuation<F: Float>(ui: &mut Ui, attn: &Attenuation<F>) -> egui::Resp
     let line_points: PlotPoints = (0..=n)
         .map(|i| {
             let x = F::from_u32(i);
-            [f64::from(i), attn.attenuate(Color::WHITE, x, x * x).r.to_f64()]
+            [
+                f64::from(i),
+                attn.attenuate(Color::WHITE, x, x * x).r.to_f64(),
+            ]
         })
         .collect();
     let line = Line::new(line_points);
