@@ -17,7 +17,7 @@ use crate::geometry::{
 use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
 use crate::material::{BoxMaterial, BumpPower, Bumpmap, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
-use crate::scene::{BoxScene, Scene};
+use crate::scene::BoxScene;
 use crate::types::{
     Camera, Color, Error, Float, MaterialId, MaterialLib, Point, RResult, Vector, Vectorx,
 };
@@ -108,7 +108,7 @@ pub struct SbtBlock<'a, F: Float> {
     value: SbtValue<'a, F>,
 }
 
-pub type SbtDict<'a, F> = HashMap<String, SbtValue<'a, F>>;
+pub type SbtDict<'a, F> = HashMap<&'a str, SbtValue<'a, F>>;
 pub type SbtTuple<'a, F> = Vec<SbtValue<'a, F>>;
 
 trait SDict<F: Float + Texel> {
@@ -368,8 +368,8 @@ impl SbtParser2 {
         pub fn _dump(pr: Pair<Rule>, lvl: usize) -> RResult<()> {
             print!("{}{:?}", "    ".repeat(lvl), pr.as_rule(),);
             match pr.as_rule() {
-                Rule::ident => print!(" '{}'", pr.as_span().as_str()),
-                Rule::int | Rule::float => print!(" {}", { pr.as_span().as_str() }),
+                Rule::ident => print!(" '{pr}'"),
+                Rule::int | Rule::float => print!(" {pr}"),
                 _other => print!(""),
             }
             println!();
@@ -388,42 +388,28 @@ impl SbtParser2 {
 
     pub fn parse_dict<F: Float>(pr: Pair<Rule>) -> RResult<SbtValue<F>> {
         let mut hash = HashMap::new();
-        let mut key = "";
-        for p in pr.into_inner() {
-            match p.as_rule() {
-                Rule::ident => key = p.as_span().as_str(),
-                _value => {
-                    hash.insert(key.to_string(), Self::parse_value(p)?);
-                }
-            }
+        for [key, value] in pr.into_inner().array_chunks() {
+            hash.insert(key.as_str(), Self::parse_value(value)?);
         }
         Ok(SbtValue::Dict(hash))
     }
 
-    pub fn parse_tuple<F: Float>(p: Pair<Rule>) -> RResult<SbtValue<F>> {
-        let pr = p.into_inner();
-        let mut tuple = vec![];
+    fn parse_tuple<F: Float>(p: Pair<Rule>) -> RResult<SbtValue<F>> {
+        let tuple: RResult<_> = p.into_inner().map(Self::parse_value).collect();
 
-        /* Manual iteration is significantly faster than map()+collect() */
-        for p in pr {
-            tuple.push(Self::parse_value(p)?);
-        }
-
-        Ok(SbtValue::Tuple(tuple))
+        Ok(SbtValue::Tuple(tuple?))
     }
 
     pub fn parse_float<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
-        Ok(SbtValue::Float(F::from_f64(
-            pr.as_span().as_str().trim().parse::<f64>()?,
-        )))
+        Ok(SbtValue::Float(F::from_f64(pr.as_str().trim().parse()?)))
     }
 
     pub fn parse_int<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
-        Ok(SbtValue::Int(pr.as_span().as_str().trim().parse()?))
+        Ok(SbtValue::Int(pr.as_str().trim().parse()?))
     }
 
     pub fn parse_boolean<'a, F: Float>(pr: &Pair<Rule>) -> RResult<SbtValue<'a, F>> {
-        match pr.as_span().as_str() {
+        match pr.as_str() {
             "true" => Ok(SbtValue::Bool(true)),
             "false" => Ok(SbtValue::Bool(false)),
             _ => Err(Error::ParseError("internal parser error")),
@@ -431,7 +417,7 @@ impl SbtParser2 {
     }
 
     pub fn parse_string<'a, F: Float>(pr: &Pair<'a, Rule>) -> RResult<SbtValue<'a, F>> {
-        let val = pr.as_span().as_str();
+        let val = pr.as_str();
         Ok(SbtValue::Str(&val[1..val.len() - 1]))
     }
 
@@ -468,7 +454,7 @@ impl SbtParser2 {
             match p.as_rule() {
                 Rule::VERSION => prog.version = SbtVersion::from_str(p.as_str())?,
                 Rule::block => prog.blocks.push(Self::parse_block(p)?),
-                Rule::ident => name = p.as_span().as_str(),
+                Rule::ident => name = p.as_str(),
                 Rule::dict => {
                     /* warn!("Workaround for malformed file"); */
                     let value = Self::parse_dict(p)?;
@@ -924,6 +910,6 @@ where
             }
         }
 
-        Ok(Scene::new(cameras, objects, vec![], self.materials, lights)?.with_ambient(ambient))
+        Ok(BoxScene::new(cameras, objects, vec![], self.materials, lights)?.with_ambient(ambient))
     }
 }

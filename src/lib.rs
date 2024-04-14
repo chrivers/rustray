@@ -1,6 +1,7 @@
 #![feature(box_patterns)]
 #![feature(const_trait_impl)]
 #![feature(effects)]
+#![feature(iter_array_chunks)]
 #![feature(test)]
 #![warn(
     clippy::all,
