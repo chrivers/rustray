@@ -5,7 +5,7 @@ use egui::{Color32, Pos2, Rect, Rounding, Shape, Stroke};
 
 use crate::debug::DebugTracer;
 use crate::point;
-use crate::scene::{BoxScene, RayTracer};
+use crate::scene::BoxScene;
 use crate::types::{Camera, Float, Point, Vector, Vectorx};
 
 pub struct VisualTracer<'a, F: Float> {
@@ -101,13 +101,12 @@ where
 
     let ray = cam.get_ray(point!(coord.x, coord.y)).with_debug();
 
-    let dt = DebugTracer::new(scene, TRACE_STEPS);
-    dt.ray_trace(&ray);
+    let steps = DebugTracer::trace_single(scene, TRACE_STEPS, &ray);
 
     let mut vt = VisualTracer::new(to_screen, cam);
 
     #[allow(clippy::significant_drop_in_scrutinee)]
-    for step in dt.steps.borrow().iter() {
+    for step in &steps {
         let ray = &step.ray;
 
         let (a, b) = step.maxel.map_or_else(
