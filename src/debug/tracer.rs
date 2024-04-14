@@ -31,6 +31,20 @@ impl<'a, F: Float> DebugTracer<'a, F> {
             maxlvl,
         }
     }
+
+    pub fn into_inner(self) -> Vec<Step<'a, F>> {
+        self.steps.into_inner()
+    }
+
+    pub fn trace_single(
+        scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
+        maxlvl: u16,
+        ray: &Ray<F>,
+    ) -> Vec<Step<'a, F>> {
+        let dt = Self::new(scene, maxlvl);
+        dt.ray_trace(ray);
+        dt.into_inner()
+    }
 }
 
 impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
