@@ -65,12 +65,16 @@ fn draw_image<F: Float>(
     img
 }
 
-pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32, output: PathBuf) -> RResult<()>
+pub fn run<F>(
+    scene: BoxScene<F>,
+    width: u32,
+    height: u32,
+    output: PathBuf,
+    mut time: TimeSlice,
+) -> RResult<()>
 where
     F: Float + From<f32>,
 {
-    let mut time = TimeSlice::new("startup");
-
     let scene = RwLock::new(scene);
 
     let img = draw_image(

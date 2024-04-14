@@ -51,7 +51,7 @@ where
     let resdir = path.parent().unwrap();
     let mut file = File::open(&path)?;
 
-    time.set("parse");
+    time.set("read");
 
     /* Option 1: Scene from .ply file */
     /* let scene = PlyParser::<F>::parse_file(&mut file, resdir, WIDTH, HEIGHT)?; */
@@ -69,10 +69,13 @@ where
 
     /* Option 2b: Scene from .ray file (new parser) */
 
+    time.set("parse");
     let p = SbtParser2::parse(Rule2::program, &data).map_err(|err| err.with_path(name))?;
+
     time.set("ast");
     /* SbtParser2::<F>::dump(p.clone())?; */
     let p = SbtParser2::ast(p)?;
+
     /* info!("AST {:#?}", p); */
     time.set("build");
     let scene = SbtBuilder::new(width, height, resdir).build(p)?;
@@ -114,6 +117,7 @@ fn main() -> RResult<()> {
         cli.height,
         cli.output
             .unwrap_or_else(|| PathBuf::from_str("output.png").unwrap()),
+        time,
     );
 }
 
