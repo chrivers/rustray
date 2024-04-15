@@ -25,6 +25,7 @@ use egui::{
     Visuals,
 };
 use egui_file_dialog::FileDialog;
+use egui_phosphor::regular as icon;
 use pest::Parser;
 
 pub struct RustRayGui<F: Float> {
@@ -50,6 +51,10 @@ where
     ) -> Self {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
+        let mut fonts = egui::FontDefinitions::default();
+        egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+
+        cc.egui_ctx.set_fonts(fonts);
 
         /* let mut fonts = egui::FontDefinitions::default(); */
         /* egui_nerdfonts::add_to_fonts(&mut fonts, egui_nerdfonts::Variant::Regular); */
