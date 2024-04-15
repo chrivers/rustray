@@ -1,7 +1,16 @@
-use egui::{CollapsingHeader, CollapsingResponse, DragValue, Grid, InnerResponse, Slider, Ui};
+use egui::{
+    CollapsingHeader, CollapsingResponse, DragValue, Grid,
+    InnerResponse, Response, RichText, Slider, Ui,
+};
+use egui::collapsing_header::CollapsingState;
 
 use crate::light::Attenuation;
 use crate::types::{Color, Float, Vector};
+
+pub fn collapsing_group(name: &str, icon: &str) -> CollapsingHeader {
+    CollapsingHeader::new(RichText::new(format!("{icon} {name}")).heading().strong())
+        .default_open(true)
+}
 
 pub fn property_list<R>(
     name: &str,
@@ -17,6 +26,53 @@ pub fn property_list<R>(
                 .striped(true)
                 .show(ui, add_contents)
         })
+}
+
+pub trait EguiId {
+    fn egui_id(&self) -> egui::Id;
+}
+
+impl EguiId for &str {
+    fn egui_id(&self) -> egui::Id {
+        egui::Id::new(self)
+    }
+}
+
+pub struct CustomCollapsible {
+    pub id: egui::Id,
+    toggle: bool,
+}
+
+impl CustomCollapsible {
+    pub fn new(id: impl Into<egui::Id>) -> Self {
+        Self {
+            id: id.into(),
+            toggle: false,
+        }
+    }
+
+    pub fn toggle(&mut self) {
+        self.toggle = true;
+    }
+
+    pub fn show<R1, R2>(
+        mut self,
+        ui: &mut Ui,
+        header: impl FnOnce(&mut Self, &mut Ui) -> R1,
+        body: impl FnOnce(&mut Ui) -> R2,
+    ) -> (Response, InnerResponse<R1>, Option<InnerResponse<R2>>) {
+        let mut ctrl = CollapsingState::load_with_default_open(ui.ctx(), self.id, false);
+
+        if ui.data(|mem| mem.get_temp(self.id).unwrap_or(false)) {
+            ctrl.toggle(ui);
+        }
+
+        let res = ctrl.show_header(ui, |ui| header(&mut self, ui)).body(body);
+
+        ui.data_mut(|mem| mem.insert_temp(self.id, self.toggle));
+
+        res
+    }
 }
 
 #[must_use]
