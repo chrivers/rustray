@@ -39,7 +39,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
+geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder", egui_phosphor::regular::CYLINDER);
 geometry_impl_hastransform!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {

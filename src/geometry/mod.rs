@@ -51,6 +51,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
         (**self).get_name()
     }
 
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
+    }
+
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
@@ -63,6 +67,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
 impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
     fn get_name(&self) -> &str {
         (**self).get_name()
+    }
+
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
     }
 
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
@@ -122,9 +130,9 @@ macro_rules! aabb_impl_fm {
 }
 
 macro_rules! geometry_impl_sceneobject {
-    ( $type:ty, $name:expr ) => {
+    ( $type:ty, $name:expr, $icon:expr ) => {
         impl<F: Float, M: Material<F>> SceneObject<F> for $type {
-            crate::sceneobject_impl_body!($name);
+            crate::sceneobject_impl_body!($name, $icon);
         }
     };
 }

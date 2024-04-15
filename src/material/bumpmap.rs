@@ -118,5 +118,5 @@ where
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
 {
-    sceneobject_impl_body!("Bumpmap");
+    sceneobject_impl_body!("Bumpmap", egui_phosphor::regular::ARROW_ELBOW_RIGHT);
 }

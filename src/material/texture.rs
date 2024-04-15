@@ -53,7 +53,7 @@ impl<F: Float, S: Sampler<F, Color<F>>> Interactive<F> for Texture<F, S> {
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> SceneObject<F> for Texture<F, S> {
-    sceneobject_impl_body!("Texture");
+    sceneobject_impl_body!("Texture", egui_phosphor::regular::IMAGE_SQUARE);
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Self> for Texture<F, S> {

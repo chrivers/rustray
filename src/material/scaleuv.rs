@@ -65,5 +65,5 @@ impl<F: Float, M: Material<F>> Interactive<F> for ScaleUV<F, M> {
 }
 
 impl<F: Float, M: Material<F>> SceneObject<F> for ScaleUV<F, M> {
-    sceneobject_impl_body!("Scale UV");
+    sceneobject_impl_body!("Scale UV", egui_phosphor::regular::FRAME_CORNERS);
 }

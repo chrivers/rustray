@@ -147,5 +147,5 @@ where
     SS: Sampler<F, Color<F>>,
     SP: Sampler<F, F>,
 {
-    sceneobject_impl_body!("Phong");
+    sceneobject_impl_body!("Phong", egui_phosphor::regular::DRIBBBLE_LOGO);
 }

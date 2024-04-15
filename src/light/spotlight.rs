@@ -16,7 +16,7 @@ pub struct SpotLight<F: Float> {
 }
 
 impl<F: Float> SceneObject<F> for SpotLight<F> {
-    sceneobject_impl_body!("Spot Light");
+    sceneobject_impl_body!("Spot Light", egui_phosphor::regular::FLASHLIGHT);
 }
 
 impl<F: Float> Light<F> for SpotLight<F> {

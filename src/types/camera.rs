@@ -124,7 +124,7 @@ impl<F: Float> Interactive<F> for Camera<F> {
 }
 
 impl<F: Float> SceneObject<F> for Camera<F> {
-    sceneobject_impl_body!("Camera");
+    sceneobject_impl_body!("Camera", egui_phosphor::regular::VIDEO_CAMERA);
 }
 
 #[cfg(test)]

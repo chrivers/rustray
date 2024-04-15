@@ -78,5 +78,5 @@ where
     B: Material<F>,
     C: Material<F>,
 {
-    sceneobject_impl_body!("Triblend");
+    sceneobject_impl_body!("Triblend", egui_phosphor::regular::TRIANGLE);
 }

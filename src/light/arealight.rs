@@ -59,7 +59,7 @@ impl<F: Float> AreaLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for AreaLight<F> {
-    sceneobject_impl_body!("Area Light");
+    sceneobject_impl_body!("Area Light", egui_phosphor::regular::HEADLIGHTS);
 }
 
 impl<F: Float> Interactive<F> for AreaLight<F> {

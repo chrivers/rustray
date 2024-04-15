@@ -71,7 +71,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cone<F, M>, "Cone");
+geometry_impl_sceneobject!(Cone<F, M>, "Cone", egui_phosphor::regular::TRAFFIC_CONE);
 geometry_impl_hastransform!(Cone<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cone<F, M> {

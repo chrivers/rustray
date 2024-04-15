@@ -33,7 +33,7 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for DirectionalLight<F> {
-    sceneobject_impl_body!("Directional Light");
+    sceneobject_impl_body!("Directional Light", egui_phosphor::regular::SUN);
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {

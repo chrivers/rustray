@@ -31,7 +31,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cube<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cube<F, M>, "Cube");
+geometry_impl_sceneobject!(Cube<F, M>, "Cube", egui_phosphor::regular::CUBE);
 geometry_impl_hastransform!(Cube<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {

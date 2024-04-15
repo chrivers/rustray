@@ -186,5 +186,5 @@ impl<'a, F: Float> Interactive<F> for Tracer<'a, F> {
 }
 
 impl<'a, F: Float> SceneObject<F> for Tracer<'a, F> {
-    sceneobject_impl_body!("Ray tracer");
+    sceneobject_impl_body!("Ray tracer", egui_phosphor::regular::LINE_SEGMENTS);
 }

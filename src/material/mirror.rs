@@ -48,5 +48,5 @@ impl<F: Float, T: Sampler<F, Color<F>>> Interactive<F> for Mirror<F, T> {
 }
 
 impl<F: Float, T: Sampler<F, Color<F>>> SceneObject<F> for Mirror<F, T> {
-    sceneobject_impl_body!("Mirror");
+    sceneobject_impl_body!("Mirror", egui_phosphor::regular::ARROWS_SPLIT);
 }

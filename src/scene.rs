@@ -10,15 +10,20 @@ use std::num::NonZeroUsize;
 
 pub trait SceneObject<F: Float> {
     fn get_name(&self) -> &str;
+    fn get_icon(&self) -> &str;
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>>;
     fn get_id(&self) -> Option<usize>;
 }
 
 #[macro_export]
 macro_rules! sceneobject_impl_body {
-    ( $name:expr ) => {
+    ( $name:expr, $icon:expr ) => {
         fn get_name(&self) -> &str {
             $name
+        }
+
+        fn get_icon(&self) -> &str {
+            $icon
         }
 
         #[cfg(feature = "gui")]

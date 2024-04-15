@@ -37,7 +37,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
+geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh", egui_phosphor::regular::POLYGON);
 geometry_impl_hastransform!(TriangleMesh<F, M>);
 aabb_impl_fm!(TriangleMesh<F, M>);
 

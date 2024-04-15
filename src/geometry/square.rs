@@ -27,7 +27,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Square<F, M>, "Square");
+geometry_impl_sceneobject!(Square<F, M>, "Square", egui_phosphor::regular::SQUARE);
 geometry_impl_hastransform!(Square<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Square<F, M> {

@@ -26,7 +26,7 @@ impl<F: Float> Interactive<F> for PointLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for PointLight<F> {
-    sceneobject_impl_body!("Point Light");
+    sceneobject_impl_body!("Point Light", egui_phosphor::regular::LIGHTBULB);
 }
 
 impl<F: Float> Light<F> for PointLight<F> {

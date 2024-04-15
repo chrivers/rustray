@@ -69,5 +69,5 @@ impl<F: Float> Material<F> for ColorDebug<F> {
 impl<F: Float> Interactive<F> for ColorDebug<F> {}
 
 impl<F: Float> SceneObject<F> for ColorDebug<F> {
-    sceneobject_impl_body!("Color Debug");
+    sceneobject_impl_body!("Color Debug", egui_phosphor::regular::BUG);
 }

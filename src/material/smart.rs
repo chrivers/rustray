@@ -97,5 +97,5 @@ where
     ST: Sampler<F, Color<F>>,
     SR: Sampler<F, Color<F>>,
 {
-    sceneobject_impl_body!("Smart material");
+    sceneobject_impl_body!("Smart material", egui_phosphor::regular::PLAY_CIRCLE);
 }

@@ -40,7 +40,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Triangle<F, M>, "Triangle");
+geometry_impl_sceneobject!(Triangle<F, M>, "Triangle", egui_phosphor::regular::TRIANGLE);
 
 impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {

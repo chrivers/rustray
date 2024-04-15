@@ -36,5 +36,5 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for Blend<F, A, B> {
 impl<F: Float, A: Material<F>, B: Material<F>> Interactive<F> for Blend<F, A, B> {}
 
 impl<F: Float, A: Material<F>, B: Material<F>> SceneObject<F> for Blend<F, A, B> {
-    sceneobject_impl_body!("Blend");
+    sceneobject_impl_body!("Blend", egui_phosphor::regular::CIRCLE_HALF_TILT);
 }

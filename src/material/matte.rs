@@ -93,5 +93,5 @@ where
     S: Sampler<F, F>,
     M: Material<F>,
 {
-    sceneobject_impl_body!("Matte");
+    sceneobject_impl_body!("Matte", egui_phosphor::regular::WAVES);
 }

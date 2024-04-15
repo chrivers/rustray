@@ -51,6 +51,10 @@ impl<F: Float> SceneObject<F> for Box<dyn Light<F> + 'static> {
         (**self).get_name()
     }
 
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
+    }
+
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }

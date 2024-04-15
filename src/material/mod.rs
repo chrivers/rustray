@@ -35,6 +35,10 @@ impl<F: Float> SceneObject<F> for BoxMaterial<F> {
         (**self).get_name()
     }
 
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
+    }
+
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
@@ -45,11 +49,11 @@ impl<F: Float> SceneObject<F> for BoxMaterial<F> {
 }
 
 impl<F: Float> SceneObject<F> for Color<F> {
-    sceneobject_impl_body!("Color");
+    sceneobject_impl_body!("Color", egui_phosphor::regular::PALETTE);
 }
 
 impl<F: Float> SceneObject<F> for MaterialId {
-    sceneobject_impl_body!("Material ID");
+    sceneobject_impl_body!("Material ID", egui_phosphor::regular::TAG);
 }
 
 impl<F: Float> Material<F> for MaterialId {
@@ -94,6 +98,10 @@ impl<F: Float> Material<F> for DynMaterial<F> {
 impl<F: Float> SceneObject<F> for DynMaterial<F> {
     fn get_name(&self) -> &str {
         (**self).get_name()
+    }
+
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
     }
 
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {

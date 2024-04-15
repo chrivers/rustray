@@ -97,5 +97,5 @@ where
     ST: Sampler<F, Color<F>>,
     SR: Sampler<F, Color<F>>,
 {
-    sceneobject_impl_body!("Fresnel");
+    sceneobject_impl_body!("Fresnel", egui_phosphor::regular::APERTURE);
 }
