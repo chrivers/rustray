@@ -2,7 +2,7 @@ use cgmath::{Matrix4, SquareMatrix};
 use itertools::Itertools;
 
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, RwLock},
     time::Duration,
 };
@@ -94,6 +94,7 @@ where
             ui.menu_button("File", |ui| {
                 if ui.button("Open..").clicked() {
                     self.file_dialog.select_file();
+                    ui.close_menu();
                 }
                 if ui.button("Quit").clicked() {
                     ctx.send_viewport_cmd(ViewportCommand::Close);
@@ -364,7 +365,7 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_file(&self, path: &Path) -> RResult<BoxScene<F>> {
+    fn load_scene_from_file(width: u32, height: u32, path: &Path) -> RResult<BoxScene<F>> {
         let data = std::fs::read_to_string(path)?;
 
         let resdir = path
@@ -376,9 +377,25 @@ where
             .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
         let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
         let p = SbtParser2::ast(p)?;
-        let scene =
-            SbtBuilder::new(self.engine.img.width(), self.engine.img.height(), resdir).build(p)?;
+        let scene = SbtBuilder::new(width, height, resdir).build(p)?;
         Ok(scene)
+    }
+
+    fn load_file(&mut self, path: &Path) -> RResult<()> {
+        info!("Loading file: {path:?}");
+
+        if let Some(parent) = path.parent() {
+            self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
+        }
+
+        let img = &self.engine.img;
+
+        let scene = Self::load_scene_from_file(img.width(), img.height(), path)?;
+
+        self.lock = Arc::new(RwLock::new(scene));
+        self.engine.render_lines(&self.lock, 0, img.height());
+
+        Ok(())
     }
 }
 
@@ -452,13 +469,7 @@ where
         self.file_dialog.update(ctx);
 
         if let Some(path) = self.file_dialog.take_selected() {
-            info!("New file: {path:?}");
-            self.file_dialog.config_mut().initial_directory = path.parent().unwrap().to_path_buf();
-            if let Ok(scene) = self.load_file(&path) {
-                self.lock = Arc::new(RwLock::new(scene));
-                self.engine
-                    .render_lines(&self.lock, 0, self.engine.img.height());
-            }
+            let _ = self.load_file(&path);
         }
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
@@ -474,7 +485,7 @@ where
     }
 }
 
-pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(path: PathBuf, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
@@ -499,8 +510,8 @@ where
             Box::new({
                 let engine = RenderEngine::new(width, height);
 
-                let mut app = RustRayGui::new(cc, engine, scene);
-                app.engine.render_lines(&app.lock, 0, height);
+                let mut app = RustRayGui::new(cc, engine, BoxScene::empty());
+                let _ = app.load_file(&path);
 
                 app
             })
