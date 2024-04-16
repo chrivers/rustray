@@ -257,13 +257,17 @@ where
 
         if let Some(pos) = act.hover_pos() {
             let coord = from_screen.transform_pos(pos);
-            if act.double_clicked_by(PointerButton::Secondary) {
-                self.coord = None;
-                self.shapes.clear();
-                self.trace = false;
-            } else if act.clicked_by(PointerButton::Secondary) {
+
+            if ctx.input(|i| i.key_pressed(Key::D)) {
                 self.trace = !self.trace;
             }
+
+            if ctx.input(|i| i.key_pressed(Key::D) && i.modifiers.shift) {
+                self.trace = false;
+                self.coord = None;
+                self.shapes.clear();
+            }
+
             if self.trace {
                 self.coord = Some(coord);
             }
