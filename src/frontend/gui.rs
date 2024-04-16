@@ -11,7 +11,7 @@ use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
-    gui::{controls, gizmo, visualtrace},
+    gui::{controls, gizmo, visualtrace::VisualTraceWidget},
     material::Phong,
     point,
     sampler::Texel,
@@ -23,7 +23,7 @@ use eframe::egui::Key;
 use egui::{
     emath::RectTransform, pos2, vec2, Align, Button, CentralPanel, Color32, Context,
     KeyboardShortcut, Layout, Modifiers, NumExt, Pos2, ProgressBar, Rect, RichText, ScrollArea,
-    Sense, Shape, SidePanel, TextStyle, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
+    Sense, SidePanel, TextStyle, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
     ViewportCommand, Visuals, Widget, WidgetText,
 };
 use egui_file_dialog::FileDialog;
@@ -36,9 +36,7 @@ pub struct RustRayGui<F: Float> {
     obj: Option<usize>,
     obj_last: Option<usize>,
     file_dialog: FileDialog,
-    shapes: Vec<Shape>,
-    coord: Option<Pos2>,
-    trace: bool,
+    vtracer: VisualTraceWidget,
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>
@@ -75,9 +73,7 @@ where
             obj: None,
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
-            shapes: vec![],
-            coord: None,
-            trace: false,
+            vtracer: VisualTraceWidget::new(),
         }
     }
 
@@ -91,6 +87,33 @@ where
 
     fn render_preview(&mut self) {
         self.engine.render_all_by_step(&self.lock, 4, 4);
+    }
+
+    fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
+        egui::menu::bar(ui, |ui| {
+            ui.menu_button("File", |ui| {
+                if ui.button("Open..").clicked() {
+                    self.file_dialog.select_file();
+                }
+                if ui.button("Quit").clicked() {
+                    ctx.send_viewport_cmd(ViewportCommand::Close);
+                }
+            });
+
+            ui.add_space(16.0);
+
+            if ui.button("Full screen").clicked() {
+                ctx.send_viewport_cmd(ViewportCommand::Fullscreen(true));
+            }
+
+            if ui.button("Window").clicked() {
+                ctx.send_viewport_cmd(ViewportCommand::Fullscreen(false));
+            }
+
+            ui.add_space(16.0);
+
+            egui::widgets::global_dark_light_mode_buttons(ui);
+        });
     }
 
     fn update_side_panel(&mut self, _ctx: &Context, ui: &mut Ui, scene: &mut BoxScene<F>) {
@@ -252,9 +275,7 @@ where
             Sphere::place(Vector::ZERO, F::ONE, Phong::white())
         });
 
-        add_geometry_option!(Square, {
-            Square::new(Matrix4::identity(), Phong::white())
-        });
+        add_geometry_option!(Square, { Square::new(Matrix4::identity(), Phong::white()) });
 
         res
     }
@@ -267,7 +288,10 @@ where
                 ui.close_menu();
             }
         });
-        if ui.checkbox(&mut self.trace, "Ray trace debugger").changed() {
+        if ui
+            .checkbox(&mut self.vtracer.enabled, "Ray trace debugger")
+            .changed()
+        {
             ui.close_menu();
         }
     }
@@ -284,9 +308,8 @@ where
             Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
             Color32::WHITE,
         );
-        for shape in &self.shapes {
-            painter.add(shape.clone());
-        }
+
+        self.vtracer.draw(&painter);
 
         let to_screen = RectTransform::from_to(
             Rect::from_min_size(Pos2::ZERO, vec2(1.0, 1.0)),
@@ -318,28 +341,14 @@ where
         self.obj_last = self.obj;
 
         if let Some(pos) = act.hover_pos() {
-            let coord = from_screen.transform_pos(pos);
-
-            if ctx.input(|i| i.key_pressed(Key::D)) {
-                self.trace = !self.trace;
-            }
-
-            if ctx.input(|i| i.key_pressed(Key::D) && i.modifiers.shift) {
-                self.trace = false;
-                self.coord = None;
-                self.shapes.clear();
-            }
-
-            if self.trace {
-                self.coord = Some(coord);
+            if self.vtracer.enabled {
+                let coord = from_screen.transform_pos(pos);
+                self.vtracer.set_coord(coord);
             }
         }
+        self.vtracer.update(scene, &to_screen);
 
         act.context_menu(|ui| self.context_menu(ui, scene));
-
-        if let Some(coord) = self.coord {
-            self.shapes = visualtrace::make_shapes(scene, coord, &to_screen);
-        }
 
         let camera = scene.cameras[0];
         if let Some(obj) = self.find_obj(scene) {
@@ -383,30 +392,6 @@ fn ui_progress(ctx: &Context, ui: &mut Ui, (queued, max): (usize, usize)) {
     }
 }
 
-fn update_top_panel(ctx: &Context, ui: &mut Ui) {
-    egui::menu::bar(ui, |ui| {
-        ui.menu_button("File", |ui| {
-            if ui.button("Quit").clicked() {
-                ctx.send_viewport_cmd(ViewportCommand::Close);
-            }
-        });
-
-        ui.add_space(16.0);
-
-        if ui.button("Full screen").clicked() {
-            ctx.send_viewport_cmd(ViewportCommand::Fullscreen(true));
-        }
-
-        if ui.button("Window").clicked() {
-            ctx.send_viewport_cmd(ViewportCommand::Fullscreen(false));
-        }
-
-        ui.add_space(16.0);
-
-        egui::widgets::global_dark_light_mode_buttons(ui);
-    });
-}
-
 impl<F> eframe::App for RustRayGui<F>
 where
     F: Float + Texel + From<f32>,
@@ -425,6 +410,7 @@ where
             ctx.send_viewport_cmd(ViewportCommand::Close);
         }
 
+        // render (hq, normals)
         if ctx.input(|i| i.key_pressed(Key::R)) {
             self.engine.render_all(&self.lock);
         }
@@ -433,12 +419,23 @@ where
             self.engine.render_normals(&self.lock);
         }
 
+        //
         if ctx.input(|i| i.key_pressed(Key::F)) {
             ctx.send_viewport_cmd(ViewportCommand::Fullscreen(true));
         }
 
+        // file dialog
         if ctx.input(|i| i.key_pressed(Key::O)) {
             self.file_dialog.select_file();
+        }
+
+        // vtracer controls
+        if ctx.input(|i| i.key_pressed(Key::D)) {
+            self.vtracer.toggle();
+        }
+
+        if ctx.input(|i| i.key_pressed(Key::D) && i.modifiers.shift) {
+            self.vtracer.clear();
         }
 
         let kbd_space = KeyboardShortcut::new(Modifiers::NONE, Key::Space);
@@ -464,7 +461,7 @@ where
             }
         }
 
-        TopBottomPanel::top("top_panel").show(ctx, |ui| update_top_panel(ctx, ui));
+        TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
 
         let lock = Arc::clone(&self.lock);
         let mut scene = lock.write().unwrap();

@@ -1,5 +1,5 @@
 use egui::emath::RectTransform;
-use egui::{Color32, Pos2, Rect, Rounding, Shape, Stroke};
+use egui::{Color32, Painter, Pos2, Rect, Rounding, Shape, Stroke};
 
 use crate::debug::DebugTracer;
 use crate::point;
@@ -84,67 +84,105 @@ impl<'a, F: Float> VisualTracer<'a, F> {
     }
 }
 
-#[must_use]
-pub fn make_shapes<F>(scene: &BoxScene<F>, coord: Pos2, to_screen: &RectTransform) -> Vec<Shape>
-where
-    F: Float + From<f32>,
-{
-    const TRACE_STEPS: u16 = 7;
+pub struct VisualTraceWidget {
+    pub enabled: bool,
+    coord: Option<Pos2>,
+    shapes: Vec<Shape>,
+}
 
-    let cam = &scene.cameras[0];
-
-    let ray = cam.get_ray(point!(coord.x, coord.y)).with_debug();
-
-    let steps = DebugTracer::trace_single(scene, TRACE_STEPS, &ray);
-
-    let mut vt = VisualTracer::new(to_screen, cam);
-
-    #[allow(clippy::significant_drop_in_scrutinee)]
-    for step in &steps {
-        let ray = &step.ray;
-
-        let (a, b) = step.maxel.map_or_else(
-            || vt.calc_normal(ray.pos, ray.dir),
-            |maxel| vt.calc_line(ray.pos, maxel.pos),
-        );
-
-        let color = if step.shadow {
-            if step.maxel.is_some() {
-                Color32::DARK_RED
-            } else {
-                Color32::DARK_GREEN
-            }
-        } else {
-            Color32::from_gray(255_i32.saturating_sub(50 * i32::from(ray.lvl)) as u8)
-        };
-
-        if ray.lvl != 0 {
-            vt.draw_line(a, b, Stroke::new(2.0, color));
-        }
-
-        let Some(mut maxel) = step.maxel else {
-            vt.dot(b, 3.0, Color32::GREEN);
-            continue;
-        };
-
-        vt.dot(
-            b,
-            5.0,
-            if step.shadow {
-                Color32::RED
-            } else {
-                Color32::BLUE
-            },
-        );
-
-        let (a, b) = vt.calc_normal(maxel.pos, maxel.nml());
-
-        vt.draw_line(a, b, Stroke::new(1.0, Color32::BLUE));
-
-        if let Some(color) = step.color {
-            vt.draw_color_box(b, Color32::from(color));
+impl VisualTraceWidget {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            coord: None,
+            enabled: false,
+            shapes: vec![],
         }
     }
 
-    vt.into_inner()
+    pub fn toggle(&mut self) {
+        self.enabled = !self.enabled;
+    }
+
+    pub fn clear(&mut self) {
+        self.enabled = false;
+        self.coord = None;
+        self.shapes.clear();
+    }
+
+    pub fn set_coord(&mut self, coord: Pos2) {
+        self.coord = Some(coord);
+    }
+
+    pub fn update<F>(&mut self, scene: &BoxScene<F>, to_screen: &RectTransform)
+    where
+        F: Float + From<f32>,
+    {
+        const TRACE_STEPS: u16 = 7;
+
+        let Some(coord) = self.coord else { return };
+
+        let cam = &scene.cameras[0];
+
+        let ray = cam.get_ray(point!(coord.x, coord.y)).with_debug();
+
+        let steps = DebugTracer::trace_single(scene, TRACE_STEPS, &ray);
+
+        let mut vt = VisualTracer::new(to_screen, cam);
+
+        #[allow(clippy::significant_drop_in_scrutinee)]
+        for step in &steps {
+            let ray = &step.ray;
+
+            let (a, b) = step.maxel.map_or_else(
+                || vt.calc_normal(ray.pos, ray.dir),
+                |maxel| vt.calc_line(ray.pos, maxel.pos),
+            );
+
+            let color = if step.shadow {
+                if step.maxel.is_some() {
+                    Color32::DARK_RED
+                } else {
+                    Color32::DARK_GREEN
+                }
+            } else {
+                Color32::from_gray(255_i32.saturating_sub(50 * i32::from(ray.lvl)) as u8)
+            };
+
+            if ray.lvl != 0 {
+                vt.draw_line(a, b, Stroke::new(2.0, color));
+            }
+
+            let Some(mut maxel) = step.maxel else {
+                vt.dot(b, 3.0, Color32::GREEN);
+                continue;
+            };
+
+            vt.dot(
+                b,
+                5.0,
+                if step.shadow {
+                    Color32::RED
+                } else {
+                    Color32::BLUE
+                },
+            );
+
+            let (a, b) = vt.calc_normal(maxel.pos, maxel.nml());
+
+            vt.draw_line(a, b, Stroke::new(1.0, Color32::BLUE));
+
+            if let Some(color) = step.color {
+                vt.draw_color_box(b, Color32::from(color));
+            }
+        }
+
+        self.shapes = vt.into_inner();
+    }
+
+    pub fn draw(&self, painter: &Painter) {
+        for shape in &self.shapes {
+            painter.add(shape.clone());
+        }
+    }
 }
