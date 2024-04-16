@@ -215,64 +215,46 @@ where
     fn context_menu_add_geometry(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
         let mut res = false;
 
-        if ui
-            .button(format!("{} Cube", Cube::<_, Color<F>>::ICON))
-            .clicked()
-        {
-            scene
-                .objects
-                .push(Box::new(Cube::new(Matrix4::identity(), Phong::white())));
-            res = true;
-        };
+        macro_rules! add_geometry_option {
+            ($name:ident, $code:block) => {
+                if ui
+                    .button(format!(
+                        "{} {}",
+                        $name::<_, Color<F>>::ICON,
+                        stringify!($name)
+                    ))
+                    .clicked()
+                {
+                    scene.objects.push(Box::new($code));
+                    res = true;
+                }
+            };
+        }
 
-        if ui
-            .button(format!("{} Cone", Cone::<F, Color<F>>::ICON))
-            .clicked()
-        {
-            scene.objects.push(Box::new(Cone::new(
+        add_geometry_option!(Cube, { Cube::new(Matrix4::identity(), Phong::white()) });
+
+        add_geometry_option!(Cone, {
+            Cone::new(
                 F::ONE,
                 F::ZERO,
                 F::ONE,
                 true,
                 Matrix4::identity(),
                 Phong::white(),
-            )));
-            res = true;
-        };
+            )
+        });
 
-        if ui
-            .button(format!("{} Cylinder", Cylinder::<F, Color<F>>::ICON))
-            .clicked()
-        {
-            scene.objects.push(Box::new(Cylinder::new(
-                Matrix4::identity(),
-                true,
-                Phong::white(),
-            )));
-            res = true;
-        };
+        add_geometry_option!(Cylinder, {
+            Cylinder::new(Matrix4::identity(), true, Phong::white())
+        });
 
-        if ui
-            .button(format!("{} Sphere", Sphere::<F, Color<F>>::ICON))
-            .clicked()
-        {
-            scene.objects.push(Box::new(Sphere::place(
-                Vector::ZERO,
-                F::ONE,
-                Phong::white(),
-            )));
-            res = true;
-        };
+        add_geometry_option!(Sphere, {
+            Sphere::place(Vector::ZERO, F::ONE, Phong::white())
+        });
 
-        if ui
-            .button(format!("{} Square", Square::<F, Color<F>>::ICON))
-            .clicked()
-        {
-            scene
-                .objects
-                .push(Box::new(Square::new(Matrix4::identity(), Phong::white())));
-            res = true;
-        };
+        add_geometry_option!(Square, {
+            Square::new(Matrix4::identity(), Phong::white())
+        });
 
         res
     }
