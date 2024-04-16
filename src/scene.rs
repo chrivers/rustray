@@ -103,6 +103,21 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         Ok(res)
     }
 
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            cameras: vec![],
+            objects: vec![],
+            geometry: vec![],
+            textures: TextureLib::new(),
+            materials: MaterialLib::new(),
+            lights: vec![],
+            bvh: Bvh::default(),
+            ambient: Color::BLACK,
+            background: Color::BLACK,
+        }
+    }
+
     pub fn recompute_bvh(&mut self) -> RResult<()> {
         let aabbs = self
             .objects
