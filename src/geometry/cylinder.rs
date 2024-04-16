@@ -39,7 +39,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder", egui_phosphor::regular::CYLINDER);
+geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
 geometry_impl_hastransform!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
@@ -157,6 +157,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Cylinder<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::CYLINDER;
+
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),

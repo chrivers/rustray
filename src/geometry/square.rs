@@ -27,7 +27,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Square<F, M>, "Square", egui_phosphor::regular::SQUARE);
+geometry_impl_sceneobject!(Square<F, M>, "Square");
 geometry_impl_hastransform!(Square<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Square<F, M> {
@@ -77,6 +77,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Square<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Square<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::SQUARE;
+
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let mut res = Self {
             mat,

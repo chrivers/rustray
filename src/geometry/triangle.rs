@@ -40,7 +40,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Triangle<F, M>, "Triangle", egui_phosphor::regular::TRIANGLE);
+geometry_impl_sceneobject!(Triangle<F, M>, "Triangle");
 
 impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     fn vertex0(&self) -> Vec3 {
@@ -125,6 +125,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Triangle<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Triangle<F, M> {
+    const ICON: &'static str = egui_phosphor::regular::TRIANGLE;
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         a: Vector<F>,

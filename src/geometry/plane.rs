@@ -29,7 +29,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Plane<F, M>, "Plane", egui_phosphor::regular::SQUARE_LOGO);
+geometry_impl_sceneobject!(Plane<F, M>, "Plane");
 
 impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
@@ -49,6 +49,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Plane<F, M> {
+    const ICON: &'static str = egui_phosphor::regular::SQUARE_LOGO;
+
     pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Self {
         let dir1 = d1.normalize();
         let dir2 = d2.normalize();

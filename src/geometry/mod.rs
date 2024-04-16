@@ -130,9 +130,9 @@ macro_rules! aabb_impl_fm {
 }
 
 macro_rules! geometry_impl_sceneobject {
-    ( $type:ty, $name:expr, $icon:expr ) => {
+    ( $type:ty, $name:expr ) => {
         impl<F: Float, M: Material<F>> SceneObject<F> for $type {
-            crate::sceneobject_impl_body!($name, $icon);
+            crate::sceneobject_impl_body!($name, Self::ICON);
         }
     };
 }

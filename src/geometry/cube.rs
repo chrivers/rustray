@@ -31,7 +31,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cube<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cube<F, M>, "Cube", egui_phosphor::regular::CUBE);
+geometry_impl_sceneobject!(Cube<F, M>, "Cube");
 geometry_impl_hastransform!(Cube<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {
@@ -104,6 +104,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Cube<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::CUBE;
+
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
