@@ -97,11 +97,10 @@ fn draw_image<F: Float>(
 
     let camera = &tracer.scene().cameras[0];
 
-    #[cfg(feature = "rayon")]
-    let indices = (0..height).into_par_iter();
+    let indices = 0..height;
 
-    #[cfg(not(feature = "rayon"))]
-    let indices = (0..height).into_iter();
+    #[cfg(feature = "rayon")]
+    let indices = indices.into_par_iter();
 
     let lines: Vec<_> = indices
         .progress_with(pb)

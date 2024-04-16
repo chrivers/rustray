@@ -125,7 +125,7 @@ impl Float for f32 {
     #[inline(always)]
     #[cfg(not(feature = "gui"))]
     fn to_f64(self) -> f64 {
-        self as f64
+        f64::from(self)
     }
 }
 
@@ -167,7 +167,7 @@ impl Float for f64 {
     #[inline(always)]
     #[cfg(not(feature = "gui"))]
     fn to_f64(self) -> f64 {
-        self as f64
+        self
     }
 }
 
