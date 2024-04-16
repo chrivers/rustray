@@ -95,7 +95,7 @@ impl<F: Float> RenderEngine<F> {
             }
             *dirty = true;
 
-            let lock = lock.clone();
+            let lock = Arc::clone(lock);
             self.pool.execute_to(
                 self.tx.clone(),
                 #[allow(clippy::significant_drop_tightening)]

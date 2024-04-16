@@ -49,7 +49,7 @@ where
     pub fn new(
         cc: &eframe::CreationContext<'_>,
         engine: RenderEngine<F>,
-        lock: Arc<RwLock<BoxScene<F>>>,
+        scene: BoxScene<F>,
     ) -> Self {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
@@ -71,7 +71,7 @@ where
 
         Self {
             engine,
-            lock,
+            lock: Arc::new(RwLock::new(scene)),
             obj: None,
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
@@ -466,7 +466,7 @@ where
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| update_top_panel(ctx, ui));
 
-        let lock = self.lock.clone();
+        let lock = Arc::clone(&self.lock);
         let mut scene = lock.write().unwrap();
 
         SidePanel::left("Scene controls")
@@ -495,13 +495,18 @@ where
         ..Default::default()
     };
 
-    let lock = Arc::new(RwLock::new(scene));
-    let mut engine = RenderEngine::new(width, height);
-    engine.render_lines(&lock, 0, height);
-
     Ok(eframe::run_native(
         "Rustray",
         native_options,
-        Box::new(move |cc| Box::new(RustRayGui::new(cc, engine, lock))),
+        Box::new(move |cc| {
+            Box::new({
+                let engine = RenderEngine::new(width, height);
+
+                let mut app = RustRayGui::new(cc, engine, scene);
+                app.engine.render_lines(&app.lock, 0, height);
+
+                app
+            })
+        }),
     )?)
 }
