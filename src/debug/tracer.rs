@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::fmt::{self, Debug};
-use std::sync::RwLockWriteGuard;
 
 use cgmath::MetricSpace;
 
@@ -17,14 +16,14 @@ pub struct Step<'a, F: Float> {
 }
 
 pub struct DebugTracer<'a, F: Float> {
-    scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
+    scene: &'a BoxScene<F>,
     pub steps: RefCell<Vec<Step<'a, F>>>,
     maxlvl: u16,
 }
 
 impl<'a, F: Float> DebugTracer<'a, F> {
     #[must_use]
-    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>, maxlvl: u16) -> Self {
+    pub fn new(scene: &'a BoxScene<F>, maxlvl: u16) -> Self {
         Self {
             scene,
             steps: RefCell::new(vec![]),
@@ -36,11 +35,7 @@ impl<'a, F: Float> DebugTracer<'a, F> {
         self.steps.into_inner()
     }
 
-    pub fn trace_single(
-        scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
-        maxlvl: u16,
-        ray: &Ray<F>,
-    ) -> Vec<Step<'a, F>> {
+    pub fn trace_single(scene: &'a BoxScene<F>, maxlvl: u16, ray: &Ray<F>) -> Vec<Step<'a, F>> {
         let dt = Self::new(scene, maxlvl);
         dt.ray_trace(ray);
         dt.into_inner()

@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use std::{
     path::Path,
-    sync::{Arc, RwLock, RwLockWriteGuard},
+    sync::{Arc, RwLock},
     time::Duration,
 };
 
@@ -79,10 +79,7 @@ where
         }
     }
 
-    fn find_obj<'a>(
-        &self,
-        scene: &'a mut RwLockWriteGuard<BoxScene<F>>,
-    ) -> Option<&'a mut dyn Geometry<F>> {
+    fn find_obj<'a>(&self, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
         scene
             .objects
             .iter_mut()
@@ -94,12 +91,7 @@ where
         self.engine.render_all_by_step(&self.lock, 4, 4);
     }
 
-    fn update_side_panel(
-        &mut self,
-        _ctx: &Context,
-        ui: &mut Ui,
-        scene: &mut RwLockWriteGuard<BoxScene<F>>,
-    ) {
+    fn update_side_panel(&mut self, _ctx: &Context, ui: &mut Ui, scene: &mut BoxScene<F>) {
         ui.label(RichText::new("RustRay").heading().strong());
 
         ScrollArea::vertical().show(ui, |ui| {
@@ -218,12 +210,7 @@ where
         });
     }
 
-    fn update_center_panel(
-        &mut self,
-        ctx: &Context,
-        ui: &mut Ui,
-        scene: &mut RwLockWriteGuard<BoxScene<F>>,
-    ) {
+    fn update_center_panel(&mut self, ctx: &Context, ui: &mut Ui, scene: &mut BoxScene<F>) {
         let img = self.engine.get_epaint_image();
 
         let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);

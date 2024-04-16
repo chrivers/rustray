@@ -98,9 +98,11 @@ impl<F: Float> RenderEngine<F> {
             let lock = lock.clone();
             self.pool.execute_to(
                 self.tx.clone(),
+                #[allow(clippy::significant_drop_tightening)]
                 Thunk::of(move || {
                     let mut span = {
-                        let tracer = Tracer::new(lock.read().unwrap());
+                        let scene = lock.read().unwrap();
+                        let tracer = Tracer::new(&scene);
                         let camera = &tracer.scene().cameras[0];
                         tracer.generate_span_coarse(camera, y + step_y / 2, step_x)
                     };
@@ -139,8 +141,10 @@ impl<F: Float> RenderEngine<F> {
             let lock = lock.clone();
             self.pool.execute_to(
                 self.tx.clone(),
+                #[allow(clippy::significant_drop_tightening)]
                 Thunk::of(move || {
-                    let tracer = Tracer::new(lock.read().unwrap());
+                    let scene = lock.read().unwrap();
+                    let tracer = Tracer::new(&scene);
                     let camera = tracer.scene().cameras[0];
 
                     tracer.generate_normal_span(&camera, y)

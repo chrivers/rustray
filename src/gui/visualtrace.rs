@@ -1,5 +1,3 @@
-use std::sync::RwLockWriteGuard;
-
 use egui::emath::RectTransform;
 use egui::{Color32, Pos2, Rect, Rounding, Shape, Stroke};
 
@@ -87,11 +85,7 @@ impl<'a, F: Float> VisualTracer<'a, F> {
 }
 
 #[must_use]
-pub fn make_shapes<F>(
-    scene: &RwLockWriteGuard<BoxScene<F>>,
-    coord: Pos2,
-    to_screen: &RectTransform,
-) -> Vec<Shape>
+pub fn make_shapes<F>(scene: &BoxScene<F>, coord: Pos2, to_screen: &RectTransform) -> Vec<Shape>
 where
     F: Float + From<f32>,
 {

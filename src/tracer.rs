@@ -1,5 +1,4 @@
 use std::fmt::{self, Debug};
-use std::sync::RwLockReadGuard;
 
 use cgmath::MetricSpace;
 
@@ -12,7 +11,7 @@ use crate::sceneobject_impl_body;
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
 
 pub struct Tracer<'a, F: Float> {
-    scene: RwLockReadGuard<'a, BoxScene<F>>,
+    scene: &'a BoxScene<F>,
     sx: u32,
     sy: u32,
     maxlvl: u16,
@@ -20,7 +19,7 @@ pub struct Tracer<'a, F: Float> {
 
 impl<'a, F: Float> Tracer<'a, F> {
     #[must_use]
-    pub fn new(scene: RwLockReadGuard<'a, BoxScene<F>>) -> Self {
+    pub fn new(scene: &'a BoxScene<F>) -> Self {
         Self {
             scene,
             sx: 2,
@@ -157,7 +156,7 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
     }
 
     fn scene(&self) -> &BoxScene<F> {
-        &self.scene
+        self.scene
     }
 }
 

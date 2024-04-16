@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::sync::RwLock;
 
 #[cfg(not(feature = "rayon"))]
 use indicatif::ProgressIterator;
@@ -66,7 +65,7 @@ fn draw_image<F: Float>(
 }
 
 pub fn run<F>(
-    scene: BoxScene<F>,
+    scene: &BoxScene<F>,
     width: u32,
     height: u32,
     output: PathBuf,
@@ -75,14 +74,7 @@ pub fn run<F>(
 where
     F: Float + From<f32>,
 {
-    let scene = RwLock::new(scene);
-
-    let img = draw_image(
-        &mut time,
-        &Tracer::new(scene.read().unwrap()),
-        width,
-        height,
-    );
+    let img = draw_image(&mut time, &Tracer::new(scene), width, height);
 
     time.set("write");
     image::save_buffer(output, &img, img.width(), img.height(), ColorType::Rgb8)?;
