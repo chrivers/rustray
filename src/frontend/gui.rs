@@ -105,83 +105,101 @@ where
         ScrollArea::vertical().show(ui, |ui| {
             let mut changed = false;
 
-            CollapsingHeader::new(RichText::new("Materials").heading().strong())
-                .default_open(true)
-                .show(ui, |ui| {
-                    let mat_keys = scene.materials.mats.keys().copied().sorted();
+            controls::collapsing_group("Materials", icon::ARTICLE_MEDIUM).show(ui, |ui| {
+                let mat_keys = scene.materials.mats.keys().copied().sorted();
 
-                    for (idx, id) in mat_keys.into_iter().enumerate() {
-                        let mat = scene.materials.mats.get_mut(&id).unwrap();
-                        /* let name = format!("material-{}", mat.get_id().unwrap_or(0)); */
-                        /* egui::collapsing_header::CollapsingState::load_with_default_open( */
-                        /*     ui.ctx(), */
-                        /*     name.into(), */
-                        /*     true, */
-                        /* ) */
-                        /* .show_header(ui, |ui| { */
-                        /*     ui.label(format!("Material: {idx}")); */
-                        /* }) */
-                        /* .body(|ui| { */
-                        let name = format!("Material {idx}: {}", mat.get_name());
-                        controls::property_list(&name, ui, |ui| {
-                            changed |= mat.ui(ui);
-                        });
-                    }
-                });
+                for (idx, id) in mat_keys.into_iter().enumerate() {
+                    let mat = scene.materials.mats.get_mut(&id).unwrap();
+                    let name = format!("{} Material {idx}: {}", mat.get_icon(), mat.get_name());
+                    controls::property_list(&name, ui, |ui| {
+                        changed |= mat.ui(ui);
+                    });
+                }
+            });
 
-            CollapsingHeader::new(RichText::new("Objects").heading().strong())
-                .default_open(true)
-                .show(ui, |ui| {
-                    scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
-                        let name = format!("Object {i}: {}", obj.get_name());
-                        let resp = controls::property_list(&name, ui, |ui| {
-                            ui.selectable_value(&mut self.obj, obj.get_id(), "Select");
-                            ui.end_row();
+            controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| {
+                scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
+                    let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
+                    let obj_id = obj.get_id();
+                    let proplist = controls::CustomCollapsible::new(name.clone());
+                    let (response, _header_response, _body_response) = proplist.show(
+                        ui,
+                        |pl, ui| {
+                            let text = WidgetText::from(name);
+                            let available = ui.available_rect_before_wrap();
+                            let text_pos = available.min;
+                            let wrap_width = available.right() - text_pos.x;
+                            let galley =
+                                text.into_galley(ui, Some(false), wrap_width, TextStyle::Button);
+                            let text_max_x = text_pos.x + galley.size().x;
+                            let desired_width = text_max_x + available.left();
+                            let desired_size = vec2(desired_width, galley.size().y)
+                                .at_least(ui.spacing().interact_size);
+                            let rect = ui.allocate_space(desired_size).1;
+                            let header_response = ui.interact(rect, pl.id, Sense::click());
+                            if header_response.clicked() {
+                                pl.toggle();
+                            }
+                            let visuals = ui.style().interact_selectable(&header_response, false);
+                            ui.painter().galley(text_pos, galley, visuals.text_color());
 
+                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                let button =
+                                    Button::new(format!("{} Select", icon::CROSSHAIR_SIMPLE))
+                                        .selected(self.obj == obj_id)
+                                        .ui(ui);
+
+                                if button.clicked() {
+                                    if self.obj == obj_id {
+                                        info!("deselect: {:?} {:?}", self.obj, obj_id);
+                                        self.obj = None;
+                                    } else {
+                                        self.obj = obj_id;
+                                    }
+                                }
+                                ui.end_row();
+                            });
+                        },
+                        |ui| {
                             if let Some(interactive) = obj.get_interactive() {
                                 changed |= interactive.ui(ui);
                             } else {
                                 ui.label("Non-interactive object :(");
                             }
-                        });
+                        },
+                    );
 
-                        if self.obj == obj.get_id() && self.obj != self.obj_last {
-                            resp.header_response
-                                .highlight()
-                                .scroll_to_me(Some(Align::Center));
+                    if self.obj == obj.get_id() && self.obj != self.obj_last {
+                        response.highlight().scroll_to_me(Some(Align::Center));
+                    }
+                });
+            });
+
+            controls::collapsing_group("Lights", icon::LIGHTBULB).show(ui, |ui| {
+                scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
+                    let name = format!("{} Light {i}: {}", light.get_icon(), light.get_name());
+                    controls::property_list(&name, ui, |ui| {
+                        if let Some(interactive) = light.get_interactive() {
+                            changed |= interactive.ui(ui);
+                        } else {
+                            ui.label("Non-interactive light :(");
                         }
                     });
                 });
+            });
 
-            CollapsingHeader::new(RichText::new("Lights").heading().strong())
-                .default_open(true)
-                .show(ui, |ui| {
-                    scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
-                        let name = format!("Light {i}: {}", light.get_name());
-                        controls::property_list(&name, ui, |ui| {
-                            if let Some(interactive) = light.get_interactive() {
-                                changed |= interactive.ui(ui);
-                            } else {
-                                ui.label("Non-interactive light :(");
-                            }
-                        });
+            controls::collapsing_group("Cameras", icon::VIDEO_CAMERA).show(ui, |ui| {
+                scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
+                    let name = format!("{} Camera {i}", cam.get_icon());
+                    controls::property_list(&name, ui, |ui| {
+                        if let Some(interactive) = cam.get_interactive() {
+                            changed |= interactive.ui(ui);
+                        } else {
+                            ui.label("Non-interactive camera :(");
+                        }
                     });
                 });
-
-            CollapsingHeader::new(RichText::new("Cameras").heading().strong())
-                .default_open(true)
-                .show(ui, |ui| {
-                    scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
-                        let name = format!("Camera {i}");
-                        controls::property_list(&name, ui, |ui| {
-                            if let Some(interactive) = cam.get_interactive() {
-                                changed |= interactive.ui(ui);
-                            } else {
-                                ui.label("Non-interactive camera :(");
-                            }
-                        });
-                    });
-                });
+            });
 
             if changed {
                 scene.recompute_bvh().unwrap();
