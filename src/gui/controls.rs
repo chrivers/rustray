@@ -1,8 +1,8 @@
-use egui::{
-    CollapsingHeader, CollapsingResponse, DragValue, Grid,
-    InnerResponse, Response, RichText, Slider, Ui,
-};
 use egui::collapsing_header::CollapsingState;
+use egui::{
+    CollapsingHeader, CollapsingResponse, DragValue, Grid, InnerResponse, Response, RichText,
+    Slider, Ui,
+};
 
 use crate::light::Attenuation;
 use crate::types::{Color, Float, Vector};
