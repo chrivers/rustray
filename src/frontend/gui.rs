@@ -1,3 +1,4 @@
+use cgmath::{Matrix4, SquareMatrix};
 use itertools::Itertools;
 
 use std::{
@@ -9,20 +10,21 @@ use std::{
 use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::Geometry,
+    geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
     gui::{controls, gizmo, visualtrace},
+    material::Phong,
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{Error, Float, Point, RResult, RF},
+    types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
 use eframe::egui::Key;
 use egui::{
-    emath::RectTransform, pos2, vec2, Align, CentralPanel, CollapsingHeader, Color32, Context,
-    KeyboardShortcut, Modifiers, PointerButton, Pos2, ProgressBar, Rect, RichText, ScrollArea,
-    Sense, Shape, SidePanel, TextureOptions, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand,
-    Visuals,
+    emath::RectTransform, pos2, vec2, Align, Button, CentralPanel, Color32, Context,
+    KeyboardShortcut, Layout, Modifiers, NumExt, Pos2, ProgressBar, Rect, RichText, ScrollArea,
+    Sense, Shape, SidePanel, TextStyle, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
+    ViewportCommand, Visuals, Widget, WidgetText,
 };
 use egui_file_dialog::FileDialog;
 use egui_phosphor::regular as icon;
@@ -210,6 +212,84 @@ where
         });
     }
 
+    fn context_menu_add_geometry(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
+        let mut res = false;
+
+        if ui
+            .button(format!("{} Cube", Cube::<_, Color<F>>::ICON))
+            .clicked()
+        {
+            scene
+                .objects
+                .push(Box::new(Cube::new(Matrix4::identity(), Phong::white())));
+            res = true;
+        };
+
+        if ui
+            .button(format!("{} Cone", Cone::<F, Color<F>>::ICON))
+            .clicked()
+        {
+            scene.objects.push(Box::new(Cone::new(
+                F::ONE,
+                F::ZERO,
+                F::ONE,
+                true,
+                Matrix4::identity(),
+                Phong::white(),
+            )));
+            res = true;
+        };
+
+        if ui
+            .button(format!("{} Cylinder", Cylinder::<F, Color<F>>::ICON))
+            .clicked()
+        {
+            scene.objects.push(Box::new(Cylinder::new(
+                Matrix4::identity(),
+                true,
+                Phong::white(),
+            )));
+            res = true;
+        };
+
+        if ui
+            .button(format!("{} Sphere", Sphere::<F, Color<F>>::ICON))
+            .clicked()
+        {
+            scene.objects.push(Box::new(Sphere::place(
+                Vector::ZERO,
+                F::ONE,
+                Phong::white(),
+            )));
+            res = true;
+        };
+
+        if ui
+            .button(format!("{} Square", Square::<F, Color<F>>::ICON))
+            .clicked()
+        {
+            scene
+                .objects
+                .push(Box::new(Square::new(Matrix4::identity(), Phong::white())));
+            res = true;
+        };
+
+        res
+    }
+
+    fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
+        ui.menu_button("Add geometry", |ui| {
+            if Self::context_menu_add_geometry(ui, scene) {
+                scene.recompute_bvh().unwrap();
+                self.render_preview();
+                ui.close_menu();
+            }
+        });
+        if ui.checkbox(&mut self.trace, "Ray trace debugger").changed() {
+            ui.close_menu();
+        }
+    }
+
     fn update_center_panel(&mut self, ctx: &Context, ui: &mut Ui, scene: &mut BoxScene<F>) {
         let img = self.engine.get_epaint_image();
 
@@ -272,6 +352,8 @@ where
                 self.coord = Some(coord);
             }
         }
+
+        act.context_menu(|ui| self.context_menu(ui, scene));
 
         if let Some(coord) = self.coord {
             self.shapes = visualtrace::make_shapes(scene, coord, &to_screen);
