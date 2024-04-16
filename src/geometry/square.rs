@@ -22,6 +22,11 @@ aabb_impl_fm!(Square<F, M>);
 
 #[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        self.mat.ui(ui)
+    }
+
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
         crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
