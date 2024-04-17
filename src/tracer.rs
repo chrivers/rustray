@@ -28,22 +28,22 @@ impl<'a, F: Float> Tracer<'a, F> {
         }
     }
 
-    pub fn render_pixel(&self, camera: &Camera<F>, px: F, py: F, fx: F, fy: F) -> Color<F> {
+    pub fn render_pixel(&self, camera: &Camera<F>, point: Point<F>, size: Point<F>) -> Color<F> {
+        let fs: Point<F> = (self.sx, self.sy).into();
         let mut colors = Color::BLACK;
-        let fsx = F::from_u32(self.sx);
-        let fsy = F::from_u32(self.sy);
-        for xa in 0..self.sx {
-            let pixelx = px + F::from_u32(xa) / (fsx * fx);
-            for ya in 0..self.sy {
-                let pixely = py + F::from_u32(ya) / (fsy * fy);
-                colors += self.render_pixel_single(camera, pixelx, pixely);
+        let mut offset = Point::ZERO;
+        for x in 0..self.sx {
+            offset.x = F::from_u32(x) / (fs.x * size.x);
+            for y in 0..self.sy {
+                offset.y = F::from_u32(y) / (fs.y * size.y);
+                colors += self.render_pixel_single(camera, point + offset);
             }
         }
-        colors / (fsx * fsy)
+        colors / F::from_u32(self.sx * self.sy)
     }
 
-    pub fn render_pixel_single(&self, camera: &Camera<F>, px: F, py: F) -> Color<F> {
-        let ray = camera.get_ray(point!(px, py));
+    pub fn render_pixel_single(&self, camera: &Camera<F>, point: Point<F>) -> Color<F> {
+        let ray = camera.get_ray(point);
         self.ray_trace(&ray)
             .map_or_else(|| self.scene.background, Color::clamped)
     }
@@ -55,13 +55,12 @@ impl<'a, F: Float> Tracer<'a, F> {
         height: u32,
         y: u32,
     ) -> RenderSpan<F> {
-        let fx = F::from_u32(width);
-        let fy = F::from_u32(height);
-        let py = F::from_u32(y);
+        let size: Point<F> = (width, height).into();
+        let mut point: Point<F> = (0, y).into();
         let pixels = (0..width)
             .map(|x| {
-                let px = F::from_u32(x);
-                self.render_pixel(camera, px / fx, py / fy, fx, fy)
+                point.x = F::from_u32(x);
+                self.render_pixel(camera, point / size, size)
             })
             .collect();
 
@@ -81,14 +80,14 @@ impl<'a, F: Float> Tracer<'a, F> {
         y: u32,
         mult_x: u32,
     ) -> RenderSpan<F> {
-        let fx = F::from_u32(width);
-        let fy = F::from_u32(height);
-        let py = F::from_u32(y);
+        let size: Point<F> = (width, height).into();
+        let mut point = point!(F::ZERO, F::from_u32(y) / size.y);
+        let half_offset = F::from_u32(mult_x) / F::TWO;
         let pixels = (0..width)
             .step_by(mult_x as usize)
             .map(|x| {
-                let px = F::from_u32(x);
-                self.render_pixel_single(camera, (px + F::from_u32(mult_x) / F::TWO) / fx, py / fy)
+                point.x = (F::from_u32(x) + half_offset) / size.x;
+                self.render_pixel_single(camera, point)
             })
             .collect();
 
@@ -113,13 +112,12 @@ impl<'a, F: Float> Tracer<'a, F> {
         height: u32,
         y: u32,
     ) -> RenderSpan<F> {
-        let fx = F::from_u32(width);
-        let fy = F::from_u32(height);
-        let py = F::from_u32(y);
+        let size: Point<F> = (width, height).into();
+        let mut point: Point<F> = (0, y).into();
         let pixels = (0..width)
             .map(|x| {
-                let px = F::from_u32(x);
-                let ray = camera.get_ray(Point::new(px / fx, py / fy));
+                point.x = F::from_u32(x);
+                let ray = camera.get_ray(point / size);
                 self.ray_trace_normal(&ray).unwrap_or(Color::BLACK)
             })
             .collect();
