@@ -1,15 +1,16 @@
 use egui::collapsing_header::CollapsingState;
+use egui::emath::RectTransform;
 use egui::{
-    CollapsingHeader, CollapsingResponse, DragValue, Grid, InnerResponse, Response, RichText,
-    Slider, Ui,
+    pos2, CollapsingHeader, CollapsingResponse, Color32, DragValue, Grid, ImageData, InnerResponse,
+    Painter, Pos2, Rect, Response, RichText, Sense, Slider, TextureHandle, TextureOptions, Ui,
 };
 
 use crate::light::Attenuation;
 use crate::types::{Color, Float, Vector};
 
 pub fn collapsing_group(name: &str, icon: &str) -> CollapsingHeader {
-    CollapsingHeader::new(RichText::new(format!("{icon} {name}")).heading().strong())
-        .default_open(true)
+    let title = RichText::new(format!("{icon} {name}")).heading().strong();
+    CollapsingHeader::new(title).default_open(true)
 }
 
 pub fn property_list<R>(
@@ -161,4 +162,59 @@ pub fn attenuation<F: Float>(ui: &mut Ui, attn: &mut Attenuation<F>) -> bool {
     /* ui.end_row(); */
 
     res
+}
+
+pub struct Canvas {
+    name: String,
+    tex: Option<TextureHandle>,
+}
+
+pub struct CanvasPainter {
+    pub painter: Painter,
+    pub from_screen: RectTransform,
+    pub to_screen: RectTransform,
+}
+
+impl Canvas {
+    const UNIT_RECT: Rect = Rect::from_min_max(Pos2::ZERO, pos2(1.0, 1.0));
+
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            tex: None,
+        }
+    }
+
+    pub fn show(&mut self, ui: &mut Ui, img: impl Into<ImageData>) -> InnerResponse<CanvasPainter> {
+        let tex = match self.tex {
+            None => self.tex.insert(ui.ctx().load_texture(
+                &self.name,
+                img.into(),
+                TextureOptions::LINEAR,
+            )),
+            Some(ref mut tex) => {
+                tex.set(img.into(), TextureOptions::LINEAR);
+                tex
+            }
+        };
+
+        let (response, painter) = ui.allocate_painter(ui.available_size(), Sense::drag());
+        let to_screen = RectTransform::from_to(Self::UNIT_RECT, response.rect);
+        let from_screen = to_screen.inverse();
+        painter.image(
+            tex.id(),
+            painter.clip_rect(),
+            Self::UNIT_RECT,
+            Color32::WHITE,
+        );
+
+        InnerResponse {
+            inner: CanvasPainter {
+                painter,
+                from_screen,
+                to_screen,
+            },
+            response,
+        }
+    }
 }

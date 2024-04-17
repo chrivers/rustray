@@ -11,7 +11,11 @@ use crate::{
     engine::RenderEngine,
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
-    gui::{controls, gizmo, visualtrace::VisualTraceWidget},
+    gui::{
+        controls::{self, Canvas},
+        gizmo,
+        visualtrace::VisualTraceWidget,
+    },
     material::Phong,
     point,
     sampler::Texel,
@@ -19,12 +23,11 @@ use crate::{
     types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
-use eframe::egui::Key;
+use eframe::{egui::Key, CreationContext};
 use egui::{
-    emath::RectTransform, pos2, vec2, Align, Button, CentralPanel, Color32, Context,
-    KeyboardShortcut, Layout, Modifiers, NumExt, Pos2, ProgressBar, Rect, RichText, ScrollArea,
-    Sense, SidePanel, TextStyle, TextureOptions, TopBottomPanel, Ui, ViewportBuilder,
-    ViewportCommand, Visuals, Widget, WidgetText,
+    vec2, Align, Button, CentralPanel, Context, KeyboardShortcut, Layout, Modifiers, NumExt,
+    ProgressBar, RichText, ScrollArea, Sense, SidePanel, TextStyle, TopBottomPanel, Ui,
+    ViewportBuilder, ViewportCommand, Visuals, Widget, WidgetText,
 };
 use egui_file_dialog::FileDialog;
 use egui_phosphor::regular as icon;
@@ -37,6 +40,7 @@ pub struct RustRayGui<F: Float> {
     obj_last: Option<usize>,
     file_dialog: FileDialog,
     vtracer: VisualTraceWidget,
+    canvas: Canvas,
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>
@@ -44,29 +48,20 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     /// Called once before the first frame.
-    pub fn new(
-        cc: &eframe::CreationContext<'_>,
-        engine: RenderEngine<F>,
-        scene: BoxScene<F>,
-    ) -> Self {
-        // This is also where you can customize the look and feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
+    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, scene: BoxScene<F>) -> Self {
+        // load fonts
         let mut fonts = egui::FontDefinitions::default();
         egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
-
         cc.egui_ctx.set_fonts(fonts);
 
-        /* let mut fonts = egui::FontDefinitions::default(); */
-        /* egui_nerdfonts::add_to_fonts(&mut fonts, egui_nerdfonts::Variant::Regular); */
-        /* cc.egui_ctx.set_fonts(fonts); */
-
+        // tweak visuals
         let visuals = Visuals {
             slider_trailing_fill: true,
             ..Visuals::default()
         };
-
         cc.egui_ctx.set_visuals(visuals);
 
+        // construct gui
         Self {
             engine,
             lock: Arc::new(RwLock::new(scene)),
@@ -74,6 +69,7 @@ where
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
             vtracer: VisualTraceWidget::new(),
+            canvas: Canvas::new("canvas"),
         }
     }
 
@@ -300,23 +296,13 @@ where
     fn update_center_panel(&mut self, ctx: &Context, ui: &mut Ui, scene: &mut BoxScene<F>) {
         let img = self.engine.get_epaint_image();
 
-        let tex = ui.ctx().load_texture("foo", img, TextureOptions::LINEAR);
+        let cvs = self.canvas.show(ui, img);
 
-        let (response, painter) = ui.allocate_painter(ui.available_size(), Sense::drag());
-        painter.image(
-            (&tex).into(),
-            painter.clip_rect(),
-            Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)),
-            Color32::WHITE,
-        );
+        self.vtracer.draw(&cvs.inner.painter);
 
-        self.vtracer.draw(&painter);
-
-        let to_screen = RectTransform::from_to(
-            Rect::from_min_size(Pos2::ZERO, vec2(1.0, 1.0)),
-            response.rect,
-        );
-        let from_screen = to_screen.inverse();
+        let to_screen = cvs.inner.to_screen;
+        let from_screen = cvs.inner.from_screen;
+        let response = cvs.response;
 
         let act = response.interact(Sense::click_and_drag());
 
