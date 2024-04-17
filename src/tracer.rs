@@ -5,7 +5,6 @@ use cgmath::MetricSpace;
 use crate::engine::RenderSpan;
 use crate::light::Lixel;
 use crate::material::{ColorDebug, Material};
-use crate::point;
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
@@ -53,31 +52,6 @@ impl<'a, F: Float> Tracer<'a, F> {
         width: u32,
         height: u32,
         y: u32,
-        span: impl Fn(Ray<F>) -> Color<F>,
-    ) -> RenderSpan<F> {
-        let size: Point<F> = (width, height).into();
-        let mut point: Point<F> = (0, y).into();
-        let pixels = (0..width)
-            .map(|x| {
-                point.x = F::from_u32(x);
-                let ray = camera.get_ray(point / size);
-                span(ray)
-            })
-            .collect();
-
-        RenderSpan {
-            line: y,
-            mult_x: 1,
-            mult_y: 1,
-            pixels,
-        }
-    }
-
-    fn generate_span_map_coarse(
-        camera: &Camera<F>,
-        width: u32,
-        height: u32,
-        y: u32,
         mult_x: u32,
         span: impl Fn(Ray<F>) -> Color<F>,
     ) -> RenderSpan<F> {
@@ -109,7 +83,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         y: u32,
         mult_x: u32,
     ) -> RenderSpan<F> {
-        Self::generate_span_map_coarse(camera, width, height, y, mult_x, |ray| {
+        Self::generate_span_map(camera, width, height, y, mult_x, |ray| {
             self.ray_trace(&ray)
                 .map_or_else(|| self.scene.background, Color::clamped)
         })
@@ -122,7 +96,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         height: u32,
         y: u32,
     ) -> RenderSpan<F> {
-        Self::generate_span_map(camera, width, height, y, |ray| {
+        Self::generate_span_map(camera, width, height, y, 1, |ray| {
             self.ray_trace(&ray)
                 .map_or_else(|| self.scene.background, Color::clamped)
         })
@@ -135,7 +109,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         height: u32,
         y: u32,
     ) -> RenderSpan<F> {
-        Self::generate_span_map(camera, width, height, y, |ray| {
+        Self::generate_span_map(camera, width, height, y, 1, |ray| {
             self.ray_trace_normal(&ray).unwrap_or(Color::BLACK)
         })
     }
