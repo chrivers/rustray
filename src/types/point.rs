@@ -1,3 +1,5 @@
+use std::ops::Div;
+
 use derive_more::{Add, Mul, Sub};
 use num::Num;
 use num_traits::ConstZero;
@@ -65,6 +67,14 @@ impl<F: Num + Copy + ConstZero> Point<F> {
             x: F::ZERO,
             y: F::ZERO,
         }
+    }
+}
+
+impl<F: Float> Div for Point<F> {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        point!(self.x / rhs.x, self.y / rhs.y)
     }
 }
 
