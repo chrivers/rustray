@@ -48,12 +48,17 @@ impl<'a, F: Float> Tracer<'a, F> {
             .map_or_else(|| self.scene.background, Color::clamped)
     }
 
-    pub fn generate_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
-        let (xres, yres) = camera.size();
-        let fx = F::from_u32(xres);
-        let fy = F::from_u32(yres);
+    pub fn generate_span(
+        &self,
+        camera: &Camera<F>,
+        width: u32,
+        height: u32,
+        y: u32,
+    ) -> RenderSpan<F> {
+        let fx = F::from_u32(width);
+        let fy = F::from_u32(height);
         let py = F::from_u32(y);
-        let pixels = (0..xres)
+        let pixels = (0..width)
             .map(|x| {
                 let px = F::from_u32(x);
                 self.render_pixel(camera, px / fx, py / fy, fx, fy)
@@ -68,12 +73,18 @@ impl<'a, F: Float> Tracer<'a, F> {
         }
     }
 
-    pub fn generate_span_coarse(&self, camera: &Camera<F>, y: u32, mult_x: u32) -> RenderSpan<F> {
-        let (xres, yres) = camera.size();
-        let fx = F::from_u32(xres);
-        let fy = F::from_u32(yres);
+    pub fn generate_span_coarse(
+        &self,
+        camera: &Camera<F>,
+        width: u32,
+        height: u32,
+        y: u32,
+        mult_x: u32,
+    ) -> RenderSpan<F> {
+        let fx = F::from_u32(width);
+        let fy = F::from_u32(height);
         let py = F::from_u32(y);
-        let pixels = (0..xres)
+        let pixels = (0..width)
             .step_by(mult_x as usize)
             .map(|x| {
                 let px = F::from_u32(x);
@@ -95,12 +106,17 @@ impl<'a, F: Float> Tracer<'a, F> {
         Some(ColorDebug::normal().render(&mut maxel, self))
     }
 
-    pub fn generate_normal_span(&self, camera: &Camera<F>, y: u32) -> RenderSpan<F> {
-        let (xres, yres) = camera.size();
-        let fx = F::from_u32(xres);
-        let fy = F::from_u32(yres);
+    pub fn generate_normal_span(
+        &self,
+        camera: &Camera<F>,
+        width: u32,
+        height: u32,
+        y: u32,
+    ) -> RenderSpan<F> {
+        let fx = F::from_u32(width);
+        let fy = F::from_u32(height);
         let py = F::from_u32(y);
-        let pixels = (0..xres)
+        let pixels = (0..width)
             .map(|x| {
                 let px = F::from_u32(x);
                 let ray = camera.get_ray(Point::new(px / fx, py / fy));

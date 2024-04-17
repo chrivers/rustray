@@ -491,8 +491,6 @@ impl SbtParser2 {
 }
 
 pub struct SbtBuilder<'a, F: Float> {
-    width: u32,
-    height: u32,
     resdir: &'a Path,
     version: SbtVersion,
     material: SbtDict<'a, F>,
@@ -506,10 +504,8 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     #[must_use]
-    pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
+    pub fn new(resdir: &'a Path) -> Self {
         Self {
-            width,
-            height,
             resdir,
             version: SbtVersion::Sbt1_0,
             material: SbtDict::new(),
@@ -518,12 +514,12 @@ where
         }
     }
 
-    fn parse_camera(&mut self, dict: &impl SDict<F>) -> RResult<Camera<F>> {
+    fn parse_camera(dict: &impl SDict<F>) -> RResult<Camera<F>> {
         let position = dict.vector("position").unwrap_or(Vector::ZERO);
         let mut viewdir = dict.vector("viewdir").ok();
         let updir = dict.vector("updir").unwrap_or(Vector::UNIT_Y);
         let look_at = dict.vector("look_at");
-        let aspectratio = dict.float("aspectratio").ok();
+        let aspectratio = dict.float("aspectratio").unwrap_or(F::ONE);
         let fov = dict.float("fov").unwrap_or_else(|_| F::from_f32(55.0));
 
         if viewdir.is_none() && look_at.is_ok() {
@@ -546,8 +542,6 @@ where
             viewdir.unwrap(),
             updir,
             fov,
-            self.width,
-            self.height,
             aspectratio,
         ))
     }
@@ -891,7 +885,7 @@ where
 
         for blk in prog.blocks {
             match (blk.name, blk.value) {
-                ("camera", SbtValue::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
+                ("camera", SbtValue::Dict(ref dict)) => cameras.push(Self::parse_camera(dict)?),
                 ("directional_light", SbtValue::Dict(ref dict)) => {
                     lights.push(Box::new(Self::parse_directional_light(dict)?));
                 }

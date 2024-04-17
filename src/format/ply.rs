@@ -83,7 +83,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
 }
 
 impl<F: Float + Texel> PlyParser<F> {
-    pub fn parse_file(file: &mut impl BufRead, width: u32, height: u32) -> RResult<BoxScene<F>> {
+    pub fn parse_file(file: &mut impl BufRead) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -152,15 +152,7 @@ impl<F: Float + Texel> PlyParser<F> {
         let look: Vector<F> = Vector::from_vec3(bb.center());
         let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
 
-        let cam = Camera::build(
-            pos,
-            look - pos,
-            Vector::UNIT_Y,
-            F::from_f32(120.0),
-            width,
-            height,
-            None,
-        );
+        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
 
         cameras.push(cam);
 

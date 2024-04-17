@@ -34,7 +34,7 @@ mod pbar {
     }
 }
 
-fn load_scene<F>(time: &mut TimeSlice, path: &Path, width: u32, height: u32) -> RResult<BoxScene<F>>
+fn load_scene<F>(time: &mut TimeSlice, path: &Path) -> RResult<BoxScene<F>>
 where
     F: Float + FromStr + Texel,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
@@ -74,7 +74,7 @@ where
 
     /* info!("AST {:#?}", p); */
     time.set("build");
-    let scene = SbtBuilder::new(width, height, resdir).build(p)?;
+    let scene = SbtBuilder::new(resdir).build(p)?;
 
     /* Option 3: Scene from built-in constructor */
     /* use rustray::demoscene; */
@@ -104,7 +104,7 @@ fn draw_image<F: Float>(
 
     let lines: Vec<_> = indices
         .progress_with(pb)
-        .map(|y| tracer.generate_span(camera, y))
+        .map(|y| tracer.generate_span(camera, width, height, y))
         .collect();
 
     time.set("copy");
@@ -124,7 +124,7 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     let mut time = TimeSlice::new("startup");
-    let scene = load_scene::<F>(&mut time, input, width, height)?;
+    let scene = load_scene::<F>(&mut time, input)?;
     /* let scene = rustray::demoscene::construct_demo_scene::<F>(&mut time, cli.width, cli.height)?; */
 
     info!(

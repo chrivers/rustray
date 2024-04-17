@@ -351,7 +351,7 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_scene_from_file(width: u32, height: u32, path: &Path) -> RResult<BoxScene<F>> {
+    fn load_scene_from_file(path: &Path) -> RResult<BoxScene<F>> {
         let data = std::fs::read_to_string(path)?;
 
         let resdir = path
@@ -363,7 +363,7 @@ where
             .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
         let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
         let p = SbtParser2::ast(p)?;
-        let scene = SbtBuilder::new(width, height, resdir).build(p)?;
+        let scene = SbtBuilder::new(resdir).build(p)?;
         Ok(scene)
     }
 
@@ -376,7 +376,7 @@ where
 
         let img = &self.engine.img;
 
-        let scene = Self::load_scene_from_file(img.width(), img.height(), path)?;
+        let scene = Self::load_scene_from_file(path)?;
 
         self.lock = Arc::new(RwLock::new(scene));
         self.engine.render_lines(&self.lock, 0, img.height());

@@ -110,8 +110,6 @@ where
         vec3!(0.0, 1.0, 0.0),
         Vector::UNIT_Y,
         F::from_f32(50.0),
-        width,
-        height,
     )];
 
     let (h, l) = (1.2.into(), 0.3.into());

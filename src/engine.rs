@@ -96,6 +96,7 @@ impl<F: Float> RenderEngine<F> {
             *dirty = true;
 
             let lock = Arc::clone(lock);
+            let (width, height) = (self.width, self.height);
             self.pool.execute_to(
                 self.tx.clone(),
                 #[allow(clippy::significant_drop_tightening)]
@@ -104,7 +105,7 @@ impl<F: Float> RenderEngine<F> {
                         let scene = lock.read().unwrap();
                         let tracer = Tracer::new(&scene);
                         let camera = &tracer.scene().cameras[0];
-                        tracer.generate_span_coarse(camera, y + step_y / 2, step_x)
+                        tracer.generate_span_coarse(camera, width, height, y + step_y / 2, step_x)
                     };
                     span.mult_y = step_y;
                     span.line -= step_y / 2;
@@ -139,6 +140,7 @@ impl<F: Float> RenderEngine<F> {
 
         for y in 0..self.img.height() {
             let lock = lock.clone();
+            let (width, height) = (self.width, self.height);
             self.pool.execute_to(
                 self.tx.clone(),
                 #[allow(clippy::significant_drop_tightening)]
@@ -147,7 +149,7 @@ impl<F: Float> RenderEngine<F> {
                     let tracer = Tracer::new(&scene);
                     let camera = tracer.scene().cameras[0];
 
-                    tracer.generate_normal_span(&camera, y)
+                    tracer.generate_normal_span(&camera, width, height, y)
                 }),
             );
         }
