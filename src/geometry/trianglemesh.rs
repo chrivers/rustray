@@ -28,8 +28,17 @@ pub struct TriangleMesh<F: Float, M: Material<F>> {
 
 #[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
-    fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
-        false
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        let mut res = false;
+        if ui.button("Face normals").clicked() {
+            crate::mesh::face_normals(&mut self.tris);
+            res |= true;
+        }
+        if ui.button("Smooth normals").clicked() {
+            crate::mesh::smooth_normals(&mut self.tris);
+            res |= true;
+        }
+        res
     }
 
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {

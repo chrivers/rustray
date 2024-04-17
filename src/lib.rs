@@ -40,6 +40,7 @@ pub mod frontend;
 pub mod geometry;
 pub mod light;
 pub mod material;
+pub mod mesh;
 pub mod sampler;
 pub mod scene;
 pub mod tracer;

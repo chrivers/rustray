@@ -12,21 +12,21 @@ use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
 
 #[derive(Clone, Debug)]
 pub struct Triangle<F: Float, M: Material<F>> {
-    a: Vector<F>,
-    b: Vector<F>,
-    c: Vector<F>,
+    pub(crate) a: Vector<F>,
+    pub(crate) b: Vector<F>,
+    pub(crate) c: Vector<F>,
 
-    na: Vector<F>,
-    nb: Vector<F>,
-    nc: Vector<F>,
+    pub(crate) na: Vector<F>,
+    pub(crate) nb: Vector<F>,
+    pub(crate) nc: Vector<F>,
 
     ta: Point<F>,
     tb: Point<F>,
     tc: Point<F>,
 
-    edge1: Vector<F>,
-    edge2: Vector<F>,
-    area2: F,
+    pub(crate) edge1: Vector<F>,
+    pub(crate) edge2: Vector<F>,
+    pub(crate) area2: F,
 
     aabb: Aabb,
 
