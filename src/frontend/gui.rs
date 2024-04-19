@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    engine::RenderEngine,
+    engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
     geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
     gui::{
@@ -35,6 +35,12 @@ use egui_file_dialog::FileDialog;
 use egui_phosphor::regular as icon;
 use pest::Parser;
 
+pub struct RenderModes<F: Float> {
+    default: RenderJob<F>,
+    preview: RenderJob<F>,
+    normals: RenderJob<F>,
+}
+
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
     lock: Arc<RwLock<BoxScene<F>>>,
@@ -43,6 +49,7 @@ pub struct RustRayGui<F: Float> {
     file_dialog: FileDialog,
     vtracer: VisualTraceWidget,
     canvas: Canvas,
+    render_modes: RenderModes<F>,
 }
 
 impl<F: Float + Texel + From<f32>> RustRayGui<F>
@@ -63,15 +70,24 @@ where
         };
         cc.egui_ctx.set_visuals(visuals);
 
+        let lock = Arc::new(RwLock::new(scene));
+
+        let render_modes = RenderModes {
+            default: RenderJob::new(),
+            preview: RenderJob::new().with_mult(5),
+            normals: RenderJob::new().with_func_debug_normals(),
+        };
+
         // construct gui
         Self {
             engine,
-            lock: Arc::new(RwLock::new(scene)),
+            lock,
             obj: None,
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
             vtracer: VisualTraceWidget::new(),
             canvas: Canvas::new("canvas"),
+            render_modes,
         }
     }
 
@@ -81,11 +97,6 @@ where
             .iter_mut()
             .find(|obj| obj.get_id() == self.obj)
             .map(|m| m as &mut _)
-    }
-
-    fn render_preview(&mut self) {
-        self.engine
-            .render_lines_by_step(&self.lock, 0, self.engine.img.height(), 4, 4);
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -220,7 +231,7 @@ where
 
             if changed {
                 scene.recompute_bvh().unwrap();
-                self.render_preview();
+                self.engine.submit(&self.render_modes.preview, &self.lock);
             }
 
             /* CollapsingHeader::new(format!("Raytracer")) */
@@ -284,7 +295,7 @@ where
         ui.menu_button("Add geometry", |ui| {
             if Self::context_menu_add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
-                self.render_preview();
+                self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
         });
@@ -345,7 +356,7 @@ where
             if let Some(int) = obj.get_interactive() {
                 if int.ui_center(ui, &camera, &response.rect) {
                     scene.recompute_bvh().unwrap();
-                    self.render_preview();
+                    self.engine.submit(&self.render_modes.preview, &self.lock);
                 }
             }
         }
@@ -377,12 +388,10 @@ where
             self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
         }
 
-        let img = &self.engine.img;
-
         let scene = Self::load_scene_from_file(path)?;
-
         self.lock = Arc::new(RwLock::new(scene));
-        self.engine.render_lines(&self.lock, 0, img.height());
+
+        self.engine.submit(&self.render_modes.default, &self.lock);
 
         Ok(())
     }
@@ -418,12 +427,11 @@ where
 
         // render (hq, normals)
         if ctx.input(|i| i.key_pressed(Key::R)) {
-            self.engine
-                .render_lines(&self.lock, 0, self.engine.img.height());
+            self.engine.submit(&self.render_modes.default, &self.lock);
         }
 
         if ctx.input(|i| i.key_pressed(Key::T)) {
-            self.engine.render_normals(&self.lock);
+            self.engine.submit(&self.render_modes.normals, &self.lock);
         }
 
         //

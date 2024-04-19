@@ -169,25 +169,11 @@ impl<F: Float> RenderEngine<F> {
         RenderEngineIter { engine: self }
     }
 
-    pub fn render_lines(&mut self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
-        let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
+    pub fn submit(&mut self, job: &RenderJob<F>, lock: &Arc<RwLock<BoxScene<F>>>) {
+        let (a, b) = job.get_lines(self.img.height());
+        let (step_x, step_y) = job.get_mult();
+        let func = job.get_func();
 
-        for y in 0..self.img.height() {
-            self.img.put_pixel(0, y, color);
-        }
-
-        self.render_lines_by_step(lock, a, b, 1, 1);
-    }
-
-    fn render_lines_custom(
-        &mut self,
-        lock: &Arc<RwLock<BoxScene<F>>>,
-        a: u32,
-        b: u32,
-        step_x: u32,
-        step_y: u32,
-        span: impl Fn(&Tracer<F>, Ray<F>) -> Color<F> + Copy + Send + 'static,
-    ) {
         for y in (a..b).step_by(step_y as usize) {
             let dirty = &mut self.dirty[y as usize];
             if *dirty {
@@ -205,7 +191,7 @@ impl<F: Float> RenderEngine<F> {
                         let scene = lock.read();
                         let tracer = Tracer::new(&scene);
                         let camera = &tracer.scene().cameras[0];
-                        tracer.generate_span(camera, width, height, y + step_y / 2, step_x, span)
+                        tracer.generate_span(camera, width, height, y + step_y / 2, step_x, func)
                     };
                     span.mult_y = step_y;
                     span.line -= step_y / 2;
@@ -215,30 +201,12 @@ impl<F: Float> RenderEngine<F> {
         }
     }
 
-    pub fn render_lines_by_step(
-        &mut self,
-        lock: &Arc<RwLock<BoxScene<F>>>,
-        a: u32,
-        b: u32,
-        step_x: u32,
-        step_y: u32,
-    ) {
-        self.render_lines_custom(lock, a, b, step_x, step_y, |tracer, ray| {
-            tracer
-                .ray_trace(&ray)
-                .map_or_else(|| tracer.scene().background, Color::clamped)
-        });
-    }
+    pub fn mark_dirty(&mut self, a: u32, b: u32) {
+        let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
 
-    pub fn render_normals(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
-        self.render_lines_custom(lock, 0, self.img.height(), 1, 1, |tracer, ray| {
-            tracer
-                .scene()
-                .intersect(&ray)
-                .map_or(Color::BLACK, |mut maxel| {
-                    ColorDebug::normal().render(&mut maxel, tracer)
-                })
-        });
+        for y in a..b {
+            self.img.put_pixel(0, y, color);
+        }
     }
 
     #[must_use]
