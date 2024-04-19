@@ -46,48 +46,17 @@ impl<'a, F: Float> Tracer<'a, F> {
         colors / F::from_u32(self.sx * self.sy)
     }
 
-    pub fn generate_span(
-        &self,
-        camera: &Camera<F>,
-        width: u32,
-        height: u32,
-        y: u32,
-        mult_x: u32,
-        span: impl Fn(&Tracer<F>, Ray<F>) -> Color<F>,
-    ) -> RenderSpan<F> {
-        let size: Point<F> = (width, height).into();
-        let mut point: Point<F> = (0, y).into();
-        let half_offset = F::from_u32(mult_x) / F::TWO;
+    pub fn render_line(&self, camera: &Camera<F>, width: u32, y: u32) -> RenderSpan<F> {
         let pixels = (0..width)
-            .step_by(mult_x as usize)
-            .map(|x| {
-                point.x = F::from_u32(x) + half_offset;
-                let ray = camera.get_ray(point / size);
-                span(self, ray)
-            })
+            .map(|x| self.render_pixel_single(camera, (x, y).into()))
             .collect();
 
         RenderSpan {
             line: y,
-            mult_x,
+            mult_x: 1,
             mult_y: 1,
             pixels,
         }
-    }
-
-    pub fn render_span(
-        &self,
-        camera: &Camera<F>,
-        width: u32,
-        height: u32,
-        y: u32,
-        mult_x: u32,
-    ) -> RenderSpan<F> {
-        self.generate_span(camera, width, height, y, mult_x, |tracer, ray| {
-            tracer
-                .ray_trace(&ray)
-                .map_or_else(|| tracer.scene().background, Color::clamped)
-        })
     }
 }
 

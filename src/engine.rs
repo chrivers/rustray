@@ -9,9 +9,10 @@ use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
 
 use crate::material::{ColorDebug, Material};
+use crate::point;
 use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
-use crate::types::{Color, Float, Ray};
+use crate::types::{Color, Float, Point, Ray};
 
 type RenderFunc<F> = fn(&Tracer<F>, Ray<F>) -> Color<F>;
 
@@ -171,10 +172,14 @@ impl<F: Float> RenderEngine<F> {
 
     pub fn submit(&mut self, job: &RenderJob<F>, lock: &Arc<RwLock<BoxScene<F>>>) {
         let (a, b) = job.get_lines(self.img.height());
-        let (step_x, step_y) = job.get_mult();
+        let (mult_x, mult_y) = job.get_mult();
         let func = job.get_func();
 
-        for y in (a..b).step_by(step_y as usize) {
+        let (width, height) = (self.width, self.height);
+        let offset = point!(F::from_u32(mult_x) / F::TWO, F::from_u32(mult_y) / F::TWO);
+        let size: Point<F> = (width, height).into();
+
+        for y in (a..b).step_by(mult_y as usize) {
             let dirty = &mut self.dirty[y as usize];
             if *dirty {
                 continue;
@@ -182,20 +187,30 @@ impl<F: Float> RenderEngine<F> {
             *dirty = true;
 
             let lock = Arc::clone(lock);
-            let (width, height) = (self.width, self.height);
+
             self.pool.execute_to(
                 self.tx.clone(),
                 #[allow(clippy::significant_drop_tightening)]
                 Thunk::of(move || {
-                    let mut span = {
-                        let scene = lock.read();
-                        let tracer = Tracer::new(&scene);
-                        let camera = &tracer.scene().cameras[0];
-                        tracer.generate_span(camera, width, height, y + step_y / 2, step_x, func)
-                    };
-                    span.mult_y = step_y;
-                    span.line -= step_y / 2;
-                    span
+                    let scene = lock.read();
+                    let tracer = Tracer::new(&scene);
+                    let camera = &tracer.scene().cameras[0];
+
+                    let pixels = (0..width)
+                        .step_by(mult_x as usize)
+                        .map(|x| {
+                            let point: Point<F> = (x, y).into();
+                            let ray = camera.get_ray((point + offset) / size);
+                            func(&tracer, ray)
+                        })
+                        .collect();
+
+                    RenderSpan {
+                        line: y,
+                        mult_x,
+                        mult_y,
+                        pixels,
+                    }
                 }),
             );
         }
