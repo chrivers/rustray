@@ -69,10 +69,6 @@ impl<F: Float> RenderEngine<F> {
         RenderEngineIter { engine: self }
     }
 
-    pub fn render_all(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
-        self.render_lines(lock, 0, self.img.height());
-    }
-
     pub fn render_lines(&mut self, lock: &Arc<RwLock<BoxScene<F>>>, a: u32, b: u32) {
         let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
 
@@ -143,15 +139,6 @@ impl<F: Float> RenderEngine<F> {
                     ColorDebug::normal().render(&mut maxel, tracer)
                 })
         });
-    }
-
-    pub fn render_all_by_step(
-        &mut self,
-        lock: &Arc<RwLock<BoxScene<F>>>,
-        step_x: u32,
-        step_y: u32,
-    ) {
-        self.render_lines_by_step(lock, 0, self.img.height(), step_x, step_y);
     }
 
     #[must_use]

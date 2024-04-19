@@ -84,7 +84,8 @@ where
     }
 
     fn render_preview(&mut self) {
-        self.engine.render_all_by_step(&self.lock, 4, 4);
+        self.engine
+            .render_lines_by_step(&self.lock, 0, self.engine.img.height(), 4, 4);
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -417,7 +418,8 @@ where
 
         // render (hq, normals)
         if ctx.input(|i| i.key_pressed(Key::R)) {
-            self.engine.render_all(&self.lock);
+            self.engine
+                .render_lines(&self.lock, 0, self.engine.img.height());
         }
 
         if ctx.input(|i| i.key_pressed(Key::T)) {
