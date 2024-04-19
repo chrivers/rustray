@@ -6,9 +6,10 @@ use image::{ImageBuffer, Rgba};
 use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
 
+use crate::material::{ColorDebug, Material};
 use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
-use crate::types::{Color, Float};
+use crate::types::{Color, Float, Ray};
 
 pub struct RenderSpan<F: Float> {
     pub line: u32,
@@ -80,13 +81,14 @@ impl<F: Float> RenderEngine<F> {
         self.render_lines_by_step(lock, a, b, 1, 1);
     }
 
-    pub fn render_lines_by_step(
+    fn render_lines_custom(
         &mut self,
         lock: &Arc<RwLock<BoxScene<F>>>,
         a: u32,
         b: u32,
         step_x: u32,
         step_y: u32,
+        span: impl Fn(&Tracer<F>, Ray<F>) -> Color<F> + Copy + Send + 'static,
     ) {
         for y in (a..b).step_by(step_y as usize) {
             let dirty = &mut self.dirty[y as usize];
@@ -105,7 +107,7 @@ impl<F: Float> RenderEngine<F> {
                         let scene = lock.read().unwrap();
                         let tracer = Tracer::new(&scene);
                         let camera = &tracer.scene().cameras[0];
-                        tracer.generate_span_coarse(camera, width, height, y + step_y / 2, step_x)
+                        tracer.generate_span(camera, width, height, y + step_y / 2, step_x, span)
                     };
                     span.mult_y = step_y;
                     span.line -= step_y / 2;
@@ -113,6 +115,32 @@ impl<F: Float> RenderEngine<F> {
                 }),
             );
         }
+    }
+
+    pub fn render_lines_by_step(
+        &mut self,
+        lock: &Arc<RwLock<BoxScene<F>>>,
+        a: u32,
+        b: u32,
+        step_x: u32,
+        step_y: u32,
+    ) {
+        self.render_lines_custom(lock, a, b, step_x, step_y, |tracer, ray| {
+            tracer
+                .ray_trace(&ray)
+                .map_or_else(|| tracer.scene().background, Color::clamped)
+        });
+    }
+
+    pub fn render_normals(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
+        self.render_lines_custom(lock, 0, self.img.height(), 1, 1, |tracer, ray| {
+            tracer
+                .scene()
+                .intersect(&ray)
+                .map_or(Color::BLACK, |mut maxel| {
+                    ColorDebug::normal().render(&mut maxel, tracer)
+                })
+        });
     }
 
     pub fn render_all_by_step(
@@ -130,29 +158,6 @@ impl<F: Float> RenderEngine<F> {
         let size = [self.img.width() as usize, self.img.height() as usize];
 
         ColorImage::from_rgba_unmultiplied(size, self.img.as_flat_samples().as_slice())
-    }
-
-    pub fn render_normals(&mut self, lock: &Arc<RwLock<BoxScene<F>>>) {
-        let color = Rgba(Color::new(F::ZERO, F::ZERO, F::from_f32(0.75)).to_array4());
-        for y in 0..self.img.height() {
-            self.img.put_pixel(0, y, color);
-        }
-
-        for y in 0..self.img.height() {
-            let lock = lock.clone();
-            let (width, height) = (self.width, self.height);
-            self.pool.execute_to(
-                self.tx.clone(),
-                #[allow(clippy::significant_drop_tightening)]
-                Thunk::of(move || {
-                    let scene = lock.read().unwrap();
-                    let tracer = Tracer::new(&scene);
-                    let camera = tracer.scene().cameras[0];
-
-                    tracer.generate_normal_span(&camera, width, height, y)
-                }),
-            );
-        }
     }
 
     #[must_use]

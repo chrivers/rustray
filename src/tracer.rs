@@ -4,7 +4,6 @@ use cgmath::MetricSpace;
 
 use crate::engine::RenderSpan;
 use crate::light::Lixel;
-use crate::material::{ColorDebug, Material};
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
@@ -47,13 +46,14 @@ impl<'a, F: Float> Tracer<'a, F> {
         colors / F::from_u32(self.sx * self.sy)
     }
 
-    fn generate_span_map(
+    pub fn generate_span(
+        &self,
         camera: &Camera<F>,
         width: u32,
         height: u32,
         y: u32,
         mult_x: u32,
-        span: impl Fn(Ray<F>) -> Color<F>,
+        span: impl Fn(&Tracer<F>, Ray<F>) -> Color<F>,
     ) -> RenderSpan<F> {
         let size: Point<F> = (width, height).into();
         let mut point: Point<F> = (0, y).into();
@@ -63,7 +63,7 @@ impl<'a, F: Float> Tracer<'a, F> {
             .map(|x| {
                 point.x = F::from_u32(x) + half_offset;
                 let ray = camera.get_ray(point / size);
-                span(ray)
+                span(self, ray)
             })
             .collect();
 
@@ -75,7 +75,7 @@ impl<'a, F: Float> Tracer<'a, F> {
         }
     }
 
-    pub fn generate_span_coarse(
+    pub fn render_span(
         &self,
         camera: &Camera<F>,
         width: u32,
@@ -83,41 +83,11 @@ impl<'a, F: Float> Tracer<'a, F> {
         y: u32,
         mult_x: u32,
     ) -> RenderSpan<F> {
-        Self::generate_span_map(camera, width, height, y, mult_x, |ray| {
-            self.ray_trace(&ray)
-                .map_or_else(|| self.scene.background, Color::clamped)
+        self.generate_span(camera, width, height, y, mult_x, |tracer, ray| {
+            tracer
+                .ray_trace(&ray)
+                .map_or_else(|| tracer.scene().background, Color::clamped)
         })
-    }
-
-    pub fn generate_span(
-        &self,
-        camera: &Camera<F>,
-        width: u32,
-        height: u32,
-        y: u32,
-    ) -> RenderSpan<F> {
-        Self::generate_span_map(camera, width, height, y, 1, |ray| {
-            self.ray_trace(&ray)
-                .map_or_else(|| self.scene.background, Color::clamped)
-        })
-    }
-
-    pub fn generate_normal_span(
-        &self,
-        camera: &Camera<F>,
-        width: u32,
-        height: u32,
-        y: u32,
-    ) -> RenderSpan<F> {
-        Self::generate_span_map(camera, width, height, y, 1, |ray| {
-            self.ray_trace_normal(&ray).unwrap_or(Color::BLACK)
-        })
-    }
-
-    fn ray_trace_normal(&self, ray: &Ray<F>) -> Option<Color<F>> {
-        let mut maxel = self.scene.intersect(ray)?;
-
-        Some(ColorDebug::normal().render(&mut maxel, self))
     }
 }
 

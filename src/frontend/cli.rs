@@ -104,7 +104,7 @@ fn draw_image<F: Float>(
 
     let lines: Vec<_> = indices
         .progress_with(pb)
-        .map(|y| tracer.generate_span(camera, width, height, y))
+        .map(|y| tracer.render_span(camera, width, height, y, 1))
         .collect();
 
     time.set("copy");
