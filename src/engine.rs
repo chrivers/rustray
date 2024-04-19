@@ -1,4 +1,6 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+
+use parking_lot::RwLock;
 
 #[cfg(feature = "gui")]
 use egui::ColorImage;
@@ -104,7 +106,7 @@ impl<F: Float> RenderEngine<F> {
                 #[allow(clippy::significant_drop_tightening)]
                 Thunk::of(move || {
                     let mut span = {
-                        let scene = lock.read().unwrap();
+                        let scene = lock.read();
                         let tracer = Tracer::new(&scene);
                         let camera = &tracer.scene().cameras[0];
                         tracer.generate_span(camera, width, height, y + step_y / 2, step_x, span)

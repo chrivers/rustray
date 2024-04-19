@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 use std::{
     path::{Path, PathBuf},
-    sync::{Arc, RwLock},
+    sync::Arc,
     time::Duration,
 };
 
@@ -22,6 +22,8 @@ use crate::{
     scene::{BoxScene, SceneObject},
     types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
+
+use parking_lot::RwLock;
 
 use eframe::{egui::Key, CreationContext};
 use egui::{
@@ -461,7 +463,7 @@ where
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
 
         let lock = Arc::clone(&self.lock);
-        let mut scene = lock.write().unwrap();
+        let mut scene = lock.write();
 
         SidePanel::left("Scene controls")
             .resizable(true)
