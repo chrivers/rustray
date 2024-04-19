@@ -13,6 +13,106 @@ use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
 use crate::types::{Color, Float, Ray};
 
+type RenderFunc<F> = fn(&Tracer<F>, Ray<F>) -> Color<F>;
+
+pub struct RenderJob<F: Float> {
+    first_line: Option<u32>,
+    last_line: Option<u32>,
+    mult_x: u32,
+    mult_y: u32,
+    func: RenderFunc<F>,
+}
+
+impl<F: Float> RenderJob<F> {
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            first_line: None,
+            last_line: None,
+            mult_x: 1,
+            mult_y: 1,
+            func: |tracer, ray| {
+                tracer
+                    .ray_trace(&ray)
+                    .map_or_else(|| tracer.scene().background, Color::clamped)
+            },
+        }
+    }
+
+    #[must_use]
+    pub const fn with_mult_x(self, mult_x: u32) -> Self {
+        Self { mult_x, ..self }
+    }
+
+    #[must_use]
+    pub const fn with_mult_y(self, mult_y: u32) -> Self {
+        Self { mult_y, ..self }
+    }
+
+    #[must_use]
+    pub const fn with_mult(self, mult: u32) -> Self {
+        Self {
+            mult_x: mult,
+            mult_y: mult,
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub const fn with_first_line(self, line: u32) -> Self {
+        Self {
+            first_line: Some(line),
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub const fn with_last_line(self, line: u32) -> Self {
+        Self {
+            last_line: Some(line),
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub const fn with_func(self, func: RenderFunc<F>) -> Self {
+        Self { func, ..self }
+    }
+
+    #[must_use]
+    pub const fn with_func_debug_normals(self) -> Self {
+        Self {
+            func: |tracer, ray| {
+                tracer
+                    .scene()
+                    .intersect(&ray)
+                    .map_or(Color::BLACK, |mut maxel| {
+                        ColorDebug::normal().render(&mut maxel, tracer)
+                    })
+            },
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub fn get_lines(&self, height: u32) -> (u32, u32) {
+        (
+            self.first_line.unwrap_or(0),
+            self.last_line.unwrap_or(height),
+        )
+    }
+
+    #[must_use]
+    pub const fn get_mult(&self) -> (u32, u32) {
+        (self.mult_x, self.mult_y)
+    }
+
+    #[must_use]
+    pub const fn get_func(&self) -> RenderFunc<F> {
+        self.func
+    }
+}
+
 pub struct RenderSpan<F: Float> {
     pub line: u32,
     pub mult_x: u32,
