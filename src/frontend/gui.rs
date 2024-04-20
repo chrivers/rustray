@@ -19,7 +19,7 @@ use crate::{
     material::Phong,
     point,
     sampler::Texel,
-    scene::{BoxScene, SceneObject},
+    scene::{BoxScene, Interactive, SceneObject},
     types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
@@ -354,13 +354,21 @@ where
         act.context_menu(|ui| self.context_menu(ui, scene));
 
         let camera = scene.cameras[0];
+
+        let mut aabb: Option<rtbvh::Aabb> = None;
         if let Some(obj) = self.find_obj(scene) {
             if let Some(int) = obj.get_interactive() {
+                aabb = int.ui_bounding_box().copied();
                 if int.ui_center(ui, &camera, &response.rect) {
                     scene.recompute_bvh().unwrap();
                     self.engine.submit(&self.render_modes.preview, &self.lock);
                 }
             }
+        }
+
+        // if the selected object has aabb info, render it
+        if let Some(aabb) = aabb {
+            self.vtracer.aabb(scene, &to_screen, &aabb);
         }
 
         let progress = self.engine.progress();
