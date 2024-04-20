@@ -129,13 +129,17 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             .map(rtbvh::Primitive::aabb)
             .collect::<Vec<rtbvh::Aabb>>();
 
-        let builder = Builder {
-            aabbs: Some(aabbs.as_slice()),
-            primitives: self.objects.as_slice(),
-            primitives_per_leaf: NonZeroUsize::new(16),
-        };
+        if aabbs.is_empty() {
+            self.bvh = Bvh::default();
+        } else {
+            let builder = Builder {
+                aabbs: Some(aabbs.as_slice()),
+                primitives: self.objects.as_slice(),
+                primitives_per_leaf: NonZeroUsize::new(16),
+            };
 
-        self.bvh = builder.construct_binned_sah()?;
+            self.bvh = builder.construct_binned_sah()?;
+        }
 
         Ok(())
     }
