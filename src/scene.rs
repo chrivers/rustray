@@ -52,7 +52,7 @@ pub trait Interactive<F: Float>: Debug {
         false
     }
     #[cfg(feature = "gui")]
-    fn ui_bounding_box(&mut self) -> Option<[crate::types::Vector<F>; 8]> {
+    fn ui_bounding_box(&mut self) -> Option<&rtbvh::Aabb> {
         None
     }
 }

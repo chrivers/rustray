@@ -31,8 +31,8 @@ impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
     }
 
     #[cfg(feature = "gui")]
-    fn ui_bounding_box(&mut self) -> Option<[crate::types::Vector<F>; 8]> {
-        Some(self.aabb.all_corners().map(Vector::from_vec3))
+    fn ui_bounding_box(&mut self) -> Option<&Aabb> {
+        Some(&self.aabb)
     }
 }
 
