@@ -145,7 +145,7 @@ impl VisualTraceWidget {
         let mut line = |va: Vector<F>, vb: Vector<F>| {
             let a = vt.camera.world_to_ndc(va);
             let b = vt.camera.world_to_ndc(vb);
-            let c = a + (a.vector_to(b) / F::FOUR);
+            let c = a + (a.vector_to(b) / F::from_u32(8));
             let ab = vt.to_screen(a.point().into(), c.point().into());
             vt.draw_line(ab.0, ab.1, Stroke::new(1.0, Color32::WHITE));
         };
