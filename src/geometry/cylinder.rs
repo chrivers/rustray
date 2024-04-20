@@ -37,6 +37,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
         crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui_bounding_box(&mut self) -> Option<&Aabb> {
+        Some(&self.aabb)
+    }
 }
 
 geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");

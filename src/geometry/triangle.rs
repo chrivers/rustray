@@ -38,6 +38,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.mat.ui(ui)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui_bounding_box(&mut self) -> Option<&Aabb> {
+        Some(&self.aabb)
+    }
 }
 
 geometry_impl_sceneobject!(Triangle<F, M>, "Triangle");
