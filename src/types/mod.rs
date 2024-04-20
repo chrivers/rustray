@@ -21,7 +21,7 @@ pub use iter::GridSamples;
 pub use matlib::{MaterialId, MaterialLib};
 pub use maxel::Maxel;
 pub use point::Point;
-pub use ray::{Ray, RF};
+pub use ray::{Ray, RayFlags, RF};
 pub use result::{Error, RResult};
 pub use texlib::{TextureId, TextureLib};
 pub use timeslice::TimeSlice;

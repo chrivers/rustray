@@ -2,7 +2,7 @@ use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
 use crate::material::Material;
-use crate::types::{Float, Point, Ray, Vector, Vectorx};
+use crate::types::{Float, Point, Ray, RayFlags, Vector, Vectorx, RF};
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
@@ -14,7 +14,7 @@ pub struct Maxel<'a, F: Float> {
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
     pub lvl: u16,
-    pub dbg: bool,
+    pub flags: RayFlags,
 }
 
 impl<'a, F: Float> Debug for Maxel<'a, F> {
@@ -40,7 +40,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         lvl: u16,
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
-        dbg: bool,
+        flags: RayFlags,
     ) -> Self {
         Maxel {
             pos,
@@ -51,14 +51,14 @@ impl<'a, F: Float> Maxel<'a, F> {
             nml: None,
             uv: None,
             st: None,
-            dbg,
+            flags,
         }
     }
 
-    pub const fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {
+    pub fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {
         let mut ray = Ray::new(pos, dir);
         ray.lvl = self.lvl + 1;
-        if self.dbg {
+        if self.flags.contains(RF::Debug) {
             ray = ray.with_debug();
         }
         ray
