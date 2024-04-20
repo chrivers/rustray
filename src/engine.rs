@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crossbeam_channel::{Receiver, Sender};
 use parking_lot::RwLock;
 
 #[cfg(feature = "gui")]
@@ -9,7 +10,6 @@ use workerpool::thunk::{Thunk, ThunkWorker};
 use workerpool::Pool;
 
 use crate::material::{ColorDebug, Material};
-use crate::point;
 use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
 use crate::types::{Color, Float, Point, Ray};
@@ -124,10 +124,9 @@ pub struct RenderSpan<F: Float> {
 pub struct RenderEngine<F: Float> {
     pool: Pool<ThunkWorker<RenderSpan<F>>>,
     pub img: ImageBuffer<Rgba<u8>, Vec<u8>>,
-    pub rx: crossbeam_channel::Receiver<RenderSpan<F>>,
-    tx: crossbeam_channel::Sender<RenderSpan<F>>,
+    rx: Receiver<RenderSpan<F>>,
+    tx: Sender<RenderSpan<F>>,
     dirty: Vec<bool>,
-    #[allow(dead_code)]
     width: u32,
     height: u32,
 }
@@ -151,9 +150,9 @@ impl<'a, F: Float> Iterator for RenderEngineIter<'a, F> {
 impl<F: Float> RenderEngine<F> {
     #[must_use]
     pub fn new(width: u32, height: u32) -> Self {
-        let (tx, rx) = crossbeam_channel::bounded::<RenderSpan<F>>(2000);
+        let (tx, rx) = crossbeam_channel::bounded(height as usize);
 
-        let pool = Pool::<ThunkWorker<RenderSpan<F>>>::new(32);
+        let pool = Pool::default();
 
         Self {
             pool,
@@ -176,8 +175,8 @@ impl<F: Float> RenderEngine<F> {
         let func = job.get_func();
 
         let (width, height) = (self.width, self.height);
-        let offset = point!(F::from_u32(mult_x) / F::TWO, F::from_u32(mult_y) / F::TWO);
-        let size: Point<F> = (width, height).into();
+        let offset = Point::from((mult_x, mult_y)) / F::TWO;
+        let size = Point::from((width, height));
 
         for y in (a..b).step_by(mult_y as usize) {
             let dirty = &mut self.dirty[y as usize];
@@ -199,7 +198,7 @@ impl<F: Float> RenderEngine<F> {
                     let pixels = (0..width)
                         .step_by(mult_x as usize)
                         .map(|x| {
-                            let point: Point<F> = (x, y).into();
+                            let point = Point::from((x, y));
                             let ray = camera.get_ray((point + offset) / size);
                             func(&tracer, ray)
                         })
@@ -243,8 +242,8 @@ impl<F: Float> RenderEngine<F> {
         let mut recv = false;
 
         while let Ok(span) = self.rx.try_recv() {
-            for x in 0..span.mult_y {
-                self.dirty[(span.line + x) as usize] = false;
+            for y in 0..span.mult_y {
+                self.dirty[(span.line + y) as usize] = false;
             }
 
             for (base_x, pixel) in span.pixels.iter().enumerate() {
