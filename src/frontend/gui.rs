@@ -431,7 +431,7 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_scene_from_file(path: &Path) -> RResult<BoxScene<F>> {
+    fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
         let data = std::fs::read_to_string(path)?;
 
         let resdir = path
@@ -443,8 +443,8 @@ where
             .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
         let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
         let p = SbtParser2::ast(p)?;
-        let scene = SbtBuilder::new(resdir).build(p)?;
-        Ok(scene)
+        SbtBuilder::new(resdir, scene).build(p)?;
+        Ok(())
     }
 
     fn load_file(&mut self, path: &Path) -> RResult<()> {
@@ -454,8 +454,10 @@ where
             self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
         }
 
-        let scene = Self::load_scene_from_file(path)?;
-        self.lock = Arc::new(RwLock::new(scene));
+        let mut scene = self.lock.write();
+        scene.clear();
+        Self::load_scene_from_file(path, &mut scene)?;
+        drop(scene);
 
         self.engine.submit(&self.render_modes.default, &self.lock);
 

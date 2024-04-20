@@ -5,11 +5,11 @@ use std::marker::PhantomData;
 use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
-use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::light::{Attenuation, Light, PointLight};
+use crate::geometry::{Triangle, TriangleMesh};
+use crate::light::{Attenuation, PointLight};
 use crate::sampler::Texel;
-use crate::scene::{BoxScene, Scene};
-use crate::types::{Camera, Color, Error, Float, MaterialLib, Point, RResult, Vector, Vectorx};
+use crate::scene::BoxScene;
+use crate::types::{Camera, Color, Error, Float, Point, RResult, Vector, Vectorx};
 use crate::vec3;
 
 use ply_rs::{parser, ply};
@@ -82,12 +82,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
 }
 
 impl<F: Float + Texel> PlyParser<F> {
-    pub fn parse_file(file: &mut impl BufRead) -> RResult<BoxScene<F>> {
-        let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
-        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
-        let mut materials = MaterialLib::new();
-
+    pub fn parse_file(file: &mut impl BufRead, scene: &mut BoxScene<F>) -> RResult<()> {
         let vertex_parser = parser::Parser::<Vertex<F>>::new();
         let face_parser = parser::Parser::<Face<F>>::new();
 
@@ -109,7 +104,7 @@ impl<F: Float + Texel> PlyParser<F> {
         info!("vl: {:#?}", vertex_list.len());
         info!("fl: {:#?}", face_list.len());
 
-        let mat = materials.default();
+        let mat = scene.materials.default();
 
         let mut tris = vec![];
         for face in &face_list {
@@ -146,7 +141,6 @@ impl<F: Float + Texel> PlyParser<F> {
         let mesh = TriangleMesh::new(tris, Matrix4::identity());
 
         let bb = mesh.aabb();
-        info!("aabb {:?}", bb);
 
         let sz: Vector<F> = Vector::from_vec3(bb.lengths());
         let look: Vector<F> = Vector::from_vec3(bb.center());
@@ -154,9 +148,9 @@ impl<F: Float + Texel> PlyParser<F> {
 
         let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
 
-        cameras.push(cam);
+        scene.cameras.push(cam);
 
-        objects.push(Box::new(mesh));
+        scene.objects.push(Box::new(mesh));
 
         let lgt = PointLight {
             attn: Attenuation {
@@ -168,8 +162,8 @@ impl<F: Float + Texel> PlyParser<F> {
             color: Color::WHITE,
         };
 
-        lights.push(Box::new(lgt));
+        scene.lights.push(Box::new(lgt));
 
-        Scene::new(cameras, objects, vec![], materials, lights)
+        scene.recompute_bvh()
     }
 }

@@ -14,13 +14,11 @@ use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
-use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
+use crate::light::{AreaLight, Attenuation, DirectionalLight, PointLight, SpotLight};
 use crate::material::{BoxMaterial, BumpPower, Bumpmap, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::BoxScene;
-use crate::types::{
-    Camera, Color, Error, Float, MaterialId, MaterialLib, Point, RResult, Vector, Vectorx,
-};
+use crate::types::{Camera, Color, Error, Float, MaterialId, Point, RResult, Vector, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub enum SbtVersion {
@@ -494,7 +492,7 @@ pub struct SbtBuilder<'a, F: Float> {
     resdir: &'a Path,
     version: SbtVersion,
     material: SbtDict<'a, F>,
-    materials: MaterialLib<F>,
+    scene: &'a mut BoxScene<F>,
     hashmat: HashMap<u64, MaterialId>,
 }
 
@@ -504,12 +502,12 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     #[must_use]
-    pub fn new(resdir: &'a Path) -> Self {
+    pub fn new(resdir: &'a Path, scene: &'a mut BoxScene<F>) -> Self {
         Self {
             resdir,
             version: SbtVersion::Sbt1_0,
             material: SbtDict::new(),
-            materials: MaterialLib::new(),
+            scene,
             hashmat: HashMap::new(),
         }
     }
@@ -635,7 +633,7 @@ where
             )),
         };
 
-        self.materials.insert(res)
+        self.scene.materials.insert(res)
     }
 
     fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
@@ -679,7 +677,7 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            tris = crate::format::obj::load(obj, &mut self.materials, Vector::ZERO, F::ONE)?;
+            tris = crate::format::obj::load(obj, &mut self.scene.materials, Vector::ZERO, F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
                 points.push(point.tuple()?.vector3()?);
@@ -718,7 +716,7 @@ where
                     materials[face[1]],
                     materials[face[2]],
                 ));
-                self.materials.insert(mat)
+                self.scene.materials.insert(mat)
             } else {
                 mat
             };
@@ -875,17 +873,18 @@ where
         }
     }
 
-    pub fn build(mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
-        let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
-        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
-        let mut ambient = Color::BLACK;
+    pub fn build(mut self, prog: SbtProgram<'a, F>) -> RResult<()> {
         self.material.clear();
         self.version = prog.version;
 
         for blk in prog.blocks {
+            #[allow(clippy::mut_mut)]
+            let scene = &mut self.scene;
+            let lights = &mut scene.lights;
             match (blk.name, blk.value) {
-                ("camera", SbtValue::Dict(ref dict)) => cameras.push(Self::parse_camera(dict)?),
+                ("camera", SbtValue::Dict(ref dict)) => {
+                    scene.cameras.push(Self::parse_camera(dict)?);
+                }
                 ("directional_light", SbtValue::Dict(ref dict)) => {
                     lights.push(Box::new(Self::parse_directional_light(dict)?));
                 }
@@ -893,7 +892,7 @@ where
                     lights.push(Box::new(Self::parse_point_light(dict)?));
                 }
                 ("ambient_light", SbtValue::Dict(ref dict)) => {
-                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
+                    scene.ambient = dict.color("color").or_else(|_| dict.color("colour"))?;
                 }
                 ("spot_light", SbtValue::Dict(ref dict)) => {
                     lights.push(Box::new(Self::parse_spot_light(dict)?));
@@ -907,11 +906,11 @@ where
                 (name, value) => {
                     let block = SbtValue::Block(Box::new(SbtBlock { name, value }));
                     let mut objs = self.build_geometry(&block, Matrix4::identity())?;
-                    objects.append(&mut objs);
+                    self.scene.objects.append(&mut objs);
                 }
             }
         }
 
-        Ok(BoxScene::new(cameras, objects, vec![], self.materials, lights)?.with_ambient(ambient))
+        self.scene.recompute_bvh()
     }
 }
