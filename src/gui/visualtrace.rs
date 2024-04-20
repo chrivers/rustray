@@ -94,7 +94,6 @@ pub struct VisualTraceWidget {
     pub enabled: bool,
     coord: Option<Pos2>,
     shapes: Vec<Shape>,
-    aabb: Vec<Shape>,
 }
 
 impl VisualTraceWidget {
@@ -104,7 +103,6 @@ impl VisualTraceWidget {
             coord: None,
             enabled: false,
             shapes: vec![],
-            aabb: vec![],
         }
     }
 
@@ -163,7 +161,7 @@ impl VisualTraceWidget {
             line(p, points[i ^ 4]);
         }
 
-        self.aabb = vt.into_inner();
+        self.shapes = vt.into_inner();
     }
 
     pub fn update<F>(&mut self, scene: &BoxScene<F>, to_screen: &RectTransform)
@@ -234,9 +232,6 @@ impl VisualTraceWidget {
 
     pub fn draw(&self, painter: &Painter) {
         for shape in &self.shapes {
-            painter.add(shape.clone());
-        }
-        for shape in &self.aabb {
             painter.add(shape.clone());
         }
     }
