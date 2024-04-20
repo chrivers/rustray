@@ -6,29 +6,29 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::types::{self, Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 #[derive(Debug)]
-pub struct Cylinder<F: Float, M: Material<F>> {
+pub struct Cylinder<F: Float> {
     xfrm: Transform<F>,
     capped: bool,
-    mat: M,
+    mat: MaterialId,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Cylinder<F, M>);
+aabb_impl_fm!(Cylinder<F>);
 
-impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
+impl<F: Float> Interactive<F> for Cylinder<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         res |= ui.checkbox(&mut self.capped, "Capped").changed();
         ui.end_row();
 
-        res |= self.mat.ui(ui);
+        res |= Interactive::<F>::ui(&mut self.mat, ui);
 
         res
     }
@@ -44,10 +44,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
-geometry_impl_hastransform!(Cylinder<F, M>);
+geometry_impl_sceneobject!(Cylinder<F>, "Cylinder");
+geometry_impl_hastransform!(Cylinder<F>);
+geometry_impl_hasmaterial!(Cylinder<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
+impl<F: Float> FiniteGeometry<F> for Cylinder<F> {
     fn recompute_aabb(&mut self) {
         self.aabb = build_aabb_ranged(
             &self.xfrm,
@@ -58,7 +59,7 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
+impl<F: Float> Geometry<F> for Cylinder<F> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -159,12 +160,16 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 
         Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
     }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
+    }
 }
 
-impl<F: Float, M: Material<F>> Cylinder<F, M> {
+impl<F: Float> Cylinder<F> {
     pub const ICON: &'static str = egui_phosphor::regular::CYLINDER;
 
-    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
+    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: MaterialId) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
             capped,

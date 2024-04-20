@@ -4,11 +4,10 @@ use cgmath::InnerSpace;
 
 use crate::{
     geometry::Triangle,
-    material::Material,
     types::{Float, Vector, Vectorx},
 };
 
-pub fn face_normals<F: Float, M: Material<F>>(tris: &mut [Triangle<F, M>]) {
+pub fn face_normals<F: Float>(tris: &mut [Triangle<F>]) {
     /* Single-face normals */
     for tri in tris {
         let n = tri.edge1.cross(tri.edge2).normalize();
@@ -18,7 +17,7 @@ pub fn face_normals<F: Float, M: Material<F>>(tris: &mut [Triangle<F, M>]) {
     }
 }
 
-pub fn smooth_normals<F: Float, M: Material<F>>(tris: &mut [Triangle<F, M>]) {
+pub fn smooth_normals<F: Float>(tris: &mut [Triangle<F>]) {
     /* Vertex-smoothed normals */
     let mut norms: HashMap<u64, Vector<F>> = HashMap::new();
 

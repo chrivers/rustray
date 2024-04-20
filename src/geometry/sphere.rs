@@ -6,23 +6,23 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::types::{Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx};
 
 #[derive(Debug)]
-pub struct Sphere<F: Float, M: Material<F>> {
+pub struct Sphere<F: Float> {
     xfrm: Transform<F>,
-    mat: M,
+    mat: MaterialId,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Sphere<F, M>);
+aabb_impl_fm!(Sphere<F>);
 
-impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
+impl<F: Float> Interactive<F> for Sphere<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        self.mat.ui(ui)
+        Interactive::<F>::ui(&mut self.mat, ui)
     }
 
     #[cfg(feature = "gui")]
@@ -36,16 +36,17 @@ impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Sphere<F, M>, "Sphere");
-geometry_impl_hastransform!(Sphere<F, M>);
+geometry_impl_sceneobject!(Sphere<F>, "Sphere");
+geometry_impl_hastransform!(Sphere<F>);
+geometry_impl_hasmaterial!(Sphere<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Sphere<F, M> {
+impl<F: Float> FiniteGeometry<F> for Sphere<F> {
     fn recompute_aabb(&mut self) {
         self.aabb = build_aabb_symmetric(&self.xfrm, F::ONE, F::ONE, F::ONE);
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
+impl<F: Float> Geometry<F> for Sphere<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -59,12 +60,16 @@ impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
                 .with_uv(uv.into()),
         )
     }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
+    }
 }
 
-impl<F: Float, M: Material<F>> Sphere<F, M> {
+impl<F: Float> Sphere<F> {
     pub const ICON: &'static str = egui_phosphor::regular::CIRCLE;
 
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
+    pub fn new(xfrm: Matrix4<F>, mat: MaterialId) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
             mat,
@@ -74,7 +79,7 @@ impl<F: Float, M: Material<F>> Sphere<F, M> {
         res
     }
 
-    pub fn place(pos: Vector<F>, radius: F, mat: M) -> Self {
+    pub fn place(pos: Vector<F>, radius: F, mat: MaterialId) -> Self {
         let scale = Matrix4::from_scale(radius);
         let xlate = Matrix4::from_translation(pos);
         Self::new(xlate * scale, mat)

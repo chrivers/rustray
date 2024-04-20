@@ -9,25 +9,25 @@ use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 use crate::types::Camera;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
-use crate::material::{BoxMaterial, Material};
+use crate::material::{BoxMaterial, HasMaterial};
 use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    BvhExt, Color, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform,
-    Vector, Vectorx, RF,
+    BvhExt, Color, Float, HasTransform, MaterialLib, Maxel, RResult, Ray, Transform, Vector,
+    Vectorx, RF,
 };
 
 #[derive(Debug)]
-pub struct TriangleMesh<F: Float, M: Material<F>> {
+pub struct TriangleMesh<F: Float> {
     xfrm: Transform<F>,
     mat: BoxMaterial<F>,
-    pub tris: Vec<Triangle<F, M>>,
+    pub tris: Vec<Triangle<F>>,
     bvh: Bvh,
     aabb: Aabb,
 }
 
 #[cfg(feature = "gui")]
-impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
+impl<F: Float> Interactive<F> for TriangleMesh<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         if ui.button("Face normals").clicked() {
@@ -51,11 +51,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
-geometry_impl_hastransform!(TriangleMesh<F, M>);
-aabb_impl_fm!(TriangleMesh<F, M>);
+geometry_impl_sceneobject!(TriangleMesh<F>, "TriangleMesh");
+geometry_impl_hastransform!(TriangleMesh<F>);
+aabb_impl_fm!(TriangleMesh<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
+impl<F: Float> FiniteGeometry<F> for TriangleMesh<F> {
     fn recompute_aabb(&mut self) {
         let bounds = self.bvh.bounds();
 
@@ -66,7 +66,7 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
+impl<F: Float> Geometry<F> for TriangleMesh<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         if !ray.flags.contains(RF::StopAtGroup) {
             let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
@@ -99,12 +99,16 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
             ))
         }
     }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        None
+    }
 }
 
-impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
+impl<F: Float> TriangleMesh<F> {
     const ICON: &'static str = egui_phosphor::regular::POLYGON;
 
-    pub fn new(tris: Vec<Triangle<F, M>>, xfrm: Matrix4<F>) -> Self {
+    pub fn new(tris: Vec<Triangle<F>>, xfrm: Matrix4<F>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 
         let aabbs: Vec<Aabb> = tris.iter().map(rtbvh::Primitive::aabb).collect();
@@ -131,7 +135,7 @@ impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float + Texel> TriangleMesh<F, MaterialId> {
+impl<F: Float + Texel> TriangleMesh<F> {
     pub fn load_obj(obj: Obj, lib: &mut MaterialLib<F>, pos: Vector<F>, scale: F) -> RResult<Self> {
         let tris = crate::format::obj::load(obj, lib, pos, scale)?;
         Ok(Self::new(tris, Matrix4::identity()))

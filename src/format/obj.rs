@@ -7,7 +7,7 @@ use cgmath::InnerSpace;
 use crate::geometry::Triangle;
 use crate::material::{BoxMaterial, BumpPower, Bumpmap, Phong, Smart};
 use crate::sampler::{NormalMap, Sampler, SamplerExt, Texel};
-use crate::types::{Color, Float, MaterialId, MaterialLib, Point, RResult, Vector, Vectorx};
+use crate::types::{Color, Float, MaterialLib, Point, RResult, Vector, Vectorx};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
@@ -36,7 +36,7 @@ pub fn load<F: Float + Texel>(
     lib: &mut MaterialLib<F>,
     pos: Vector<F>,
     scale: F,
-) -> RResult<Vec<Triangle<F, MaterialId>>> {
+) -> RResult<Vec<Triangle<F>>> {
     let mut corner = Vector::new(F::max_value(), F::max_value(), F::max_value());
 
     obj.load_mtls()?;

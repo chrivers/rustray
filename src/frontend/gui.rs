@@ -20,7 +20,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
-    types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
+    types::{Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
 use parking_lot::RwLock;
@@ -264,11 +264,7 @@ where
         macro_rules! add_geometry_option {
             ($name:ident, $code:block) => {
                 if ui
-                    .button(format!(
-                        "{} {}",
-                        $name::<_, Color<F>>::ICON,
-                        stringify!($name)
-                    ))
+                    .icon_button($name::<F>::ICON, stringify!($name))
                     .clicked()
                 {
                     scene.objects.push(Box::new($code));

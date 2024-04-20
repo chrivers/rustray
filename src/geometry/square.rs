@@ -6,25 +6,27 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::point;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{Float, HasTransform, Maxel, Point, Ray, Transform, Vector, Vectorx};
+use crate::types::{
+    Float, HasTransform, MaterialId, Maxel, Point, Ray, Transform, Vector, Vectorx,
+};
 
 #[derive(Debug)]
-pub struct Square<F: Float, M: Material<F>> {
+pub struct Square<F: Float> {
     xfrm: Transform<F>,
-    mat: M,
+    mat: MaterialId,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Square<F, M>);
+aabb_impl_fm!(Square<F>);
 
 #[cfg(feature = "gui")]
-impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
+impl<F: Float> Interactive<F> for Square<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        self.mat.ui(ui)
+        Interactive::<F>::ui(&mut self.mat, ui)
     }
 
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
@@ -37,16 +39,17 @@ impl<F: Float, M: Material<F>> Interactive<F> for Square<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Square<F, M>, "Square");
-geometry_impl_hastransform!(Square<F, M>);
+geometry_impl_sceneobject!(Square<F>, "Square");
+geometry_impl_hastransform!(Square<F>);
+geometry_impl_hasmaterial!(Square<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Square<F, M> {
+impl<F: Float> FiniteGeometry<F> for Square<F> {
     fn recompute_aabb(&mut self) {
         self.aabb = build_aabb_symmetric(&self.xfrm, F::HALF, F::HALF, F::ZERO);
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Square<F, M> {
+impl<F: Float> Geometry<F> for Square<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -84,12 +87,16 @@ impl<F: Float, M: Material<F>> Geometry<F> for Square<F, M> {
                 .with_uv(point!(p.x, p.y)),
         )
     }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
+    }
 }
 
-impl<F: Float, M: Material<F>> Square<F, M> {
+impl<F: Float> Square<F> {
     pub const ICON: &'static str = egui_phosphor::regular::SQUARE;
 
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
+    pub fn new(xfrm: Matrix4<F>, mat: MaterialId) -> Self {
         let mut res = Self {
             mat,
             xfrm: Transform::new(xfrm),

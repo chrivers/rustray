@@ -12,7 +12,7 @@ use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
 use crate::light::{Attenuation, Light, PointLight};
 use crate::material::{
-    BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Material, Matte, Phong, ScaleUV,
+    BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Matte, Phong, ScaleUV,
 };
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::scene::{BoxScene, Scene};
@@ -135,10 +135,14 @@ where
     let (tex2a, tex2b, tex2r, tex2m) = load_tex3(time, &dl, "Wood069")?;
 
     time.set("construct");
-    let mat_sphere = Fresnel::new(1.6.into(), Color::WHITE, Color::WHITE).dynamic();
-    let mat_white = Phong::white().dynamic();
+    let mat_sphere = materials.insert(Box::new(Fresnel::new(
+        1.6.into(),
+        Color::WHITE,
+        Color::WHITE,
+    )));
+    let mat_white = materials.insert(Box::new(Phong::white()));
 
-    let mat_plane = ScaleUV::new(
+    let mat_plane = materials.insert(Box::new(ScaleUV::new(
         (0.1).into(),
         (0.1).into(),
         ChessBoard::new(
@@ -164,7 +168,7 @@ where
                 ),
             ),
         ),
-    );
+    )));
 
     let mat_bmp2 = Bumpmap::new(
         BumpPower(F::HALF),
@@ -192,31 +196,31 @@ where
         vec3!(0.0, 0.0, 20.0),
         vec3!(-1.0, 0.0, 0.0),
         vec3!(0.0, 1.0, 0.0),
-        mat_plane.clone(),
+        mat_plane,
     );
     let plane2 = Plane::new(
         vec3!(0.0, 0.0, 0.0),
         vec3!(1.0, 0.0, 0.0),
         vec3!(0.0, 1.0, 0.0),
-        mat_plane.clone(),
+        mat_plane,
     );
     let plane3 = Plane::new(
         vec3!(20.0, 0.0, 0.0),
         vec3!(0.0, -1.0, 0.0),
         vec3!(0.0, 0.0, 1.0),
-        mat_plane.clone(),
+        mat_plane,
     );
     let plane4 = Plane::new(
         vec3!(0.0, 0.0, 0.0),
         vec3!(0.0, 1.0, 0.0),
         vec3!(0.0, 0.0, 1.0),
-        mat_plane.clone(),
+        mat_plane,
     );
     let plane5 = Plane::new(
         vec3!(0.0, 20.0, 0.0),
         vec3!(0.0, 0.0, -1.0),
         vec3!(1.0, 0.0, 0.0),
-        mat_plane.clone(),
+        mat_plane,
     );
     let plane6 = Plane::new(
         vec3!(0.0, 0.0, 0.0),
@@ -235,17 +239,17 @@ where
         ),
     );
 
-    let sphere1 = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());
-    let sphere2 = Sphere::place(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere.clone());
-    let sphere3 = Sphere::place(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere.clone());
-    let sphere4 = Sphere::place(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere.clone());
+    let sphere1 = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere);
+    let sphere2 = Sphere::place(vec3!(4.0, 1.0, 1.0), 1.0.into(), mat_sphere);
+    let sphere3 = Sphere::place(vec3!(2.0, 3.0, 9.0), 1.0.into(), mat_sphere);
+    let sphere4 = Sphere::place(vec3!(1.0, 5.0, 4.0), 1.0.into(), mat_sphere);
 
-    let sphere5 = Sphere::place(vec3!(3.0, 3.0, 1.0), 1.0.into(), mat_sphere.clone());
-    let sphere6 = Sphere::place(vec3!(2.0, 2.0, 3.0), 2.0.into(), mat_sphere.clone());
-    let sphere7 = Sphere::place(vec3!(6.0, 6.0, 8.0), 1.0.into(), mat_sphere.clone());
-    let sphere8 = Sphere::place(vec3!(4.0, 4.0, -1.0), 3.0.into(), mat_sphere.clone());
-    let sphere9 = Sphere::place(vec3!(4.0, -1.0, 4.0), 3.0.into(), mat_sphere.clone());
-    let sphere10 = Sphere::place(vec3!(-1.0, 4.0, 4.0), 3.0.into(), mat_sphere.clone());
+    let sphere5 = Sphere::place(vec3!(3.0, 3.0, 1.0), 1.0.into(), mat_sphere);
+    let sphere6 = Sphere::place(vec3!(2.0, 2.0, 3.0), 2.0.into(), mat_sphere);
+    let sphere7 = Sphere::place(vec3!(6.0, 6.0, 8.0), 1.0.into(), mat_sphere);
+    let sphere8 = Sphere::place(vec3!(4.0, 4.0, -1.0), 3.0.into(), mat_sphere);
+    let sphere9 = Sphere::place(vec3!(4.0, -1.0, 4.0), 3.0.into(), mat_sphere);
+    let sphere10 = Sphere::place(vec3!(-1.0, 4.0, 4.0), 3.0.into(), mat_sphere);
 
     let sphere11 = Sphere::place(vec3!(3.0, 3.0, 3.0), 2.0.into(), mat_sphere);
 
@@ -259,7 +263,7 @@ where
         point!(0.0, 0.0),
         point!(0.0, 1.0),
         point!(1.0, 0.0),
-        mat_white.clone(),
+        mat_white,
     );
 
     let tri2 = Triangle::new(
