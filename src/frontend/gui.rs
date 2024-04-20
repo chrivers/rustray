@@ -319,6 +319,30 @@ where
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
+
+            ui.icon_menu_button(icon::ARTICLE_MEDIUM, "Set material", |ui| {
+                let mut mat_id = None;
+                for (id, mat) in &scene.materials.mats {
+                    let button = ui.button(format!("{id:?} {}", mat.get_name()));
+                    if button.clicked() {
+                        mat_id = Some(*id);
+                        info!("Select material {mat_id:?}");
+                        ui.close_menu();
+                    }
+                    if button.hovered() {
+                        mat_id = Some(*id);
+                    }
+                }
+
+                if let Some(id) = mat_id {
+                    self.change_obj(scene, move |obj| {
+                        if let Some(mat) = obj.material() {
+                            mat.set_material(id);
+                        }
+                    });
+                    self.engine.submit(&self.render_modes.preview, &self.lock);
+                }
+            });
             ui.separator();
         }
 
