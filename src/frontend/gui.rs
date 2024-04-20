@@ -10,7 +10,7 @@ use std::{
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
+    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
     gui::{
         controls::{self, Canvas},
         gizmo,
@@ -100,6 +100,14 @@ where
             .iter_mut()
             .find(|obj| obj.get_id() == self.obj)
             .map(|m| m as &mut _)
+    }
+
+    fn change_obj(&self, scene: &mut BoxScene<F>, func: impl Fn(&mut Box<dyn FiniteGeometry<F>>)) {
+        scene
+            .objects
+            .iter_mut()
+            .find(|obj| obj.get_id() == self.obj)
+            .map(func);
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
