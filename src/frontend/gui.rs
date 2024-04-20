@@ -296,6 +296,24 @@ where
     }
 
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
+        if let Some(obj) = self.obj {
+            ui.horizontal(|ui| {
+                ui.label(format!("Object id: {obj:x}"));
+                ui.add_space(50.0);
+            });
+
+            if ui.button("Delete").clicked() {
+                scene.objects.retain(|obj| obj.get_id() != self.obj);
+                self.obj = None;
+                self.bounding_box.clear();
+
+                scene.recompute_bvh().unwrap();
+                self.engine.submit(&self.render_modes.preview, &self.lock);
+                ui.close_menu();
+            }
+            ui.separator();
+        }
+
         ui.menu_button("Add geometry", |ui| {
             if Self::context_menu_add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
@@ -303,6 +321,7 @@ where
                 ui.close_menu();
             }
         });
+
         if ui
             .checkbox(&mut self.ray_debugger.enabled, "Ray trace debugger")
             .changed()
