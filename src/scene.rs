@@ -122,6 +122,16 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         }
     }
 
+    pub fn clear(&mut self) {
+        self.cameras.clear();
+        self.objects.clear();
+        self.geometry.clear();
+        self.textures.texs.clear();
+        self.materials.mats.clear();
+        self.lights.clear();
+        self.bvh = Bvh::default();
+    }
+
     pub fn recompute_bvh(&mut self) -> RResult<()> {
         let aabbs = self
             .objects
