@@ -19,7 +19,7 @@ pub fn property_list<R>(
     add_contents: impl FnOnce(&mut Ui) -> R,
 ) -> CollapsingResponse<InnerResponse<R>> {
     CollapsingHeader::new(name)
-        .default_open(true)
+        .default_open(false)
         .show(ui, |ui| {
             Grid::new(name)
                 .num_columns(2)
