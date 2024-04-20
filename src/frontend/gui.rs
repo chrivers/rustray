@@ -15,6 +15,7 @@ use crate::{
         controls::{self, Canvas},
         gizmo,
         visualtrace::VisualTraceWidget,
+        IconButton,
     },
     point,
     sampler::Texel,
@@ -313,7 +314,7 @@ where
                 ui.add_space(50.0);
             });
 
-            if ui.button("Delete").clicked() {
+            if ui.icon_button(icon::TRASH, "Delete").clicked() {
                 scene.objects.retain(|obj| obj.get_id() != self.obj);
                 self.obj = None;
                 self.bounding_box.clear();
@@ -325,7 +326,7 @@ where
             ui.separator();
         }
 
-        ui.menu_button("Add geometry", |ui| {
+        ui.icon_menu_button(icon::PLUS_SQUARE, "Add geometry", |ui| {
             if Self::context_menu_add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
                 self.engine.submit(&self.render_modes.preview, &self.lock);
