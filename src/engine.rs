@@ -123,6 +123,20 @@ pub struct RenderSpan<F: Float> {
 }
 
 impl<F: Float> RenderSpan<F> {
+    pub fn iter_x(&self) -> impl Iterator<Item = usize> + '_ {
+        let base = self.pixels.len();
+        let size = self.mult_x as usize;
+
+        base..base + size
+    }
+
+    pub fn iter_y(&self) -> impl Iterator<Item = usize> + '_ {
+        let base = self.line as usize;
+        let size = self.mult_y as usize;
+
+        base..base + size
+    }
+
     pub fn pixel_iter(&self) -> impl Iterator<Item = (u32, u32, Rgba<u8>)> + '_ {
         self.pixels.iter().enumerate().flat_map(move |(idx, pix)| {
             let rgba = Rgba(pix.to_array4());
@@ -258,8 +272,8 @@ impl<F: Float> RenderEngine<F> {
         let mut recv = false;
 
         while let Ok(span) = self.rx.try_recv() {
-            for y in 0..span.mult_y {
-                self.dirty[(span.line + y) as usize] = false;
+            for y in span.iter_y() {
+                self.dirty[y] = false;
             }
 
             for (x, y, color) in span.pixel_iter() {
