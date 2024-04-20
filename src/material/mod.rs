@@ -21,6 +21,11 @@ pub trait Material<F: Float>: SceneObject<F> + Interactive<F> + Debug + Send + S
     }
 }
 
+pub trait HasMaterial {
+    fn get_material(&self) -> MaterialId;
+    fn set_material(&mut self, id: MaterialId);
+}
+
 pub type BoxMaterial<F> = Box<dyn Material<F>>;
 pub type DynMaterial<F> = Arc<dyn Material<F>>;
 
