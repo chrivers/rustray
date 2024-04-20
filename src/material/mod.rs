@@ -83,6 +83,21 @@ impl<F: Float> Interactive<F> for BoxMaterial<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         (**self).ui(ui)
     }
+
+    #[cfg(feature = "gui")]
+    fn ui_center(
+        &mut self,
+        ui: &mut egui::Ui,
+        camera: &crate::types::Camera<F>,
+        rect: &egui::Rect,
+    ) -> bool {
+        (**self).ui_center(ui, camera, rect)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui_bounding_box(&mut self) -> Option<&rtbvh::Aabb> {
+        (**self).ui_bounding_box()
+    }
 }
 
 impl<F: Float> Material<F> for DynMaterial<F> {
@@ -122,6 +137,10 @@ impl<F: Float> Interactive<F> for DynMaterial<F> {
             ui.label("nope :(");
             false
         }
+    }
+
+    fn ui_bounding_box(&mut self) -> Option<&rtbvh::Aabb> {
+        Arc::get_mut(self).and_then(Interactive::ui_bounding_box)
     }
 }
 
