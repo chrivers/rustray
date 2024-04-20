@@ -7,7 +7,6 @@ use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
 use crate::light::{Attenuation, Light, PointLight};
-use crate::material::{Material, Phong};
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
 use crate::types::{Camera, Color, Error, Float, MaterialLib, Point, RResult, Vector, Vectorx};
@@ -87,6 +86,7 @@ impl<F: Float + Texel> PlyParser<F> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
+        let mut materials = MaterialLib::new();
 
         let vertex_parser = parser::Parser::<Vertex<F>>::new();
         let face_parser = parser::Parser::<Face<F>>::new();
@@ -109,7 +109,7 @@ impl<F: Float + Texel> PlyParser<F> {
         info!("vl: {:#?}", vertex_list.len());
         info!("fl: {:#?}", face_list.len());
 
-        let mat = Phong::white().dynamic();
+        let mat = materials.default();
 
         let mut tris = vec![];
         for face in &face_list {
@@ -137,7 +137,7 @@ impl<F: Float + Texel> PlyParser<F> {
                     Point::ZERO,
                     Point::ZERO,
                     Point::ZERO,
-                    mat.clone(),
+                    mat,
                 );
                 tris.push(tri);
             }
@@ -170,6 +170,6 @@ impl<F: Float + Texel> PlyParser<F> {
 
         lights.push(Box::new(lgt));
 
-        Scene::new(cameras, objects, vec![], MaterialLib::new(), lights)
+        Scene::new(cameras, objects, vec![], materials, lights)
     }
 }
