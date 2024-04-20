@@ -78,6 +78,14 @@ impl<F: Float> Div for Point<F> {
     }
 }
 
+impl<F: Float> Div<F> for Point<F> {
+    type Output = Self;
+
+    fn div(self, rhs: F) -> Self::Output {
+        point!(self.x / rhs, self.y / rhs)
+    }
+}
+
 impl<F: Float> From<(F, F)> for Point<F> {
     fn from(val: (F, F)) -> Self {
         Self::new(val.0, val.1)
