@@ -146,7 +146,7 @@ impl<F: Float> RenderSpan<F> {
             let xs = base_x..base_x + self.mult_x;
             let ys = base_y..base_y + self.mult_y;
 
-            ys.cartesian_product(xs).map(move |(x, y)| (x, y, rgba))
+            ys.cartesian_product(xs).map(move |(y, x)| (x, y, rgba))
         })
     }
 }
@@ -277,7 +277,7 @@ impl<F: Float> RenderEngine<F> {
             }
 
             for (x, y, color) in span.pixel_iter() {
-                self.img[(x, y)] = color;
+                self.img.put_pixel(x, y, color);
             }
 
             recv = true;
