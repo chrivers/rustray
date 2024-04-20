@@ -9,6 +9,7 @@ flags! {
     pub enum RF: u16 {
         Debug,
         StopAtGroup,
+        Preview,
     }
 }
 
