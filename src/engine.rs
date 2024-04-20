@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crossbeam_channel::{Receiver, Sender};
+use itertools::Itertools;
 use parking_lot::RwLock;
 
 #[cfg(feature = "gui")]
@@ -119,6 +120,21 @@ pub struct RenderSpan<F: Float> {
     pub mult_x: u32,
     pub mult_y: u32,
     pub pixels: Vec<Color<F>>,
+}
+
+impl<F: Float> RenderSpan<F> {
+    pub fn pixel_iter(&self) -> impl Iterator<Item = (u32, u32, Rgba<u8>)> + '_ {
+        self.pixels.iter().enumerate().flat_map(move |(idx, pix)| {
+            let rgba = Rgba(pix.to_array4());
+            let base_x = idx as u32 * self.mult_x;
+            let base_y = self.line;
+
+            let xs = base_x..base_x + self.mult_x;
+            let ys = base_y..base_y + self.mult_y;
+
+            ys.cartesian_product(xs).map(move |(x, y)| (x, y, rgba))
+        })
+    }
 }
 
 pub struct RenderEngine<F: Float> {
@@ -246,15 +262,10 @@ impl<F: Float> RenderEngine<F> {
                 self.dirty[(span.line + y) as usize] = false;
             }
 
-            for (base_x, pixel) in span.pixels.iter().enumerate() {
-                let rgba = Rgba(pixel.to_array4());
-                for y in 0..span.mult_y {
-                    for x in 0..span.mult_x {
-                        self.img
-                            .put_pixel((base_x as u32) * span.mult_x + x, span.line + y, rgba);
-                    }
-                }
+            for (x, y, color) in span.pixel_iter() {
+                self.img[(x, y)] = color;
             }
+
             recv = true;
         }
         recv
