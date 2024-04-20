@@ -16,7 +16,6 @@ use crate::{
         gizmo,
         visualtrace::VisualTraceWidget,
     },
-    material::Phong,
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
@@ -269,7 +268,9 @@ where
             };
         }
 
-        add_geometry_option!(Cube, { Cube::new(Matrix4::identity(), Phong::white()) });
+        add_geometry_option!(Cube, {
+            Cube::new(Matrix4::identity(), scene.materials.default())
+        });
 
         add_geometry_option!(Cone, {
             Cone::new(
@@ -278,19 +279,21 @@ where
                 F::ONE,
                 true,
                 Matrix4::identity(),
-                Phong::white(),
+                scene.materials.default(),
             )
         });
 
         add_geometry_option!(Cylinder, {
-            Cylinder::new(Matrix4::identity(), true, Phong::white())
+            Cylinder::new(Matrix4::identity(), true, scene.materials.default())
         });
 
         add_geometry_option!(Sphere, {
-            Sphere::place(Vector::ZERO, F::ONE, Phong::white())
+            Sphere::place(Vector::ZERO, F::ONE, scene.materials.default())
         });
 
-        add_geometry_option!(Square, { Square::new(Matrix4::identity(), Phong::white()) });
+        add_geometry_option!(Square, {
+            Square::new(Matrix4::identity(), scene.materials.default())
+        });
 
         res
     }
