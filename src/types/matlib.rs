@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::material::BoxMaterial;
+use crate::material::{BoxMaterial, Phong};
 use crate::scene::Interactive;
 use crate::types::Float;
 
@@ -9,6 +9,7 @@ pub struct MaterialId(pub u32);
 
 pub struct MaterialLib<F: Float> {
     pub mats: HashMap<MaterialId, BoxMaterial<F>>,
+    default: Option<MaterialId>,
     idx: u32,
 }
 
@@ -17,6 +18,7 @@ impl<F: Float> MaterialLib<F> {
     pub fn new() -> Self {
         Self {
             mats: HashMap::new(),
+            default: None,
             idx: 0,
         }
     }
@@ -24,6 +26,16 @@ impl<F: Float> MaterialLib<F> {
     #[must_use]
     pub fn get_name(&self, mat: MaterialId) -> String {
         format!("material-{}", mat.0)
+    }
+
+    pub fn default(&mut self) -> MaterialId {
+        match self.default {
+            None => {
+                let id = self.insert(Box::new(Phong::white()));
+                *self.default.insert(id)
+            }
+            Some(id) => id,
+        }
     }
 
     pub fn insert(&mut self, material: BoxMaterial<F>) -> MaterialId {
