@@ -51,6 +51,10 @@ pub trait Interactive<F: Float>: Debug {
     fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
         false
     }
+    #[cfg(feature = "gui")]
+    fn ui_bounding_box(&mut self) -> Option<[crate::types::Vector<F>; 8]> {
+        None
+    }
 }
 
 pub trait RayTracer<F: Float> {
