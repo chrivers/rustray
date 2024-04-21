@@ -23,13 +23,13 @@ impl TextureLib {
     }
 
     #[must_use]
-    pub fn get_name(&self, mat: TextureId) -> String {
-        format!("texture-{}", mat.0)
+    pub fn get_name(&self, tex: TextureId) -> String {
+        format!("texture-{}", tex.0)
     }
 
-    pub fn insert(&mut self, material: DynamicImage) -> TextureId {
+    pub fn insert(&mut self, texture: DynamicImage) -> TextureId {
         let next = TextureId(self.idx);
-        self.texs.insert(next, material);
+        self.texs.insert(next, texture);
         self.idx += 1;
         next
     }
