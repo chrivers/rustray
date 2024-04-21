@@ -709,14 +709,24 @@ where
             texture_uvs = spherical_uvs(&points);
         }
 
+        let mut mats: HashMap<u64, MaterialId> = HashMap::new();
+
         for face in &faces {
             let m: MaterialId = if !materials.is_empty() {
-                let mat: BoxMaterial<F> = Box::new(Triblend::new(
-                    materials[face[0]],
-                    materials[face[1]],
-                    materials[face[2]],
-                ));
-                self.scene.materials.insert(mat)
+                let (m0, m1, m2) = (materials[face[0]], materials[face[1]], materials[face[2]]);
+                let mut hasher = std::hash::DefaultHasher::new();
+                m0.hash(&mut hasher);
+                m1.hash(&mut hasher);
+                m2.hash(&mut hasher);
+                let hash = hasher.finish();
+                *mats.entry(hash).or_insert_with(|| {
+                    if m0 == m1 && m1 == m2 {
+                        m0
+                    } else {
+                        let mat = Box::new(Triblend::new(m0, m1, m2));
+                        self.scene.materials.insert(mat)
+                    }
+                })
             } else {
                 mat
             };
