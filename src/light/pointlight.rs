@@ -7,9 +7,15 @@ use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct PointLight<F: Float> {
-    pub attn: Attenuation<F>,
     pub pos: Vector<F>,
+    pub attn: Attenuation<F>,
     pub color: Color<F>,
+}
+
+impl<F: Float> PointLight<F> {
+    pub const fn new(pos: Vector<F>, attn: Attenuation<F>, color: Color<F>) -> Self {
+        Self { pos, attn, color }
+    }
 }
 
 impl<F: Float> Interactive<F> for PointLight<F> {

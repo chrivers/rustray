@@ -549,7 +549,7 @@ where
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let attn = dict.attenuation()?;
 
-        let res = PointLight { attn, pos, color };
+        let res = PointLight { pos, attn, color };
         info!("{:7.3?}", res);
         Ok(res)
     }
