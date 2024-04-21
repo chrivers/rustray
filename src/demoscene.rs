@@ -25,8 +25,8 @@ fn load_zip_tex<T: Read + Seek>(
 ) -> RResult<DynamicImage> {
     info!("  - {}", name);
     let mut file = arch.by_name(name)?;
-    let mut data = vec![0u8; file.size() as usize];
-    file.read_exact(&mut data)?;
+    let mut data = vec![];
+    file.read_to_end(&mut data)?;
     let imgdata: Cursor<&[u8]> = Cursor::new(&data);
 
     Ok(image::load(imgdata, format)?)
