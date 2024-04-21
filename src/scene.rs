@@ -118,7 +118,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             lights: vec![],
             bvh: Bvh::default(),
             ambient: Color::BLACK,
-            background: Color::BLACK,
+            background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
         }
     }
 
