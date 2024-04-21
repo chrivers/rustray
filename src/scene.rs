@@ -173,8 +173,11 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             .or(hit)
     }
 
-    #[must_use]
-    pub fn with_ambient(self, ambient: Color<F>) -> Self {
-        Self { ambient, ..self }
+    pub fn set_ambient(&mut self, ambient: Color<F>) {
+        self.ambient = ambient;
+    }
+
+    pub const fn get_ambient(&self) -> Color<F> {
+        self.ambient
     }
 }
