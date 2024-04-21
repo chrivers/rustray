@@ -1,5 +1,4 @@
 #![allow(unused_variables)]
-
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
 
@@ -9,37 +8,22 @@ use rand::distributions::{Distribution, Standard};
 use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
-use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
-use crate::light::{Attenuation, Light, PointLight};
+use crate::geometry::{Plane, Sphere, Triangle, TriangleMesh};
+use crate::light::{Attenuation, PointLight};
 use crate::material::{
     BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Matte, Phong, ScaleUV,
 };
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
-use crate::scene::{BoxScene, Scene};
-use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector, Vectorx};
+use crate::scene::BoxScene;
+use crate::types::{Camera, Color, Float, Point, RResult, Vector, Vectorx};
 use crate::{point, vec3};
 
-fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
-where
-    f32: Into<F>,
-{
-    let attn = Attenuation {
-        a: (0.3).into(),
-        b: (0.2).into(),
-        c: (0.01).into(),
-    };
-
-    PointLight { attn, pos, color }
-}
-
 fn load_zip_tex<T: Read + Seek>(
-    time: &mut TimeSlice,
     arch: &mut ZipArchive<T>,
     name: &str,
     format: ImageFormat,
 ) -> RResult<DynamicImage> {
     info!("  - {}", name);
-    time.set("zipload");
     let mut file = arch.by_name(name)?;
     let mut data = vec![0u8; file.size() as usize];
     file.read_exact(&mut data)?;
@@ -49,7 +33,6 @@ fn load_zip_tex<T: Read + Seek>(
 }
 
 fn load_tex3(
-    time: &mut TimeSlice,
     dl: &ACGDownloader,
     name: &str,
 ) -> RResult<(
@@ -59,30 +42,25 @@ fn load_tex3(
     RResult<DynamicImage>,
 )> {
     info!("Loading texture archive [{}]", name);
-    time.set("download");
     let zipfile = File::open(dl.download(name)?)?;
     let mut archive = ZipArchive::new(zipfile)?;
     Ok((
         load_zip_tex(
-            time,
             &mut archive,
             &format!("{name}_1K_Color.png"),
             ImageFormat::Png,
         )?,
         load_zip_tex(
-            time,
             &mut archive,
             &format!("{name}_1K_NormalDX.png"),
             ImageFormat::Png,
         )?,
         load_zip_tex(
-            time,
             &mut archive,
             &format!("{name}_1K_Roughness.png"),
             ImageFormat::Png,
         )?,
         load_zip_tex(
-            time,
             &mut archive,
             &format!("{name}_1K_Metalness.png"),
             ImageFormat::Png,
@@ -91,58 +69,67 @@ fn load_tex3(
 }
 
 #[allow(clippy::too_many_lines)]
-pub fn construct_demo_scene<F>(
-    time: &mut TimeSlice,
-    width: u32,
-    height: u32,
-) -> RResult<BoxScene<F>>
+pub fn construct_demo_scene<F>(scene: &mut BoxScene<F>) -> RResult<()>
 where
     F: Float + Texel,
     Standard: Distribution<F>,
     f32: Into<F>,
 {
-    time.set("construct");
-
-    let mut materials = MaterialLib::new();
-
-    let cameras = vec![Camera::parametric(
+    scene.add_camera(Camera::parametric(
         vec3!(10.0, 4.5, 10.0),
         vec3!(0.0, 1.0, 0.0),
         Vector::UNIT_Y,
         F::from_f32(50.0),
-    )];
+    ));
 
     let (h, l) = (1.2.into(), 0.3.into());
 
-    let light1 = point_light(vec3!(2.0, 2.0, 2.0), Color { r: h, g: h, b: h });
-    let light2 = point_light(vec3!(2.0, 2.0, 7.0), Color { r: h, g: l, b: l });
-    let light3 = point_light(vec3!(2.0, 7.0, 2.0), Color { r: l, g: h, b: l });
-    let light4 = point_light(vec3!(7.0, 2.0, 2.0), Color { r: l, g: l, b: h });
-    let light5 = point_light(vec3!(5.0, 5.0, 5.0), Color { r: h, g: h, b: h });
+    let attn = Attenuation {
+        a: (0.3).into(),
+        b: (0.2).into(),
+        c: (0.01).into(),
+    };
 
-    let lights: Vec<Box<dyn Light<F>>> = vec![
-        Box::new(light1),
-        Box::new(light2),
-        Box::new(light3),
-        Box::new(light4),
-        Box::new(light5),
-    ];
+    scene.add_light(PointLight::new(
+        vec3!(2.0, 2.0, 2.0),
+        attn,
+        Color::new(h, h, h),
+    ));
+    scene.add_light(PointLight::new(
+        vec3!(2.0, 2.0, 7.0),
+        attn,
+        Color::new(h, l, l),
+    ));
+    scene.add_light(PointLight::new(
+        vec3!(2.0, 7.0, 2.0),
+        attn,
+        Color::new(l, h, l),
+    ));
+    scene.add_light(PointLight::new(
+        vec3!(7.0, 2.0, 2.0),
+        attn,
+        Color::new(l, l, h),
+    ));
+    scene.add_light(PointLight::new(
+        vec3!(5.0, 5.0, 5.0),
+        attn,
+        Color::new(h, h, h),
+    ));
 
     let dl = ACGDownloader::new("textures/download".into(), ACGQuality::PNG_1K)?;
 
-    let (tex0a, tex0b, tex0r, tex0m) = load_tex3(time, &dl, "WoodFloor008")?;
-    let (tex1a, tex1b, tex1r, tex1m) = load_tex3(time, &dl, "WoodFloor006")?;
-    let (tex2a, tex2b, tex2r, tex2m) = load_tex3(time, &dl, "Wood069")?;
+    let (tex0a, tex0b, tex0r, tex0m) = load_tex3(&dl, "WoodFloor008")?;
+    let (tex1a, tex1b, tex1r, tex1m) = load_tex3(&dl, "WoodFloor006")?;
+    let (tex2a, tex2b, tex2r, tex2m) = load_tex3(&dl, "Wood069")?;
 
-    time.set("construct");
-    let mat_sphere = materials.insert(Box::new(Fresnel::new(
+    let mat_sphere = scene.materials.insert(Box::new(Fresnel::new(
         1.6.into(),
         Color::WHITE,
         Color::WHITE,
     )));
-    let mat_white = materials.insert(Box::new(Phong::white()));
+    let mat_white = scene.materials.insert(Box::new(Phong::white()));
 
-    let mat_plane = materials.insert(Box::new(ScaleUV::new(
+    let mat_plane = scene.materials.insert(Box::new(ScaleUV::new(
         (0.1).into(),
         (0.1).into(),
         ChessBoard::new(
@@ -181,17 +168,15 @@ where
         ),
     );
 
-    time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
 
     let trimesh1 = TriangleMesh::load_obj(
         obj,
-        &mut materials,
+        &mut scene.materials,
         vec3!(0.5, 0.0, 1.5),
         F::from_f32(1.0 / 5.0),
     )?;
 
-    time.set("construct");
     let plane1 = Plane::new(
         vec3!(0.0, 0.0, 20.0),
         vec3!(-1.0, 0.0, 0.0),
@@ -279,35 +264,31 @@ where
         mat_white,
     );
 
-    let geometry: Vec<Box<dyn Geometry<F>>> = vec![
-        Box::new(plane2),
-        Box::new(plane4),
-        Box::new(plane6),
-        // Box::new(plane1),
-        // Box::new(plane3),
-        // Box::new(plane5),
-    ];
+    scene.add_geometry(plane2);
+    scene.add_geometry(plane4);
+    scene.add_geometry(plane6);
+    // scene.add_geometry(plane1);
+    // scene.add_geometry(plane3);
+    // scene.add_geometry(plane5);
 
-    let objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![
-        // Box::new(sphere1),
-        // Box::new(sphere2),
-        // Box::new(sphere3),
-        // Box::new(sphere4),
-        // Box::new(sphere5),
-        // Box::new(sphere6),
-        // Box::new(sphere7),
+    // scene.add_object(sphere1);
+    // scene.add_object(sphere2);
+    // scene.add_object(sphere3);
+    // scene.add_object(sphere4);
+    // scene.add_object(sphere5);
+    // scene.add_object(sphere6);
+    // scene.add_object(sphere7);
 
-        // Box::new(sphere8),
-        // Box::new(sphere9),
-        // Box::new(sphere10),
-        // Box::new(sphere11),
+    // scene.add_object(sphere8);
+    // scene.add_object(sphere9);
+    // scene.add_object(sphere10);
+    // scene.add_object(sphere11);
 
-        // Box::new(tri1),
-        // Box::new(tri2),
-        Box::new(trimesh1),
-        // Box::new(trimesh2),
-        // Box::new(trimesh3),
-    ];
+    // scene.add_object(tri1);
+    // scene.add_object(tri2);
+    scene.add_object(trimesh1);
+    // scene.add_object(trimesh2);
+    // scene.add_object(trimesh3);
 
-    Scene::new(cameras, objects, geometry, materials, lights)
+    Ok(())
 }
