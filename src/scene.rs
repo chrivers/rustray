@@ -180,4 +180,30 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
     pub const fn get_ambient(&self) -> Color<F> {
         self.ambient
     }
+
+    pub fn set_background(&mut self, background: Color<F>) {
+        self.background = background;
+    }
+
+    pub const fn get_background(&self) -> Color<F> {
+        self.background
+    }
+
+    pub fn add_camera(&mut self, camera: Camera<F>) {
+        self.cameras.push(camera);
+    }
+}
+
+impl<F: Float> BoxScene<F> {
+    pub fn add_light(&mut self, light: impl Light<F> + 'static) {
+        self.lights.push(Box::new(light));
+    }
+
+    pub fn add_geometry(&mut self, geometry: impl Geometry<F> + 'static) {
+        self.geometry.push(Box::new(geometry));
+    }
+
+    pub fn add_object(&mut self, geometry: impl FiniteGeometry<F> + 'static) {
+        self.objects.push(Box::new(geometry));
+    }
 }
