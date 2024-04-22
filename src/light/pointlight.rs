@@ -13,6 +13,8 @@ pub struct PointLight<F: Float> {
 }
 
 impl<F: Float> PointLight<F> {
+    pub const ICON: &'static str = egui_phosphor::regular::LIGHTBULB;
+
     pub const fn new(pos: Vector<F>, attn: Attenuation<F>, color: Color<F>) -> Self {
         Self { pos, attn, color }
     }
@@ -32,7 +34,7 @@ impl<F: Float> Interactive<F> for PointLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for PointLight<F> {
-    sceneobject_impl_body!("Point Light", egui_phosphor::regular::LIGHTBULB);
+    sceneobject_impl_body!("Point Light", Self::ICON);
 }
 
 impl<F: Float> Light<F> for PointLight<F> {

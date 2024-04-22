@@ -23,6 +23,8 @@ pub struct AreaLight<F: Float> {
 }
 
 impl<F: Float> AreaLight<F> {
+    pub const ICON: &'static str = egui_phosphor::regular::HEADLIGHTS;
+
     pub fn new(
         attn: Attenuation<F>,
         pos: Vector<F>,
@@ -59,7 +61,7 @@ impl<F: Float> AreaLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for AreaLight<F> {
-    sceneobject_impl_body!("Area Light", egui_phosphor::regular::HEADLIGHTS);
+    sceneobject_impl_body!("Area Light", Self::ICON);
 }
 
 impl<F: Float> Interactive<F> for AreaLight<F> {

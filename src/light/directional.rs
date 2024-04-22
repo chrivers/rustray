@@ -12,6 +12,8 @@ pub struct DirectionalLight<F: Float> {
 }
 
 impl<F: Float> DirectionalLight<F> {
+    pub const ICON: &'static str = egui_phosphor::regular::SUN;
+
     pub fn new(dir: Vector<F>, color: Color<F>) -> Self {
         Self {
             dir: dir.normalize(),
@@ -33,7 +35,7 @@ impl<F: Float> Interactive<F> for DirectionalLight<F> {
 }
 
 impl<F: Float> SceneObject<F> for DirectionalLight<F> {
-    sceneobject_impl_body!("Directional Light", egui_phosphor::regular::SUN);
+    sceneobject_impl_body!("Directional Light", Self::ICON);
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {
