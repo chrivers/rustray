@@ -1,7 +1,10 @@
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::{Deg, Matrix4, SquareMatrix};
 use itertools::Itertools;
+use obj::Obj;
 
 use std::{
+    io::BufReader,
+    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
     sync::Arc,
     time::Duration,
@@ -10,7 +13,7 @@ use std::{
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
+    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square, TriangleMesh},
     gui::{
         controls::{self, Canvas},
         gizmo,
@@ -20,7 +23,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
-    types::{Error, Float, Point, RResult, Vector, Vectorx, RF},
+    types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
 use parking_lot::RwLock;
@@ -432,8 +435,6 @@ where
     }
 
     fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
-        let data = std::fs::read_to_string(path)?;
-
         let resdir = path
             .parent()
             .ok_or(Error::ParseError("Invalid filename".into()))?;
@@ -441,9 +442,33 @@ where
         let name = path
             .to_str()
             .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
-        let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
-        let p = SbtParser2::ast(p)?;
-        SbtBuilder::new(resdir, scene).build(p)?;
+
+        match path.extension().map(OsStrExt::as_bytes) {
+            Some(b"ray") => {
+                let data = std::fs::read_to_string(path)?;
+                let p = SbtParser2::parse(SbtRule::program, &data)
+                    .map_err(|err| err.with_path(name))?;
+                let p = SbtParser2::ast(p)?;
+                SbtBuilder::new(resdir, scene).build(p)?;
+            }
+            Some(b"obj") => {
+                let obj = Obj::load(path)?;
+                let mesh = TriangleMesh::load_obj(obj, &mut scene.materials, Vector::ZERO, F::ONE)?;
+                scene.add_object(mesh);
+                scene.add_camera_if_missing()?;
+                scene.add_light_if_missing()?;
+            }
+            Some(b"ply") => {
+                let mut reader = BufReader::new(std::fs::File::open(path)?);
+                crate::format::ply::PlyParser::parse_file(&mut reader, scene)?;
+                scene.add_camera_if_missing()?;
+                scene.add_light_if_missing()?;
+            }
+            other => {
+                error!("Unknown extension: {other:?}");
+            }
+        }
+
         Ok(())
     }
 
