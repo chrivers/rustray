@@ -72,7 +72,7 @@ pub fn load<F: Float + Texel>(
                 /* let kr = obj_sampler(&obj.path, &omat.map_refl, &omat.kr); */
                 /* let ns = obj_sampler(&obj.path, &omat.map_ns, F::from_f32(omat.ns.unwrap_or(1.0)) */
 
-                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::WHITE)
+                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::BLACK)
                     .with_ambient(omat.ka.map_or(Color::BLACK, Into::into));
 
                 let res: BoxMaterial<F> = if omat.map_bump.is_some() {
