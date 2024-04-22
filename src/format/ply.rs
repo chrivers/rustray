@@ -2,18 +2,15 @@ use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
 
-use cgmath::{InnerSpace, Matrix4, SquareMatrix};
+use cgmath::{Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{Triangle, TriangleMesh};
-use crate::light::{Attenuation, PointLight};
 use crate::sampler::Texel;
 use crate::scene::BoxScene;
-use crate::types::{Camera, Color, Error, Float, Point, RResult, Vector, Vectorx};
-use crate::vec3;
+use crate::types::{Error, Float, Point, RResult, Vector, Vectorx};
 
 use ply_rs::{parser, ply};
-use rtbvh::Primitive;
 
 pub struct PlyParser<F: Float> {
     _p: PhantomData<F>,
@@ -139,31 +136,7 @@ impl<F: Float + Texel> PlyParser<F> {
         }
 
         let mesh = TriangleMesh::new(tris, Matrix4::identity());
-
-        let bb = mesh.aabb();
-
-        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
-        let look: Vector<F> = Vector::from_vec3(bb.center());
-        let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
-
-        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(60.0), F::ONE);
-
-        scene.cameras.push(cam);
-
         scene.objects.push(Box::new(mesh));
-
-        let lgt = PointLight {
-            attn: Attenuation {
-                a: F::from_f32(0.1),
-                b: F::from_f32(0.0001),
-                c: F::from_f32(0.0),
-            },
-            pos,
-            color: Color::WHITE,
-        };
-
-        scene.lights.push(Box::new(lgt));
-
         scene.recompute_bvh()
     }
 }
