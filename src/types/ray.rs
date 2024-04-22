@@ -2,8 +2,7 @@ use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
 use flagset::{flags, FlagSet};
 
 use crate::geometry::Geometry;
-use crate::material::Material;
-use crate::types::{Float, Maxel, Transform, Vector, Vectorx};
+use crate::types::{Float, MaterialId, Maxel, Transform, Vector, Vectorx};
 
 flags! {
     pub enum RF: u16 {
@@ -50,12 +49,7 @@ impl<'a, F: Float> Ray<F> {
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(
-        self,
-        ext: F,
-        obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F>,
-    ) -> Maxel<'a, F> {
+    pub fn hit_at(self, ext: F, obj: &'a dyn Geometry<F>, mat: MaterialId) -> Maxel<'a, F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags)
     }
 

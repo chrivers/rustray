@@ -126,7 +126,7 @@ impl<F: Float> Geometry<F> for Triangle<F> {
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let t = ray.intersect_triangle4(&self.edge1, &self.edge2, &self.a)?;
-        Some(ray.hit_at(t, self, &self.mat))
+        Some(ray.hit_at(t, self, self.mat))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {

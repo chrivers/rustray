@@ -1,15 +1,14 @@
 use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
-use crate::material::Material;
-use crate::types::{Float, Point, Ray, RayFlags, Vector, Vectorx, RF};
+use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Vector, Vectorx, RF};
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub obj: &'a dyn Geometry<F>,
-    pub mat: &'a dyn Material<F>,
+    pub mat: MaterialId,
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
@@ -39,7 +38,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         dir: Vector<F>,
         lvl: u16,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F>,
+        mat: MaterialId,
         flags: RayFlags,
     ) -> Self {
         Maxel {

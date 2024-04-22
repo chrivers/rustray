@@ -55,7 +55,7 @@ impl<F: Float> Geometry<F> for Sphere<F> {
         let uv = normal.polar_uv();
 
         Some(
-            ray.hit_at(result, self, &self.mat)
+            ray.hit_at(result, self, self.mat)
                 .with_normal(self.xfrm.nml(normal))
                 .with_uv(uv.into()),
         )

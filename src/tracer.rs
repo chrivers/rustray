@@ -4,6 +4,7 @@ use cgmath::MetricSpace;
 
 use crate::engine::RenderSpan;
 use crate::light::Lixel;
+use crate::material::Material;
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
 use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
@@ -79,7 +80,8 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
             if let Some(mut curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    let color = curhit.mat.shadow(&mut curhit, self, lixel);
+                    let mat = &self.scene.materials.mats[&curhit.mat];
+                    let color = mat.shadow(&mut curhit, self, lixel);
                     best_color = Some(color);
                     best_length = cur_length;
                 }
@@ -95,7 +97,8 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
 
         let mut maxel = self.scene.intersect(ray)?;
 
-        Some(maxel.mat.render(&mut maxel, self))
+        let mat = &self.scene.materials.mats[&maxel.mat];
+        Some(mat.render(&mut maxel, self))
     }
 
     fn scene(&self) -> &BoxScene<F> {

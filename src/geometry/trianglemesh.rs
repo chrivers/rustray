@@ -9,18 +9,17 @@ use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 use crate::types::Camera;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
-use crate::material::{BoxMaterial, HasMaterial};
+use crate::material::HasMaterial;
 use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    BvhExt, Color, Float, HasTransform, MaterialLib, Maxel, RResult, Ray, Transform, Vector,
+    BvhExt, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform, Vector,
     Vectorx, RF,
 };
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float> {
     xfrm: Transform<F>,
-    mat: BoxMaterial<F>,
     pub tris: Vec<Triangle<F>>,
     bvh: Bvh,
     aabb: Aabb,
@@ -94,7 +93,7 @@ impl<F: Float> Geometry<F> for TriangleMesh<F> {
                 -ray.dir,
                 ray.lvl,
                 self,
-                self.mat.as_ref(),
+                MaterialId(0),
                 ray.flags,
             ))
         }
@@ -125,7 +124,6 @@ impl<F: Float> TriangleMesh<F> {
 
         let mut res = Self {
             xfrm: Transform::new(xfrm),
-            mat: Box::new(Color::BLACK),
             tris,
             bvh,
             aabb: Aabb::empty(),

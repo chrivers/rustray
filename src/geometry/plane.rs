@@ -45,7 +45,7 @@ impl<F: Float> Geometry<F> for Plane<F> {
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let t = ray.intersect_plane(&self.pos, &self.dir1, &self.dir2)?;
-        Some(ray.hit_at(t, self, &self.mat))
+        Some(ray.hit_at(t, self, self.mat))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {

@@ -158,7 +158,7 @@ impl<F: Float> Geometry<F> for Cylinder<F> {
 
         let nml = self.xfrm.nml(normal.normalize());
 
-        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
+        Some(ray.hit_at(root, self, self.mat).with_normal(nml))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {

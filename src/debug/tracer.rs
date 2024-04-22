@@ -4,6 +4,7 @@ use std::fmt::{self, Debug};
 use cgmath::MetricSpace;
 
 use crate::light::Lixel;
+use crate::material::Material;
 use crate::scene::{BoxScene, RayTracer};
 use crate::types::{Color, Float, Maxel, Ray};
 
@@ -68,7 +69,8 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
             if let Some(mut curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    let color = curhit.mat.shadow(&mut curhit, self, lixel);
+                    let mat = &self.scene.materials.mats[&maxel.mat];
+                    let color = mat.shadow(&mut curhit, self, lixel);
                     best_color = Some(color);
                     best_length = cur_length;
 
@@ -96,7 +98,8 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
 
         step.maxel = self.scene.intersect(ray);
         if let Some(mut maxel) = step.maxel {
-            step.color = Some(maxel.mat.render(&mut maxel, self));
+            let mat = &self.scene.materials.mats[&maxel.mat];
+            step.color = Some(mat.render(&mut maxel, self));
         }
         let res = step.color;
 
