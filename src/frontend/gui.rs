@@ -535,7 +535,7 @@ where
         self.file_dialog.update(ctx);
 
         if let Some(path) = self.file_dialog.take_selected() {
-            let _ = self.load_file(&path);
+            self.load_file(&path).unwrap();
         }
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
@@ -577,7 +577,7 @@ where
                 let engine = RenderEngine::new(width, height);
 
                 let mut app = RustRayGui::new(cc, engine, BoxScene::empty());
-                let _ = app.load_file(&path);
+                app.load_file(&path).unwrap();
 
                 app
             })
