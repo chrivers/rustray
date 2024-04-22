@@ -20,6 +20,7 @@ use crate::{
         visualtrace::VisualTraceWidget,
         IconButton,
     },
+    light::{AreaLight, Attenuation, DirectionalLight, PointLight, SpotLight},
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
@@ -306,6 +307,61 @@ where
         res
     }
 
+    fn context_menu_add_light(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
+        let mut res = false;
+
+        macro_rules! add_light_option {
+            ($name:ident, $code:block) => {
+                if ui
+                    .icon_button($name::<F>::ICON, stringify!($name))
+                    .clicked()
+                {
+                    scene.add_light($code);
+                    res = true;
+                }
+            };
+        }
+
+        let attn = Attenuation {
+            a: F::ZERO,
+            b: F::ONE,
+            c: F::ZERO,
+        };
+
+        add_light_option!(PointLight, {
+            PointLight::new(Vector::ZERO, attn, Color::WHITE)
+        });
+
+        add_light_option!(DirectionalLight, {
+            DirectionalLight::new(-Vector::UNIT_Z, Color::WHITE)
+        });
+
+        add_light_option!(SpotLight, {
+            SpotLight {
+                attn,
+                umbra: Deg(F::from_u32(45)).into(),
+                penumbra: Deg(F::from_u32(60)).into(),
+                pos: Vector::ZERO,
+                dir: -Vector::UNIT_Z,
+                color: Color::WHITE,
+            }
+        });
+
+        add_light_option!(AreaLight, {
+            AreaLight::new(
+                attn,
+                Vector::ZERO,
+                -Vector::UNIT_Z,
+                Vector::UNIT_Y,
+                Color::WHITE,
+                F::from_u32(10),
+                F::from_u32(10),
+            )
+        });
+
+        res
+    }
+
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
         if let Some(obj) = self.obj {
             ui.horizontal(|ui| {
@@ -352,6 +408,13 @@ where
         ui.icon_menu_button(icon::PLUS_SQUARE, "Add geometry", |ui| {
             if Self::context_menu_add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
+                self.engine.submit(&self.render_modes.preview, &self.lock);
+                ui.close_menu();
+            }
+        });
+
+        ui.icon_menu_button(icon::PLUS_CIRCLE, "Add light", |ui| {
+            if Self::context_menu_add_light(ui, scene) {
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
