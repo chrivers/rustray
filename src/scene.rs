@@ -1,10 +1,13 @@
 use crate::geometry::{FiniteGeometry, Geometry};
-use crate::light::{Light, Lixel};
-use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib};
+use crate::light::{DirectionalLight, Light, Lixel};
+use crate::types::{
+    BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib, Vector, Vectorx,
+};
+use crate::vec3;
 
-use cgmath::MetricSpace;
+use cgmath::{InnerSpace, MetricSpace};
 
-use rtbvh::{Builder, Bvh};
+use rtbvh::{Bounds, Builder, Bvh};
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
@@ -205,5 +208,40 @@ impl<F: Float> BoxScene<F> {
 
     pub fn add_object(&mut self, geometry: impl FiniteGeometry<F> + 'static) {
         self.objects.push(Box::new(geometry));
+    }
+
+    pub fn add_camera_if_missing(&mut self) -> RResult<()> {
+        if !self.cameras.is_empty() {
+            return Ok(());
+        }
+
+        self.recompute_bvh()?;
+
+        let bb = self.bvh.bounds();
+
+        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
+        let look: Vector<F> = Vector::from_vec3(bb.center());
+        let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
+
+        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
+
+        info!("Add camera");
+        self.cameras.push(cam);
+
+        Ok(())
+    }
+
+    pub fn add_light_if_missing(&mut self) -> RResult<()> {
+        if !self.lights.is_empty() {
+            return Ok(());
+        }
+
+        info!("Add light");
+        self.add_light(DirectionalLight::new(
+            Vector::new(F::ZERO, -F::HALF, -F::ONE),
+            Color::WHITE,
+        ));
+
+        Ok(())
     }
 }
