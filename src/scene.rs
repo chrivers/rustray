@@ -223,7 +223,7 @@ impl<F: Float> BoxScene<F> {
         let look: Vector<F> = Vector::from_vec3(bb.center());
         let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
 
-        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
+        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(60.0), F::ONE);
 
         info!("Add camera");
         self.cameras.push(cam);
