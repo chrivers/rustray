@@ -2,12 +2,13 @@ use std::path::Path;
 
 use obj::{Obj, ObjMaterial};
 
-use cgmath::InnerSpace;
+use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 
-use crate::geometry::Triangle;
+use crate::geometry::{Triangle, TriangleMesh};
 use crate::material::{BoxMaterial, BumpPower, Bumpmap, Phong, Smart};
 use crate::sampler::{NormalMap, Sampler, SamplerExt, Texel};
-use crate::types::{Color, Float, MaterialLib, Point, RResult, Vector, Vectorx};
+use crate::scene::BoxScene;
+use crate::types::{Color, Float, Point, RResult, Vector, Vectorx};
 
 fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
@@ -31,12 +32,7 @@ fn obj_sampler<F: Float + Texel>(
     )
 }
 
-pub fn load<F: Float + Texel>(
-    mut obj: Obj,
-    lib: &mut MaterialLib<F>,
-    pos: Vector<F>,
-    scale: F,
-) -> RResult<Vec<Triangle<F>>> {
+pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<()> {
     let mut corner = Vector::new(F::max_value(), F::max_value(), F::max_value());
 
     obj.load_mtls()?;
@@ -82,11 +78,11 @@ pub fn load<F: Float + Texel>(
                 } else {
                     Box::new(smart)
                 };
-                lib.insert(res)
+                scene.materials.insert(res)
             } else {
                 *mat0.get_or_insert_with(|| {
                     let mat = Box::new(Phong::white());
-                    lib.insert(mat)
+                    scene.materials.insert(mat)
                 })
             };
 
@@ -96,9 +92,9 @@ pub fn load<F: Float + Texel>(
                 }
 
                 for n in 1..(poly.0.len() - 1) {
-                    let a = (Vector::from_f32s(position[poly.0[0].0]) - corner) * scale + pos;
-                    let b = (Vector::from_f32s(position[poly.0[n].0]) - corner) * scale + pos;
-                    let c = (Vector::from_f32s(position[poly.0[n + 1].0]) - corner) * scale + pos;
+                    let a = Vector::from_f32s(position[poly.0[0].0]) - corner;
+                    let b = Vector::from_f32s(position[poly.0[n].0]) - corner;
+                    let c = Vector::from_f32s(position[poly.0[n + 1].0]) - corner;
 
                     /* FIXME: .unwrap() is a terrible when loading data from a file */
                     let (na, nb, nc) = if normal.is_empty() {
@@ -139,5 +135,9 @@ pub fn load<F: Float + Texel>(
         obj.data.texture.len(),
         tris.len()
     );
-    Ok(tris)
+
+    let mesh = TriangleMesh::new(tris, Matrix4::identity());
+    scene.add_object(mesh);
+
+    Ok(())
 }

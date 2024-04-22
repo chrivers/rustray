@@ -1,8 +1,7 @@
 use std::num::NonZeroUsize;
 
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::Matrix4;
 use glam::Vec3;
-use obj::Obj;
 use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 
 #[cfg(feature = "gui")]
@@ -10,11 +9,9 @@ use crate::types::Camera;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
 use crate::material::HasMaterial;
-use crate::sampler::Texel;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    BvhExt, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform, Vector,
-    Vectorx, RF,
+    BvhExt, Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx, RF,
 };
 
 #[derive(Debug)]
@@ -130,12 +127,5 @@ impl<F: Float> TriangleMesh<F> {
         };
         res.recompute_aabb();
         res
-    }
-}
-
-impl<F: Float + Texel> TriangleMesh<F> {
-    pub fn load_obj(obj: Obj, lib: &mut MaterialLib<F>, pos: Vector<F>, scale: F) -> RResult<Self> {
-        let tris = crate::format::obj::load(obj, lib, pos, scale)?;
-        Ok(Self::new(tris, Matrix4::identity()))
     }
 }

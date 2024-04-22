@@ -13,7 +13,7 @@ use std::{
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square, TriangleMesh},
+    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
     gui::{
         controls::{self, Canvas},
         gizmo,
@@ -516,8 +516,7 @@ where
             }
             Some(b"obj") => {
                 let obj = Obj::load(path)?;
-                let mesh = TriangleMesh::load_obj(obj, &mut scene.materials, Vector::ZERO, F::ONE)?;
-                scene.add_object(mesh);
+                crate::format::obj::load(obj, scene)?;
                 scene.add_camera_if_missing()?;
                 scene.add_light_if_missing()?;
             }

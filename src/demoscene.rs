@@ -8,7 +8,7 @@ use rand::distributions::{Distribution, Standard};
 use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
-use crate::geometry::{Plane, Sphere, Triangle, TriangleMesh};
+use crate::geometry::{Plane, Sphere, Triangle};
 use crate::light::{Attenuation, PointLight};
 use crate::material::{
     BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Matte, Phong, ScaleUV,
@@ -170,12 +170,7 @@ where
 
     let obj = Obj::load("models/teapot.obj")?;
 
-    let trimesh1 = TriangleMesh::load_obj(
-        obj,
-        &mut scene.materials,
-        vec3!(0.5, 0.0, 1.5),
-        F::from_f32(1.0 / 5.0),
-    )?;
+    crate::format::obj::load(obj, scene)?;
 
     let plane1 = Plane::new(
         vec3!(0.0, 0.0, 20.0),
@@ -286,7 +281,7 @@ where
 
     // scene.add_object(tri1);
     // scene.add_object(tri2);
-    scene.add_object(trimesh1);
+    /* scene.add_object(trimesh1); */
     // scene.add_object(trimesh2);
     // scene.add_object(trimesh3);
 

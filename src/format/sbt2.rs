@@ -663,7 +663,6 @@ where
         let mut normals = vec![];
         let mut texture_uvs = vec![];
         let mut materials = vec![];
-        let mut pos_xfrm = Matrix4::identity();
 
         for normal in dict.tuple("normals").into_iter().flatten() {
             normals.push(normal.tuple()?.vector3()?);
@@ -677,25 +676,27 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            tris = crate::format::obj::load(obj, &mut self.scene.materials, Vector::ZERO, F::ONE)?;
-        } else {
-            for point in dict.tuple("points")? {
-                points.push(point.tuple()?.vector3()?);
-            }
-            let center = points.iter().sum::<Vector<F>>() / F::from_usize(points.len());
-            pos_xfrm = Matrix4::from_translation(center);
-            points.iter_mut().for_each(|p| *p -= center);
-            for point in dict.tuple("faces")? {
-                let tuple = point.tuple()?;
-                if tuple.len() == 4 {
-                    let f = tuple.int4()?;
-                    faces.push([f[0], f[1], f[2]]);
-                    faces.push([f[0], f[2], f[3]]);
-                } else {
-                    faces.push(point.tuple()?.int3()?);
-                }
+            crate::format::obj::load(obj, self.scene)?;
+            return Ok(vec![]);
+        }
+
+        for point in dict.tuple("points")? {
+            points.push(point.tuple()?.vector3()?);
+        }
+        let center = points.iter().sum::<Vector<F>>() / F::from_usize(points.len());
+        let pos_xfrm = Matrix4::from_translation(center);
+        points.iter_mut().for_each(|p| *p -= center);
+        for point in dict.tuple("faces")? {
+            let tuple = point.tuple()?;
+            if tuple.len() == 4 {
+                let f = tuple.int4()?;
+                faces.push([f[0], f[1], f[2]]);
+                faces.push([f[0], f[2], f[3]]);
+            } else {
+                faces.push(point.tuple()?.int3()?);
             }
         }
+
         let mat = self.parse_material_obj(dict);
 
         if normals.is_empty() {
