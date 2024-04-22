@@ -118,15 +118,15 @@ mod tests {
     use test::Bencher;
 
     use super::{Float, Geometry, Ray, Square, Vector, Vectorx};
-    use crate::types::Color;
+    use crate::types::MaterialId;
 
     type F = f64;
 
-    fn square() -> Square<F, Color<F>> {
+    fn square() -> Square<F> {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.5);
-        let sq = Square::new(xfrm, Color::BLACK);
+        let sq = Square::new(xfrm, MaterialId(0));
         black_box(sq)
     }
 
@@ -143,7 +143,7 @@ mod tests {
     fn bench_square_intersect(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, obj: &Square<F, Color<F>>) -> bool,
+        test: fn(ray: &Ray<F>, obj: &Square<F>) -> bool,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -162,10 +162,7 @@ mod tests {
         })
     }
 
-    fn bench_square_intersect_mixed(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Square<F, Color<F>>) -> bool,
-    ) {
+    fn bench_square_intersect_mixed(bench: &mut Bencher, test: fn(&Ray<F>, &Square<F>) -> bool) {
         bench_square_intersect(
             bench,
             |_idx| randdir(),
@@ -177,10 +174,7 @@ mod tests {
         )
     }
 
-    fn bench_square_intersect_never(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Square<F, Color<F>>) -> bool,
-    ) {
+    fn bench_square_intersect_never(bench: &mut Bencher, test: fn(&Ray<F>, &Square<F>) -> bool) {
         bench_square_intersect(
             bench,
             |_idx| {
@@ -195,10 +189,7 @@ mod tests {
         )
     }
 
-    fn bench_square_intersect_always(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Square<F, Color<F>>) -> bool,
-    ) {
+    fn bench_square_intersect_always(bench: &mut Bencher, test: fn(&Ray<F>, &Square<F>) -> bool) {
         bench_square_intersect(
             bench,
             |_idx| {

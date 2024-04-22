@@ -97,15 +97,15 @@ mod tests {
     use test::Bencher;
 
     use super::{Float, Geometry, Ray, Sphere, Vector, Vectorx};
-    use crate::types::Color;
+    use crate::types::MaterialId;
 
     type F = f64;
 
-    fn sphere() -> Sphere<F, Color<F>> {
+    fn sphere() -> Sphere<F> {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.3);
-        let sq = Sphere::new(xfrm, Color::BLACK);
+        let sq = Sphere::new(xfrm, MaterialId(0));
         black_box(sq)
     }
 
@@ -122,7 +122,7 @@ mod tests {
     fn bench_sphere_intersect(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, obj: &Sphere<F, Color<F>>) -> bool,
+        test: fn(ray: &Ray<F>, obj: &Sphere<F>) -> bool,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -141,10 +141,7 @@ mod tests {
         })
     }
 
-    fn bench_sphere_intersect_mixed(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_mixed(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| randdir(),
@@ -156,10 +153,7 @@ mod tests {
         )
     }
 
-    fn bench_sphere_intersect_never(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_never(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| {
@@ -174,10 +168,7 @@ mod tests {
         )
     }
 
-    fn bench_sphere_intersect_always(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_always(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| {

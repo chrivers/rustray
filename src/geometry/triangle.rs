@@ -184,14 +184,13 @@ mod tests {
     use rand::Rng;
     use test::Bencher;
 
-    use crate::geometry::Triangle;
+    use crate::{geometry::Triangle, types::MaterialId};
 
     use super::{Float, Point, Ray, Vector, Vectorx};
-    use crate::types::Color;
 
     type F = f64;
 
-    fn triangle() -> Triangle<F, Color<F>> {
+    fn triangle() -> Triangle<F> {
         let a = Vector::new(0.0, -1.0, 10.0);
         let b = Vector::new(-1.0, 1.0, 10.0);
         let c = Vector::new(1.0, 1.0, 10.0);
@@ -205,7 +204,7 @@ mod tests {
             Point::ZERO,
             Point::ZERO,
             Point::ZERO,
-            Color::BLACK,
+            MaterialId(0),
         );
         black_box(tri)
     }
@@ -223,7 +222,7 @@ mod tests {
     fn bench_triangle_intersect<T>(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, tri: &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(ray: &Ray<F>, tri: &Triangle<F>) -> Option<T>,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -244,7 +243,7 @@ mod tests {
 
     fn bench_triangle_intersect_mixed<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,
@@ -259,7 +258,7 @@ mod tests {
 
     fn bench_triangle_intersect_never<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,
@@ -277,7 +276,7 @@ mod tests {
 
     fn bench_triangle_intersect_always<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,

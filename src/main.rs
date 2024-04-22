@@ -50,12 +50,12 @@ fn main() -> RResult<()> {
 #[cfg(test)]
 mod test {
     use rustray::demoscene;
-    use rustray::types::TimeSlice;
+    use rustray::scene::BoxScene;
 
     #[test]
     fn test_demoscene() {
         colog::init();
-        let mut time = TimeSlice::new("test");
-        demoscene::construct_demo_scene::<f32>(&mut time, 640, 480).unwrap();
+        let mut scene = BoxScene::empty();
+        demoscene::construct_demo_scene::<f32>(&mut scene).unwrap();
     }
 }
