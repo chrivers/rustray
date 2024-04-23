@@ -66,6 +66,12 @@ impl<const P: u8> ToPrimitive for FP<P> {
     }
 }
 
+impl<const P: u8> Default for FP<P> {
+    fn default() -> Self {
+        Self::ZERO
+    }
+}
+
 impl<const P: u8> Display for FP<P> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.into_f32())
