@@ -107,10 +107,6 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
             };
 
             for poly in &g.polys {
-                if !texture.is_empty() && poly.0[0].1.is_none() {
-                    continue;
-                }
-
                 for n in 1..(poly.0.len() - 1) {
                     let a = Vector::from_f32s(position[poly.0[0].0]) - corner;
                     let b = Vector::from_f32s(position[poly.0[n].0]) - corner;
@@ -128,14 +124,16 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
                         )
                     };
 
-                    let (mut ta, mut tb, mut tc) = if texture.is_empty() {
-                        (Point::ZERO, Point::ZERO, Point::ZERO)
-                    } else {
-                        (
-                            texture[poly.0[0].1.unwrap()].into(),
-                            texture[poly.0[n].1.unwrap()].into(),
-                            texture[poly.0[n + 1].1.unwrap()].into(),
-                        )
+                    let (mut ta, mut tb, mut tc) = {
+                        let tpa = poly.0[0].1;
+                        let tpb = poly.0[n].1;
+                        let tpc = poly.0[n + 1].1;
+                        match (tpa, tpb, tpc) {
+                            (Some(a), Some(b), Some(c)) => {
+                                (texture[a].into(), texture[b].into(), texture[c].into())
+                            }
+                            _ => (Point::ZERO, Point::ZERO, Point::ZERO),
+                        }
                     };
                     ta.y = F::ONE - ta.y;
                     tb.y = F::ONE - tb.y;
