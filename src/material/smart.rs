@@ -33,11 +33,20 @@ where
     SR: Sampler<F, Color<F>>,
 {
     #[must_use]
-    pub const fn new(ior: F, pow: SP, ke: SE, kd: SD, ks: SS, kt: ST, kr: SR) -> Self {
+    pub fn new(ior: F, pow: SP, ke: SE, kd: SD, ks: SS, kt: ST, kr: SR) -> Self {
         Self {
-            phong: Phong::new(ke, kd, ks, pow),
+            phong: Phong::new()
+                .with_ke_map(Some(ke))
+                .with_kd_map(Some(kd))
+                .with_ks_map(Some(ks))
+                .with_pow_map(Some(pow)),
             fresnel: Fresnel::new(ior, kt, kr),
         }
+    }
+
+    #[must_use]
+    pub const fn make(phong: Phong<F, SE, SD, SS, SP>, fresnel: Fresnel<F, F, ST, SR>) -> Self {
+        Self { phong, fresnel }
     }
 
     #[must_use]

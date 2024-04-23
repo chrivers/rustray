@@ -5,31 +5,45 @@ use obj::{Obj, ObjMaterial};
 use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 
 use crate::geometry::{Triangle, TriangleMesh};
-use crate::material::{BoxMaterial, BumpPower, Bumpmap, Phong, Smart};
+use crate::material::{BoxMaterial, BumpPower, Bumpmap, Fresnel, Phong, Smart};
 use crate::sampler::{NormalMap, Sampler, SamplerExt, Texel};
 use crate::scene::BoxScene;
 use crate::types::{Color, Float, Point, RResult, Vector, Vectorx};
 
-fn obj_sampler<F: Float + Texel>(
+fn obj_sampler1<F: Float + Texel>(
     resdir: &Path,
     map: &Option<String>,
-    col: &Option<[f32; 3]>,
-) -> impl Sampler<F, Color<F>> {
-    map.as_ref().map_or_else(
-        || col.map_or(Color::BLACK, Color::from).dynsampler(),
-        |kd| {
-            image::open(resdir.join(kd)).map_or_else(
-                |_| {
-                    warn!("Missing texture [{}]", kd);
-                    Color::WHITE.dynsampler()
-                },
-                |img| {
-                    info!("Loading [{}]", kd);
-                    img.bilinear().dynsampler()
-                },
-            )
-        },
-    )
+) -> Option<impl Sampler<F, F>> {
+    map.as_ref().map(|kd| {
+        image::open(resdir.join(kd)).map_or_else(
+            |_| {
+                warn!("Missing texture [{}]", kd);
+                F::ONE.dynsampler()
+            },
+            |img| {
+                info!("Loading [{}]", kd);
+                img.bilinear().dynsampler()
+            },
+        )
+    })
+}
+
+fn obj_sampler3<F: Float + Texel>(
+    resdir: &Path,
+    map: &Option<String>,
+) -> Option<impl Sampler<F, Color<F>>> {
+    map.as_ref().map(|kd| {
+        image::open(resdir.join(kd)).map_or_else(
+            |_| {
+                warn!("Missing texture [{}]", kd);
+                Color::WHITE.dynsampler()
+            },
+            |img| {
+                info!("Loading [{}]", kd);
+                img.bilinear().dynsampler()
+            },
+        )
+    })
 }
 
 pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<()> {
@@ -58,21 +72,27 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
     for o in &obj.data.objects {
         for g in &o.groups {
             let mat = if let Some(ObjMaterial::Mtl(ref omat)) = g.material {
-                let ni = F::from_f32(omat.ni.unwrap_or(1.0));
-                let ns = F::from_f32(omat.ns.unwrap_or(1.0));
-                let ke = obj_sampler(&obj.path, &omat.map_ke, &omat.ke);
-                let kd = obj_sampler(&obj.path, &omat.map_kd, &omat.kd);
-                let ks = obj_sampler(&obj.path, &omat.map_ks, &omat.ks);
-                let tf = obj_sampler(&obj.path, &None, &omat.tf);
-                /* let kt = obj_sampler(&obj.path, &omat.map_kt, &omat.kt); */
-                /* let kr = obj_sampler(&obj.path, &omat.map_refl, &omat.kr); */
-                /* let ns = obj_sampler(&obj.path, &omat.map_ns, F::from_f32(omat.ns.unwrap_or(1.0)) */
-
-                let smart = Smart::new(ni, ns, ke, kd, ks, tf, Color::BLACK)
+                let phong = Phong::new()
+                    .with_ke(omat.ke.map_or(Color::BLACK, Color::from))
+                    .with_kd(omat.kd.map_or(Color::WHITE, Color::from))
+                    .with_ks(omat.ks.map_or(Color::BLACK, Color::from))
+                    .with_pow(F::from_f32(omat.ns.unwrap_or(8.0)))
+                    .with_ke_map(obj_sampler3(&obj.path, &omat.map_ke))
+                    .with_kd_map(obj_sampler3(&obj.path, &omat.map_kd))
+                    .with_ks_map(obj_sampler3(&obj.path, &omat.map_ks))
+                    .with_pow_map(obj_sampler1(&obj.path, &omat.map_ns))
                     .with_ambient(omat.ka.map_or(Color::BLACK, Into::into));
 
+                let fresnel = Fresnel::new(
+                    F::from_f32(omat.ni.unwrap_or(1.0)),
+                    omat.tf.map_or(Color::BLACK, Color::from),
+                    Color::BLACK,
+                );
+
+                let smart = Smart::make(phong, fresnel);
+
                 let res: BoxMaterial<F> = if omat.map_bump.is_some() {
-                    let bumpmap = NormalMap::new(obj_sampler(&obj.path, &omat.map_bump, &None));
+                    let bumpmap = NormalMap::new(obj_sampler3(&obj.path, &omat.map_bump).unwrap());
                     let bump = Bumpmap::new(BumpPower(F::HALF), bumpmap, smart);
                     Box::new(bump)
                 } else {

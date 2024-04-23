@@ -137,22 +137,20 @@ where
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),
-                Phong::new(
-                    Color::BLACK,
-                    tex0a.bilinear(),
-                    Color::WHITE,
-                    tex0r.bilinear(),
-                ),
+                Phong::new()
+                    .with_ke_map(Some(tex0a.bilinear()))
+                    .with_kd_map(Option::<Color<F>>::None)
+                    .with_ks_map(Option::<Color<F>>::None)
+                    .with_pow_map(Some(tex0r.bilinear())),
             ),
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex1b.bilinear()),
-                Phong::new(
-                    Color::BLACK,
-                    tex1a.bilinear(),
-                    Color::WHITE,
-                    tex1r.bilinear(),
-                ),
+                Phong::new()
+                    .with_ke_map(Some(tex1a.bilinear()))
+                    .with_kd_map(Option::<Color<F>>::None)
+                    .with_ks_map(Option::<Color<F>>::None)
+                    .with_pow_map(Some(tex1r.bilinear())),
             ),
         ),
     )));
@@ -160,12 +158,11 @@ where
     let mat_bmp2 = Bumpmap::new(
         BumpPower(F::HALF),
         NormalMap::new(tex2b.bilinear()),
-        Phong::new(
-            Color::BLACK,
-            tex2a.bilinear(),
-            Color::WHITE,
-            tex2r.bilinear(),
-        ),
+        Phong::new()
+            .with_ke_map(Some(tex2a.bilinear()))
+            .with_kd_map(Option::<Color<F>>::None)
+            .with_ks_map(Option::<Color<F>>::None)
+            .with_pow_map(Some(tex2r.bilinear())),
     );
 
     let obj = Obj::load("models/teapot.obj")?;
