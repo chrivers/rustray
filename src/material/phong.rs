@@ -202,26 +202,31 @@ where
 
         let mut res = false;
         res |= Sampler::ui(&mut self.ambient, ui, "Ambient");
+
         res |= controls::color(ui, &mut self.ke, "Emissive");
         res |= self
             .ke_map
             .as_mut()
             .is_some_and(|m| m.ui(ui, "Emissive map"));
+
         res |= controls::color(ui, &mut self.kd, "Diffuse");
         res |= self
             .kd_map
             .as_mut()
             .is_some_and(|m| m.ui(ui, "Diffuse map"));
+
         res |= controls::color(ui, &mut self.ks, "Specular");
         res |= self
             .ks_map
             .as_mut()
             .is_some_and(|m| m.ui(ui, "Specular map"));
+
         res |= self.pow.ui(ui, "Specular power");
         res |= self
             .pow_map
             .as_mut()
             .is_some_and(|m| m.ui(ui, "Specular power map"));
+
         res
     }
 }
