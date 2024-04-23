@@ -102,7 +102,7 @@ where
 
             res += (lixel.color * diff_color) * lambert;
 
-            if spec_color.is_zero() {
+            if spec_color.is_zero() || spec_pow.is_zero() {
                 continue;
             }
 
