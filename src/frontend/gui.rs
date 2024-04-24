@@ -3,8 +3,8 @@ use itertools::Itertools;
 use obj::Obj;
 
 use std::{
+    ffi::OsStr,
     io::BufReader,
-    os::unix::ffi::OsStrExt,
     path::{Path, PathBuf},
     sync::Arc,
     time::Duration,
@@ -500,35 +500,39 @@ where
     fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
         let resdir = path
             .parent()
-            .ok_or(Error::ParseError("Invalid filename".into()))?;
+            .ok_or(Error::InvalidFilename(path.into()))?;
 
         let name = path
             .to_str()
-            .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
+            .ok_or(Error::InvalidFilename(path.into()))?;
 
-        match path.extension().map(OsStrExt::as_bytes) {
-            Some(b"ray") => {
+        match path
+            .extension()
+            .and_then(OsStr::to_str)
+            .ok_or(Error::InvalidFilename(path.into()))?
+            .to_lowercase()
+            .as_str()
+        {
+            "ray" => {
                 let data = std::fs::read_to_string(path)?;
                 let p = SbtParser2::parse(SbtRule::program, &data)
                     .map_err(|err| err.with_path(name))?;
                 let p = SbtParser2::ast(p)?;
                 SbtBuilder::new(resdir, scene).build(p)?;
             }
-            Some(b"obj") => {
+            "obj" => {
                 let obj = Obj::load(path)?;
                 crate::format::obj::load(obj, scene)?;
                 scene.add_camera_if_missing()?;
                 scene.add_light_if_missing()?;
             }
-            Some(b"ply") => {
+            "ply" => {
                 let mut reader = BufReader::new(std::fs::File::open(path)?);
                 crate::format::ply::PlyParser::parse_file(&mut reader, scene)?;
                 scene.add_camera_if_missing()?;
                 scene.add_light_if_missing()?;
             }
-            other => {
-                error!("Unknown extension: {other:?}");
-            }
+            other => Err(Error::UnknownFileExtension(other.into()))?,
         }
 
         Ok(())
