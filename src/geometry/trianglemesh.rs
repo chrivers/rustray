@@ -10,9 +10,7 @@ use crate::types::Camera;
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
 use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{
-    BvhExt, Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx, RF,
-};
+use crate::types::{BvhExt, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx, RF};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float> {
@@ -66,14 +64,7 @@ impl<F: Float> Geometry<F> for TriangleMesh<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         if ray.flags.contains(RF::StopAtGroup) {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
-            return Some(Maxel::new(
-                center,
-                -ray.dir,
-                ray.lvl,
-                self,
-                MaterialId::NULL,
-                ray.flags,
-            ));
+            return Some(ray.synthetic_hit(center, self));
         }
 
         let r = ray.xfrm_inv(&self.xfrm).enter_group()?;

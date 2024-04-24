@@ -53,6 +53,17 @@ impl<'a, F: Float> Ray<F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags)
     }
 
+    pub fn synthetic_hit<G: Geometry<F>>(self, center: Vector<F>, obj: &'a G) -> Maxel<'a, F> {
+        Maxel::new(
+            center,
+            -self.dir,
+            self.lvl,
+            obj,
+            MaterialId::NULL,
+            self.flags,
+        )
+    }
+
     pub fn enter_group(self) -> Option<Self> {
         if self.flags.contains(RF::StopAtGroup) {
             None

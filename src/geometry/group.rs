@@ -11,7 +11,7 @@ use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
 use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{
-    BvhExt, Float, HasTransform, MaterialId, Maxel, RResult, Ray, Transform, Vector, Vectorx, RF,
+    BvhExt, Float, HasTransform, Maxel, RResult, Ray, Transform, Vector, Vectorx, RF,
 };
 
 #[derive(Debug)]
@@ -59,19 +59,12 @@ impl<F: Float> FiniteGeometry<F> for Group<F> {
 
 impl<F: Float> Geometry<F> for Group<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        let ray = ray.xfrm_inv(&self.xfrm);
-
         if ray.flags.contains(RF::StopAtGroup) {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
-            return Some(Maxel::new(
-                center,
-                -ray.dir,
-                ray.lvl,
-                self,
-                MaterialId::NULL,
-                ray.flags,
-            ));
+            return Some(ray.synthetic_hit(center, self));
         }
+
+        let ray = ray.xfrm_inv(&self.xfrm);
 
         let mut dist = F::max_value();
 
