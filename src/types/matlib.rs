@@ -7,6 +7,10 @@ use crate::types::Float;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct MaterialId(pub u32);
 
+impl MaterialId {
+    pub const NULL: Self = Self(0);
+}
+
 pub struct MaterialLib<F: Float> {
     pub mats: HashMap<MaterialId, BoxMaterial<F>>,
     default: Option<MaterialId>,

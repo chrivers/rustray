@@ -199,7 +199,7 @@ mod test {
 
     #[test]
     fn test_cylinder1() {
-        let c = Cylinder::new(Matrix4::from_scale(2.0), false, MaterialId(0));
+        let c = Cylinder::new(Matrix4::from_scale(2.0), false, MaterialId::NULL);
 
         let r0 = Ray::new(Vector::UNIT_X * 4.0, -Vector::UNIT_X);
         let h0 = c.intersect(&r0).unwrap();
@@ -233,7 +233,7 @@ mod test {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.3);
-        let sq = Cylinder::new(xfrm, true, MaterialId(0));
+        let sq = Cylinder::new(xfrm, true, MaterialId::NULL);
         black_box(sq)
     }
 

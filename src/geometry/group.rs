@@ -68,7 +68,7 @@ impl<F: Float> Geometry<F> for Group<F> {
                 -ray.dir,
                 ray.lvl,
                 self,
-                MaterialId(0),
+                MaterialId::NULL,
                 ray.flags,
             ));
         }

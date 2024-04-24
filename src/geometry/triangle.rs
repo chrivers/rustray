@@ -204,7 +204,7 @@ mod tests {
             Point::ZERO,
             Point::ZERO,
             Point::ZERO,
-            MaterialId(0),
+            MaterialId::NULL,
         );
         black_box(tri)
     }

@@ -126,7 +126,7 @@ mod tests {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.5);
-        let sq = Square::new(xfrm, MaterialId(0));
+        let sq = Square::new(xfrm, MaterialId::NULL);
         black_box(sq)
     }
 
