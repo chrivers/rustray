@@ -80,7 +80,7 @@ where
         let render_modes = RenderModes {
             default: RenderJob::new(),
             preview: RenderJob::new()
-                .with_mult(5)
+                .with_mult(3)
                 .with_ray_flags(RF::Preview.into()),
             normals: RenderJob::new().with_func_debug_normals(),
         };
