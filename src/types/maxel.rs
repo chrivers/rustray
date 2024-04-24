@@ -9,7 +9,7 @@ pub struct Maxel<'a, F: Float> {
     pub dir: Vector<F>,
     pub obj: &'a dyn Geometry<F>,
     pub mat: MaterialId,
-    nml: Option<Vector<F>>,
+    pub nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
     pub lvl: u16,

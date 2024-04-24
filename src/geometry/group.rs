@@ -72,6 +72,7 @@ impl<F: Float> Geometry<F> for Group<F> {
 
         maxel.pos = self.xfrm.pos(maxel.pos);
         maxel.dir = self.xfrm.dir(maxel.dir);
+        maxel.nml = maxel.nml.map(|nml| self.xfrm.nml(nml));
 
         Some(maxel)
     }
