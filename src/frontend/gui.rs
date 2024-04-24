@@ -115,6 +115,15 @@ where
             .map(func);
     }
 
+    fn delete_current_obj(&mut self, scene: &mut BoxScene<F>) {
+        scene.objects.retain(|obj| obj.get_id() != self.obj);
+        self.obj = None;
+        self.bounding_box.clear();
+
+        scene.recompute_bvh().unwrap();
+        self.engine.submit(&self.render_modes.preview, &self.lock);
+    }
+
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
@@ -370,12 +379,7 @@ where
             });
 
             if ui.icon_button(icon::TRASH, "Delete").clicked() {
-                scene.objects.retain(|obj| obj.get_id() != self.obj);
-                self.obj = None;
-                self.bounding_box.clear();
-
-                scene.recompute_bvh().unwrap();
-                self.engine.submit(&self.render_modes.preview, &self.lock);
+                self.delete_current_obj(scene);
                 ui.close_menu();
             }
 
@@ -633,6 +637,11 @@ where
 
         let lock = Arc::clone(&self.lock);
         let mut scene = lock.write();
+
+        // object control
+        if ctx.input(|i| i.key_pressed(Key::Delete)) {
+            self.delete_current_obj(&mut scene);
+        }
 
         SidePanel::left("Scene controls")
             .resizable(true)
