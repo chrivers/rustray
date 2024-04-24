@@ -175,6 +175,7 @@ macro_rules! geometry_impl_hasmaterial {
 mod cone;
 mod cube;
 mod cylinder;
+mod group;
 mod plane;
 mod sphere;
 mod square;
@@ -184,6 +185,7 @@ mod trianglemesh;
 pub use cone::Cone;
 pub use cube::Cube;
 pub use cylinder::Cylinder;
+pub use group::Group;
 pub use plane::Plane;
 pub use sphere::Sphere;
 pub use square::Square;
