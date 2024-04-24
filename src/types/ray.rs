@@ -1,4 +1,4 @@
-use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
+use cgmath::InnerSpace;
 use flagset::{flags, FlagSet};
 
 use crate::geometry::Geometry;
@@ -59,21 +59,6 @@ impl<'a, F: Float> Ray<F> {
         } else {
             Some(self)
         }
-    }
-
-    #[must_use]
-    pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
-        let inv = xfrm.inverse_transform()?;
-        self.transform(&inv)
-    }
-
-    #[must_use]
-    pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
-        Some(Self {
-            pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
-            dir: xfrm.transform_vector(self.dir),
-            ..*self
-        })
     }
 
     #[must_use]
