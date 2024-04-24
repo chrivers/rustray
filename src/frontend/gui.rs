@@ -502,13 +502,9 @@ where
     }
 
     fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
-        let resdir = path
-            .parent()
-            .ok_or(Error::InvalidFilename(path.into()))?;
+        let resdir = path.parent().ok_or(Error::InvalidFilename(path.into()))?;
 
-        let name = path
-            .to_str()
-            .ok_or(Error::InvalidFilename(path.into()))?;
+        let name = path.to_str().ok_or(Error::InvalidFilename(path.into()))?;
 
         match path
             .extension()
