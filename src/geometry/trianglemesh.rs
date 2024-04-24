@@ -64,36 +64,36 @@ impl<F: Float> FiniteGeometry<F> for TriangleMesh<F> {
 
 impl<F: Float> Geometry<F> for TriangleMesh<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        if !ray.flags.contains(RF::StopAtGroup) {
-            let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
-
-            let maxel = self
-                .bvh
-                .nearest_intersection(&r, &self.tris, &mut F::max_value());
-
-            /* FIXME: We have to transform maxel results backwards through our
-             * xfrm, to avoid results in object space. This breaks the design
-             * idea of maxel, which can calculate information on-demand (but
-             * this would require access to the resulting Transform, which is
-             * not currently available). */
-            maxel.map(|mut mxl| {
-                mxl.st();
-                mxl.uv();
-                mxl.pos = self.xfrm.pos(mxl.pos);
-                mxl.dir = self.xfrm.dir(mxl.dir);
-                mxl.with_normal(self.xfrm.nml(mxl.nml()))
-            })
-        } else {
+        if ray.flags.contains(RF::StopAtGroup) {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
-            Some(Maxel::new(
+            return Some(Maxel::new(
                 center,
                 -ray.dir,
                 ray.lvl,
                 self,
                 MaterialId::NULL,
                 ray.flags,
-            ))
+            ));
         }
+
+        let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
+
+        let maxel = self
+            .bvh
+            .nearest_intersection(&r, &self.tris, &mut F::max_value());
+
+        /* FIXME: We have to transform maxel results backwards through our
+         * xfrm, to avoid results in object space. This breaks the design
+         * idea of maxel, which can calculate information on-demand (but
+         * this would require access to the resulting Transform, which is
+         * not currently available). */
+        maxel.map(|mut mxl| {
+            mxl.st();
+            mxl.uv();
+            mxl.pos = self.xfrm.pos(mxl.pos);
+            mxl.dir = self.xfrm.dir(mxl.dir);
+            mxl.with_normal(self.xfrm.nml(mxl.nml()))
+        })
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {
