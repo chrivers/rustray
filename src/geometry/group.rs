@@ -117,6 +117,10 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
         res
     }
 
+    pub fn nearest_intersection(&self, ray: &Ray<F>, dist: &mut F) -> Option<Maxel<F>> {
+        self.bvh.nearest_intersection(ray, &self.geo, dist)
+    }
+
     pub fn recompute_bvh(&mut self) -> RResult<()> {
         let aabbs = self
             .geo
