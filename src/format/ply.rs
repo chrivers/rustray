@@ -136,7 +136,7 @@ impl<F: Float + Texel> PlyParser<F> {
         }
 
         let mesh = TriangleMesh::new(tris, Matrix4::identity());
-        scene.objects.push(Box::new(mesh));
+        scene.add_object(mesh);
         scene.recompute_bvh()
     }
 }

@@ -916,8 +916,9 @@ where
 
                 (name, value) => {
                     let block = SbtValue::Block(Box::new(SbtBlock { name, value }));
-                    let mut objs = self.build_geometry(&block, Matrix4::identity())?;
-                    self.scene.objects.append(&mut objs);
+                    for obj in self.build_geometry(&block, Matrix4::identity())? {
+                        self.scene.add_object(obj);
+                    }
                 }
             }
         }

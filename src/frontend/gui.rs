@@ -106,7 +106,8 @@ where
 
     fn find_obj<'a>(&self, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
         scene
-            .objects
+            .root
+            .geo
             .iter_mut()
             .find(|obj| obj.get_id() == self.obj)
             .map(|m| m as &mut _)
@@ -114,14 +115,15 @@ where
 
     fn change_obj(&self, scene: &mut BoxScene<F>, func: impl Fn(&mut Box<dyn FiniteGeometry<F>>)) {
         scene
-            .objects
+            .root
+            .geo
             .iter_mut()
             .find(|obj| obj.get_id() == self.obj)
             .map(func);
     }
 
     fn delete_current_obj(&mut self, scene: &mut BoxScene<F>) {
-        scene.objects.retain(|obj| obj.get_id() != self.obj);
+        scene.root.geo.retain(|obj| obj.get_id() != self.obj);
         self.obj = None;
         self.bounding_box.clear();
 
@@ -176,7 +178,7 @@ where
             });
 
             controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| {
-                scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
+                scene.root.geo.iter_mut().enumerate().for_each(|(i, obj)| {
                     let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
                     let obj_id = obj.get_id();
                     let proplist = controls::CustomCollapsible::new(name.clone());
@@ -285,7 +287,7 @@ where
                     .icon_button($name::<F>::ICON, stringify!($name))
                     .clicked()
                 {
-                    scene.objects.push(Box::new($code));
+                    scene.root.geo.push(Box::new($code));
                     res = true;
                 }
             };

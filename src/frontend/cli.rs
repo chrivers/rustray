@@ -131,7 +131,7 @@ where
     info!(
         "Loaded scene\ncams={}\nobjs={}\nlights={}",
         scene.cameras.len(),
-        scene.objects.len(),
+        scene.root.geo.len(),
         scene.lights.len()
     );
 

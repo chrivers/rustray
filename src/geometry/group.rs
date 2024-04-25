@@ -15,15 +15,15 @@ use crate::types::{
 };
 
 #[derive(Debug)]
-pub struct Group<F: Float> {
+pub struct Group<F: Float, G: FiniteGeometry<F>> {
     xfrm: Transform<F>,
-    pub geo: Vec<Box<dyn FiniteGeometry<F>>>,
-    bvh: Bvh,
+    pub geo: Vec<G>,
+    pub bvh: Bvh,
     aabb: Aabb,
 }
 
 #[cfg(feature = "gui")]
-impl<F: Float> Interactive<F> for Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         for g in &mut self.geo {
@@ -43,11 +43,32 @@ impl<F: Float> Interactive<F> for Group<F> {
     }
 }
 
-geometry_impl_sceneobject!(Group<F>, "Group");
-geometry_impl_hastransform!(Group<F>);
-aabb_impl_fm!(Group<F>);
+impl<F: Float, G: FiniteGeometry<F>> SceneObject<F> for Group<F, G> {
+    crate::sceneobject_impl_body!("Group", Self::ICON);
+}
 
-impl<F: Float> FiniteGeometry<F> for Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> HasTransform<F> for Group<F, G> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, G: FiniteGeometry<F>> rtbvh::Primitive for Group<F, G> {
+    fn center(&self) -> Vec3 {
+        self.aabb.center()
+    }
+
+    fn aabb(&self) -> Aabb {
+        self.aabb
+    }
+}
+
+impl<F: Float, G: FiniteGeometry<F>> FiniteGeometry<F> for Group<F, G> {
     fn recompute_aabb(&mut self) {
         let bounds = self.bvh.bounds();
 
@@ -58,7 +79,7 @@ impl<F: Float> FiniteGeometry<F> for Group<F> {
     }
 }
 
-impl<F: Float> Geometry<F> for Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Geometry<F> for Group<F, G> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         if ray.flags.contains(RF::StopAtGroup) {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
@@ -79,10 +100,10 @@ impl<F: Float> Geometry<F> for Group<F> {
     }
 }
 
-impl<F: Float> Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
     const ICON: &'static str = egui_phosphor::regular::POLYGON;
 
-    pub fn new(geo: Vec<Box<dyn FiniteGeometry<F>>>, xfrm: Matrix4<F>) -> Self {
+    pub fn new(geo: Vec<G>, xfrm: Matrix4<F>) -> Self {
         debug!("building bvh for {} geometries..", geo.len());
 
         let mut res = Self {

@@ -1,15 +1,14 @@
-use crate::geometry::{FiniteGeometry, Geometry};
+use crate::geometry::{FiniteGeometry, Geometry, Group};
 use crate::light::{DirectionalLight, Light, Lixel};
 use crate::types::{
     BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib, Vector, Vectorx,
 };
 use crate::vec3;
 
-use cgmath::{InnerSpace, MetricSpace};
+use cgmath::{InnerSpace, Matrix4, MetricSpace, SquareMatrix};
 
-use rtbvh::{Bounds, Builder, Bvh};
+use rtbvh::Bounds;
 use std::fmt::Debug;
-use std::num::NonZeroUsize;
 
 pub trait SceneObject<F: Float> {
     fn get_name(&self) -> &str;
@@ -68,12 +67,11 @@ pub trait RayTracer<F: Float> {
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub cameras: Vec<Camera<F>>,
-    pub objects: Vec<B>,
+    pub root: Group<F, B>,
     pub geometry: Vec<G>,
     pub textures: TextureLib,
     pub materials: MaterialLib<F>,
     pub lights: Vec<L>,
-    pub bvh: Bvh,
     pub ambient: Color<F>,
     pub background: Color<F>,
 }
@@ -95,17 +93,16 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
     ) -> RResult<Self> {
         let mut res = Self {
             cameras,
-            objects,
+            root: Group::new(objects, Matrix4::identity()),
             geometry,
             textures: TextureLib::new(),
             materials,
             lights,
-            bvh: Bvh::default(),
             background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
             ambient: Color::BLACK,
         };
 
-        res.recompute_bvh()?;
+        res.root.recompute_bvh()?;
 
         Ok(res)
     }
@@ -114,12 +111,11 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
     pub fn empty() -> Self {
         Self {
             cameras: vec![],
-            objects: vec![],
+            root: Group::new(vec![], Matrix4::identity()),
             geometry: vec![],
             textures: TextureLib::new(),
             materials: MaterialLib::new(),
             lights: vec![],
-            bvh: Bvh::default(),
             ambient: Color::BLACK,
             background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
         }
@@ -127,34 +123,15 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
 
     pub fn clear(&mut self) {
         self.cameras.clear();
-        self.objects.clear();
+        self.root.geo.clear();
         self.geometry.clear();
         self.textures.texs.clear();
         self.materials.mats.clear();
         self.lights.clear();
-        self.bvh = Bvh::default();
     }
 
     pub fn recompute_bvh(&mut self) -> RResult<()> {
-        let aabbs = self
-            .objects
-            .iter()
-            .map(rtbvh::Primitive::aabb)
-            .collect::<Vec<rtbvh::Aabb>>();
-
-        if aabbs.is_empty() {
-            self.bvh = Bvh::default();
-        } else {
-            let builder = Builder {
-                aabbs: Some(aabbs.as_slice()),
-                primitives: self.objects.as_slice(),
-                primitives_per_leaf: NonZeroUsize::new(16),
-            };
-
-            self.bvh = builder.construct_binned_sah()?;
-        }
-
-        Ok(())
+        self.root.recompute_bvh()
     }
 
     pub fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -171,8 +148,9 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             }
         }
 
-        self.bvh
-            .nearest_intersection(ray, &self.objects, &mut dist)
+        self.root
+            .bvh
+            .nearest_intersection(ray, &self.root.geo, &mut dist)
             .or(hit)
     }
 
@@ -207,7 +185,7 @@ impl<F: Float> BoxScene<F> {
     }
 
     pub fn add_object(&mut self, geometry: impl FiniteGeometry<F> + 'static) {
-        self.objects.push(Box::new(geometry));
+        self.root.geo.push(Box::new(geometry));
     }
 
     pub fn add_camera_if_missing(&mut self) -> RResult<()> {
@@ -217,7 +195,7 @@ impl<F: Float> BoxScene<F> {
 
         self.recompute_bvh()?;
 
-        let bb = self.bvh.bounds();
+        let bb = self.root.bvh.bounds();
 
         let sz: Vector<F> = Vector::from_vec3(bb.lengths());
         let look: Vector<F> = Vector::from_vec3(bb.center());
