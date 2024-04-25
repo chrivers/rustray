@@ -18,7 +18,7 @@ use crate::types::{
 pub struct Group<F: Float, G: FiniteGeometry<F>> {
     xfrm: Transform<F>,
     geo: Vec<G>,
-    pub bvh: Bvh,
+    bvh: Bvh,
     aabb: Aabb,
 }
 

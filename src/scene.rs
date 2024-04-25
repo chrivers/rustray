@@ -7,7 +7,7 @@ use crate::vec3;
 
 use cgmath::{InnerSpace, Matrix4, MetricSpace, SquareMatrix};
 
-use rtbvh::Bounds;
+use rtbvh::Primitive;
 use std::fmt::Debug;
 
 pub trait SceneObject<F: Float> {
@@ -192,7 +192,7 @@ impl<F: Float> BoxScene<F> {
 
         self.recompute_bvh()?;
 
-        let bb = self.root.bvh.bounds();
+        let bb = self.root.aabb();
 
         let sz: Vector<F> = Vector::from_vec3(bb.lengths());
         let look: Vector<F> = Vector::from_vec3(bb.center());
