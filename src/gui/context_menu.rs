@@ -1,6 +1,7 @@
-use cgmath::Deg;
+use cgmath::{Deg, Matrix4, SquareMatrix};
 
 use crate::{
+    geometry::{Cone, Cube, Cylinder, Sphere, Square},
     gui::IconButton,
     light::{AreaLight, Attenuation, DirectionalLight, PointLight, SpotLight},
     scene::BoxScene,
@@ -61,6 +62,55 @@ where
             F::from_u32(10),
             F::from_u32(10),
         )
+    });
+
+    res
+}
+
+pub fn add_geometry<F>(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool
+where
+    F: Float,
+    rand::distributions::Standard: rand::distributions::Distribution<F>,
+{
+    let mut res = false;
+
+    macro_rules! add_geometry_option {
+        ($name:ident, $code:block) => {
+            if ui
+                .icon_button($name::<F>::ICON, stringify!($name))
+                .clicked()
+            {
+                scene.root.add_object(Box::new($code));
+                res = true;
+            }
+        };
+    }
+
+    add_geometry_option!(Cube, {
+        Cube::new(Matrix4::identity(), scene.materials.default())
+    });
+
+    add_geometry_option!(Cone, {
+        Cone::new(
+            F::ONE,
+            F::ZERO,
+            F::ONE,
+            true,
+            Matrix4::identity(),
+            scene.materials.default(),
+        )
+    });
+
+    add_geometry_option!(Cylinder, {
+        Cylinder::new(Matrix4::identity(), true, scene.materials.default())
+    });
+
+    add_geometry_option!(Sphere, {
+        Sphere::place(Vector::ZERO, F::ONE, scene.materials.default())
+    });
+
+    add_geometry_option!(Square, {
+        Square::new(Matrix4::identity(), scene.materials.default())
     });
 
     res

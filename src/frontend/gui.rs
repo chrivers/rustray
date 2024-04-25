@@ -1,4 +1,3 @@
-use cgmath::{Matrix4, SquareMatrix};
 use itertools::Itertools;
 use obj::Obj;
 
@@ -13,8 +12,9 @@ use std::{
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
+    geometry::{FiniteGeometry, Geometry},
     gui::{
+        context_menu,
         controls::{self, Canvas},
         gizmo,
         visualtrace::VisualTraceWidget,
@@ -23,7 +23,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
-    types::{Error, Float, Point, RResult, Vector, Vectorx, RF},
+    types::{Error, Float, Point, RResult, RF},
 };
 
 use parking_lot::RwLock;
@@ -278,51 +278,6 @@ where
         });
     }
 
-    fn context_menu_add_geometry(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
-        let mut res = false;
-
-        macro_rules! add_geometry_option {
-            ($name:ident, $code:block) => {
-                if ui
-                    .icon_button($name::<F>::ICON, stringify!($name))
-                    .clicked()
-                {
-                    scene.root.add_object(Box::new($code));
-                    res = true;
-                }
-            };
-        }
-
-        add_geometry_option!(Cube, {
-            Cube::new(Matrix4::identity(), scene.materials.default())
-        });
-
-        add_geometry_option!(Cone, {
-            Cone::new(
-                F::ONE,
-                F::ZERO,
-                F::ONE,
-                true,
-                Matrix4::identity(),
-                scene.materials.default(),
-            )
-        });
-
-        add_geometry_option!(Cylinder, {
-            Cylinder::new(Matrix4::identity(), true, scene.materials.default())
-        });
-
-        add_geometry_option!(Sphere, {
-            Sphere::place(Vector::ZERO, F::ONE, scene.materials.default())
-        });
-
-        add_geometry_option!(Square, {
-            Square::new(Matrix4::identity(), scene.materials.default())
-        });
-
-        res
-    }
-
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
         if let Some(obj) = self.obj {
             ui.horizontal(|ui| {
@@ -362,7 +317,7 @@ where
         }
 
         ui.icon_menu_button(icon::PLUS_SQUARE, "Add geometry", |ui| {
-            if Self::context_menu_add_geometry(ui, scene) {
+            if context_menu::add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
@@ -370,7 +325,7 @@ where
         });
 
         ui.icon_menu_button(icon::PLUS_CIRCLE, "Add light", |ui| {
-            if crate::gui::context_menu::add_light(ui, scene) {
+            if context_menu::add_light(ui, scene) {
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
