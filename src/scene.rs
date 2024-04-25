@@ -185,7 +185,7 @@ impl<F: Float> BoxScene<F> {
     }
 
     pub fn add_object(&mut self, geometry: impl FiniteGeometry<F> + 'static) {
-        self.root.geo.push(Box::new(geometry));
+        self.root.add_object(Box::new(geometry));
     }
 
     pub fn add_camera_if_missing(&mut self) -> RResult<()> {

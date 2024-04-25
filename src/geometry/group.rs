@@ -156,4 +156,8 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
     pub fn is_empty(&self) -> bool {
         self.geo.is_empty()
     }
+
+    pub fn add_object(&mut self, geometry: G) {
+        self.geo.push(geometry);
+    }
 }
