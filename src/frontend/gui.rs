@@ -287,7 +287,7 @@ where
                     .icon_button($name::<F>::ICON, stringify!($name))
                     .clicked()
                 {
-                    scene.root.geo.push(Box::new($code));
+                    scene.root.add_object(Box::new($code));
                     res = true;
                 }
             };
