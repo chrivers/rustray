@@ -1,12 +1,10 @@
 use std::cell::RefCell;
 use std::fmt::{self, Debug};
 
-use cgmath::MetricSpace;
-
 use crate::light::Lixel;
 use crate::material::Material;
 use crate::scene::{BoxScene, RayTracer};
-use crate::types::{Color, Float, Maxel, Ray};
+use crate::types::{BvhExt, Color, Float, Maxel, Ray};
 
 #[derive(Debug)]
 pub struct Step<'a, F: Float> {
@@ -52,11 +50,6 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
         let pos = maxel.pos + maxel.nml() * F::BIAS2;
         let hitray = maxel.ray(pos, lixel.dir);
 
-        let mut best_length = lixel.len2;
-        let mut best_color = None;
-
-        let mut r = hitray.into();
-
         let mut step = Step {
             ray: hitray,
             maxel: None,
@@ -64,29 +57,24 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
             color: None,
         };
 
-        #[allow(clippy::significant_drop_in_scrutinee)]
-        for (curobj, _ray) in self
-            .scene
-            .root
-            .bvh
-            .traverse_iter(&mut r, &self.scene.root.geo)
-        {
-            if let Some(mut curhit) = curobj.intersect(&hitray) {
-                let cur_length = maxel.pos.distance2(curhit.pos);
-                if cur_length > F::BIAS2 && cur_length < best_length {
-                    let mat = &self.scene.materials.mats[&maxel.mat];
-                    let color = mat.shadow(&mut curhit, self, lixel);
-                    best_color = Some(color);
-                    best_length = cur_length;
+        let mut len2 = lixel.len2;
 
-                    step.color = best_color;
-                    step.maxel = Some(curhit);
-                }
-            }
-        }
+        if let Some(mut maxel) =
+            self.scene
+                .root
+                .bvh
+                .nearest_intersection(&hitray, &self.scene.root.geo, &mut len2)
+        {
+            let mat = &self.scene.materials.mats[&maxel.mat];
+            step.color = Some(mat.shadow(&mut maxel, self, lixel));
+            step.maxel = Some(maxel);
+        };
+
+        let res = step.color;
+
         self.steps.borrow_mut().push(step);
 
-        best_color
+        res
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>> {
