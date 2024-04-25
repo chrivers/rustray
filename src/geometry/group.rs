@@ -142,4 +142,12 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
 
         Ok(())
     }
+
+    pub fn len(&self) -> usize {
+        self.geo.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.geo.is_empty()
+    }
 }
