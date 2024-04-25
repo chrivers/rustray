@@ -51,18 +51,21 @@ impl<F: Float> Geometry<F> for Sphere<F> {
         let r = ray.xfrm_inv(&self.xfrm);
 
         let result = r.intersect_unit_sphere()?;
-        let normal = r.extend(result);
-        let uv = normal.polar_uv();
+        let intersect = r.extend(result);
 
-        Some(
-            ray.hit_at(result, self, self.mat)
-                .with_normal(self.xfrm.nml(normal))
-                .with_uv(uv.into()),
-        )
+        Some(ray.hit_at(intersect, result, self, self.mat))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {
         Some(self)
+    }
+
+    fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F> {
+        self.xfrm.nml(maxel.hit)
+    }
+
+    fn uv(&self, maxel: &mut Maxel<F>) -> crate::types::Point<F> {
+        maxel.hit.polar_uv().into()
     }
 }
 

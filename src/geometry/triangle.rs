@@ -106,8 +106,8 @@ impl<F: Float> Triangle<F> {
 
 impl<F: Float> Geometry<F> for Triangle<F> {
     fn st(&self, hit: &mut Maxel<F>) -> Point<F> {
-        let c1 = self.edge1.cross(hit.pos - self.b);
-        let c2 = self.edge2.cross(hit.pos - self.c);
+        let c1 = self.edge1.cross(hit.hit - self.b);
+        let c2 = self.edge2.cross(hit.hit - self.c);
         let s = c2.magnitude() / self.area2;
         let t = c1.magnitude() / self.area2;
 
@@ -126,7 +126,7 @@ impl<F: Float> Geometry<F> for Triangle<F> {
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let t = ray.intersect_triangle4(&self.edge1, &self.edge2, &self.a)?;
-        Some(ray.hit_at(t, self, self.mat))
+        Some(ray.hit_at(ray.extend(t), t, self, self.mat))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {

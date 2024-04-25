@@ -49,12 +49,27 @@ impl<'a, F: Float> Ray<F> {
         self.pos + self.dir * scale
     }
 
-    pub fn hit_at(self, ext: F, obj: &'a dyn Geometry<F>, mat: MaterialId) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags)
+    pub fn hit_at(
+        self,
+        hit: Vector<F>,
+        ext: F,
+        obj: &'a dyn Geometry<F>,
+        mat: MaterialId,
+    ) -> Maxel<'a, F> {
+        Maxel::new(
+            hit,
+            self.extend(ext),
+            self.dir,
+            self.lvl,
+            obj,
+            mat,
+            self.flags,
+        )
     }
 
     pub fn synthetic_hit<G: Geometry<F>>(self, center: Vector<F>, obj: &'a G) -> Maxel<'a, F> {
         Maxel::new(
+            Vector::ZERO,
             center,
             -self.dir,
             self.lvl,

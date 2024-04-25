@@ -104,7 +104,7 @@ impl<F: Float> Geometry<F> for Cube<F> {
         let uv = point!(F::HALF - isec[min], F::HALF - isec[max]);
 
         Some(
-            ray.hit_at(best_t, self, self.mat)
+            ray.hit_at(r.extend(best_t), best_t, self, self.mat)
                 .with_normal(self.xfrm.nml(normal))
                 .with_uv(uv),
         )

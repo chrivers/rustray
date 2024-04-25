@@ -5,6 +5,8 @@ use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Transform, Vector, V
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
+    /// Intersection point in object space
+    pub hit: Vector<F>,
     /// Intersection point in world space
     pub pos: Vector<F>,
     /// Intersection direction
@@ -43,6 +45,7 @@ impl<'a, F: Float> Debug for Maxel<'a, F> {
 /* Maxel */
 impl<'a, F: Float> Maxel<'a, F> {
     pub fn new(
+        hit: Vector<F>,
         pos: Vector<F>,
         dir: Vector<F>,
         lvl: u16,
@@ -51,6 +54,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         flags: RayFlags,
     ) -> Self {
         Maxel {
+            hit,
             pos,
             dir,
             lvl,

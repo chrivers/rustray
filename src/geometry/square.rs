@@ -82,7 +82,7 @@ impl<F: Float> Geometry<F> for Square<F> {
         };
 
         Some(
-            ray.hit_at(t, self, self.mat)
+            ray.hit_at(r.extend(t), t, self, self.mat)
                 .with_normal(self.xfrm.nml(normal))
                 .with_uv(point!(p.x, p.y)),
         )
