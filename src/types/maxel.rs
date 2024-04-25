@@ -5,14 +5,23 @@ use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Vector, Vectorx, RF}
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
+    /// Intersection point in world space
     pub pos: Vector<F>,
+    /// Intersection direction
     pub dir: Vector<F>,
+    /// Intersected object
     pub obj: &'a dyn Geometry<F>,
+    /// Material id at intersection
     pub mat: MaterialId,
+    /// Normal at intersection
     pub nml: Option<Vector<F>>,
+    /// Texture (u, v) coordinates at intersection
     uv: Option<Point<F>>,
+    /// Object (s, t) coordinates at intersection
     st: Option<Point<F>>,
+    /// Ray nesting level
     pub lvl: u16,
+    /// Ray flags from intersecting ray
     pub flags: RayFlags,
 }
 
