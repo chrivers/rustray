@@ -1,5 +1,6 @@
 use egui::{InnerResponse, Response, Ui};
 
+pub mod context_menu;
 pub mod controls;
 pub mod gizmo;
 pub mod visualtrace;
