@@ -117,6 +117,12 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
         res
     }
 
+    pub fn clear(&mut self) {
+        self.bvh = Bvh::default();
+        self.aabb = Aabb::empty();
+        self.geo.clear();
+    }
+
     pub fn nearest_intersection(&self, ray: &Ray<F>, dist: &mut F) -> Option<Maxel<F>> {
         self.bvh.nearest_intersection(ray, &self.geo, dist)
     }

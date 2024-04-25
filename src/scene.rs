@@ -123,7 +123,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
 
     pub fn clear(&mut self) {
         self.cameras.clear();
-        self.root.geo.clear();
+        self.root.clear();
         self.geometry.clear();
         self.textures.texs.clear();
         self.materials.mats.clear();
