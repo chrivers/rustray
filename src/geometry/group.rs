@@ -163,6 +163,8 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
 
     pub fn add_object(&mut self, geometry: G) {
         self.geo.push(geometry);
+        let _ = self.recompute_bvh();
+        self.recompute_aabb();
     }
 
     pub fn del_object(&mut self, id: usize) {
