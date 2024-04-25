@@ -5,7 +5,7 @@ use crate::light::Lixel;
 use crate::material::Material;
 use crate::scene::{BoxScene, Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
-use crate::types::{BvhExt, Camera, Color, Float, Maxel, Point, Ray};
+use crate::types::{Camera, Color, Float, Maxel, Point, Ray};
 
 pub struct Tracer<'a, F: Float> {
     scene: &'a BoxScene<F>,
@@ -65,15 +65,13 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
             return None;
         }
 
-        let pos = maxel.pos + maxel.nml() * F::BIAS2;
-        let hitray = maxel.ray(pos, lixel.dir);
+        let hitray = maxel.shadow_ray(lixel);
 
         let mut len2 = lixel.len2;
 
         self.scene
             .root
-            .bvh
-            .nearest_intersection(&hitray, &self.scene.root.geo, &mut len2)
+            .nearest_intersection(&hitray, &mut len2)
             .map(|mut maxel| {
                 let mat = &self.scene.materials.mats[&maxel.mat];
                 mat.shadow(&mut maxel, self, lixel)

@@ -4,7 +4,7 @@ use std::fmt::{self, Debug};
 use crate::light::Lixel;
 use crate::material::Material;
 use crate::scene::{BoxScene, RayTracer};
-use crate::types::{BvhExt, Color, Float, Maxel, Ray};
+use crate::types::{Color, Float, Maxel, Ray};
 
 #[derive(Debug)]
 pub struct Step<'a, F: Float> {
@@ -47,8 +47,7 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
             return None;
         }
 
-        let pos = maxel.pos + maxel.nml() * F::BIAS2;
-        let hitray = maxel.ray(pos, lixel.dir);
+        let hitray = maxel.shadow_ray(lixel);
 
         let mut step = Step {
             ray: hitray,
@@ -59,12 +58,7 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
 
         let mut len2 = lixel.len2;
 
-        if let Some(mut maxel) =
-            self.scene
-                .root
-                .bvh
-                .nearest_intersection(&hitray, &self.scene.root.geo, &mut len2)
-        {
+        if let Some(mut maxel) = self.scene.root.nearest_intersection(&hitray, &mut len2) {
             let mat = &self.scene.materials.mats[&maxel.mat];
             step.color = Some(mat.shadow(&mut maxel, self, lixel));
             step.maxel = Some(maxel);
