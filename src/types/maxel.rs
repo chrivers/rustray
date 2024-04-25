@@ -1,7 +1,7 @@
 use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
-use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Vector, Vectorx, RF};
+use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Transform, Vector, Vectorx, RF};
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
@@ -14,7 +14,7 @@ pub struct Maxel<'a, F: Float> {
     /// Material id at intersection
     pub mat: MaterialId,
     /// Normal at intersection
-    pub nml: Option<Vector<F>>,
+    nml: Option<Vector<F>>,
     /// Texture (u, v) coordinates at intersection
     uv: Option<Point<F>>,
     /// Object (s, t) coordinates at intersection
@@ -61,6 +61,14 @@ impl<'a, F: Float> Maxel<'a, F> {
             st: None,
             flags,
         }
+    }
+
+    #[must_use]
+    pub fn xfrm(mut self, xfrm: &Transform<F>) -> Self {
+        self.pos = xfrm.pos(self.pos);
+        self.dir = xfrm.dir(self.dir);
+        self.nml = self.nml.map(|nml| xfrm.nml(nml));
+        self
     }
 
     pub fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {

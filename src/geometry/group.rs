@@ -68,13 +68,9 @@ impl<F: Float> Geometry<F> for Group<F> {
 
         let mut dist = F::max_value();
 
-        let mut maxel = self.bvh.nearest_intersection(&ray, &self.geo, &mut dist)?;
-
-        maxel.pos = self.xfrm.pos(maxel.pos);
-        maxel.dir = self.xfrm.dir(maxel.dir);
-        maxel.nml = maxel.nml.map(|nml| self.xfrm.nml(nml));
-
-        Some(maxel)
+        self.bvh
+            .nearest_intersection(&ray, &self.geo, &mut dist)
+            .map(|maxel| maxel.xfrm(&self.xfrm))
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {

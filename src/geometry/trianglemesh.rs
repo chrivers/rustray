@@ -67,24 +67,22 @@ impl<F: Float> Geometry<F> for TriangleMesh<F> {
             return Some(ray.synthetic_hit(center, self));
         }
 
-        let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
+        let r = ray.xfrm_inv(&self.xfrm);
 
-        let maxel = self
-            .bvh
-            .nearest_intersection(&r, &self.tris, &mut F::max_value());
+        self.bvh
+            .nearest_intersection(&r, &self.tris, &mut F::max_value())
+            .map(|mut mxl| {
+                /* FIXME: We have to make maxel cache all results here, to avoid results
+                 * in object space. This breaks the design idea of maxel, which can
+                 * calculate information on-demand (but this would require access to the
+                 * resulting Transform, which is not currently available). */
+                mxl.st();
+                mxl.uv();
+                mxl.nml();
 
-        /* FIXME: We have to transform maxel results backwards through our
-         * xfrm, to avoid results in object space. This breaks the design
-         * idea of maxel, which can calculate information on-demand (but
-         * this would require access to the resulting Transform, which is
-         * not currently available). */
-        maxel.map(|mut mxl| {
-            mxl.st();
-            mxl.uv();
-            mxl.pos = self.xfrm.pos(mxl.pos);
-            mxl.dir = self.xfrm.dir(mxl.dir);
-            mxl.with_normal(self.xfrm.nml(mxl.nml()))
-        })
+                /* Transform maxel from object space */
+                mxl.xfrm(&self.xfrm)
+            })
     }
 
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {
