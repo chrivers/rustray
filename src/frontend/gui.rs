@@ -1,13 +1,8 @@
+use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
 use obj::Obj;
 
-use std::{
-    ffi::OsStr,
-    io::BufReader,
-    path::{Path, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+use std::{io::BufReader, sync::Arc, time::Duration};
 
 use crate::{
     engine::{RenderEngine, RenderJob},
@@ -46,7 +41,7 @@ pub struct RenderModes<F: Float> {
 
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
-    paths: Vec<PathBuf>,
+    paths: Vec<Utf8PathBuf>,
     pathindex: usize,
     lock: Arc<RwLock<BoxScene<F>>>,
     obj: Option<usize>,
@@ -64,7 +59,7 @@ where
 {
     /// Called once before the first frame.
     #[must_use]
-    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<PathBuf>) -> Self {
+    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<Utf8PathBuf>) -> Self {
         // load fonts
         let mut fonts = egui::FontDefinitions::default();
         egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
@@ -408,14 +403,11 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
+    fn load_scene_from_file(path: &Utf8Path, scene: &mut BoxScene<F>) -> RResult<()> {
         let resdir = path.parent().ok_or(Error::InvalidFilename(path.into()))?;
-
-        let name = path.to_str().ok_or(Error::InvalidFilename(path.into()))?;
 
         match path
             .extension()
-            .and_then(OsStr::to_str)
             .ok_or(Error::InvalidFilename(path.into()))?
             .to_lowercase()
             .as_str()
@@ -423,7 +415,7 @@ where
             "ray" => {
                 let data = std::fs::read_to_string(path)?;
                 let p = SbtParser2::parse(SbtRule::program, &data)
-                    .map_err(|err| err.with_path(name))?;
+                    .map_err(|err| err.with_path(path.as_str()))?;
                 let p = SbtParser2::ast(p)?;
                 SbtBuilder::new(resdir, scene).build(p)?;
             }
@@ -445,11 +437,11 @@ where
         Ok(())
     }
 
-    fn load_file(&mut self, path: &Path) -> RResult<()> {
+    fn load_file(&mut self, path: &Utf8Path) -> RResult<()> {
         info!("Loading file: {path:?}");
 
         if let Some(parent) = path.parent() {
-            self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
+            self.file_dialog.config_mut().initial_directory = parent.to_path_buf().into();
         }
 
         let mut scene = self.lock.write();
@@ -551,7 +543,7 @@ where
         self.file_dialog.update(ctx);
 
         if let Some(path) = self.file_dialog.take_selected() {
-            self.load_file(&path).unwrap();
+            self.load_file(Utf8Path::from_path(&path).unwrap()).unwrap();
         }
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
@@ -572,7 +564,7 @@ where
     }
 }
 
-pub fn run<F>(paths: Vec<PathBuf>, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(paths: Vec<Utf8PathBuf>, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,

@@ -1,8 +1,7 @@
-use std::path::PathBuf;
-
 #[cfg(not(feature = "gui"))]
 use std::str::FromStr;
 
+use camino::Utf8PathBuf;
 use log::LevelFilter;
 
 use rustray::types::RResult;
@@ -19,10 +18,10 @@ struct Cli {
     height: u32,
 
     #[arg(value_name = "input")]
-    input: Vec<PathBuf>,
+    input: Vec<Utf8PathBuf>,
 
     #[arg(short, long, value_name = "output")]
-    output: Option<PathBuf>,
+    output: Option<Utf8PathBuf>,
 }
 
 fn main() -> RResult<()> {

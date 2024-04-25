@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+use camino::{Utf8Path, Utf8PathBuf};
 #[cfg(not(feature = "rayon"))]
 use indicatif::ProgressIterator;
 
@@ -18,7 +18,7 @@ use crate::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, RayTracer, Scene};
 use crate::tracer::Tracer;
-use crate::types::{Error, Float, RResult, TimeSlice};
+use crate::types::{Float, RResult, TimeSlice};
 
 mod pbar {
     use indicatif::{ProgressBar, ProgressStyle};
@@ -34,16 +34,12 @@ mod pbar {
     }
 }
 
-fn load_scene<F>(time: &mut TimeSlice, path: &Path) -> RResult<BoxScene<F>>
+fn load_scene<F>(time: &mut TimeSlice, path: &Utf8Path) -> RResult<BoxScene<F>>
 where
     F: Float + FromStr + Texel,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
-    let name = path
-        .to_str()
-        .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
-
-    info!("=={:=<60}==", format!("[ {:50} ]", name));
+    info!("=={:=<60}==", format!("[ {:50} ]", path));
     let resdir = path.parent().unwrap();
     let mut file = File::open(path)?;
 
@@ -66,7 +62,7 @@ where
     /* Option 2b: Scene from .ray file (new parser) */
 
     time.set("parse");
-    let p = SbtParser2::parse(Rule2::program, &data).map_err(|err| err.with_path(name))?;
+    let p = SbtParser2::parse(Rule2::program, &data).map_err(|err| err.with_path(path.as_str()))?;
 
     time.set("ast");
     /* SbtParser2::<F>::dump(p.clone())?; */
@@ -119,7 +115,7 @@ fn draw_image<F: Float>(
     img
 }
 
-pub fn run<F>(input: &Path, width: u32, height: u32, output: PathBuf) -> RResult<()>
+pub fn run<F>(input: &Utf8Path, width: u32, height: u32, output: Utf8PathBuf) -> RResult<()>
 where
     F: Float + FromStr + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,

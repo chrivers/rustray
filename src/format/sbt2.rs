@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::path::Path;
 use std::str::FromStr;
 
+use camino::Utf8Path;
 use itertools::Itertools;
 use obj::Obj;
 
@@ -113,8 +113,8 @@ trait SDict<F: Float + Texel> {
     fn get_result(&self, name: &str) -> RResult<&SbtValue<'_, F>>;
     fn float(&self, name: &str) -> RResult<F>;
     fn color(&self, name: &str) -> RResult<Color<F>>;
-    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>>;
-    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>>;
+    fn shinemap(&self, name: &str, resdir: &Utf8Path) -> RResult<DynSampler<F, F>>;
+    fn sampler3(&self, name: &str, resdir: &Utf8Path) -> RResult<DynSampler<F, Color<F>>>;
     fn string(&self, name: &str) -> RResult<&str>;
     fn vector(&self, name: &str) -> RResult<Vector<F>>;
     fn boolean(&self, name: &str) -> RResult<bool>;
@@ -174,7 +174,7 @@ impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
         self.get_result(name)?.tuple()
     }
 
-    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>> {
+    fn shinemap(&self, name: &str, resdir: &Utf8Path) -> RResult<DynSampler<F, F>> {
         let load = |name| {
             info!("{:?}", resdir.join(name));
             Ok(
@@ -194,7 +194,7 @@ impl<'a, F: Float + Texel> SDict<F> for SbtDict<'a, F> {
         }
     }
 
-    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
+    fn sampler3(&self, name: &str, resdir: &Utf8Path) -> RResult<DynSampler<F, Color<F>>> {
         let load = |filename| {
             let file = resdir.join(filename);
             info!("name: {file:?}");
@@ -489,7 +489,7 @@ impl SbtParser2 {
 }
 
 pub struct SbtBuilder<'a, F: Float> {
-    resdir: &'a Path,
+    resdir: &'a Utf8Path,
     version: SbtVersion,
     material: SbtDict<'a, F>,
     scene: &'a mut BoxScene<F>,
@@ -502,7 +502,7 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     #[must_use]
-    pub fn new(resdir: &'a Path, scene: &'a mut BoxScene<F>) -> Self {
+    pub fn new(resdir: &'a Utf8Path, scene: &'a mut BoxScene<F>) -> Self {
         Self {
             resdir,
             version: SbtVersion::Sbt1_0,
