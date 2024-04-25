@@ -27,6 +27,7 @@ impl<F: Float> Interactive<F> for Group<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         for g in &mut self.geo {
+            ui.label(g.get_name());
             res |= g.get_interactive().is_some_and(|i| i.ui(ui));
         }
         res
