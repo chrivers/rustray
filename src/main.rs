@@ -19,7 +19,7 @@ struct Cli {
     height: u32,
 
     #[arg(value_name = "input")]
-    input: PathBuf,
+    input: Vec<PathBuf>,
 
     #[arg(short, long, value_name = "output")]
     output: Option<PathBuf>,

@@ -47,6 +47,8 @@ pub struct RenderModes<F: Float> {
 
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
+    paths: Vec<PathBuf>,
+    pathindex: usize,
     lock: Arc<RwLock<BoxScene<F>>>,
     obj: Option<usize>,
     obj_last: Option<usize>,
@@ -62,7 +64,8 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     /// Called once before the first frame.
-    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, scene: BoxScene<F>) -> Self {
+    #[must_use]
+    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<PathBuf>) -> Self {
         // load fonts
         let mut fonts = egui::FontDefinitions::default();
         egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
@@ -75,7 +78,7 @@ where
         };
         cc.egui_ctx.set_visuals(visuals);
 
-        let lock = Arc::new(RwLock::new(scene));
+        let lock = Arc::new(RwLock::new(BoxScene::empty()));
 
         let render_modes = RenderModes {
             default: RenderJob::new(),
@@ -88,6 +91,8 @@ where
         // construct gui
         Self {
             engine,
+            paths,
+            pathindex: 0,
             lock,
             obj: None,
             obj_last: None,
@@ -547,12 +552,22 @@ where
 
         let mut scene = self.lock.write();
         scene.clear();
-        Self::load_scene_from_file(path, &mut scene)?;
+        if let Err(e) = Self::load_scene_from_file(path, &mut scene) {
+            let _ = scene.add_camera_if_missing();
+            return Err(e);
+        }
         drop(scene);
 
         self.engine.submit(&self.render_modes.default, &self.lock);
 
         Ok(())
+    }
+
+    fn load_index(&mut self, mut index: usize) -> RResult<()> {
+        index %= self.paths.len();
+        self.pathindex = index;
+        let path = self.paths[index].clone();
+        self.load_file(&path)
     }
 }
 
@@ -603,6 +618,14 @@ where
             self.file_dialog.select_file();
         }
 
+        if ctx.input(|i| i.key_pressed(Key::PageDown)) {
+            let _ = self.load_index(self.pathindex + 1);
+        }
+
+        if ctx.input(|i| i.key_pressed(Key::PageUp)) {
+            let _ = self.load_index(self.pathindex - 1);
+        }
+
         // vtracer controls
         if ctx.input(|i| i.key_pressed(Key::D)) {
             self.ray_debugger.toggle();
@@ -647,7 +670,7 @@ where
     }
 }
 
-pub fn run<F>(path: PathBuf, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(paths: Vec<PathBuf>, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
@@ -672,8 +695,8 @@ where
             Box::new({
                 let engine = RenderEngine::new(width, height);
 
-                let mut app = RustRayGui::new(cc, engine, BoxScene::empty());
-                app.load_file(&path).unwrap();
+                let mut app = RustRayGui::new(cc, engine, paths);
+                app.load_index(0).unwrap();
 
                 app
             })
