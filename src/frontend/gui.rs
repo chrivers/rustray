@@ -245,7 +245,7 @@ where
 
             controls::collapsing_group("Cameras", icon::VIDEO_CAMERA).show(ui, |ui| {
                 scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
-                    let name = format!("{} Camera {i}", cam.get_icon());
+                    let name = format!("{} Camera {i}: {}", cam.get_icon(), cam.get_name());
                     controls::property_list(&name, ui, |ui| {
                         if let Some(interactive) = cam.get_interactive() {
                             changed |= interactive.ui(ui);
