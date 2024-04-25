@@ -1,7 +1,7 @@
 use crate::geometry::{FiniteGeometry, Geometry, Group};
 use crate::light::{DirectionalLight, Light, Lixel};
 use crate::types::{
-    BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib, Vector, Vectorx,
+    Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib, Vector, Vectorx,
 };
 use crate::vec3;
 
@@ -148,10 +148,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             }
         }
 
-        self.root
-            .bvh
-            .nearest_intersection(ray, &self.root.geo, &mut dist)
-            .or(hit)
+        self.root.nearest_intersection(ray, &mut dist).or(hit)
     }
 
     pub fn set_ambient(&mut self, ambient: Color<F>) {
