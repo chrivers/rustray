@@ -1,6 +1,7 @@
 use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
+use crate::light::Lixel;
 use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Transform, Vector, Vectorx, RF};
 
 #[derive(Copy, Clone)]
@@ -98,6 +99,11 @@ impl<'a, F: Float> Maxel<'a, F> {
 
     pub fn fresnel(&mut self, ior: F) -> F {
         self.dir.fresnel(&self.nml(), ior)
+    }
+
+    pub fn shadow_ray(&mut self, lixel: &Lixel<F>) -> Ray<F> {
+        let pos = self.pos + self.nml() * F::BIAS2;
+        self.ray(pos, lixel.dir)
     }
 
     #[must_use]
