@@ -17,7 +17,7 @@ use crate::types::{
 #[derive(Debug)]
 pub struct Group<F: Float, G: FiniteGeometry<F>> {
     xfrm: Transform<F>,
-    pub geo: Vec<G>,
+    geo: Vec<G>,
     pub bvh: Bvh,
     aabb: Aabb,
 }
@@ -123,6 +123,10 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
         self.geo.clear();
     }
 
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<G> {
+        self.geo.iter_mut()
+    }
+
     pub fn nearest_intersection(&self, ray: &Ray<F>, dist: &mut F) -> Option<Maxel<F>> {
         self.bvh.nearest_intersection(ray, &self.geo, dist)
     }
@@ -159,5 +163,17 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
 
     pub fn add_object(&mut self, geometry: G) {
         self.geo.push(geometry);
+    }
+
+    pub fn del_object(&mut self, id: usize) {
+        self.geo.retain(|obj| obj.get_id() != Some(id));
+    }
+}
+
+impl<'a, F: Float, G: FiniteGeometry<F> + 'a> IntoIterator for &'a mut Group<F, G> {
+    type IntoIter = std::slice::IterMut<'a, G>;
+    type Item = &'a mut G;
+    fn into_iter(self) -> Self::IntoIter {
+        self.geo.iter_mut()
     }
 }
