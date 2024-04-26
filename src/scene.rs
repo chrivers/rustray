@@ -111,7 +111,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
     pub fn empty() -> Self {
         Self {
             cameras: vec![],
-            root: Group::new(vec![], Matrix4::identity()),
+            root: Group::empty(),
             geometry: vec![],
             textures: TextureLib::new(),
             materials: MaterialLib::new(),

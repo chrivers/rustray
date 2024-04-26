@@ -117,6 +117,16 @@ impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
         res
     }
 
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            geo: vec![],
+            xfrm: Transform::identity(),
+            bvh: Bvh::default(),
+            aabb: Aabb::empty(),
+        }
+    }
+
     pub fn clear(&mut self) {
         self.bvh = Bvh::default();
         self.aabb = Aabb::empty();
