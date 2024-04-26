@@ -47,7 +47,7 @@ fn obj_sampler3<F: Float + Texel>(
     })
 }
 
-pub fn load_material<F: Float>(resdir: &Path, omat: &obj::Material) -> BoxMaterial<F> {
+fn load_material<F: Float>(resdir: &Path, omat: &obj::Material) -> BoxMaterial<F> {
     let phong = Phong::new()
         .with_ke(omat.ke.map_or(Color::BLACK, Color::from))
         .with_kd(omat.kd.map_or(Color::WHITE, Color::from))
@@ -74,6 +74,61 @@ pub fn load_material<F: Float>(resdir: &Path, omat: &obj::Material) -> BoxMateri
     } else {
         Box::new(smart)
     }
+}
+
+fn load_mesh<F: Float>(
+    group: &obj::Group,
+    position: &[[f32; 3]],
+    normal: &[[f32; 3]],
+    texture: &[[f32; 2]],
+    offset: Vector<F>,
+    mat: MaterialId,
+    faces: &mut usize,
+) -> Vec<Triangle<F>> {
+    let mut tris = vec![];
+    for poly in &group.polys {
+        for n in 1..(poly.0.len() - 1) {
+            let a = Vector::from_f32s(position[poly.0[0].0]) - offset;
+            let b = Vector::from_f32s(position[poly.0[n].0]) - offset;
+            let c = Vector::from_f32s(position[poly.0[n + 1].0]) - offset;
+
+            let (na, nb, nc) = {
+                let na = poly.0[0].2;
+                let nb = poly.0[n].2;
+                let nc = poly.0[n + 1].2;
+                if let (Some(a), Some(b), Some(c)) = (na, nb, nc) {
+                    (
+                        Vector::from_f32s(normal[a]).normalize(),
+                        Vector::from_f32s(normal[b]).normalize(),
+                        Vector::from_f32s(normal[c]).normalize(),
+                    )
+                } else {
+                    let n = (a - b).cross(a - c);
+                    (n, n, n)
+                }
+            };
+
+            let (mut ta, mut tb, mut tc) = {
+                let tpa = poly.0[0].1;
+                let tpb = poly.0[n].1;
+                let tpc = poly.0[n + 1].1;
+                match (tpa, tpb, tpc) {
+                    (Some(a), Some(b), Some(c)) => {
+                        (texture[a].into(), texture[b].into(), texture[c].into())
+                    }
+                    _ => (Point::ZERO, Point::ZERO, Point::ZERO),
+                }
+            };
+            ta.y = F::ONE - ta.y;
+            tb.y = F::ONE - tb.y;
+            tc.y = F::ONE - tc.y;
+
+            let tri = Triangle::new(a, b, c, na, nb, nc, ta, tb, tc, mat);
+            tris.push(tri);
+            *faces += 1;
+        }
+    }
+    tris
 }
 
 pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<()> {
@@ -108,12 +163,13 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
     let mut faces = 0;
     let mut meshes = 0;
     let mut groups = 0;
+    let mut group = Group::empty();
 
     for o in &obj.data.objects {
         info!("Object: {}", o.name);
+
         let mut geos: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         for g in &o.groups {
-            let mut tris = vec![];
             info!("  group: {}", g.name);
             let mat = if let Some(ObjMaterial::Mtl(ref omat)) = g.material {
                 *hashmat.entry(&omat.name).or_insert_with(|| {
@@ -124,57 +180,18 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
                 scene.materials.default()
             };
 
-            for poly in &g.polys {
-                for n in 1..(poly.0.len() - 1) {
-                    let a = Vector::from_f32s(position[poly.0[0].0]) - offset;
-                    let b = Vector::from_f32s(position[poly.0[n].0]) - offset;
-                    let c = Vector::from_f32s(position[poly.0[n + 1].0]) - offset;
+            let tris = load_mesh(g, position, normal, texture, offset, mat, &mut faces);
 
-                    let (na, nb, nc) = {
-                        let na = poly.0[0].2;
-                        let nb = poly.0[n].2;
-                        let nc = poly.0[n + 1].2;
-                        if let (Some(a), Some(b), Some(c)) = (na, nb, nc) {
-                            (
-                                Vector::from_f32s(normal[a]).normalize(),
-                                Vector::from_f32s(normal[b]).normalize(),
-                                Vector::from_f32s(normal[c]).normalize(),
-                            )
-                        } else {
-                            let n = (a - b).cross(a - c);
-                            (n, n, n)
-                        }
-                    };
-
-                    let (mut ta, mut tb, mut tc) = {
-                        let tpa = poly.0[0].1;
-                        let tpb = poly.0[n].1;
-                        let tpc = poly.0[n + 1].1;
-                        match (tpa, tpb, tpc) {
-                            (Some(a), Some(b), Some(c)) => {
-                                (texture[a].into(), texture[b].into(), texture[c].into())
-                            }
-                            _ => (Point::ZERO, Point::ZERO, Point::ZERO),
-                        }
-                    };
-                    ta.y = F::ONE - ta.y;
-                    tb.y = F::ONE - tb.y;
-                    tc.y = F::ONE - tc.y;
-
-                    let tri = Triangle::new(a, b, c, na, nb, nc, ta, tb, tc, mat);
-                    tris.push(tri);
-                    faces += 1;
-                }
-            }
             if !tris.is_empty() {
                 let mesh = TriangleMesh::new(tris, Matrix4::identity());
                 geos.push(Box::new(NamedObject::new(g.name.clone(), mesh)));
                 meshes += 1;
             }
         }
+
         if !geos.is_empty() {
             let grp = Group::new(geos, Matrix4::identity());
-            scene.add_object(NamedObject::new(o.name.clone(), grp));
+            group.add_object(NamedObject::new(o.name.clone(), grp));
             groups += 1;
         }
     }
@@ -186,6 +203,15 @@ pub fn load<F: Float + Texel>(mut obj: Obj, scene: &mut BoxScene<F>) -> RResult<
         obj.data.texture.len(),
         faces,
     );
+
+    scene.add_object(NamedObject::new(
+        obj.path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into(),
+        group,
+    ));
 
     Ok(())
 }
