@@ -25,11 +25,79 @@ pub struct Group<F: Float, G: FiniteGeometry<F>> {
 #[cfg(feature = "gui")]
 impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::gui::controls;
+        use crate::types::hash;
+        use egui::{vec2, Align, Button, Id, Layout, NumExt, Sense, TextStyle, Widget, WidgetText};
+        use egui_phosphor::regular as icon;
+
         let mut res = false;
-        for g in &mut self.geo {
-            ui.label(g.get_name());
-            res |= g.get_interactive().is_some_and(|i| i.ui(ui));
-        }
+
+        let mut self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
+        let self_obj_last = ui
+            .data(|mem| mem.get_temp("obj_last".into()))
+            .unwrap_or(None);
+
+        self.iter_mut().enumerate().for_each(|(i, obj)| {
+            let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
+            let obj_id = obj.get_id();
+            let id = hash(&obj.get_id());
+            let proplist = controls::CustomCollapsible::new(Id::new(id));
+            let (response, _header_response, _body_response) = proplist.show(
+                ui,
+                |pl, ui| {
+                    let text = WidgetText::from(name);
+                    let available = ui.available_rect_before_wrap();
+                    let text_pos = available.min;
+                    let wrap_width = available.right() - text_pos.x;
+                    let galley = text.into_galley(ui, Some(false), wrap_width, TextStyle::Button);
+                    let text_max_x = text_pos.x + galley.size().x;
+                    let desired_width = text_max_x + available.left();
+                    let desired_size =
+                        vec2(desired_width, galley.size().y).at_least(ui.spacing().interact_size);
+                    let rect = ui.allocate_space(desired_size).1;
+                    let header_response = ui.interact(rect, pl.id, Sense::click());
+                    if header_response.clicked() {
+                        pl.toggle();
+                    }
+                    let visuals = ui.style().interact_selectable(&header_response, false);
+                    ui.painter().galley(text_pos, galley, visuals.text_color());
+
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        let button = Button::new(format!("{} Select", icon::CROSSHAIR_SIMPLE))
+                            .selected(self_obj == obj_id)
+                            .ui(ui);
+
+                        if button.clicked() {
+                            if self_obj == obj_id {
+                                info!("deselect: {:?} {:?}", self_obj, obj_id);
+                                self_obj = None;
+                            } else {
+                                self_obj = obj_id;
+                            }
+                        }
+                        ui.end_row();
+                    });
+                },
+                |ui| {
+                    if let Some(interactive) = obj.get_interactive() {
+                        res |= interactive.ui(ui);
+                    } else {
+                        ui.label("Non-interactive object :(");
+                    }
+                },
+            );
+
+            if self_obj == obj.get_id() && self_obj != self_obj_last {
+                response.highlight().scroll_to_me(Some(Align::Center));
+            }
+        });
+
+        ui.data_mut(|mem| {
+            mem.insert_temp("obj".into(), self_obj);
+            mem.insert_temp("obj_last".into(), self_obj_last);
+        });
+
         res
     }
 

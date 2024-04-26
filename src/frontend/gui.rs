@@ -25,9 +25,8 @@ use parking_lot::RwLock;
 
 use eframe::{egui::Key, CreationContext};
 use egui::{
-    vec2, Align, Button, CentralPanel, Context, KeyboardShortcut, Layout, Modifiers, NumExt,
-    ProgressBar, RichText, ScrollArea, Sense, SidePanel, TextStyle, TopBottomPanel, Ui,
-    ViewportBuilder, ViewportCommand, Visuals, Widget, WidgetText,
+    CentralPanel, Context, KeyboardShortcut, Modifiers, ProgressBar, RichText, ScrollArea, Sense,
+    SidePanel, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand, Visuals,
 };
 use egui_file_dialog::FileDialog;
 use egui_phosphor::regular as icon;
@@ -44,8 +43,6 @@ pub struct RustRayGui<F: Float> {
     paths: Vec<Utf8PathBuf>,
     pathindex: usize,
     lock: Arc<RwLock<BoxScene<F>>>,
-    obj: Option<usize>,
-    obj_last: Option<usize>,
     file_dialog: FileDialog,
     ray_debugger: VisualTraceWidget,
     bounding_box: VisualTraceWidget,
@@ -88,8 +85,6 @@ where
             paths,
             pathindex: 0,
             lock,
-            obj: None,
-            obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
             ray_debugger: VisualTraceWidget::new(),
             bounding_box: VisualTraceWidget::new(),
@@ -98,32 +93,43 @@ where
         }
     }
 
-    fn find_obj<'a>(&self, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
+    fn find_obj<'a>(ui: &Ui, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
+        let self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
         scene
             .root
             .iter_mut()
-            .find(|obj| obj.get_id() == self.obj)
+            .find(|obj| obj.get_id() == self_obj)
             .map(|m| m as &mut _)
     }
 
-    fn change_obj(&self, scene: &mut BoxScene<F>, func: impl Fn(&mut Box<dyn FiniteGeometry<F>>)) {
+    fn change_obj(
+        ui: &Ui,
+        scene: &mut BoxScene<F>,
+        func: impl Fn(&mut Box<dyn FiniteGeometry<F>>),
+    ) {
+        let self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
         scene
             .root
             .iter_mut()
-            .find(|obj| obj.get_id() == self.obj)
+            .find(|obj| obj.get_id() == self_obj)
             .map(func);
     }
 
-    fn delete_current_obj(&mut self, scene: &mut BoxScene<F>) {
-        let Some(id) = self.obj else {
+    fn delete_current_obj(&mut self, ctx: &Context, scene: &mut BoxScene<F>) {
+        let mut self_obj = ctx.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+        let Some(id) = self_obj else {
             return;
         };
         scene.root.del_object(id);
-        self.obj = None;
+        self_obj = None;
         self.bounding_box.clear();
 
         scene.recompute_bvh().unwrap();
         self.engine.submit(&self.render_modes.preview, &self.lock);
+
+        ctx.data_mut(|mem| {
+            mem.insert_temp("obj".into(), self_obj);
+        });
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -172,63 +178,7 @@ where
                 }
             });
 
-            controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| {
-                scene.root.iter_mut().enumerate().for_each(|(i, obj)| {
-                    let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
-                    let obj_id = obj.get_id();
-                    let proplist = controls::CustomCollapsible::new(name.clone());
-                    let (response, _header_response, _body_response) = proplist.show(
-                        ui,
-                        |pl, ui| {
-                            let text = WidgetText::from(name);
-                            let available = ui.available_rect_before_wrap();
-                            let text_pos = available.min;
-                            let wrap_width = available.right() - text_pos.x;
-                            let galley =
-                                text.into_galley(ui, Some(false), wrap_width, TextStyle::Button);
-                            let text_max_x = text_pos.x + galley.size().x;
-                            let desired_width = text_max_x + available.left();
-                            let desired_size = vec2(desired_width, galley.size().y)
-                                .at_least(ui.spacing().interact_size);
-                            let rect = ui.allocate_space(desired_size).1;
-                            let header_response = ui.interact(rect, pl.id, Sense::click());
-                            if header_response.clicked() {
-                                pl.toggle();
-                            }
-                            let visuals = ui.style().interact_selectable(&header_response, false);
-                            ui.painter().galley(text_pos, galley, visuals.text_color());
-
-                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                let button =
-                                    Button::new(format!("{} Select", icon::CROSSHAIR_SIMPLE))
-                                        .selected(self.obj == obj_id)
-                                        .ui(ui);
-
-                                if button.clicked() {
-                                    if self.obj == obj_id {
-                                        info!("deselect: {:?} {:?}", self.obj, obj_id);
-                                        self.obj = None;
-                                    } else {
-                                        self.obj = obj_id;
-                                    }
-                                }
-                                ui.end_row();
-                            });
-                        },
-                        |ui| {
-                            if let Some(interactive) = obj.get_interactive() {
-                                changed |= interactive.ui(ui);
-                            } else {
-                                ui.label("Non-interactive object :(");
-                            }
-                        },
-                    );
-
-                    if self.obj == obj.get_id() && self.obj != self.obj_last {
-                        response.highlight().scroll_to_me(Some(Align::Center));
-                    }
-                });
-            });
+            controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| scene.root.ui(ui));
 
             controls::collapsing_group("Lights", icon::LIGHTBULB).show(ui, |ui| {
                 scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
@@ -274,14 +224,16 @@ where
     }
 
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
-        if let Some(obj) = self.obj {
+        let self_obj: Option<usize> = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
+        if let Some(obj) = self_obj {
             ui.horizontal(|ui| {
                 ui.label(format!("Object id: {obj:x}"));
                 ui.add_space(50.0);
             });
 
             if ui.icon_button(icon::TRASH, "Delete").clicked() {
-                self.delete_current_obj(scene);
+                self.delete_current_obj(ui.ctx(), scene);
                 ui.close_menu();
             }
 
@@ -300,7 +252,7 @@ where
                 }
 
                 if let Some(id) = mat_id {
-                    self.change_obj(scene, move |obj| {
+                    Self::change_obj(ui, scene, move |obj| {
                         if let Some(mat) = obj.material() {
                             mat.set_material(id);
                         }
@@ -348,6 +300,8 @@ where
 
         let act = response.interact(Sense::click_and_drag());
 
+        let mut self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
         if act.clicked() {
             if let Some(pos) = act.interact_pointer_pos {
                 let coord = from_screen.transform_pos(pos);
@@ -355,20 +309,24 @@ where
                 ray.flags |= RF::StopAtGroup;
                 if let Some(maxel) = scene.intersect(&ray) {
                     let id = maxel.obj.get_id();
-                    if self.obj == id {
+                    if self_obj == id {
                         info!("Deselect {:?}", maxel.obj.get_name());
-                        self.obj = None;
+                        self_obj = None;
                     } else {
                         info!("Select {:?}", maxel.obj.get_name());
-                        self.obj = id;
+                        self_obj = id;
                     }
                 } else {
-                    self.obj = None;
+                    self_obj = None;
                 }
                 self.bounding_box.clear();
             }
         }
-        self.obj_last = self.obj;
+
+        ui.data_mut(|mem| {
+            mem.insert_temp("obj".into(), self_obj);
+            mem.insert_temp("obj_last".into(), self_obj);
+        });
 
         if let Some(pos) = act.hover_pos() {
             if self.ray_debugger.enabled {
@@ -384,7 +342,7 @@ where
         let camera = scene.cameras[0];
 
         let mut aabb: Option<rtbvh::Aabb> = None;
-        if let Some(obj) = self.find_obj(scene) {
+        if let Some(obj) = Self::find_obj(ui, scene) {
             if let Some(int) = obj.get_interactive() {
                 aabb = int.ui_bounding_box().copied();
                 if int.ui_center(ui, &camera, &response.rect) {
@@ -553,7 +511,7 @@ where
 
         // object control
         if ctx.input(|i| i.key_pressed(Key::Delete)) {
-            self.delete_current_obj(&mut scene);
+            self.delete_current_obj(ctx, &mut scene);
         }
 
         SidePanel::left("Scene controls")
