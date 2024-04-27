@@ -95,11 +95,7 @@ where
 
     fn find_obj<'a>(ui: &Ui, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
         let self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
-        scene
-            .root
-            .iter_mut()
-            .find(|obj| obj.get_id() == self_obj)
-            .map(|m| m as &mut _)
+        scene.root.get_object(self_obj?)
     }
 
     fn change_obj(

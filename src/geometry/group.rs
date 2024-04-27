@@ -40,8 +40,8 @@ impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
 
         self.iter_mut().enumerate().for_each(|(i, obj)| {
             let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
-            let obj_id = obj.get_id();
-            let id = hash(&obj.get_id());
+            let obj_id = SceneObject::get_id(obj);
+            let id = hash(&obj_id);
             let proplist = controls::CustomCollapsible::new(Id::new(id));
             let (response, _header_response, _body_response) = proplist.show(
                 ui,
@@ -71,9 +71,12 @@ impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
                         if button.clicked() {
                             if self_obj == obj_id {
                                 info!("deselect: {:?} {:?}", self_obj, obj_id);
-                                self_obj = None;
+                                ui.data_mut(|mem| {
+                                    mem.insert_temp("obj".into(), Option::<usize>::None);
+                                });
                             } else {
-                                self_obj = obj_id;
+                                info!("select: {:?} {:?}", self_obj, obj_id);
+                                ui.data_mut(|mem| mem.insert_temp("obj".into(), obj_id));
                             }
                         }
                         ui.end_row();
@@ -88,14 +91,11 @@ impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
                 },
             );
 
+            self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
             if self_obj == obj.get_id() && self_obj != self_obj_last {
                 response.highlight().scroll_to_me(Some(Align::Center));
             }
-        });
-
-        ui.data_mut(|mem| {
-            mem.insert_temp("obj".into(), self_obj);
-            mem.insert_temp("obj_last".into(), self_obj_last);
         });
 
         res
