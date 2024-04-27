@@ -440,12 +440,7 @@ where
 {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        let recv = self.engine.update();
-        if recv {
-            ctx.request_repaint_after(Duration::from_millis(100));
-        } else {
-            ctx.request_repaint_after(Duration::from_millis(500));
-        }
+        self.engine.update();
 
         if ctx.input(|i| i.key_pressed(Key::Q)) {
             ctx.send_viewport_cmd(ViewportCommand::Close);
