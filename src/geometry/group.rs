@@ -113,6 +113,19 @@ impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
 
 impl<F: Float, G: FiniteGeometry<F>> SceneObject<F> for Group<F, G> {
     crate::sceneobject_impl_body!("Group", Self::ICON);
+
+    fn get_object(&mut self, id: usize) -> Option<&mut dyn Geometry<F>> {
+        if SceneObject::get_id(self) == Some(id) {
+            return Some(self as &mut dyn Geometry<F>);
+        }
+
+        for obj in &mut self.geo {
+            if let Some(res) = obj.get_object(id) {
+                return Some(res);
+            }
+        }
+        None
+    }
 }
 
 impl<F: Float, G: FiniteGeometry<F>> HasTransform<F> for Group<F, G> {

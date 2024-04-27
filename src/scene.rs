@@ -15,6 +15,9 @@ pub trait SceneObject<F: Float> {
     fn get_icon(&self) -> &str;
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>>;
     fn get_id(&self) -> Option<usize>;
+    fn get_object(&mut self, _id: usize) -> Option<&mut dyn Geometry<F>> {
+        None
+    }
 }
 
 #[macro_export]
