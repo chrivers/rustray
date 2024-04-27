@@ -65,14 +65,14 @@ fn load_material<F: Float>(resdir: &Path, omat: &obj::Material) -> BoxMaterial<F
         Color::BLACK,
     );
 
-    let smart = NamedObject::new(omat.name.clone(), Smart::make(phong, fresnel));
+    let smart = Smart::make(phong, fresnel);
 
     if omat.map_bump.is_some() {
         let bumpmap = NormalMap::new(obj_sampler3(resdir, &omat.map_bump).unwrap());
         let bump = Bumpmap::new(BumpPower(F::HALF), bumpmap, smart);
-        Box::new(bump)
+        Box::new(NamedObject::new(omat.name.clone(), bump))
     } else {
-        Box::new(smart)
+        Box::new(NamedObject::new(omat.name.clone(), smart))
     }
 }
 
