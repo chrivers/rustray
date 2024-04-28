@@ -3,7 +3,7 @@ use cgmath::InnerSpace;
 use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
 use crate::sceneobject_impl_body;
-use crate::types::{Color, Float, GridSamples, Maxel, Vector, Vectorx};
+use crate::types::{Color, Float, GridSamples, Maxel, Vector, Vectorx, RF};
 
 #[derive(Debug)]
 pub struct AreaLight<F: Float> {
@@ -115,8 +115,14 @@ where
 
         /* let mut rng = rand::thread_rng(); */
 
-        let xres = (self.xres >> maxel.lvl).max(1);
-        let yres = (self.yres >> maxel.lvl).max(1);
+        let (xres, yres) = if maxel.flags.contains(RF::Preview) {
+            (1, 1)
+        } else {
+            (
+                (self.xres >> maxel.lvl).max(1),
+                (self.yres >> maxel.lvl).max(1),
+            )
+        };
 
         let dist = GridSamples::new(self.width, self.height, xres, yres);
 

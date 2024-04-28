@@ -13,7 +13,7 @@ use workerpool::Pool;
 use crate::material::{ColorDebug, Material};
 use crate::scene::{BoxScene, RayTracer};
 use crate::tracer::Tracer;
-use crate::types::{Color, Float, Point, Ray};
+use crate::types::{Color, Float, Point, Ray, RayFlags};
 
 type RenderFunc<F> = fn(&Tracer<F>, Ray<F>) -> Color<F>;
 
@@ -22,6 +22,7 @@ pub struct RenderJob<F: Float> {
     last_line: Option<u32>,
     mult_x: u32,
     mult_y: u32,
+    flags: RayFlags,
     func: RenderFunc<F>,
 }
 
@@ -33,6 +34,7 @@ impl<F: Float> RenderJob<F> {
             last_line: None,
             mult_x: 1,
             mult_y: 1,
+            flags: RayFlags::default(),
             func: |tracer, ray| {
                 tracer
                     .ray_trace(&ray)
@@ -97,6 +99,11 @@ impl<F: Float> RenderJob<F> {
     }
 
     #[must_use]
+    pub const fn with_ray_flags(self, flags: RayFlags) -> Self {
+        Self { flags, ..self }
+    }
+
+    #[must_use]
     pub fn get_lines(&self, height: u32) -> (u32, u32) {
         (
             self.first_line.unwrap_or(0),
@@ -112,6 +119,11 @@ impl<F: Float> RenderJob<F> {
     #[must_use]
     pub const fn get_func(&self) -> RenderFunc<F> {
         self.func
+    }
+
+    #[must_use]
+    pub const fn get_flags(&self) -> RayFlags {
+        self.flags
     }
 }
 
@@ -146,7 +158,7 @@ impl<F: Float> RenderSpan<F> {
             let xs = base_x..base_x + self.mult_x;
             let ys = base_y..base_y + self.mult_y;
 
-            ys.cartesian_product(xs).map(move |(x, y)| (x, y, rgba))
+            ys.cartesian_product(xs).map(move |(y, x)| (x, y, rgba))
         })
     }
 }
@@ -203,6 +215,7 @@ impl<F: Float> RenderEngine<F> {
         let (a, b) = job.get_lines(self.img.height());
         let (mult_x, mult_y) = job.get_mult();
         let func = job.get_func();
+        let flags = job.get_flags();
 
         let (width, height) = (self.width, self.height);
         let offset = Point::from((mult_x, mult_y)) / F::TWO;
@@ -229,7 +242,7 @@ impl<F: Float> RenderEngine<F> {
                         .step_by(mult_x as usize)
                         .map(|x| {
                             let point = Point::from((x, y));
-                            let ray = camera.get_ray((point + offset) / size);
+                            let ray = camera.get_ray((point + offset) / size).with_flags(flags);
                             func(&tracer, ray)
                         })
                         .collect();
@@ -277,7 +290,7 @@ impl<F: Float> RenderEngine<F> {
             }
 
             for (x, y, color) in span.pixel_iter() {
-                self.img[(x, y)] = color;
+                self.img.put_pixel(x, y, color);
             }
 
             recv = true;

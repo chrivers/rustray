@@ -9,15 +9,18 @@ flags! {
     pub enum RF: u16 {
         Debug,
         StopAtGroup,
+        Preview,
     }
 }
+
+pub type RayFlags = FlagSet<RF>;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub lvl: u16,
-    pub flags: FlagSet<RF>,
+    pub flags: RayFlags,
 }
 
 impl<'a, F: Float> Ray<F> {
@@ -26,14 +29,19 @@ impl<'a, F: Float> Ray<F> {
             pos,
             dir,
             lvl: 0,
-            flags: FlagSet::default(),
+            flags: RayFlags::default(),
         }
     }
 
     #[must_use]
+    pub const fn with_debug(self) -> Self {
+        self.with_flags(RF::Debug.into())
+    }
+
+    #[must_use]
     #[allow(clippy::assign_op_pattern)]
-    pub const fn with_debug(mut self) -> Self {
-        self.flags = self.flags | RF::Debug;
+    pub const fn with_flags(mut self, flags: RayFlags) -> Self {
+        self.flags = self.flags | flags;
         self
     }
 
@@ -48,14 +56,7 @@ impl<'a, F: Float> Ray<F> {
         obj: &'a dyn Geometry<F>,
         mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
-        Maxel::new(
-            self.extend(ext),
-            self.dir,
-            self.lvl,
-            obj,
-            mat,
-            self.flags.contains(RF::Debug),
-        )
+        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags)
     }
 
     pub fn enter_group(self) -> Option<Self> {

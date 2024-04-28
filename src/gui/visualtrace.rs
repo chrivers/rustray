@@ -44,6 +44,12 @@ impl<'a, F: Float> VisualTracer<'a, F> {
     }
 
     #[must_use]
+    pub fn calc_point(&self, a: Vector<F>) -> Pos2 {
+        let ndc = self.camera.world_to_ndc(a).point().into();
+        self.to_screen.transform_pos(ndc)
+    }
+
+    #[must_use]
     pub fn calc_line(&self, a: Vector<F>, b: Vector<F>) -> (Pos2, Pos2) {
         let a: Pos2 = self.camera.world_to_ndc(a).point().into();
         let b: Pos2 = self.camera.world_to_ndc(b).point().into();
@@ -112,6 +118,50 @@ impl VisualTraceWidget {
 
     pub fn set_coord(&mut self, coord: Pos2) {
         self.coord = Some(coord);
+    }
+
+    pub fn aabb<F>(&mut self, scene: &BoxScene<F>, to_screen: &RectTransform, aabb: &rtbvh::Aabb)
+    where
+        F: Float,
+    {
+        let cam = &scene.cameras[0];
+        let mut vt = VisualTracer::new(to_screen, cam);
+
+        let corners = aabb.all_corners().map(Vector::from_vec3);
+
+        // Aabb::all_corners() comes out in a weird order, so rearrange by x,y,z contribution here
+        let points = [
+            //             x y z
+            corners[0], // - - -
+            corners[2], // # - -
+            corners[3], // - # -
+            corners[5], // # # -
+            corners[4], // - - #
+            corners[6], // # - #
+            corners[7], // - # #
+            corners[1], // # # #
+        ];
+
+        let mut line = |va: Vector<F>, vb: Vector<F>| {
+            let a = vt.camera.world_to_ndc(va);
+            let b = vt.camera.world_to_ndc(vb);
+            let c = a + (a.vector_to(b) / F::from_u32(8));
+            let ab = vt.to_screen(a.point().into(), c.point().into());
+            vt.draw_line(ab.0, ab.1, Stroke::new(1.0, Color32::WHITE));
+        };
+
+        for (i, p) in points.into_iter().enumerate() {
+            // draw line to opposite corner in x direction
+            line(p, points[i ^ 1]);
+
+            // draw line to opposite corner in y direction
+            line(p, points[i ^ 2]);
+
+            // draw line to opposite corner in z direction
+            line(p, points[i ^ 4]);
+        }
+
+        self.shapes = vt.into_inner();
     }
 
     pub fn update<F>(&mut self, scene: &BoxScene<F>, to_screen: &RectTransform)

@@ -19,7 +19,7 @@ use crate::{
     material::Phong,
     point,
     sampler::Texel,
-    scene::{BoxScene, SceneObject},
+    scene::{BoxScene, Interactive, SceneObject},
     types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
 };
 
@@ -47,7 +47,8 @@ pub struct RustRayGui<F: Float> {
     obj: Option<usize>,
     obj_last: Option<usize>,
     file_dialog: FileDialog,
-    vtracer: VisualTraceWidget,
+    ray_debugger: VisualTraceWidget,
+    bounding_box: VisualTraceWidget,
     canvas: Canvas,
     render_modes: RenderModes<F>,
 }
@@ -74,7 +75,9 @@ where
 
         let render_modes = RenderModes {
             default: RenderJob::new(),
-            preview: RenderJob::new().with_mult(5),
+            preview: RenderJob::new()
+                .with_mult(5)
+                .with_ray_flags(RF::Preview.into()),
             normals: RenderJob::new().with_func_debug_normals(),
         };
 
@@ -85,7 +88,8 @@ where
             obj: None,
             obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
-            vtracer: VisualTraceWidget::new(),
+            ray_debugger: VisualTraceWidget::new(),
+            bounding_box: VisualTraceWidget::new(),
             canvas: Canvas::new("canvas"),
             render_modes,
         }
@@ -300,7 +304,7 @@ where
             }
         });
         if ui
-            .checkbox(&mut self.vtracer.enabled, "Ray trace debugger")
+            .checkbox(&mut self.ray_debugger.enabled, "Ray trace debugger")
             .changed()
         {
             ui.close_menu();
@@ -312,7 +316,8 @@ where
 
         let cvs = self.canvas.show(ui, img);
 
-        self.vtracer.draw(&cvs.inner.painter);
+        self.ray_debugger.draw(&cvs.inner.painter);
+        self.bounding_box.draw(&cvs.inner.painter);
 
         let to_screen = cvs.inner.to_screen;
         let from_screen = cvs.inner.from_screen;
@@ -337,28 +342,38 @@ where
                 } else {
                     self.obj = None;
                 }
+                self.bounding_box.clear();
             }
         }
         self.obj_last = self.obj;
 
         if let Some(pos) = act.hover_pos() {
-            if self.vtracer.enabled {
+            if self.ray_debugger.enabled {
                 let coord = from_screen.transform_pos(pos);
-                self.vtracer.set_coord(coord);
+                self.ray_debugger.set_coord(coord);
             }
         }
-        self.vtracer.update(scene, &to_screen);
+        self.ray_debugger.update(scene, &to_screen);
+        self.bounding_box.update(scene, &to_screen);
 
         act.context_menu(|ui| self.context_menu(ui, scene));
 
         let camera = scene.cameras[0];
+
+        let mut aabb: Option<rtbvh::Aabb> = None;
         if let Some(obj) = self.find_obj(scene) {
             if let Some(int) = obj.get_interactive() {
+                aabb = int.ui_bounding_box().copied();
                 if int.ui_center(ui, &camera, &response.rect) {
                     scene.recompute_bvh().unwrap();
                     self.engine.submit(&self.render_modes.preview, &self.lock);
                 }
             }
+        }
+
+        // if the selected object has aabb info, render it
+        if let Some(aabb) = aabb {
+            self.bounding_box.aabb(scene, &to_screen, &aabb);
         }
 
         let progress = self.engine.progress();
@@ -446,11 +461,11 @@ where
 
         // vtracer controls
         if ctx.input(|i| i.key_pressed(Key::D)) {
-            self.vtracer.toggle();
+            self.ray_debugger.toggle();
         }
 
         if ctx.input(|i| i.key_pressed(Key::D) && i.modifiers.shift) {
-            self.vtracer.clear();
+            self.ray_debugger.clear();
         }
 
         let kbd_space = KeyboardShortcut::new(Modifiers::NONE, Key::Space);
