@@ -3,6 +3,9 @@ name = "rustray"
 version = "0.5.0"
 authors = ["Christian Iversen <ci@iversenit.dk>"]
 edition = "2021"
+description = "A modular, fun and flexible ray-tracer"
+readme = "README.md"
+license = "GPLv3"
 
 [profile.best]
 inherits = "release"
@@ -11,11 +14,12 @@ lto = "fat"
 opt-level = 3
 
 [features]
-default = ["rayon", "fixedpoint1", "fixedpoint2"]
+default = ["rayon", "fixedpoint1", "fixedpoint2", "gui"]
 fixedpoint = ["dep:fixed", "dep:az", "dep:assert_float_eq", "derive_more/not"]
 fixedpoint1 = ["fixedpoint"]
 fixedpoint2 = ["fixedpoint"]
 rayon = ["dep:rayon", "indicatif/rayon"]
+gui = ["dep:eframe", "dep:egui"]
 
 [dependencies]
 image = { version = "0.25", default-features = false, features = [ "png", "jpeg" ] }
@@ -40,7 +44,15 @@ rtbvh = "0.6"
 ply-rs = "0.1"
 glam = "0.27"
 assert_float_eq = { version = "1.1.3", optional = true }
-fixed = { version = "2.0.0-alpha", features = ["num-traits"], optional = true }
+fixed = { version = "2.0.0-alpha.27.0", features = ["num-traits"], optional = true }
 az = { version = "1.2", optional = true }
 crossbeam-channel = "0.5.12"
 workerpool = { version = "1.2.1", features = ["crossbeam"] }
+eframe = { version = "0.26", default-features = false, features = ["glow"], optional = true }
+egui = { version = "0.26", default-features = false, features = ["default_fonts"], optional = true }
+clap = { version = "4.5.4", features = ["derive"] }
+egui-file-dialog = "0.4"
+egui-gizmo = "0.16.2"
+mint = "0.5.9"
+egui_plot = "0.26"
+flagset = "0.4.5"

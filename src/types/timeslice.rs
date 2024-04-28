@@ -35,6 +35,7 @@ impl TimeSlice {
         self.set("");
     }
 
+    #[must_use]
     pub fn get(&self, key: &'static str) -> Option<Duration> {
         self.map.get(key).copied()
     }

@@ -7,7 +7,7 @@ pub struct ShineMap<F: Float + Texel, S: Sampler<F, F>> {
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>> ShineMap<F, S> {
-    pub fn new(sampler: S, scale: F) -> Self {
+    pub const fn new(sampler: S, scale: F) -> Self {
         Self { sampler, scale }
     }
 }

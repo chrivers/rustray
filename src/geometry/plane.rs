@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Clone, Copy, Debug)]
-pub struct Plane<F: Float, M: Material<F = F>> {
+pub struct Plane<F: Float, M: Material<F>> {
     pos: Vector<F>,
     dir1: Vector<F>,
     dir2: Vector<F>,
@@ -11,7 +11,37 @@ pub struct Plane<F: Float, M: Material<F = F>> {
     mat: M,
 }
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Plane<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        egui::Grid::new("grid")
+            .num_columns(2)
+            .spacing([40.0, 4.0])
+            .striped(true)
+            .show(ui, |ui| {
+                let mut res = false;
+                res |= controls::position(ui, &mut self.pos, "Position");
+                res |= self.mat.ui(ui);
+                res
+            })
+            .inner
+    }
+}
+
+impl<F: Float, M: Material<F>> SceneObject<F> for Plane<F, M> {
+    fn get_name(&self) -> &str {
+        "Plane"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
+impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
         let u = self.u.dot(maxel.pos);
         let v = self.v.dot(maxel.pos);
@@ -28,13 +58,13 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Plane<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F = F>> Plane<F, M> {
-    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Plane<F, M> {
+impl<F: Float, M: Material<F>> Plane<F, M> {
+    pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Self {
         let dir1 = d1.normalize();
         let dir2 = d2.normalize();
         let normal = dir1.cross(dir2);
 
-        Plane {
+        Self {
             pos,
             dir1,
             dir2,

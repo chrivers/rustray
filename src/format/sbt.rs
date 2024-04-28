@@ -15,12 +15,12 @@ use pest_derive::Parser;
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
+use crate::light::{Attenuation, DirectionalLight, PointLight};
 use crate::material::{Bumpmap, Phong, Smart, Triblend};
 use crate::sampler::{NormalMap, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
 use crate::types::float::Lerp;
-use crate::types::Camera;
-use crate::types::{DirectionalLight, PointLight};
+use crate::types::{Camera, Error};
 use crate::types::{Error::ParseError, RResult};
 use crate::{
     point, Color, DynMaterial, DynSampler, Float, Light, Material, Point, Sampler, SamplerExt,
@@ -44,18 +44,18 @@ impl FromStr for SbtVersion {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "0.9" => Ok(SbtVersion::Sbt0_9),
-            "1.0" => Ok(SbtVersion::Sbt1_0),
-            _ => panic!("impossible"),
+            "0.9" => Ok(Self::Sbt0_9),
+            "1.0" => Ok(Self::Sbt1_0),
+            _ => Err(Error::ParseError("internal parser error")),
         }
     }
 }
 
 fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
     (
-        p.x.to_f64().unwrap().to_bits(),
-        p.y.to_f64().unwrap().to_bits(),
-        p.z.to_f64().unwrap().to_bits(),
+        p.x.to_f64().to_bits(),
+        p.y.to_f64().to_bits(),
+        p.z.to_f64().to_bits(),
     )
 }
 
@@ -120,19 +120,20 @@ pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
 impl<F> SbtParser<F>
 where
     F: Float + FromStr + Texel + Lerp<Ratio = F>,
+    crate::types::result::Error: From<<F as FromStr>::Err>,
 {
     /* Primitive types */
 
-    pub fn parse_bool(p: Pair<Rule>) -> bool {
+    pub fn parse_bool(p: Pair<Rule>) -> RResult<bool> {
         match p.into_inner().next().map(|p| p.as_str()) {
-            Some("false") => false,
-            Some("true") => true,
-            _ => panic!("internal parser error"),
+            Some("false") => Ok(false),
+            Some("true") => Ok(true),
+            _ => Err(Error::ParseError("internal parser error")),
         }
     }
 
-    pub fn parse_num1(m: Pair<Rule>) -> F {
-        m.as_str().parse().unwrap_or(F::ZERO)
+    pub fn parse_num1(m: &Pair<Rule>) -> RResult<F> {
+        Ok(m.as_str().parse()?)
     }
 
     pub fn parse_val1(p: Pair<Rule>) -> RResult<F> {
@@ -145,6 +146,7 @@ where
             .or(Err(ParseError("val1")))
     }
 
+    #[must_use]
     pub fn parse_val2(p: Pair<Rule>) -> Point<F> {
         let m = p.into_inner();
         let v = m
@@ -153,6 +155,7 @@ where
         point!(v[0], v[1])
     }
 
+    #[must_use]
     pub fn parse_int3(p: Pair<Rule>) -> [usize; 3] {
         let m = p.into_inner();
         let v = m
@@ -161,6 +164,7 @@ where
         [v[0], v[1], v[2]]
     }
 
+    #[must_use]
     pub fn parse_int4(p: Pair<Rule>) -> [usize; 4] {
         let m = p.into_inner();
         let v = m
@@ -169,35 +173,39 @@ where
         [v[0], v[1], v[2], v[3]]
     }
 
-    pub fn parse_val3(p: Pair<Rule>) -> Vector<F> {
+    pub fn parse_val3(p: Pair<Rule>) -> RResult<Vector<F>> {
         Self::parse_val3b(p.into_inner().next().unwrap())
     }
 
-    pub fn parse_val3b(p: Pair<Rule>) -> Vector<F> {
+    pub fn parse_val3b(p: Pair<Rule>) -> RResult<Vector<F>> {
         let m = p.into_inner();
         let v = m
-            .map(|x| x.as_str().trim().parse().unwrap_or(F::ZERO))
-            .collect::<Vec<F>>();
-        Vector::new(v[0], v[1], v[2])
+            .map(|x| x.as_str().trim().parse())
+            .collect::<Result<Vec<F>, _>>()?;
+        Ok(Vector::new(v[0], v[1], v[2]))
     }
 
-    pub fn parse_val4(p: Pair<Rule>) -> Vector4<F> {
+    pub fn parse_val4(p: Pair<Rule>) -> RResult<Vector4<F>> {
         let m = p.into_inner();
         let v = m
-            .map(|x| x.as_str().trim().parse().unwrap_or(F::ZERO))
-            .collect::<Vec<F>>();
-        Vector4::new(v[0], v[1], v[2], v[3])
+            .map(|x| x.as_str().trim().parse())
+            .collect::<Result<Vec<F>, _>>()?;
+        Ok(Vector4::new(v[0], v[1], v[2], v[3]))
     }
 
-    pub fn parse_color(p: Pair<Rule>) -> Color<F> {
-        let m = p.into_inner().next().unwrap().into_inner();
+    pub fn parse_color(p: Pair<Rule>) -> RResult<Color<F>> {
+        let m = p
+            .into_inner()
+            .next()
+            .ok_or(Error::ParseError("Cannot parse color"))?
+            .into_inner();
         let v = m
-            .map(|x| x.as_str().trim().parse().unwrap_or(F::ZERO))
-            .collect::<Vec<F>>();
+            .map(|x| x.as_str().trim().parse())
+            .collect::<Result<Vec<F>, _>>()?;
         if v.len() != 3 {
-            return Color::black();
+            return Ok(Color::BLACK);
         }
-        Color::new(v[0], v[1], v[2])
+        Ok(Color::new(v[0], v[1], v[2]))
     }
 
     /* Composite types */
@@ -260,13 +268,13 @@ where
     }
 
     pub fn parse_material(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<F>> {
-        let mut diff = Color::black().dynsampler();
-        let mut spec = Color::black().dynsampler();
+        let mut diff = Color::BLACK.dynsampler();
+        let mut spec = Color::BLACK.dynsampler();
         let mut refl = None;
-        let mut ambi = Color::black();
+        let mut ambi = Color::BLACK;
         let mut bump = None;
-        let mut tran = Color::black().dynsampler();
-        let mut emis = Color::black().dynsampler();
+        let mut tran = Color::BLACK.dynsampler();
+        let mut emis = Color::BLACK.dynsampler();
         let mut shi = F::ZERO.dynsampler();
         let mut idx = F::ZERO;
         let mut _gls = F::ZERO;
@@ -275,7 +283,7 @@ where
                 Rule::mat_diffuse => diff = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_specular => spec = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_reflective => refl = Some(Self::parse_sampler3(q, resdir)?),
-                Rule::mat_ambient => ambi = Self::parse_color(q.into_inner().next().unwrap()),
+                Rule::mat_ambient => ambi = Self::parse_color(q.into_inner().next().unwrap())?,
                 Rule::mat_transmissive => tran = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_emissive => emis = Self::parse_sampler3(q, resdir)?,
                 Rule::mat_shininess => shi = Self::parse_sampler1(q, resdir)?,
@@ -303,27 +311,25 @@ where
 
         match bump {
             None => Ok(smart.dynamic()),
-            Some(b) => Ok(
-                Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
-            ),
+            Some(b) => Ok(Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic()),
         }
     }
 
     pub fn parse_camera(p: Pair<Rule>, width: u32, height: u32) -> RResult<Camera<F>> {
         let mut position: Vector<F> = Vector::zero();
         let mut viewdir: Option<Vector<F>> = None;
-        let mut updir: Vector<F> = Vector::unit_y();
+        let mut updir: Vector<F> = Vector::UNIT_Y;
         let mut look_at: RResult<Vector<F>> = Err(ParseError("look_at"));
         let mut aspectratio: Option<F> = None;
         let mut fov: F = F::from_u32(55);
         for q in p.into_inner() {
             match q.as_rule() {
-                Rule::position => position = Self::parse_val3(q),
-                Rule::viewdir => viewdir = Some(Self::parse_val3(q)),
+                Rule::position => position = Self::parse_val3(q)?,
+                Rule::viewdir => viewdir = Some(Self::parse_val3(q)?),
                 Rule::aspectratio => aspectratio = Some(Self::parse_val1(q)?),
-                Rule::updir => updir = Self::parse_val3(q),
+                Rule::updir => updir = Self::parse_val3(q)?,
                 Rule::fov => fov = Self::parse_val1(q)?,
-                Rule::look_at => look_at = Ok(Self::parse_val3(q)),
+                Rule::look_at => look_at = Self::parse_val3(q),
                 _ => error!("{q}"),
             }
         }
@@ -332,7 +338,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z());
+            viewdir = Some(-Vector::UNIT_Z);
         }
 
         info!("Camera:");
@@ -368,7 +374,7 @@ where
         for rule in body {
             match rule.as_rule() {
                 Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
-                Rule::capped => capped = Self::parse_bool(rule),
+                Rule::capped => capped = Self::parse_bool(rule)?,
                 other => error!("unsupported: {:?}", other),
             }
         }
@@ -456,7 +462,7 @@ where
                 Rule::points => {
                     for f in rule.into_inner() {
                         // info!("point: {:?}", f);
-                        points.push(Self::parse_val3b(f).xfrm_pos(&xfrm));
+                        points.push(Self::parse_val3b(f)?);
                         /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                     }
                 }
@@ -477,7 +483,7 @@ where
                 Rule::normals => {
                     for f in rule.into_inner() {
                         /* info!("norm: {:?}", f); */
-                        normals.push(Self::parse_val3b(f).xfrm_nml(&xfrm));
+                        normals.push(Self::parse_val3b(f)?);
                     }
                 }
                 Rule::materials => {
@@ -541,7 +547,7 @@ where
         }
 
         info!("TriangleMesh(tris={})", tris.len());
-        Ok(vec![Box::new(TriangleMesh::new(tris))])
+        Ok(vec![Box::new(TriangleMesh::new(tris, xfrm))])
     }
 
     pub fn parse_geo_con(
@@ -562,7 +568,7 @@ where
                 Rule::height => height = Self::parse_val1(rule)?,
                 Rule::top_radius => top_r = Self::parse_val1(rule)?,
                 Rule::bottom_radius => bot_r = Self::parse_val1(rule)?,
-                Rule::capped => capped = Self::parse_bool(rule),
+                Rule::capped => capped = Self::parse_bool(rule)?,
                 Rule::material_ref => {}
                 other => error!("unsupported: {other:?}"),
             }
@@ -587,8 +593,8 @@ where
         let mut c = F::ONE;
         for q in p.into_inner() {
             match q.as_rule() {
-                Rule::position => pos = Ok(Self::parse_val3(q)),
-                Rule::color => color = Ok(Self::parse_val3(q)),
+                Rule::position => pos = Self::parse_val3(q),
+                Rule::color => color = Self::parse_val3(q),
                 Rule::coeff0 => a = Self::parse_val1(q)?,
                 Rule::coeff1 => b = Self::parse_val1(q)?,
                 Rule::coeff2 => c = Self::parse_val1(q)?,
@@ -601,9 +607,7 @@ where
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
         let res = PointLight {
-            a,
-            b,
-            c,
+            attn: Attenuation { a, b, c },
             pos,
             color,
         };
@@ -616,8 +620,8 @@ where
         let mut color: RResult<Vector<F>> = Err(ParseError("missing color"));
         for q in p.into_inner() {
             match q.as_rule() {
-                Rule::direction => direction = Ok(Self::parse_val3(q)),
-                Rule::color => color = Ok(Self::parse_val3(q)),
+                Rule::direction => direction = Self::parse_val3(q),
+                Rule::color => color = Self::parse_val3(q),
                 _ => {
                     error!("{q}");
                 }
@@ -626,7 +630,7 @@ where
         let dir = direction?;
         let color = color?;
         let color = Color::new(color.x, color.y, color.z);
-        let res = DirectionalLight { dir, color };
+        let res = DirectionalLight::new(dir, color);
         info!("{:7.3?}", res);
         Ok(res)
     }
@@ -638,9 +642,9 @@ where
         resdir: &Path,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut body = p.into_inner();
-        let a = Self::parse_num1(body.next().unwrap());
-        let b = Self::parse_num1(body.next().unwrap());
-        let c = Self::parse_num1(body.next().unwrap());
+        let a = Self::parse_num1(&body.next().unwrap())?;
+        let b = Self::parse_num1(&body.next().unwrap())?;
+        let c = Self::parse_num1(&body.next().unwrap())?;
         let x2 = Matrix4::from_translation(Vector3::new(a, b, c));
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
@@ -652,10 +656,10 @@ where
         resdir: &Path,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut body = p.into_inner();
-        let a = Self::parse_num1(body.next().unwrap());
-        let b = Self::parse_num1(body.next().unwrap());
-        let c = Self::parse_num1(body.next().unwrap());
-        let d = Self::parse_num1(body.next().unwrap());
+        let a = Self::parse_num1(&body.next().unwrap())?;
+        let b = Self::parse_num1(&body.next().unwrap())?;
+        let c = Self::parse_num1(&body.next().unwrap())?;
+        let d = Self::parse_num1(&body.next().unwrap())?;
         let x2 = Matrix4::from_axis_angle(Vector3::new(a, b, c).normalize(), Rad(d));
         Self::parse_statement(body.next().unwrap(), xfrm * x2, version, resdir)
     }
@@ -667,10 +671,10 @@ where
         resdir: &Path,
     ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut body = p.into_inner();
-        let a = Self::parse_val4(body.next().unwrap());
-        let b = Self::parse_val4(body.next().unwrap());
-        let c = Self::parse_val4(body.next().unwrap());
-        let d = Self::parse_val4(body.next().unwrap());
+        let a = Self::parse_val4(body.next().unwrap())?;
+        let b = Self::parse_val4(body.next().unwrap())?;
+        let c = Self::parse_val4(body.next().unwrap())?;
+        let d = Self::parse_val4(body.next().unwrap())?;
         let x2 = Matrix4::from_cols(a, b, c, d);
         let x2 = match version {
             SbtVersion::Sbt0_9 => x2.transpose(),
@@ -690,13 +694,13 @@ where
 
         let x2 = match it.len() {
             2 => {
-                let a = Self::parse_num1(it.remove(0));
+                let a = Self::parse_num1(&it.remove(0))?;
                 Matrix4::from_scale(a)
             }
             4 => {
-                let a = Self::parse_num1(it.remove(0));
-                let b = Self::parse_num1(it.remove(0));
-                let c = Self::parse_num1(it.remove(0));
+                let a = Self::parse_num1(&it.remove(0))?;
+                let b = Self::parse_num1(&it.remove(0))?;
+                let c = Self::parse_num1(&it.remove(0))?;
                 Matrix4::from_nonuniform_scale(a, b, c)
             }
             _ => return Err(ParseError("invalid scale")),
@@ -755,7 +759,7 @@ where
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut version: SbtVersion = SbtVersion::Sbt1_0;
-        let mut ambient = Color::black();
+        let mut ambient = Color::BLACK;
 
         for r in p {
             match r.as_rule() {
@@ -772,7 +776,7 @@ where
                 }
 
                 Rule::spot_light => warn!("unimplemented: spot_light"),
-                Rule::ambient_light => ambient = Self::parse_color(r.into_inner().next().unwrap()),
+                Rule::ambient_light => ambient = Self::parse_color(r.into_inner().next().unwrap())?,
                 Rule::material_obj => warn!("unimplemented: material_obj"),
 
                 _ => objects.append(&mut Self::parse_statement(

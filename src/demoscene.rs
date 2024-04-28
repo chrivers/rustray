@@ -7,18 +7,91 @@ use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
+use crate::light::{Attenuation, Light, PointLight};
 use crate::material::*;
-use crate::sampler::{NormalMap, SamplerExt, Texel};
+use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, Point, PointLight, RResult, TimeSlice, Vector};
+use crate::types::{Camera, Color, Float, Point, RResult, TimeSlice, Vector};
 
-use crate::scene::{BoxScene, Light, Scene};
+use crate::scene::{BoxScene, Scene};
 
 use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
-pub fn construct_demo_scene<'a, F>(
+fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
+where
+    f32: Into<F>,
+{
+    let attn = Attenuation {
+        a: (0.3).into(),
+        b: (0.2).into(),
+        c: (0.01).into(),
+    };
+
+    PointLight { attn, pos, color }
+}
+
+fn load_zip_tex<T: Read + Seek>(
+    time: &mut TimeSlice,
+    arch: &mut ZipArchive<T>,
+    name: &str,
+    format: ImageFormat,
+) -> RResult<DynamicImage> {
+    info!("  - {}", name);
+    time.set("zipload");
+    let mut file = arch.by_name(name)?;
+    let mut data = vec![0u8; file.size() as usize];
+    file.read_exact(&mut data)?;
+    let imgdata: Cursor<&[u8]> = Cursor::new(&data);
+
+    Ok(image::load(imgdata, format)?)
+}
+
+fn load_tex3(
+    time: &mut TimeSlice,
+    dl: &ACGDownloader,
+    name: &str,
+) -> RResult<(
+    DynamicImage,
+    DynamicImage,
+    DynamicImage,
+    RResult<DynamicImage>,
+)> {
+    info!("Loading texture archive [{}]", name);
+    time.set("download");
+    let zipfile = File::open(dl.download(name)?)?;
+    let mut archive = ZipArchive::new(zipfile)?;
+    Ok((
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Color.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_NormalDX.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Roughness.png"),
+            ImageFormat::Png,
+        )?,
+        load_zip_tex(
+            time,
+            &mut archive,
+            &format!("{name}_1K_Metalness.png"),
+            ImageFormat::Png,
+        ),
+    ))
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn construct_demo_scene<F>(
     time: &mut TimeSlice,
     width: u32,
     height: u32,
@@ -28,25 +101,12 @@ where
     Standard: Distribution<F>,
     f32: Into<F>,
 {
-    fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
-    where
-        f32: Into<F>,
-    {
-        PointLight {
-            pos,
-            color,
-            a: (0.3).into(),
-            b: (0.2).into(),
-            c: (0.01).into(),
-        }
-    }
-
     time.set("construct");
 
     let cameras = vec![Camera::parametric(
         vec3!(10.0, 4.5, 10.0),
         vec3!(0.0, 1.0, 0.0),
-        Vector::identity_y(),
+        Vector::UNIT_Y,
         F::from_f32(50.0),
         width,
         height,
@@ -68,64 +128,6 @@ where
         Box::new(light5),
     ];
 
-    fn load_zip_tex<T: Read + Seek>(
-        time: &mut TimeSlice,
-        arch: &mut ZipArchive<T>,
-        name: &str,
-        format: ImageFormat,
-    ) -> RResult<DynamicImage> {
-        info!("  - {}", name);
-        time.set("zipload");
-        let mut file = arch.by_name(name)?;
-        let mut data = vec![0u8; file.size() as usize];
-        file.read_exact(&mut data)?;
-        let imgdata: Cursor<&[u8]> = Cursor::new(&data);
-
-        Ok(image::load(imgdata, format)?)
-    }
-
-    fn load_tex3(
-        time: &mut TimeSlice,
-        dl: &ACGDownloader,
-        name: &str,
-    ) -> RResult<(
-        DynamicImage,
-        DynamicImage,
-        DynamicImage,
-        RResult<DynamicImage>,
-    )> {
-        info!("Loading texture archive [{}]", name);
-        time.set("download");
-        let zipfile = File::open(dl.download(name)?)?;
-        let mut archive = ZipArchive::new(zipfile)?;
-        Ok((
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Color.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_NormalDX.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Roughness.png"),
-                ImageFormat::Png,
-            )?,
-            load_zip_tex(
-                time,
-                &mut archive,
-                &format!("{name}_1K_Metalness.png"),
-                ImageFormat::Png,
-            ),
-        ))
-    }
-
     let dl = ACGDownloader::new("textures/download".into(), ACGQuality::PNG_1K)?;
 
     let (tex0a, tex0b, tex0r, tex0m) = load_tex3(time, &dl, "WoodFloor008")?;
@@ -136,26 +138,28 @@ where
     let mat_sphere = Fresnel::new(1.6.into()).dynamic();
     let mat_white = Phong::white().dynamic();
 
-    let mat_plane = ChessBoard::new(
-        Bumpmap::new(
-            0.5.into(),
-            NormalMap::new(tex0b.bilinear()),
-            Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+    let mat_plane = ScaleUV::new(
+        (0.1).into(),
+        (0.1).into(),
+        ChessBoard::new(
+            Bumpmap::new(
+                0.5.into(),
+                NormalMap::new(tex0b.bilinear()),
+                Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+            ),
+            Bumpmap::new(
+                0.5.into(),
+                NormalMap::new(tex1b.bilinear()),
+                Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
+            ),
         ),
-        Bumpmap::new(
-            0.5.into(),
-            NormalMap::new(tex1b.bilinear()),
-            Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
-        ),
-    )
-    .dynamic();
+    );
 
     let mat_bmp2 = Bumpmap::new(
         0.5.into(),
         NormalMap::new(tex2b.bilinear()),
         Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
-    )
-    .dynamic();
+    );
 
     time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
@@ -197,7 +201,17 @@ where
         vec3!(0.0, 0.0, 0.0),
         vec3!(0.0, 0.0, 1.0),
         vec3!(1.0, 0.0, 0.0),
-        mat_plane.clone(),
+        mat_plane,
+    );
+
+    let mat_matte = ScaleUV::new(
+        16.0.into(),
+        16.0.into(),
+        Matte::new(
+            Adjust::new((0.1).into(), (0.00).into(), Perlin::new(3, 3)),
+            8,
+            Fresnel::new(0.1.into()),
+        ),
     );
 
     let sphere1 = Sphere::place(vec3!(1.0, 3.0, 5.0), 1.0.into(), mat_sphere.clone());

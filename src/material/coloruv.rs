@@ -6,16 +6,22 @@ pub struct ColorUV<F: Float> {
 }
 
 impl<F: Float> ColorUV<F> {
-    pub fn new(scale: F) -> Self {
+    pub const fn new(scale: F) -> Self {
         Self { scale }
     }
 }
 
-impl<F: Float> Material for ColorUV<F> {
-    type F = F;
-
+impl<F: Float> Material<F> for ColorUV<F> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         Color::new(uv.x, F::ZERO, uv.y) * self.scale
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Color UV")
+            .default_open(true)
+            .show(ui, |_ui| {});
+        false
     }
 }

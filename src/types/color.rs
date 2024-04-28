@@ -9,7 +9,7 @@ use crate::sampler::Texel;
 
 use crate::types::float::{Float, Lerp};
 
-#[derive(Clone, Copy, Add, AddAssign, Sub, Rem)]
+#[derive(Clone, Copy, Add, AddAssign, Sub, Rem, PartialEq, Eq)]
 pub struct Color<F: Float> {
     pub r: F,
     pub g: F,
@@ -42,7 +42,7 @@ impl<F: Float> ops::Mul<F> for Color<F> {
     }
 }
 
-impl<F: Float> ops::Mul<Color<F>> for Color<F> {
+impl<F: Float> ops::Mul<Self> for Color<F> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
@@ -79,22 +79,30 @@ impl<F: Float> ops::Div<F> for Color<F> {
 }
 
 impl<F: Float> Color<F> {
+    pub const BLACK: Self = Self::gray(F::ZERO);
+    pub const WHITE: Self = Self::gray(F::ONE);
+
+    #[must_use]
     pub const fn new(r: F, g: F, b: F) -> Self {
         Self { r, g, b }
     }
 
+    #[must_use]
     pub const fn gray(c: F) -> Self {
         Self::new(c, c, c)
     }
 
+    #[must_use]
     pub const fn black() -> Self {
         Self::gray(F::ZERO)
     }
 
+    #[must_use]
     pub const fn white() -> Self {
         Self::gray(F::ONE)
     }
 
+    #[must_use]
     pub fn clamped(self) -> Self {
         let r = self.r.clamp(F::ZERO, F::ONE);
         let g = self.g.clamp(F::ZERO, F::ONE);
@@ -102,7 +110,7 @@ impl<F: Float> Color<F> {
         Self { r, g, b }
     }
 
-    pub fn mixed(input: &[Color<F>]) -> Self {
+    pub fn mixed(input: &[Self]) -> Self {
         match input.len() {
             0 => Self::zero(),
             n => input.iter().copied().sum::<Self>() / F::from_usize(n),
@@ -116,6 +124,17 @@ impl<F: Float> Color<F> {
             <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
             <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
             <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+        ]
+    }
+
+    pub fn to_array4(&self) -> [u8; 4] {
+        let clamped = self.clamped();
+        let max = F::from_u32(u8::MAX as u32);
+        [
+            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            255,
         ]
     }
 }
@@ -132,7 +151,7 @@ impl<F: Float> Zero for Color<F> {
 
 impl<F: Float> Sum for Color<F> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Color::zero(), |a, ref c| a + *c)
+        iter.fold(Self::zero(), |a, ref c| a + *c)
     }
 }
 
@@ -144,7 +163,7 @@ impl<F: Float> Lerp for Color<F> {
     type Ratio = F;
 }
 
-impl<F: Float> AsRef<Color<F>> for Color<F> {
+impl<F: Float> AsRef<Self> for Color<F> {
     fn as_ref(&self) -> &Self {
         self
     }
@@ -157,5 +176,23 @@ impl<F: Float> From<[f32; 3]> for Color<F> {
             F::from_f32(val[1]),
             F::from_f32(val[2]),
         )
+    }
+}
+
+impl<F: Float> From<Color<F>> for [f32; 3] {
+    fn from(color: Color<F>) -> Self {
+        [
+            color.r.to_f32().unwrap_or_default(),
+            color.g.to_f32().unwrap_or_default(),
+            color.b.to_f32().unwrap_or_default(),
+        ]
+    }
+}
+
+#[cfg(feature = "gui")]
+impl<F: Float> From<Color<F>> for egui::Color32 {
+    fn from(color: Color<F>) -> Self {
+        let rgb = color.to_array();
+        Self::from_rgb(rgb[0], rgb[1], rgb[2])
     }
 }

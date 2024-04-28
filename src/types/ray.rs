@@ -1,23 +1,40 @@
-use super::vector::{InnerSpace, Vectorx};
-use super::{Float, Vector};
+use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
+use flagset::{flags, FlagSet};
+
 use crate::geometry::Geometry;
 use crate::material::Material;
-use crate::types::transform::Transform;
+use crate::types::{Float, Maxel, Transform, Vector, Vectorx};
 
-use cgmath::{EuclideanSpace, Matrix4, Point3, Transform as cgTransform};
-
-pub use super::maxel::Maxel;
+flags! {
+    pub enum RF: u16 {
+        Debug,
+        StopAtGroup,
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray<F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
-    pub lvl: u32,
+    pub lvl: u16,
+    pub flags: FlagSet<RF>,
 }
 
 impl<'a, F: Float> Ray<F> {
-    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
-        Ray { pos, dir, lvl }
+    pub const fn new(pos: Vector<F>, dir: Vector<F>) -> Self {
+        Self {
+            pos,
+            dir,
+            lvl: 0,
+            flags: FlagSet::default(),
+        }
+    }
+
+    #[must_use]
+    #[allow(clippy::assign_op_pattern)]
+    pub const fn with_debug(mut self) -> Self {
+        self.flags = self.flags | RF::Debug;
+        self
     }
 
     #[must_use]
@@ -29,9 +46,24 @@ impl<'a, F: Float> Ray<F> {
         self,
         ext: F,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F = F>,
+        mat: &'a dyn Material<F>,
     ) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
+        Maxel::new(
+            self.extend(ext),
+            self.dir,
+            self.lvl,
+            obj,
+            mat,
+            self.flags.contains(RF::Debug),
+        )
+    }
+
+    pub fn enter_group(self) -> Option<Self> {
+        if self.flags.contains(RF::StopAtGroup) {
+            None
+        } else {
+            Some(self)
+        }
     }
 
     #[must_use]
@@ -45,7 +77,7 @@ impl<'a, F: Float> Ray<F> {
         Some(Self {
             pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
             dir: xfrm.transform_vector(self.dir),
-            lvl: self.lvl,
+            ..*self
         })
     }
 
@@ -54,7 +86,7 @@ impl<'a, F: Float> Ray<F> {
         Self {
             pos: xfrm.pos_inv(self.pos),
             dir: xfrm.dir_inv(self.dir),
-            lvl: self.lvl,
+            ..*self
         }
     }
 
@@ -63,7 +95,7 @@ impl<'a, F: Float> Ray<F> {
         Self {
             pos: xfrm.pos(self.pos),
             dir: xfrm.dir(self.dir),
-            lvl: self.lvl,
+            ..*self
         }
     }
 
@@ -72,6 +104,14 @@ impl<'a, F: Float> Ray<F> {
         let a = self.dir.magnitude2();
         let b = F::TWO * l.dot(self.dir);
         let c = l.dot(l) - radius2;
+
+        quadratic(a, b, c)
+    }
+
+    pub fn intersect_unit_sphere(&self) -> Option<F> {
+        let a = self.dir.dot(self.dir);
+        let b = F::TWO * self.dir.dot(self.pos);
+        let c = self.pos.dot(self.pos) - F::ONE;
 
         quadratic(a, b, c)
     }
@@ -343,7 +383,7 @@ impl<'a, F: Float> Ray<F> {
 
 impl<F: Float> From<Ray<F>> for rtbvh::Ray {
     fn from(ray: Ray<F>) -> Self {
-        Self::new(ray.pos.into_vector3(), ray.dir.into_vector3())
+        Self::new(ray.pos.into_vec3(), ray.dir.into_vec3())
     }
 }
 
@@ -356,12 +396,16 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
 /* Math functions */
 
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
-    let (t0, t1) = quadratic2(a, b, c)?;
-    if t0.is_negative() || t1.is_negative() {
-        None
-    } else {
-        Some(t0.min(t1))
+    let (ta, tb) = quadratic2(a, b, c)?;
+    let t0 = ta.min(tb);
+    let t1 = ta.max(tb);
+    if t0 > F::BIAS2 {
+        return Some(t0);
     }
+    if t1 > F::BIAS2 {
+        return Some(t1);
+    }
+    None
 }
 
 pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
@@ -371,16 +415,9 @@ pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
         return None;
     }
 
-    let q = if b.is_positive() {
-        -F::HALF * (b + discr.sqrt())
-    } else {
-        -F::HALF * (b - discr.sqrt())
-    };
-    let t0 = q / a;
-    let t1 = c / q;
-    if t0 < t1 {
-        Some((t0, t1))
-    } else {
-        Some((t1, t0))
-    }
+    let dsqrt = discr.sqrt();
+    let div = a * F::TWO;
+    let t0 = (-b + dsqrt) / div;
+    let t1 = (-b - dsqrt) / div;
+    Some((t0, t1))
 }

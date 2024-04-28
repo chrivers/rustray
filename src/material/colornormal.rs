@@ -6,16 +6,22 @@ pub struct ColorNormal<F: Float> {
 }
 
 impl<F: Float> ColorNormal<F> {
-    pub fn new(scale: F) -> Self {
+    pub const fn new(scale: F) -> Self {
         Self { scale }
     }
 }
 
-impl<F: Float> Material for ColorNormal<F> {
-    type F = F;
-
+impl<F: Float> Material<F> for ColorNormal<F> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         let n = maxel.nml();
-        Color::new(n.x, n.y, n.z) * self.scale
+        Color::new(n.x.abs(), n.y.abs(), n.z.abs()) * self.scale
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Color Normals")
+            .default_open(true)
+            .show(ui, |_ui| {});
+        false
     }
 }

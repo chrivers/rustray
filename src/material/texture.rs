@@ -23,7 +23,7 @@ pub struct Texture<F: Float, S: Sampler<F, Color<F>>> {
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> Texture<F, S> {
-    pub fn new(img: S) -> Self {
+    pub const fn new(img: S) -> Self {
         Self {
             _f: PhantomData {},
             img,
@@ -31,15 +31,21 @@ impl<F: Float, S: Sampler<F, Color<F>>> Texture<F, S> {
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> Material for Texture<F, S> {
-    type F = F;
-
+impl<F: Float, S: Sampler<F, Color<F>>> Material<F> for Texture<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         self.img.sample(maxel.uv())
     }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Texture")
+            .default_open(true)
+            .show(ui, |_ui| {});
+        false
+    }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Texture<F, S>> for Texture<F, S> {
+impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Self> for Texture<F, S> {
     fn as_ref(&self) -> &Self {
         self
     }

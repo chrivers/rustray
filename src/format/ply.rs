@@ -1,17 +1,16 @@
 use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
-use std::path::Path;
 
-use cgmath::InnerSpace;
+use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
+use crate::light::{Attenuation, PointLight};
 use crate::material::Phong;
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
 use crate::types::Camera;
-use crate::types::PointLight;
 use crate::types::{Error, RResult};
 use crate::vec3;
 use crate::{Color, Float, Light, Material, Point, Vector, Vectorx};
@@ -34,7 +33,7 @@ struct Face<F: Float> {
 
 impl<F: Float> ply::PropertyAccess for Vertex<F> {
     fn new() -> Self {
-        Vertex(Vector::<F>::zero(), Vector::<F>::zero())
+        Self(Vector::<F>::zero(), Vector::<F>::zero())
     }
     fn set_property(&mut self, key: String, property: ply::Property) {
         match property {
@@ -45,16 +44,14 @@ impl<F: Float> ply::PropertyAccess for Vertex<F> {
                 "nx" => self.1.x = F::from_f32(v),
                 "ny" => self.1.y = F::from_f32(v),
                 "nz" => self.1.z = F::from_f32(v),
-                "s" | "t" => {}
-                "tx" | "ty" | "tz" => {}
-                "bx" | "by" | "bz" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
+                "s" | "t" | "tx" | "ty" | "tz" | "bx" | "by" | "bz" => {}
+                k => error!("Vertex: Unexpected key/value combination: key: {k}"),
             },
             ply::Property::UChar(_v) => match key.as_ref() {
                 "red" | "green" | "blue" | "alpha" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
+                k => error!("Vertex: Unexpected key/value combination: key: {k}"),
             },
-            t => panic!("Vertex: Unexpected type: {t:?}"),
+            t => error!("Vertex: Unexpected type: {t:?}"),
         }
     }
 }
@@ -80,24 +77,14 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
             ("texcoord", ply::Property::ListFloat(vec)) => {
                 self.uv = vec.into_iter().map(F::from_f32).collect();
             }
-            ("red" | "green" | "blue" | "alpha", _) => {}
-            ("flags", _) => {}
-            ("texnumber", _) => {}
-            (k, t) => panic!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
+            ("red" | "green" | "blue" | "alpha" | "flags" | "texnumber", _) => {}
+            (k, t) => error!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
         }
     }
 }
 
-impl<F> PlyParser<F>
-where
-    F: Float + Texel,
-{
-    pub fn parse_file(
-        file: &mut impl BufRead,
-        _resdir: &Path,
-        width: u32,
-        height: u32,
-    ) -> RResult<BoxScene<F>> {
+impl<F: Float + Texel> PlyParser<F> {
+    pub fn parse_file(file: &mut impl BufRead, width: u32, height: u32) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -157,19 +144,19 @@ where
             }
         }
 
-        let mesh = TriangleMesh::new(tris);
+        let mesh = TriangleMesh::new(tris, Matrix4::identity());
 
         let bb = mesh.aabb();
         info!("aabb {:?}", bb);
 
-        let sz: Vector<F> = Vectorx::from_vector3(bb.lengths());
-        let look: Vector<F> = Vectorx::from_vector3(bb.center());
+        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
+        let look: Vector<F> = Vector::from_vec3(bb.center());
         let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
 
         let cam = Camera::build(
             pos,
             look - pos,
-            Vector::unit_y(),
+            Vector::UNIT_Y,
             F::from_f32(120.0),
             width,
             height,
@@ -181,11 +168,13 @@ where
         objects.push(Box::new(mesh));
 
         let lgt = PointLight {
-            a: F::from_f32(0.1),
-            b: F::from_f32(0.0001),
-            c: F::from_f32(0.0),
+            attn: Attenuation {
+                a: F::from_f32(0.1),
+                b: F::from_f32(0.0001),
+                c: F::from_f32(0.0),
+            },
             pos,
-            color: Color::white(),
+            color: Color::WHITE,
         };
 
         lights.push(Box::new(lgt));

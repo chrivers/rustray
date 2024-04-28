@@ -9,7 +9,7 @@ pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {
 }
 
 impl<P: Texel, S: Sampler<u32, P>> Bilinear<P, S> {
-    pub fn new(samp: S) -> Self {
+    pub const fn new(samp: S) -> Self {
         Self {
             samp,
             _p0: PhantomData {},
@@ -28,10 +28,7 @@ impl<P: Texel, S: Sampler<u32, P>> Debug for Bilinear<P, S> {
 impl<F, P, S> Sampler<F, P> for Bilinear<P, S>
 where
     F: Float,
-    P: Texel,
-    P: std::ops::Mul<F, Output = P>,
-    P: std::ops::Add<Output = P>,
-    P: Lerp<Ratio = F>,
+    P: Texel + Lerp<Ratio = F>,
     S: Sampler<u32, P>,
 {
     fn sample(&self, uv: Point<F>) -> P {

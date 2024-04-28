@@ -12,11 +12,12 @@ pub struct Maxel<'a, F: Float> {
     pub pos: Vector<F>,
     pub dir: Vector<F>,
     pub obj: &'a dyn Geometry<F>,
-    pub mat: &'a dyn Material<F = F>,
-    pub lvl: u32,
+    pub mat: &'a dyn Material<F>,
     nml: Option<Vector<F>>,
     uv: Option<Point<F>>,
     st: Option<Point<F>>,
+    pub lvl: u16,
+    pub dbg: bool,
 }
 
 impl<'a, F: Float> Debug for Maxel<'a, F> {
@@ -39,9 +40,10 @@ impl<'a, F: Float> Maxel<'a, F> {
     pub fn new(
         pos: Vector<F>,
         dir: Vector<F>,
-        lvl: u32,
+        lvl: u16,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F = F>,
+        mat: &'a dyn Material<F>,
+        dbg: bool,
     ) -> Self {
         Maxel {
             pos,
@@ -52,17 +54,29 @@ impl<'a, F: Float> Maxel<'a, F> {
             nml: None,
             uv: None,
             st: None,
+            dbg,
         }
+    }
+
+    pub const fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {
+        let mut ray = Ray::new(pos, dir);
+        ray.lvl = self.lvl + 1;
+        if self.dbg {
+            ray = ray.with_debug();
+        }
+        ray
     }
 
     pub fn reflected_ray(&mut self) -> Ray<F> {
         let refl = self.dir.reflect(&self.nml());
-        Ray::new(self.pos + refl * F::BIAS4, refl, self.lvl + 1)
+        let nml = self.nml();
+        self.ray(self.pos + nml * F::BIAS4, refl)
     }
 
     pub fn refracted_ray(&mut self, ior: F) -> Ray<F> {
         let refr = self.dir.refract(&self.nml(), ior);
-        Ray::new(self.pos + refr * F::BIAS4, refr, self.lvl + 1)
+        let nml = self.nml();
+        self.ray(self.pos - nml * F::BIAS4, refr)
     }
 
     pub fn fresnel(&mut self, ior: F) -> F {
@@ -70,7 +84,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_normal(self, nml: Vector<F>) -> Self {
+    pub const fn with_normal(self, nml: Vector<F>) -> Self {
         Self {
             nml: Some(nml),
             ..self
@@ -78,7 +92,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_uv(self, uv: Point<F>) -> Self {
+    pub const fn with_uv(self, uv: Point<F>) -> Self {
         Self {
             uv: Some(uv),
             ..self
@@ -86,7 +100,7 @@ impl<'a, F: Float> Maxel<'a, F> {
     }
 
     #[must_use]
-    pub fn with_st(self, st: Point<F>) -> Self {
+    pub const fn with_st(self, st: Point<F>) -> Self {
         Maxel {
             st: Some(st),
             ..self
@@ -121,5 +135,30 @@ impl<'a, F: Float> Maxel<'a, F> {
             }
             Some(p) => p,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use assert_float_eq::{afe_is_f64_near, afe_near_error_msg, assert_f64_near};
+    use cgmath::InnerSpace;
+
+    use crate::mat_util::Vectorx;
+
+    use super::Vector;
+
+    macro_rules! assert_vec {
+        ($val:expr, $x:expr, $y:expr, $z:expr) => {
+            assert_f64_near!($val.x, $x);
+            assert_f64_near!($val.y, $y);
+            assert_f64_near!($val.z, $z);
+        };
+    }
+
+    #[test]
+    fn test_reflect() {
+        let dir = Vector::new(1.0, -1.0, 0.0).normalize();
+        let nml = Vector::new(0.0, 1.0, 0.0);
+        assert_vec!(dir.reflect(&nml), dir.x, -dir.y, 0.0);
     }
 }

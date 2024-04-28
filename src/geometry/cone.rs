@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cone<F: Float, M: Material<F = F>> {
+pub struct Cone<F: Float, M: Material<F>> {
     height: F,
     top_r: F,
     bot_r: F,
@@ -13,7 +13,94 @@ pub struct Cone<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cone<F, M>);
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        egui::Grid::new("grid")
+            .num_columns(2)
+            .spacing([40.0, 4.0])
+            .striped(true)
+            .show(ui, |ui| {
+                let mut res = false;
+
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Top radius"),
+                    )
+                    .changed();
+                ui.end_row();
+
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Bottom radius"),
+                    )
+                    .changed();
+                ui.end_row();
+
+                res |= ui
+                    .add(
+                        Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+                            .clamp_to_range(false)
+                            .smallest_positive(0.01)
+                            .text("Height"),
+                    )
+                    .changed();
+                ui.end_row();
+
+                res |= ui.checkbox(&mut self.capped, "Capped").changed();
+                ui.end_row();
+
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .inner
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
+        gizmo_ui(ui, camera, self, rect)
+    }
+}
+
+impl<F: Float, M: Material<F>> SceneObject<F> for Cone<F, M> {
+    fn get_name(&self) -> &str {
+        "Cone"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        Some(self)
+    }
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
+impl<F: Float, M: Material<F>> HasTransform<F> for Cone<F, M> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cone<F, M> {
+    fn recompute_aabb(&mut self) {
+        let m = self.bot_r.max(self.top_r);
+        self.aabb = build_aabb_ranged(&self.xfrm, [-m, m], [-m, m], [F::ZERO, self.height]);
+    }
+}
+
+impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -39,7 +126,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
             gamma -= self.height;
         }
 
-        let mut normal: Vector<F> = Vector::unit_x();
+        let mut normal = Vector::UNIT_X;
 
         let p = r.pos;
         let d = r.dir;
@@ -52,119 +139,78 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
         let b = F::TWO * (p.x * d.x + p.y * d.y - beta2 * pzg * d.z);
         let c = p.x * p.x + p.y * p.y - beta2 * pzg * pzg;
 
-        fn test_cap<F: Float>(
-            root: &mut F,
-            normal: &mut Vector<F>,
-            tx: F,
-            r: &Ray<F>,
-            rad: F,
-            dz: F,
-        ) {
-            if tx >= *root || tx <= F::ZERO {
-                return;
+        let mut root = F::max_value();
+
+        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+
+        /* test side 1 */
+        if root1.is_positive() && (root1 < root) {
+            let point = r.extend(root1);
+            if point.z >= F::ZERO && point.z <= self.height {
+                root = root1;
+                normal = vec3!(-point.x, -point.y, F::TWO * beta2 * (point.z + gamma));
+            }
+        }
+
+        /* test side 2 */
+        if root2.is_positive() && (root2 < root) {
+            let point = r.extend(root2);
+            if point.z >= F::ZERO && point.z <= self.height {
+                root = root2;
+                normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
+            }
+        }
+
+        if self.capped {
+            let t1 = (-p.z) / d.z;
+            let t2 = (self.height - p.z) / d.z;
+            let cap_normal = if d.z.is_positive() {
+                -Vector::UNIT_Z
+            } else {
+                Vector::UNIT_Z
+            };
+
+            /* test bottom cap */
+            if t1 > F::ZERO && t1 < root {
+                let p = r.extend(t1);
+                if p.x * p.x + p.y * p.y <= self.bot_r * self.bot_r {
+                    root = t1;
+                    normal = cap_normal;
+                }
             }
 
-            let p = r.extend(tx);
-            if p.x * p.x + p.y * p.y <= rad * rad {
-                *root = tx;
-                if dz.is_positive() {
-                    *normal = -Vector::unit_z();
-                } else {
-                    *normal = Vector::unit_z();
+            /* test top cap */
+            if t2 > F::ZERO && t2 < root {
+                let p = r.extend(t2);
+                if p.x * p.x + p.y * p.y <= self.top_r * self.top_r {
+                    root = t2;
+                    normal = cap_normal;
                 }
             }
         }
 
-        #[allow(clippy::too_many_arguments)]
-        fn test_side<F: Float>(
-            root: &mut F,
-            normal: &mut Vector<F>,
-            tx: F,
-            func: impl Fn(F, F) -> bool,
-            r: &Ray<F>,
-            height: F,
-            beta2: F,
-            gamma: F,
-        ) {
-            let point = r.extend(tx);
-            let good = point.z >= F::ZERO && point.z <= height;
-            if good && func(tx, *root) {
-                *root = tx;
-                *normal = vec3!(point.x, point.y, -F::TWO * beta2 * (point.z + gamma));
-            }
-        }
-
-        let mut root = F::BIAS;
-
-        let (root2, root1) = crate::types::ray::quadratic2(a, b, c)?;
-
-        test_side(
-            &mut root,
-            &mut normal,
-            root1,
-            |tx, root| (tx > root) && (tx > F::BIAS),
-            &r,
-            self.height,
-            beta2,
-            gamma,
-        );
-
-        test_side(
-            &mut root,
-            &mut normal,
-            root2,
-            |tx, root| (tx < root) || (tx > F::BIAS),
-            &r,
-            self.height,
-            beta2,
-            gamma,
-        );
-
-        if self.capped {
-            /* These are to help with finding caps */
-            let t1 = (-p.z) / d.z;
-            let t2 = (self.height - p.z) / d.z;
-
-            test_cap(&mut root, &mut normal, t1, &r, self.bot_r, d.z);
-            test_cap(&mut root, &mut normal, t2, &r, self.top_r, d.z);
-        } else if normal.dot(r.dir) > top_r * bot_r {
-            /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
-            /* Essentially, the cone in this case is a double-sided surface */
-            /* and has _2_ normals */
-            normal = -normal;
-        }
-
-        if root <= F::BIAS {
+        if root == F::max_value() {
             return None;
         }
 
-        Some(
-            ray.hit_at(root, self, &self.mat)
-                .with_normal(self.xfrm.nml_inv(normal)),
-        )
+        let nml = self.xfrm.nml(normal.normalize());
+
+        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
     }
 }
 
-impl<F: Float, M: Material<F = F>> Cone<F, M> {
-    pub fn new(
-        height: F,
-        top_r: F,
-        bot_r: F,
-        capped: bool,
-        xfrm: Matrix4<F>,
-        mat: M,
-    ) -> Cone<F, M> {
-        let m = bot_r.max(top_r);
-        let xfrm = Transform::new(xfrm);
-        let aabb = build_aabb_ranged(&xfrm, [-m, m], [-m, m], [F::ZERO, height]);
-        Cone {
+impl<F: Float, M: Material<F>> Cone<F, M> {
+    pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Self {
+        let mut res = Self {
             height,
             top_r,
             bot_r,
             capped,
             mat,
-            xfrm,
-            aabb,
-        }
+            xfrm: Transform::new(xfrm),
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 }

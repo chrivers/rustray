@@ -1,43 +1,45 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Bumpmap<
+pub struct Bumpmap<F, S1, S2, M>
+where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
-> where
-    Vector<F>: Texel,
+    M: Material<F>,
 {
     pow: S1,
     img: S2,
     mat: M,
+    _p: PhantomData<F>,
 }
 
 impl<F, S1, S2, M> Bumpmap<F, S1, S2, M>
 where
-    F: Float + Texel + crate::types::float::Lerp<Ratio = F>,
+    F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
-    pub fn new(pow: S1, img: S2, mat: M) -> Self {
-        Self { pow, img, mat }
+    pub const fn new(pow: S1, img: S2, mat: M) -> Self {
+        Self {
+            pow,
+            img,
+            mat,
+            _p: PhantomData,
+        }
     }
 }
 
-impl<F: Float + Texel, S1: Sampler<F, F>, S2: Sampler<F, Vector<F>>, M: Material<F = F>> Material
-    for Bumpmap<F, S1, S2, M>
+impl<F, S1, S2, M> Material<F> for Bumpmap<F, S1, S2, M>
 where
     F: Float + Texel,
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
-    M: Material<F = F>,
+    M: Material<F>,
     Vector<F>: Texel,
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let n = self.img.sample(uv);
@@ -54,7 +56,32 @@ where
         self.mat.render(&mut mxl, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, light)
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        self.mat.shadow(maxel, lixel)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Bumpmap")
+            .default_open(true)
+            .show(ui, |ui| {
+                let mut res = false;
+                egui::Grid::new("grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        Sampler::ui(&mut self.pow, ui, "Power");
+                        ui.end_row();
+
+                        Sampler::ui(&mut self.img, ui, "Image");
+                        ui.end_row();
+                    });
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

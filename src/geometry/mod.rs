@@ -1,10 +1,7 @@
 use std::fmt::Debug;
 
-use crate::types::ray::{Maxel, Ray};
-use crate::types::transform::Transform;
-use crate::types::vector::Vectorx;
-use crate::types::Vector;
-use crate::types::{Float, Point};
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 use num_traits::Zero;
@@ -13,7 +10,7 @@ use rtbvh::Aabb;
 
 use glam::f32::Vec3;
 
-pub trait Geometry<F: Float>: Debug + Sync + Send {
+pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
         Vector::zero()
@@ -26,11 +23,14 @@ pub trait Geometry<F: Float>: Debug + Sync + Send {
     }
 }
 
-pub trait FiniteGeometry<F: Float>: Geometry<F> + rtbvh::Primitive {}
+pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {
+    fn recompute_aabb(&mut self) {}
+}
 
 impl<F: Float, T> Geometry<F> for Box<T>
 where
     T: Geometry<F> + ?Sized,
+    Self: SceneObject<F>,
 {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         (**self).intersect(ray)
@@ -49,6 +49,33 @@ where
     }
 }
 
+impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        (**self).get_interactive()
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
+    }
+}
+
+impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
+    fn get_name(&self) -> &str {
+        (**self).get_name()
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        (**self).get_interactive()
+    }
+    fn get_id(&self) -> Option<usize> {
+        (**self).get_id()
+    }
+}
+
 impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
     fn center(&self) -> Vec3 {
         (**self).center()
@@ -59,7 +86,11 @@ impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
     }
 }
 
-impl<F: Float, G: Geometry<F> + rtbvh::Primitive> FiniteGeometry<F> for G {}
+impl<F: Float> FiniteGeometry<F> for Box<dyn FiniteGeometry<F> + 'static> {
+    fn recompute_aabb(&mut self) {
+        (**self).recompute_aabb();
+    }
+}
 
 pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb {
     /* Transform all corner points, expand aabb with each result */
@@ -68,7 +99,7 @@ pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z:
         for py in y {
             for pz in z {
                 let p = xfrm.pos(vec3!(px, py, pz)).into_f32();
-                aabb.grow(p.into_vector3());
+                aabb.grow(p.into_vec3());
             }
         }
     }
@@ -81,7 +112,7 @@ pub fn build_aabb_symmetric<F: Float>(xfrm: &Transform<F>, x: F, y: F, z: F) -> 
 
 macro_rules! aabb_impl_fm {
     ( $t:ty ) => {
-        impl<F: Float, M: Material<F = F>> rtbvh::Primitive for $t {
+        impl<F: Float, M: Material<F>> rtbvh::Primitive for $t {
             fn center(&self) -> Vec3 {
                 self.aabb.center()
             }
@@ -94,16 +125,22 @@ macro_rules! aabb_impl_fm {
 }
 
 pub(crate) mod geo_util {
-    pub use super::Geometry;
+    pub use super::{FiniteGeometry, Geometry};
     pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
     pub use crate::material::Material;
-    pub use crate::types::ray::{Maxel, Ray};
-    pub use crate::types::transform::Transform;
-    pub use crate::types::vector::{InnerSpace, Vectorx};
-    pub use crate::types::{Float, Point, Vector};
+    pub use crate::scene::{Interactive, SceneObject};
+    pub use crate::types::transform::{HasTransform, Transform};
+    pub use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 
-    pub use cgmath::Matrix4;
+    #[cfg(feature = "gui")]
+    pub use crate::frontend::gui::{controls, gizmo_ui};
+    #[cfg(feature = "gui")]
+    pub use crate::types::Camera;
+    #[cfg(feature = "gui")]
+    pub use egui::Slider;
+
+    pub use cgmath::{InnerSpace, Matrix4};
 
     pub use num_traits::Zero;
 

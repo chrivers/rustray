@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::RwLock;
 
 #[cfg(not(feature = "rayon"))]
@@ -10,9 +11,9 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use image::{ColorType, ImageBuffer, Rgb};
 
+use crate::scene::BoxScene;
 use crate::tracer::Tracer;
 use crate::types::{Float, RResult, TimeSlice};
-use crate::scene::BoxScene;
 
 mod pbar {
     use indicatif::{ProgressBar, ProgressStyle};
@@ -33,8 +34,7 @@ fn draw_image<F: Float>(
     tracer: Tracer<F>,
     width: u32,
     height: u32,
-) -> ImageBuffer<Rgb<u8>, Vec<u8>>
-{
+) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let pb = pbar::init(height as u64);
 
     let mut img = ImageBuffer::new(width, height);
@@ -65,7 +65,7 @@ fn draw_image<F: Float>(
     img
 }
 
-pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(scene: BoxScene<F>, width: u32, height: u32, output: PathBuf) -> RResult<()>
 where
     F: Float + From<f32>,
 {
@@ -76,13 +76,7 @@ where
     let img = draw_image(&mut time, Tracer::new(scene.read().unwrap()), width, height);
 
     time.set("write");
-    image::save_buffer(
-        "output.png",
-        &img,
-        img.width(),
-        img.height(),
-        ColorType::Rgb8,
-    )?;
+    image::save_buffer(output, &img, img.width(), img.height(), ColorType::Rgb8)?;
 
     info!("render complete");
     time.stop();

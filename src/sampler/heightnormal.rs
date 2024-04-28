@@ -7,7 +7,7 @@ pub struct HeightNormal<F: Float + Texel, S: Sampler<F, F>> {
 }
 
 impl<F: Float + Texel, S: Sampler<F, F>> HeightNormal<F, S> {
-    pub fn new(delta: F, sampler: S) -> Self {
+    pub const fn new(delta: F, sampler: S) -> Self {
         Self { delta, sampler }
     }
 }

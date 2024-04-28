@@ -1,7 +1,7 @@
 use super::geo_util::*;
 
 #[derive(Debug)]
-pub struct Cube<F: Float, M: Material<F = F>> {
+pub struct Cube<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
     mat: M,
     aabb: Aabb,
@@ -9,7 +9,54 @@ pub struct Cube<F: Float, M: Material<F = F>> {
 
 aabb_impl_fm!(Cube<F, M>);
 
-impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
+impl<F: Float, M: Material<F>> Interactive<F> for Cube<F, M> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        self.mat.ui(ui)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
+        gizmo_ui(ui, camera, self, rect)
+    }
+}
+
+impl<F: Float, M: Material<F>> SceneObject<F> for Cube<F, M> {
+    fn get_name(&self) -> &str {
+        "Cube"
+    }
+
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+        Some(self)
+    }
+
+    fn get_id(&self) -> Option<usize> {
+        Some(std::ptr::addr_of!(*self) as usize)
+    }
+}
+
+impl<F: Float, M: Material<F>> HasTransform<F> for Cube<F, M> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {
+    fn recompute_aabb(&mut self) {
+        self.aabb = build_aabb_symmetric(&self.xfrm, F::HALF, F::HALF, F::HALF);
+    }
+}
+
+impl<F: Float, M: Material<F>> Cube<F, M> {
+    const NORMALS: [Vector<F>; 3] = [Vector::UNIT_X, Vector::UNIT_Y, Vector::UNIT_Z];
+}
+
+impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
@@ -46,12 +93,10 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
 
         let best = best?;
 
-        let normals = [Vector::unit_x(), Vector::unit_y(), Vector::unit_z()];
-
         let normal = if best < 3 {
-            -normals[best % 3]
+            -Self::NORMALS[best % 3]
         } else {
-            normals[best % 3]
+            Self::NORMALS[best % 3]
         };
 
         let i1 = (best + 1) % 3;
@@ -64,16 +109,20 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
 
         Some(
             ray.hit_at(best_t, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal))
+                .with_normal(self.xfrm.nml(normal).normalize())
                 .with_uv(uv),
         )
     }
 }
 
-impl<F: Float, M: Material<F = F>> Cube<F, M> {
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Cube<F, M> {
-        let xfrm = Transform::new(xfrm);
-        let aabb = build_aabb_symmetric(&xfrm, F::HALF, F::HALF, F::HALF);
-        Cube { xfrm, mat, aabb }
+impl<F: Float, M: Material<F>> Cube<F, M> {
+    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
+        let mut res = Self {
+            xfrm: Transform::new(xfrm),
+            mat,
+            aabb: Aabb::empty(),
+        };
+        res.recompute_aabb();
+        res
     }
 }

@@ -1,60 +1,82 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::types::ray::Maxel;
-use crate::types::{Color, Float};
+use crate::light::Lixel;
+use crate::types::{Color, Float, Maxel};
 
-use crate::scene::{Light, RayTracer};
+use crate::scene::RayTracer;
 
-pub trait Material: Debug + Send + Sync {
-    type F: Float;
-    fn render(&self, maxel: &mut Maxel<Self::F>, rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
+pub trait Material<F: Float>: Debug + Send + Sync {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F>;
 
-    fn shadow(
-        &self,
-        _maxel: &mut Maxel<Self::F>,
-        _light: &dyn Light<Self::F>,
-    ) -> Option<Color<Self::F>> {
-        Some(Color::black())
+    fn shadow(&self, _maxel: &mut Maxel<F>, _lixel: &Lixel<F>) -> Option<Color<F>> {
+        Some(Color::BLACK)
     }
 
-    fn dynamic(self) -> DynMaterial<Self::F>
+    fn dynamic(self) -> DynMaterial<F>
     where
         Self: Sized + 'static,
     {
         Arc::new(Box::new(self))
     }
-}
 
-pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
-
-impl<F: Float> Material for Color<F> {
-    type F = F;
-    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
-        *self
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.label("Unknown material");
+        false
     }
 }
 
-impl<F: Float> Material for Arc<Box<dyn Material<F = F>>> {
-    type F = F;
+pub type DynMaterial<F> = Arc<Box<dyn Material<F>>>;
+
+impl<F: Float> Material<F> for Color<F> {
+    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
+        *self
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        crate::frontend::gui::controls::color(ui, self, "Color")
+    }
+}
+
+impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        self.as_ref().render(maxel, rt)
+        (**self).render(maxel, rt)
+    }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        (**self).shadow(maxel, lixel)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        if let Some(mat) = Arc::get_mut(self) {
+            mat.ui(ui)
+        } else {
+            ui.label("nope :(");
+            false
+        }
     }
 }
 
 pub(crate) mod mat_util {
     /* These are convenience re-imports for modules, so skip warnings */
     #![allow(unused_imports)]
+    pub use crate::light::{Light, Lixel};
     pub use crate::material::{DynMaterial, Material};
     pub use crate::sampler::Sampler;
     pub use crate::sampler::Texel;
-    pub use crate::scene::{Light, RayTracer};
-    pub use crate::types::ray::{Maxel, Ray};
-    pub use crate::types::vector::{InnerSpace, Vectorx};
-    pub use crate::types::{Color, Float, Point, Vector};
+    pub use crate::scene::{Interactive, RayTracer};
+    pub use crate::types::{Color, Float, Maxel, Point, Ray, Vector, Vectorx};
     pub use crate::{point, vec3};
 
-    pub use cgmath::VectorSpace;
+    #[cfg(feature = "gui")]
+    pub use crate::frontend::gui::controls;
+    #[cfg(feature = "gui")]
+    pub use egui::{CollapsingHeader, Slider};
+
+    pub use cgmath::{InnerSpace, VectorSpace};
 
     use num_traits::Zero;
     pub use std::marker::PhantomData;

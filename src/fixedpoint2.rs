@@ -3,19 +3,37 @@ use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{AddAssign, Neg, SubAssign};
 use fixed::FixedI64;
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{FloatConst, Pow};
+use num_traits::{Bounded, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Add, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub},
     str::FromStr,
 };
 
-use num_traits::Bounded;
+#[cfg(feature = "gui")]
+use egui::emath::Numeric;
 
 use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
 
-#[derive(Clone, Copy, /* Add, Sub, */ AddAssign, SubAssign, PartialEq, PartialOrd, Neg)]
+#[derive(Clone, Copy, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FXP<const P: i32>(FixedI64<P>);
+
+#[cfg(feature = "gui")]
+impl<const P: i32> Numeric for FXP<P> {
+    const INTEGRAL: bool = false;
+
+    const MIN: Self = Self(FixedI64::<P>::MIN);
+
+    const MAX: Self = Self(FixedI64::<P>::MAX);
+
+    fn to_f64(self) -> f64 {
+        self.0.cast()
+    }
+
+    fn from_f64(num: f64) -> Self {
+        num.into()
+    }
+}
 
 impl<const P: i32> FXP<P> {
     #[must_use]
@@ -226,7 +244,7 @@ impl<const P: i32> Zero for FXP<P> {
     }
 }
 
-impl<const P: i32> Pow<FXP<P>> for FXP<P> {
+impl<const P: i32> Pow<Self> for FXP<P> {
     type Output = Self;
 
     fn pow(self, rhs: Self) -> Self::Output {
@@ -645,8 +663,14 @@ impl<const P: i32> Float for FXP<P> {
         value.into()
     }
 
+    #[cfg(not(feature = "gui"))]
     fn from_f64(value: f64) -> Self {
         value.into()
+    }
+
+    #[cfg(not(feature = "gui"))]
+    fn to_f64(self) -> f64 {
+        self.into_f64()
     }
 }
 

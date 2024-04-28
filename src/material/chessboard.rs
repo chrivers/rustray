@@ -1,20 +1,23 @@
 use super::mat_util::*;
 
 #[derive(Copy, Clone, Debug)]
-pub struct ChessBoard<A: Material, B: Material> {
+pub struct ChessBoard<F: Float, A: Material<F>, B: Material<F>> {
     a: A,
     b: B,
+    _p: PhantomData<F>,
 }
 
-impl<A: Material, B: Material> ChessBoard<A, B> {
-    pub fn new(a: A, b: B) -> Self {
-        Self { a, b }
+impl<F: Float, A: Material<F>, B: Material<F>> ChessBoard<F, A, B> {
+    pub const fn new(a: A, b: B) -> Self {
+        Self {
+            a,
+            b,
+            _p: PhantomData,
+        }
     }
 }
 
-impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for ChessBoard<A, B> {
-    type F = F;
-
+impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for ChessBoard<F, A, B> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let u = uv.x.abs().fract() > F::HALF;
@@ -25,5 +28,13 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>> Material for ChessBoard<A
         } else {
             self.b.render(maxel, rt)
         }
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Chessboard")
+            .default_open(true)
+            .show(ui, |_ui| {});
+        false
     }
 }

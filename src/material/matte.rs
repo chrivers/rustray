@@ -2,35 +2,39 @@ use super::mat_util::*;
 use rand::Rng;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> {
-    rays: u32, /* Number of rays to average over */
+pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> {
     src: S,    /* Surface Roughness Coefficient */
+    rays: u32, /* Number of rays to average over */
     mat: M,    /* Underlying material */
+    _p: PhantomData<F>,
 }
 
 impl<F, S, M> Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F = F>,
+    M: Material<F>,
 {
-    pub fn new(src: S, rays: u32, mat: M) -> Self {
-        Self { src, rays, mat }
+    pub const fn new(src: S, rays: u32, mat: M) -> Self {
+        Self {
+            src,
+            rays,
+            mat,
+            _p: PhantomData,
+        }
     }
 }
 
-impl<F, S, M> Material for Matte<F, S, M>
+impl<F, S, M> Material<F> for Matte<F, S, M>
 where
     F: Float + Texel,
     S: Sampler<F, F>,
-    M: Material<F = F>,
+    M: Material<F>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
-    type F = F;
-
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut rng = rand::thread_rng();
-        let mut col = Color::black();
+        let mut col = Color::BLACK;
         let mut mxl = *maxel;
 
         let uv = maxel.uv();
@@ -48,7 +52,27 @@ where
         col / F::from_u32(self.rays)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, light)
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        self.mat.shadow(maxel, lixel)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        CollapsingHeader::new("Matte")
+            .default_open(true)
+            .show(ui, |ui| {
+                let mut res = false;
+
+                res |= ui
+                    .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
+                    .changed();
+
+                self.src.ui(ui, "Surface Roughness Coefficient");
+                res |= self.mat.ui(ui);
+
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }

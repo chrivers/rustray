@@ -7,7 +7,7 @@ pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>> {
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S> {
-    pub fn new(sampler: S) -> Self {
+    pub const fn new(sampler: S) -> Self {
         Self {
             sampler,
             _p: PhantomData {},

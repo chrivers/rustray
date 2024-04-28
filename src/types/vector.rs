@@ -1,6 +1,6 @@
 use num_traits::Zero;
 
-use super::transform::Transform;
+use super::{transform::Transform, Point};
 
 pub use cgmath::{
     EuclideanSpace, InnerSpace, Matrix, Matrix4, MetricSpace, Point3, Transform as cgTransform,
@@ -40,27 +40,29 @@ macro_rules! vec3 {
 pub type Vector<F> = cgmath::Vector3<F>;
 
 impl<F: Float> Vectorx<F> for Vector<F> {
-    fn identity_x() -> Self {
-        Self {
-            x: F::ONE,
-            y: F::ZERO,
-            z: F::ZERO,
-        }
-    }
+    const UNIT_X: Self = Self {
+        x: F::ONE,
+        y: F::ZERO,
+        z: F::ZERO,
+    };
 
-    fn identity_y() -> Self {
-        Self {
-            x: F::ZERO,
-            y: F::ONE,
-            z: F::ZERO,
-        }
-    }
+    const UNIT_Y: Self = Self {
+        x: F::ZERO,
+        y: F::ONE,
+        z: F::ZERO,
+    };
 
-    fn identity_z() -> Self {
-        Self {
-            x: F::ZERO,
-            y: F::ZERO,
-            z: F::ONE,
+    const UNIT_Z: Self = Self {
+        x: F::ZERO,
+        y: F::ZERO,
+        z: F::ONE,
+    };
+
+    #[cfg(debug_assertions)]
+    fn assert_normalized(self) {
+        if self != Self::zero() {
+            assert!(self.magnitude() < F::from_f32(1.01));
+            assert!(self.magnitude() > F::from_f32(0.99));
         }
     }
 
@@ -79,6 +81,13 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         .normalize();
 
         (u, self.cross(u))
+    }
+
+    fn point(self) -> Point<F> {
+        Point {
+            x: self.x,
+            y: self.y,
+        }
     }
 
     #[must_use]
@@ -108,7 +117,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         )
     }
 
-    fn into_vector3(self) -> glam::Vec3 {
+    fn into_vec3(self) -> glam::Vec3 {
         glam::Vec3::new(
             self.x.to_f32().unwrap_or_default(),
             self.y.to_f32().unwrap_or_default(),
@@ -117,7 +126,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
     }
 
     #[must_use]
-    fn from_vector3(val: glam::Vec3) -> Self {
+    fn from_vec3(val: glam::Vec3) -> Self {
         Self {
             x: F::from_f32(val[0]),
             y: F::from_f32(val[1]),
@@ -163,9 +172,13 @@ pub trait Vectorx<F: Float>: InnerSpace<Scalar = F> + Zero
 where
     Self: Sized + std::ops::Neg<Output = Self>,
 {
-    fn identity_x() -> Self;
-    fn identity_y() -> Self;
-    fn identity_z() -> Self;
+    const UNIT_X: Self;
+    const UNIT_Y: Self;
+    const UNIT_Z: Self;
+
+    #[cfg(debug_assertions)]
+    fn assert_normalized(self);
+
     #[must_use]
     fn min(&self, other: &Self) -> Self;
     #[must_use]
@@ -177,12 +190,14 @@ where
 
     fn surface_tangents(&self) -> (Self, Self);
 
-    fn into_vector3(self) -> glam::Vec3;
-    fn from_vector3(val: glam::Vec3) -> Self;
+    fn into_vec3(self) -> glam::Vec3;
+    fn from_vec3(val: glam::Vec3) -> Self;
 
     fn from_f32s(val: [f32; 3]) -> Self;
     fn from_f32(value: Vector<f32>) -> Self;
     fn into_f32(self) -> Vector<f32>;
+
+    fn point(self) -> Point<F>;
 
     #[inline]
     #[must_use]
@@ -241,7 +256,7 @@ where
         if k.is_negative() {
             Self::zero()
         } else {
-            self * eta + n * (eta * cosi - k.sqrt())
+            (self * eta + n * (eta * cosi - k.sqrt())).normalize()
         }
     }
 
@@ -280,3 +295,28 @@ where
 }
 
 impl<F: Float> Texel for Vector<F> {}
+
+pub trait Vector4x<F: Float> {
+    fn from_mint(val: mint::Vector4<f32>) -> Self;
+    fn into_mint(self) -> mint::Vector4<f32>;
+}
+
+impl<F: Float> Vector4x<F> for cgmath::Vector4<F> {
+    fn from_mint(val: mint::Vector4<f32>) -> Self {
+        Self {
+            x: F::from_f32(val.x),
+            y: F::from_f32(val.y),
+            z: F::from_f32(val.z),
+            w: F::from_f32(val.w),
+        }
+    }
+
+    fn into_mint(self) -> mint::Vector4<f32> {
+        mint::Vector4::<f32> {
+            x: self.x.to_f32().unwrap_or_default(),
+            y: self.y.to_f32().unwrap_or_default(),
+            z: self.z.to_f32().unwrap_or_default(),
+            w: self.w.to_f32().unwrap_or_default(),
+        }
+    }
+}

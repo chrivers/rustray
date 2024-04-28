@@ -22,6 +22,7 @@ impl Debug for Perlin {
 }
 
 impl Perlin {
+    #[must_use]
     pub fn new(w: u32, h: u32) -> Self {
         let pn = PerlinNoise2D::new(
             // `octaves`     - The amount of detail in Perlin noise.
@@ -54,5 +55,24 @@ impl<F: Float + Texel> Sampler<F, F> for Perlin {
 
     fn dimensions(&self) -> (u32, u32) {
         (self.w, self.h)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.label(name);
+        egui::CollapsingHeader::new("Perlin")
+            .default_open(true)
+            .show(ui, |ui| {
+                let mut res = false;
+                res |= ui
+                    .add(Slider::new(&mut self.w, 0..=10).text("Width"))
+                    .changed();
+                res |= ui
+                    .add(Slider::new(&mut self.h, 0..=10).text("Height"))
+                    .changed();
+                res
+            })
+            .body_returned
+            .unwrap_or(false)
     }
 }
