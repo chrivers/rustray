@@ -1,4 +1,15 @@
-use super::geo_util::*;
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use cgmath::{InnerSpace, Matrix4};
+use glam::Vec3;
+use rtbvh::Aabb;
+
+use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::vec3;
 
 #[derive(Debug)]
 pub struct Cylinder<F: Float, M: Material<F>> {
@@ -13,52 +24,23 @@ aabb_impl_fm!(Cylinder<F, M>);
 impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                res |= ui.checkbox(&mut self.capped, "Capped").changed();
-                ui.end_row();
+        let mut res = false;
+        res |= ui.checkbox(&mut self.capped, "Capped").changed();
+        ui.end_row();
 
-                res |= self.mat.ui(ui);
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .inner
+        res
     }
 
     #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Cylinder<F, M> {
-    fn get_name(&self) -> &str {
-        "Cylinder"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
-
-impl<F: Float, M: Material<F>> HasTransform<F> for Cylinder<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
+geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
+geometry_impl_hastransform!(Cylinder<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
     fn recompute_aabb(&mut self) {
@@ -116,7 +98,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 
         let mut root = F::max_value();
 
-        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+        let (root1, root2) = types::quadratic2(a, b, c)?;
 
         /* test side 1 */
         if root1.is_positive() && (root1 < root) {
@@ -175,6 +157,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Cylinder<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::CYLINDER;
+
     pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
@@ -190,7 +174,7 @@ impl<F: Float, M: Material<F>> Cylinder<F, M> {
 #[cfg(test)]
 mod test {
     use assert_float_eq::{afe_is_f64_near, afe_near_error_msg, assert_f64_near};
-    use cgmath::{Matrix4, Zero};
+    use cgmath::Matrix4;
 
     use super::{Cylinder, Geometry, Ray, Vector};
     use crate::types::Color;
@@ -207,37 +191,146 @@ mod test {
     fn test_cylinder1() {
         let c = Cylinder::new(Matrix4::from_scale(2.0), false, Color::WHITE);
 
-        let r0 = Ray {
-            pos: Vector::unit_x() * 4.0,
-            dir: -Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r0 = Ray::new(Vector::UNIT_X * 4.0, -Vector::UNIT_X);
         let h0 = c.intersect(&r0).unwrap();
         assert_vec!(h0.pos, 2.0, 0.0, 0.0);
         assert_vec!(h0.dir, -1.0, 0.0, 0.0);
 
-        let r1 = Ray {
-            pos: Vector::zero(),
-            dir: Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r1 = Ray::new(Vector::ZERO, Vector::UNIT_X);
         let h1 = c.intersect(&r1).unwrap();
         assert_vec!(h1.pos, 2.0, 0.0, 0.0);
         assert_vec!(h1.dir, 1.0, 0.0, 0.0);
 
-        let r2 = Ray {
-            pos: Vector::unit_x() * 1.99,
-            dir: -Vector::unit_x(),
-            lvl: 10,
-            grp: 10,
-            dbg: false,
-        };
+        let r2 = Ray::new(Vector::UNIT_X * 1.99, -Vector::UNIT_X);
         let h2 = c.intersect(&r2).unwrap();
         assert_vec!(h2.pos, -2.0, 0.0, 0.0);
         assert_vec!(h2.dir, -1.0, 0.0, 0.0);
+    }
+
+    extern crate test;
+
+    use std::hint::black_box;
+
+    use cgmath::Deg;
+    use rand::Rng;
+    use test::Bencher;
+
+    use super::{Float, Vectorx};
+
+    type F = f64;
+
+    fn cylinder() -> Cylinder<F, Color<F>> {
+        let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
+            * Matrix4::from_angle_y(Deg(45.0))
+            * Matrix4::from_scale(0.3);
+        let sq = Cylinder::new(xfrm, true, Color::BLACK);
+        black_box(sq)
+    }
+
+    fn ray() -> Ray<F> {
+        let ray = Ray::<F>::new(-Vector::UNIT_Z * F::TWO, Vector::UNIT_Z);
+        black_box(ray)
+    }
+
+    fn randdir() -> Vector<F> {
+        let mut rng = rand::thread_rng();
+        Vector::new(rng.gen::<F>() * 0.2 - 0.1, rng.gen::<F>() * 0.2 - 0.1, 1.0)
+    }
+
+    fn bench_cylinder_intersect(
+        bench: &mut Bencher,
+        gendir: fn(idx: usize) -> Vector<F>,
+        test: fn(ray: &Ray<F>, obj: &Cylinder<F, Color<F>>) -> bool,
+        check: fn(hits: usize, rays: usize),
+    ) {
+        const ITERATIONS: usize = 100;
+        let mut ray = ray();
+        let obj = cylinder();
+        let dirs: Vec<_> = (0..ITERATIONS).map(gendir).collect();
+        bench.iter(|| {
+            let mut hits: usize = 0;
+            for dir in &dirs {
+                ray.dir = *dir;
+                if test(&ray, &obj) {
+                    hits += 1;
+                }
+            }
+            check(hits, ITERATIONS);
+        })
+    }
+
+    fn bench_cylinder_intersect_mixed(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+    ) {
+        bench_cylinder_intersect(
+            bench,
+            |_idx| randdir(),
+            test,
+            |hits, rays| {
+                assert_ne!(hits, 0);
+                assert_ne!(hits, rays);
+            },
+        )
+    }
+
+    fn bench_cylinder_intersect_never(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+    ) {
+        bench_cylinder_intersect(
+            bench,
+            |_idx| {
+                let mut vec = randdir();
+                vec.z = -vec.z;
+                vec
+            },
+            test,
+            |hits, _rays| {
+                assert_eq!(hits, 0);
+            },
+        )
+    }
+
+    fn bench_cylinder_intersect_always(
+        bench: &mut Bencher,
+        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+    ) {
+        bench_cylinder_intersect(
+            bench,
+            |_idx| {
+                let mut rng = rand::thread_rng();
+                Vector::new(
+                    rng.gen::<F>() * 0.01 - 0.005,
+                    rng.gen::<F>() * 0.01 - 0.005,
+                    1.0,
+                )
+            },
+            test,
+            |hits, rays| {
+                assert_eq!(hits, rays);
+            },
+        )
+    }
+
+    // benchmark methods with a mix of hit or miss rays
+
+    #[bench]
+    fn intersect_mixed(bench: &mut Bencher) {
+        bench_cylinder_intersect_mixed(bench, |ray, cylinder| cylinder.intersect(&ray).is_some());
+    }
+
+    // benchmark methods for rays that miss the cylinder
+
+    #[bench]
+    fn intersect_never(bench: &mut Bencher) {
+        bench_cylinder_intersect_never(bench, |ray, cylinder| cylinder.intersect(&ray).is_some());
+    }
+
+    // benchmark methods for rays that miss the cylinder
+
+    #[bench]
+    fn intersect_always(bench: &mut Bencher) {
+        bench_cylinder_intersect_always(bench, |ray, cylinder| cylinder.intersect(&ray).is_some());
     }
 }

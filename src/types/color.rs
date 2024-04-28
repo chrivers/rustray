@@ -1,12 +1,15 @@
-use cgmath::VectorSpace;
-use derive_more::{Add, AddAssign, Rem, Sub};
-use num_traits::Zero;
+use std::convert::From;
 use std::fmt::{self, Debug};
 use std::iter::Sum;
 use std::ops;
 
-use crate::sampler::Texel;
+use cgmath::VectorSpace;
+use derive_more::{Add, AddAssign, Rem, Sub};
+use num::NumCast;
+use num_traits::Zero;
 
+use crate::sampler::Texel;
+use crate::scene::Interactive;
 use crate::types::float::{Float, Lerp};
 
 #[derive(Clone, Copy, Add, AddAssign, Sub, Rem, PartialEq, Eq)]
@@ -27,6 +30,13 @@ impl<F: Float> Debug for Color<F> {
         write!(f, ", ")?;
         Debug::fmt(&self.b, f)?;
         f.write_str(")")
+    }
+}
+
+impl<F: Float> Interactive<F> for Color<F> {
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        crate::gui::controls::color(ui, self, "Color")
     }
 }
 
@@ -112,28 +122,28 @@ impl<F: Float> Color<F> {
 
     pub fn mixed(input: &[Self]) -> Self {
         match input.len() {
-            0 => Self::zero(),
+            0 => Self::BLACK,
             n => input.iter().copied().sum::<Self>() / F::from_usize(n),
         }
     }
 
     pub fn to_array(&self) -> [u8; 3] {
         let clamped = self.clamped();
-        let max = F::from_u32(u8::MAX as u32);
+        let max = F::from_u32(u8::MAX.into());
         [
-            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
         ]
     }
 
     pub fn to_array4(&self) -> [u8; 4] {
         let clamped = self.clamped();
-        let max = F::from_u32(u8::MAX as u32);
+        let max = F::from_u32(u8::MAX.into());
         [
-            <u8 as num::traits::NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
-            <u8 as num::traits::NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.r * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.g * max).round()).unwrap_or(u8::MAX),
+            <u8 as NumCast>::from((clamped.b * max).round()).unwrap_or(u8::MAX),
             255,
         ]
     }
@@ -141,7 +151,7 @@ impl<F: Float> Color<F> {
 
 impl<F: Float> Zero for Color<F> {
     fn zero() -> Self {
-        Self::black()
+        Self::BLACK
     }
 
     fn is_zero(&self) -> bool {
@@ -151,7 +161,7 @@ impl<F: Float> Zero for Color<F> {
 
 impl<F: Float> Sum for Color<F> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Self::zero(), |a, ref c| a + *c)
+        iter.fold(Self::BLACK, |a, ref c| a + *c)
     }
 }
 

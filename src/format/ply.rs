@@ -6,14 +6,12 @@ use cgmath::{InnerSpace, Matrix4, SquareMatrix};
 use num_traits::Zero;
 
 use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::light::{Attenuation, PointLight};
-use crate::material::Phong;
+use crate::light::{Attenuation, Light, PointLight};
+use crate::material::{Material, Phong};
 use crate::sampler::Texel;
 use crate::scene::{BoxScene, Scene};
-use crate::types::{Camera, MaterialLib};
-use crate::types::{Error, RResult};
+use crate::types::{Camera, Color, Error, Float, MaterialLib, Point, RResult, Vector, Vectorx};
 use crate::vec3;
-use crate::{Color, Float, Light, Material, Point, Vector, Vectorx};
 
 use ply_rs::{parser, ply};
 use rtbvh::Primitive;
@@ -33,8 +31,9 @@ struct Face<F: Float> {
 
 impl<F: Float> ply::PropertyAccess for Vertex<F> {
     fn new() -> Self {
-        Self(Vector::<F>::zero(), Vector::<F>::zero())
+        Self(Vector::ZERO, Vector::ZERO)
     }
+
     fn set_property(&mut self, key: String, property: ply::Property) {
         match property {
             ply::Property::Float(v) => match key.as_ref() {
@@ -84,7 +83,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
 }
 
 impl<F: Float + Texel> PlyParser<F> {
-    pub fn parse_file(file: &mut impl BufRead, width: u32, height: u32) -> RResult<BoxScene<F>> {
+    pub fn parse_file(file: &mut impl BufRead) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -135,9 +134,9 @@ impl<F: Float + Texel> PlyParser<F> {
                     a.1,
                     b.1,
                     c.1,
-                    Point::zero(),
-                    Point::zero(),
-                    Point::zero(),
+                    Point::ZERO,
+                    Point::ZERO,
+                    Point::ZERO,
                     mat.clone(),
                 );
                 tris.push(tri);
@@ -153,15 +152,7 @@ impl<F: Float + Texel> PlyParser<F> {
         let look: Vector<F> = Vector::from_vec3(bb.center());
         let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
 
-        let cam = Camera::build(
-            pos,
-            look - pos,
-            Vector::UNIT_Y,
-            F::from_f32(120.0),
-            width,
-            height,
-            None,
-        );
+        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
 
         cameras.push(cam);
 

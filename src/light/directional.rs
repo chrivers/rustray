@@ -2,6 +2,7 @@ use cgmath::InnerSpace;
 
 use crate::light::{Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
 use crate::types::{Color, Float, Maxel, Vector};
 
 #[derive(Debug)]
@@ -22,53 +23,30 @@ impl<F: Float> DirectionalLight<F> {
 impl<F: Float> Interactive<F> for DirectionalLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use crate::gui::controls;
 
-        egui::CollapsingHeader::new("Directional light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
-
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::position(ui, &mut self.dir, "Direction");
-
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::position(ui, &mut self.dir, "Direction");
+        res
     }
 }
 
 impl<F: Float> SceneObject<F> for DirectionalLight<F> {
-    fn get_name(&self) -> &str {
-        "Directional Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Directional Light", egui_phosphor::regular::SUN);
 }
 
 impl<F: Float> Light<F> for DirectionalLight<F> {
     fn contribution(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Lixel<F> {
-        rt.shadow(
-            maxel,
-            Lixel {
-                // FIXME: precalculate
-                dir: -self.dir.normalize(),
-                color: self.color,
-                len2: F::from_u32(100_000),
-            },
-        )
+        let mut lixel = Lixel {
+            // FIXME: precalculate
+            dir: -self.dir.normalize(),
+            color: self.color,
+            len2: F::from_u32(100_000),
+        };
+        if let Some(color) = rt.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
     }
 }

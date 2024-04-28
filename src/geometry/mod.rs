@@ -1,30 +1,27 @@
 use std::fmt::Debug;
 
+use glam::f32::Vec3;
+use rtbvh::Aabb;
+
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
-use num_traits::Zero;
-
-use rtbvh::Aabb;
-
-use glam::f32::Vec3;
-
 pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
-        Vector::zero()
+        Vector::ZERO
     }
     fn uv(&self, _maxel: &mut Maxel<F>) -> Point<F> {
-        Point::zero()
+        Point::ZERO
     }
     fn st(&self, _maxel: &mut Maxel<F>) -> Point<F> {
-        Point::zero()
+        Point::ZERO
     }
 }
 
 pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {
-    fn recompute_aabb(&mut self) {}
+    fn recompute_aabb(&mut self);
 }
 
 impl<F: Float, T> Geometry<F> for Box<T>
@@ -54,6 +51,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
         (**self).get_name()
     }
 
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
+    }
+
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
@@ -68,6 +69,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
         (**self).get_name()
     }
 
+    fn get_icon(&self) -> &str {
+        (**self).get_icon()
+    }
+
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
@@ -76,7 +81,7 @@ impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
     }
 }
 
-impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
+impl<F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'static> {
     fn center(&self) -> Vec3 {
         (**self).center()
     }
@@ -124,39 +129,37 @@ macro_rules! aabb_impl_fm {
     };
 }
 
-pub(crate) mod geo_util {
-    pub use super::{FiniteGeometry, Geometry};
-    pub use crate::geometry::{build_aabb_ranged, build_aabb_symmetric};
-    pub use crate::material::Material;
-    pub use crate::scene::{Interactive, SceneObject};
-    pub use crate::types::transform::{HasTransform, Transform};
-    pub use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
-    pub use crate::{point, vec3};
-
-    #[cfg(feature = "gui")]
-    pub use crate::frontend::gui::{controls, gizmo_ui};
-    #[cfg(feature = "gui")]
-    pub use crate::types::Camera;
-    #[cfg(feature = "gui")]
-    pub use egui::Slider;
-
-    pub use cgmath::{InnerSpace, Matrix4};
-
-    pub use num_traits::Zero;
-
-    pub use glam::Vec3;
-    pub use rtbvh::Aabb;
-    pub use rtbvh::Primitive;
+macro_rules! geometry_impl_sceneobject {
+    ( $type:ty, $name:expr ) => {
+        impl<F: Float, M: Material<F>> SceneObject<F> for $type {
+            crate::sceneobject_impl_body!($name, Self::ICON);
+        }
+    };
 }
 
-pub mod cone;
-pub mod cube;
-pub mod cylinder;
-pub mod plane;
-pub mod sphere;
-pub mod square;
-pub mod triangle;
-pub mod trianglemesh;
+macro_rules! geometry_impl_hastransform {
+    ( $type:ty ) => {
+        impl<F: Float, M: Material<F>> HasTransform<F> for $type {
+            fn get_transform(&self) -> &Transform<F> {
+                &self.xfrm
+            }
+
+            fn set_transform(&mut self, xfrm: &Transform<F>) {
+                self.xfrm = *xfrm;
+                self.recompute_aabb();
+            }
+        }
+    };
+}
+
+mod cone;
+mod cube;
+mod cylinder;
+mod plane;
+mod sphere;
+mod square;
+mod triangle;
+mod trianglemesh;
 
 pub use cone::Cone;
 pub use cube::Cube;

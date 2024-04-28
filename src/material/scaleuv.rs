@@ -1,4 +1,9 @@
-use super::mat_util::*;
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Point};
 
 /// Proxy material that scales UV coordinates, before rendering backing material.
 #[derive(Copy, Clone, Debug)]
@@ -23,40 +28,42 @@ impl<F: Float, M: Material<F>> Material<F> for ScaleUV<F, M> {
         self.mat.render(&mut smaxel, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        let uv = maxel.uv();
+        let mut smaxel = maxel.with_uv(self.uv.dot(uv));
+        self.mat.shadow(&mut smaxel, rt, lixel)
     }
+}
 
+impl<F: Float, M: Material<F>> Interactive<F> for ScaleUV<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("ScaleUV")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
-                            .logarithmic(true)
-                            .clamp_to_range(false)
-                            .trailing_fill(true)
-                            .text("u scaling factor"),
-                    )
-                    .changed();
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
-                            .logarithmic(true)
-                            .clamp_to_range(false)
-                            .trailing_fill(true)
-                            .text("v scaling factor"),
-                    )
-                    .changed();
-                res |= self.mat.ui(ui);
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.uv.x, F::ZERO..=F::from_u32(50))
+                    .logarithmic(true)
+                    .clamp_to_range(false)
+                    .trailing_fill(true)
+                    .text("u scaling factor"),
+            )
+            .changed();
+        res |= ui
+            .add(
+                egui::Slider::new(&mut self.uv.y, F::ZERO..=F::from_u32(50))
+                    .logarithmic(true)
+                    .clamp_to_range(false)
+                    .trailing_fill(true)
+                    .text("v scaling factor"),
+            )
+            .changed();
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+impl<F: Float, M: Material<F>> SceneObject<F> for ScaleUV<F, M> {
+    sceneobject_impl_body!("Scale UV", egui_phosphor::regular::FRAME_CORNERS);
 }

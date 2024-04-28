@@ -1,4 +1,4 @@
-use crate::types::{transform::HasTransform, Camera, Float};
+use crate::types::{Camera, Float, HasTransform};
 
 use egui_gizmo::{Gizmo, GizmoMode, GizmoOrientation};
 
@@ -61,11 +61,9 @@ pub fn gizmo_ui<F: Float>(
         .mode(mode)
         .orientation(orient);
 
-    if let Some(response) = gizmo.interact(ui) {
+    gizmo.interact(ui).map_or(false, |response| {
         let f = response.transform();
         obj.set_transform(&f.into());
         true
-    } else {
-        false
-    }
+    })
 }

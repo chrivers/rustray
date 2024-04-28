@@ -1,14 +1,13 @@
+use std::fmt::{Debug, Display};
+use std::ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
+use std::str::FromStr;
+
 use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{FloatConst, Pow};
-use std::{
-    fmt::{Debug, Display},
-    ops::{Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
-    str::FromStr,
-};
+use num_traits::{ConstOne, ConstZero, FloatConst, Pow};
 
-use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
+use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, Add, Sub, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FP<const P: u8>(i64);
@@ -155,13 +154,13 @@ impl<const P: u8> From<i64> for FP<P> {
 
 impl<const P: u8> From<i32> for FP<P> {
     fn from(value: i32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
 impl<const P: u8> From<u32> for FP<P> {
     fn from(value: u32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
@@ -174,7 +173,7 @@ impl<const P: u8> From<usize> for FP<P> {
 impl<const P: u8> From<f32> for FP<P> {
     fn from(value: f32) -> Self {
         /* FIXME: f32 */
-        Self((value as f64 * Self::SCALING as f64) as i64)
+        Self((Into::<f64>::into(value) * Self::SCALING as f64) as i64)
     }
 }
 
@@ -196,6 +195,14 @@ impl<const P: u8> Mul for FP<P> {
     fn mul(self, rhs: Self) -> Self::Output {
         (self.into_f64() * rhs.into_f64()).into()
     }
+}
+
+impl<const P: u8> ConstZero for FP<P> {
+    const ZERO: Self = Self(0);
+}
+
+impl<const P: u8> ConstOne for FP<P> {
+    const ONE: Self = Self(1i64 << P);
 }
 
 impl<const P: u8> Zero for FP<P> {
@@ -229,8 +236,6 @@ impl<const P: u8> FromStr for FP<P> {
         todo!()
     }
 }
-
-impl<const P: u8> Texel for FP<P> {}
 
 impl<const P: u8> FloatConst for FP<P> {
     #[doc = "Return Euler’s number."]
@@ -576,8 +581,6 @@ impl<const P: u8> RelativeEq for FP<P> {
 }
 
 impl<const P: u8> Float for FP<P> {
-    const ZERO: Self = Self(0);
-
     const BIAS: Self = Self(Self::ONE.0 / 1_000_000);
     const BIAS2: Self = Self(Self::ONE.0 / 100_000);
     const BIAS3: Self = Self(Self::ONE.0 / 10_000);
@@ -594,8 +597,6 @@ impl<const P: u8> Float for FP<P> {
     /* const BIAS4: Self = Self(0x1000); */
 
     const HALF: Self = Self(1i64 << (P - 1));
-
-    const ONE: Self = Self(1i64 << P);
 
     const TWO: Self = Self(1i64 << (P + 1));
 
@@ -632,7 +633,7 @@ impl<const P: u8> Float for FP<P> {
 mod test {
     use super::FP as FPG;
     use crate::types::Float;
-    use num_traits::{Float as _, FloatConst as _, Pow as _};
+    use num_traits::{ConstOne as _, ConstZero as _, Float as _, FloatConst as _, Pow as _};
 
     use assert_float_eq::{afe_is_f32_near, afe_near_error_msg, assert_f32_near};
 

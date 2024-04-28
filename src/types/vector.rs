@@ -1,13 +1,10 @@
+use std::hash::{DefaultHasher, Hasher};
+
+use cgmath::{InnerSpace, Matrix4};
 use num_traits::Zero;
 
-use super::{transform::Transform, Point};
-
-pub use cgmath::{
-    EuclideanSpace, InnerSpace, Matrix, Matrix4, MetricSpace, Point3, Transform as cgTransform,
-};
-
-use super::Float;
 use crate::sampler::Texel;
+use crate::types::{transform::Transform, Float, Lerp, Point};
 
 /**
 Convenience macro to construct a [`Vector<F>`] from input values.
@@ -40,6 +37,12 @@ macro_rules! vec3 {
 pub type Vector<F> = cgmath::Vector3<F>;
 
 impl<F: Float> Vectorx<F> for Vector<F> {
+    const ZERO: Self = Self {
+        x: F::ZERO,
+        y: F::ZERO,
+        z: F::ZERO,
+    };
+
     const UNIT_X: Self = Self {
         x: F::ONE,
         y: F::ZERO,
@@ -60,7 +63,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
 
     #[cfg(debug_assertions)]
     fn assert_normalized(self) {
-        if self != Self::zero() {
+        if self != Self::ZERO {
             assert!(self.magnitude() < F::from_f32(1.01));
             assert!(self.magnitude() > F::from_f32(0.99));
         }
@@ -166,12 +169,22 @@ impl<F: Float> Vectorx<F> for Vector<F> {
     fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self {
         Transform::new(*xfrm).nml(*self)
     }
+
+    #[must_use]
+    fn hash(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        hasher.write_u64(self.x.to_f64().to_bits());
+        hasher.write_u64(self.y.to_f64().to_bits());
+        hasher.write_u64(self.z.to_f64().to_bits());
+        hasher.finish()
+    }
 }
 
 pub trait Vectorx<F: Float>: InnerSpace<Scalar = F> + Zero
 where
     Self: Sized + std::ops::Neg<Output = Self>,
 {
+    const ZERO: Self;
     const UNIT_X: Self;
     const UNIT_Y: Self;
     const UNIT_Z: Self;
@@ -254,7 +267,7 @@ where
         let k = F::ONE - eta * eta * (F::ONE - cosi * cosi);
 
         if k.is_negative() {
-            Self::zero()
+            Self::ZERO
         } else {
             (self * eta + n * (eta * cosi - k.sqrt())).normalize()
         }
@@ -292,6 +305,12 @@ where
             (r_s * r_s + r_p * r_p) * F::HALF
         }
     }
+
+    fn hash(&self) -> u64;
+}
+
+impl<F: Float> Lerp for Vector<F> {
+    type Ratio = F;
 }
 
 impl<F: Float> Texel for Vector<F> {}

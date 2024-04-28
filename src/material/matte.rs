@@ -1,5 +1,14 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
 use rand::Rng;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::sampler::{Sampler, Texel};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Matte<F: Float + Texel, S: Sampler<F, F>, M: Material<F>> {
@@ -43,7 +52,7 @@ where
         for _n in 0..self.rays {
             let rx = (rng.gen() - F::HALF) * src;
             let ry = (rng.gen() - F::HALF) * src;
-            let rz = (rng.gen() / F::TWO) * (F::one() - src) + src;
+            let rz = (rng.gen() / F::TWO) * (F::ONE - src) + src;
             let (normalu, normalv) = normal.surface_tangents();
             mxl = mxl.with_normal((normal * rz + normalu * rx + normalv * ry).normalize());
 
@@ -52,27 +61,37 @@ where
         col / F::from_u32(self.rays)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        self.mat.shadow(maxel, rt, lixel)
     }
+}
 
+impl<F, S, M> Interactive<F> for Matte<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F>,
+{
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Matte")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= ui
-                    .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
-                    .changed();
+        res |= ui
+            .add(egui::Slider::new(&mut self.rays, 1..=32).text("Rays"))
+            .changed();
 
-                self.src.ui(ui, "Surface Roughness Coefficient");
-                res |= self.mat.ui(ui);
+        res |= self.src.ui(ui, "Surface Roughness Coefficient");
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+impl<F, S, M> SceneObject<F> for Matte<F, S, M>
+where
+    F: Float + Texel,
+    S: Sampler<F, F>,
+    M: Material<F>,
+{
+    sceneobject_impl_body!("Matte", egui_phosphor::regular::WAVES);
 }

@@ -1,4 +1,10 @@
-use super::mat_util::*;
+use cgmath::VectorSpace;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Blend<F: Float, A: Material<F>, B: Material<F>> {
@@ -20,11 +26,15 @@ impl<F: Float, A: Material<F>, B: Material<F>> Material<F> for Blend<F, A, B> {
         a.lerp(b, self.pct)
     }
 
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Blend")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        let a = self.a.shadow(maxel, rt, lixel);
+        let b = self.b.shadow(maxel, rt, lixel);
+        a.lerp(b, self.pct)
     }
+}
+
+impl<F: Float, A: Material<F>, B: Material<F>> Interactive<F> for Blend<F, A, B> {}
+
+impl<F: Float, A: Material<F>, B: Material<F>> SceneObject<F> for Blend<F, A, B> {
+    sceneobject_impl_body!("Blend", egui_phosphor::regular::CIRCLE_HALF_TILT);
 }

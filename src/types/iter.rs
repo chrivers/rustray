@@ -44,16 +44,54 @@ impl<'a, F: Float> Iterator for GridSamplesIter<'a, F> {
             return None;
         }
 
-        self.count += 1;
-
         let samples = self.samples;
 
         let y = F::from_u32(self.count / samples.xres);
         let x = F::from_u32(self.count % samples.xres);
 
-        let rx = (x / F::from_u32(samples.xres) - F::HALF) * samples.width + self.xoffset;
-        let ry = (y / F::from_u32(samples.yres) - F::HALF) * samples.height + self.yoffset;
+        self.count += 1;
+
+        let rx = (x / F::from_u32(samples.xres)) * samples.width + self.xoffset;
+        let ry = (y / F::from_u32(samples.yres)) * samples.height + self.yoffset;
 
         Some((rx, ry))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::GridSamples;
+
+    #[test]
+    fn test_grid_samples_single_point_centered() {
+        let g = GridSamples::new(20.0, 20.0, 1, 1);
+        assert_eq!(g.iter().collect::<Vec<_>>().as_slice(), [(10.0, 10.0)]);
+    }
+
+    #[test]
+    fn test_grid_samples_x_centered() {
+        let g = GridSamples::new(8.0, 0.0, 4, 1);
+        assert_eq!(
+            g.iter().collect::<Vec<_>>().as_slice(),
+            [(1.0, 0.0), (3.0, 0.0), (5.0, 0.0), (7.0, 0.0)]
+        );
+    }
+
+    #[test]
+    fn test_grid_samples_y_centered() {
+        let g = GridSamples::new(0.0, 8.0, 1, 4);
+        assert_eq!(
+            g.iter().collect::<Vec<_>>().as_slice(),
+            [(0.0, 1.0), (0.0, 3.0), (0.0, 5.0), (0.0, 7.0)]
+        );
+    }
+
+    #[test]
+    fn test_grid_samples_uniform() {
+        let g = GridSamples::new(8.0, 8.0, 2, 2);
+        assert_eq!(
+            g.iter().collect::<Vec<_>>().as_slice(),
+            [(2.0, 2.0), (6.0, 2.0), (2.0, 6.0), (6.0, 6.0)]
+        );
     }
 }

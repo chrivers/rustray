@@ -1,4 +1,13 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
+
+use crate::light::Lixel;
+use crate::material::Material;
+use crate::sampler::{Sampler, Texel};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Point, Vector, Vectorx};
 
 #[derive(Copy, Clone, Debug)]
 pub struct BumpPower<F: Float>(pub F);
@@ -43,7 +52,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     pub const fn new(pow: S1, img: S2, mat: M) -> Self {
         Self {
@@ -61,7 +69,6 @@ where
     S1: Sampler<F, F>,
     S2: Sampler<F, Vector<F>>,
     M: Material<F>,
-    Vector<F>: Texel,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
@@ -79,29 +86,37 @@ where
         self.mat.render(&mut mxl, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        self.mat.shadow(maxel, lixel)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        self.mat.shadow(maxel, rt, lixel)
     }
+}
 
+impl<F, S1, S2, M> Interactive<F> for Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F>,
+{
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Bumpmap")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        res |= Sampler::ui(&mut self.pow, ui, "Power");
-                        res |= Sampler::ui(&mut self.img, ui, "Image");
-                    });
-                res |= self.mat.ui(ui);
+        ui.strong("Bumpmap");
+        ui.end_row();
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= Sampler::ui(&mut self.pow, ui, "Power");
+        res |= Sampler::ui(&mut self.img, ui, "Image");
+        res |= self.mat.ui(ui);
+        res
     }
+}
+
+impl<F, S1, S2, M> SceneObject<F> for Bumpmap<F, S1, S2, M>
+where
+    F: Float + Texel,
+    S1: Sampler<F, F>,
+    S2: Sampler<F, Vector<F>>,
+    M: Material<F>,
+{
+    sceneobject_impl_body!("Bumpmap", egui_phosphor::regular::ARROW_ELBOW_RIGHT);
 }

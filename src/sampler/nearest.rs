@@ -1,4 +1,8 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use crate::point;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Nearest<P: Texel, S: Sampler<u32, P>> {
@@ -41,5 +45,10 @@ where
 
     fn dimensions(&self) -> (u32, u32) {
         self.samp.dimensions()
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        self.samp.ui(ui, &format!("{name} (nearest)"))
     }
 }

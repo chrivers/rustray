@@ -1,17 +1,25 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use num::Zero;
+
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 #[derive(Copy, Clone, Debug)]
-pub struct Mirror<F, S>
+pub struct Mirror<F, T>
 where
-    F: Float + Texel,
-    S: Sampler<F, F>,
+    F: Float,
+    T: Sampler<F, Color<F>>,
 {
-    refl: S,
+    refl: T,
     _p: PhantomData<F>,
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S> {
-    pub const fn new(refl: S) -> Self {
+impl<F: Float, T: Sampler<F, Color<F>>> Mirror<F, T> {
+    pub const fn new(refl: T) -> Self {
         Self {
             refl,
             _p: PhantomData {},
@@ -19,20 +27,26 @@ impl<F: Float + Texel, S: Sampler<F, F>> Mirror<F, S> {
     }
 }
 
-impl<F: Float + Texel, S: Sampler<F, F>> Material<F> for Mirror<F, S> {
+impl<F: Float, T: Sampler<F, Color<F>>> Material<F> for Mirror<F, T> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let c_refl = rt
-            .ray_trace(&maxel.reflected_ray())
-            .unwrap_or_else(|| rt.background());
+        let refl_color = self.refl.sample(maxel.uv());
 
-        c_refl * self.refl.sample(maxel.uv())
+        if !refl_color.is_zero() {
+            rt.ray_trace(&maxel.reflected_ray())
+                .map_or(Color::BLACK, |c| c * refl_color)
+        } else {
+            Color::BLACK
+        }
     }
+}
 
+impl<F: Float, T: Sampler<F, Color<F>>> Interactive<F> for Mirror<F, T> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Mirror")
-            .default_open(true)
-            .show(ui, |_ui| {});
-        false
+        self.refl.ui(ui, "Reflectance")
     }
+}
+
+impl<F: Float, T: Sampler<F, Color<F>>> SceneObject<F> for Mirror<F, T> {
+    sceneobject_impl_body!("Mirror", egui_phosphor::regular::ARROWS_SPLIT);
 }

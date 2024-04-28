@@ -1,9 +1,11 @@
-use std::fmt::Debug;
+use std::ops::Sub;
 use std::sync::Arc;
+use std::{fmt::Debug, ops::Add};
 
+use num::Zero;
 use num_traits::Num;
 
-use crate::types::{Color, Float, Point};
+use crate::types::{Color, Float, Lerp, Point};
 
 /** Trait for sampling values from datasource (textures, etc)
  */
@@ -27,23 +29,19 @@ where
     }
 
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        ui.label(name);
-        ui.end_row();
-        false
-    }
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool;
 }
 
 pub type BoxSampler<F, T> = Box<dyn Sampler<F, T>>;
 pub type DynSampler<F, T> = Arc<dyn Sampler<F, T>>;
 
-impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'a> {
+impl<F: Num, T: Texel> Sampler<F, T> for DynSampler<F, T> {
     fn sample(&self, uv: Point<F>) -> T {
-        self.as_ref().sample(uv)
+        (**self).sample(uv)
     }
 
     fn dimensions(&self) -> (u32, u32) {
-        self.as_ref().dimensions()
+        (**self).dimensions()
     }
 
     #[cfg(feature = "gui")]
@@ -57,20 +55,24 @@ impl<'a, F: Num, T: Texel> Sampler<F, T> for Arc<dyn Sampler<F, T> + 'a> {
     }
 }
 
-pub trait Texel: Debug + Send + Sync {}
+pub trait Texel
+where
+    Self: Debug + Send + Sync + Zero + Add<Self, Output = Self> + Sub<Self, Output = Self> + Lerp,
+{
+}
 
-impl Texel for f32 {}
-impl Texel for f64 {}
+impl<F: Float + Debug + Send + Sync> Texel for F {}
 
 /**
-Blanket implementation: [`Sync`] + [`Copy`] types can sample themselves, returning
+Blanket implementation: [`Texel`] types can sample themselves, returning
 self as their value.
 
 This is useful to make e.g. a [`crate::Float`] or [`crate::Color<F>`] a viable substitute for a real
 texture sampler.
 */
-impl<F: Float + Texel> Sampler<F, F> for F
+impl<F> Sampler<F, F> for F
 where
+    F: Float + Texel,
     Self: Debug,
 {
     fn sample(&self, _uv: Point<F>) -> F {
@@ -85,7 +87,7 @@ where
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
         ui.label(name);
         let res = ui
-            .add(egui::Slider::new(self, F::zero()..=F::from_u32(128)).clamp_to_range(false))
+            .add(egui::Slider::new(self, F::ZERO..=F::from_u32(128)).clamp_to_range(false))
             .changed();
         ui.end_row();
         res
@@ -103,37 +105,20 @@ impl<F: Float> Sampler<F, Self> for Color<F> {
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        crate::frontend::gui::controls::color(ui, self, name)
+        crate::gui::controls::color(ui, self, name)
     }
 }
 
-pub(crate) mod samp_util {
-    pub use std::marker::PhantomData;
-
-    pub use super::{Sampler, Texel};
-    pub use crate::point;
-    pub use crate::types::float::Lerp;
-    pub use crate::types::{Color, Float, Point, Vector};
-
-    pub use cgmath::{InnerSpace, VectorSpace};
-
-    pub use num_traits::ToPrimitive;
-
-    #[cfg(feature = "gui")]
-    pub use egui::{CollapsingHeader, Slider};
-}
-
-pub mod bilinear;
-pub mod chessboard;
-pub mod heightnormal;
-pub mod nearest;
-pub mod normalmap;
-pub mod perlin;
-pub mod samplerext;
-pub mod shinemap;
-pub mod texture1;
-pub mod texture3;
-pub mod transform;
+mod bilinear;
+mod chessboard;
+mod heightnormal;
+mod nearest;
+mod normalmap;
+mod perlin;
+mod samplerext;
+mod shinemap;
+mod texture;
+mod transform;
 
 pub use bilinear::Bilinear;
 pub use chessboard::ChessBoardSampler;

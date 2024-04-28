@@ -1,73 +1,54 @@
-use super::geo_util::*;
-use super::triangle::Triangle;
-
-use cgmath::SquareMatrix;
-use obj::Obj;
-
-use rtbvh::{Bounds, Builder, Bvh};
 use std::num::NonZeroUsize;
 
+use cgmath::{Matrix4, SquareMatrix};
+use glam::Vec3;
+use obj::Obj;
+use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
+
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
+use crate::material::{BoxMaterial, Material};
 use crate::sampler::Texel;
-use crate::types::bvh::BvhExt;
-use crate::types::matlib::MaterialId;
-use crate::types::ray::RF;
-use crate::types::result::RResult;
-use crate::types::{Color, MaterialLib};
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{
+    BvhExt, Color, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform,
+    Vector, Vectorx, RF,
+};
 
 #[derive(Debug)]
 pub struct TriangleMesh<F: Float, M: Material<F>> {
     xfrm: Transform<F>,
-    mat: Box<dyn Material<F>>,
+    mat: BoxMaterial<F>,
     pub tris: Vec<Triangle<F, M>>,
     bvh: Bvh,
     aabb: Aabb,
 }
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
-    #[cfg(feature = "gui")]
-    fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
-        false
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        let mut res = false;
+        if ui.button("Face normals").clicked() {
+            crate::mesh::face_normals(&mut self.tris);
+            res |= true;
+        }
+        if ui.button("Smooth normals").clicked() {
+            crate::mesh::smooth_normals(&mut self.tris);
+            res |= true;
+        }
+        res
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for TriangleMesh<F, M> {
-    fn get_name(&self) -> &str {
-        "Triangle mesh"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
-
-impl<F: Float, M: Material<F>> HasTransform<F> for TriangleMesh<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
-
-impl<F: Float, M: Material<F>> Primitive for TriangleMesh<F, M> {
-    fn center(&self) -> Vec3 {
-        self.aabb.center()
-    }
-
-    fn aabb(&self) -> Aabb {
-        self.aabb
-    }
-}
+geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
+geometry_impl_hastransform!(TriangleMesh<F, M>);
+aabb_impl_fm!(TriangleMesh<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
     fn recompute_aabb(&mut self) {
@@ -99,7 +80,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
                 mxl.uv();
                 mxl.pos = self.xfrm.pos(mxl.pos);
                 mxl.dir = self.xfrm.dir(mxl.dir);
-                mxl.with_normal(self.xfrm.nml(mxl.nml()).normalize())
+                mxl.with_normal(self.xfrm.nml(mxl.nml()))
             })
         } else {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
@@ -116,6 +97,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
 }
 
 impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
+    const ICON: &'static str = egui_phosphor::regular::POLYGON;
+
     pub fn new(tris: Vec<Triangle<F, M>>, xfrm: Matrix4<F>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 

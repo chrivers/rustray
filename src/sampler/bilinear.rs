@@ -1,6 +1,9 @@
 use std::fmt::{self, Debug};
+use std::marker::PhantomData;
 
-use super::samp_util::*;
+use crate::point;
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone)]
 pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {
@@ -28,7 +31,7 @@ impl<P: Texel, S: Sampler<u32, P>> Debug for Bilinear<P, S> {
 impl<F, P, S> Sampler<F, P> for Bilinear<P, S>
 where
     F: Float,
-    P: Texel + Lerp<Ratio = F>,
+    P: Texel<Ratio = F>,
     S: Sampler<u32, P>,
 {
     fn sample(&self, uv: Point<F>) -> P {
@@ -63,5 +66,10 @@ where
 
     fn dimensions(&self) -> (u32, u32) {
         self.samp.dimensions()
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        self.samp.ui(ui, &format!("{name} (bilinear)"))
     }
 }

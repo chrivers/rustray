@@ -1,14 +1,9 @@
 use cgmath::{InnerSpace, Rad};
 
-use num_traits::FloatConst;
-
-use crate::light::{Light, Lixel};
+use crate::light::{Attenuation, Light, Lixel};
 use crate::scene::{Interactive, RayTracer, SceneObject};
-use crate::types::maxel::Maxel;
-use crate::types::{Color, Float, Vector};
-use crate::Vectorx;
-
-use super::Attenuation;
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct SpotLight<F: Float> {
@@ -21,16 +16,7 @@ pub struct SpotLight<F: Float> {
 }
 
 impl<F: Float> SceneObject<F> for SpotLight<F> {
-    fn get_name(&self) -> &str {
-        "Spot Light"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
+    sceneobject_impl_body!("Spot Light", egui_phosphor::regular::FLASHLIGHT);
 }
 
 impl<F: Float> Light<F> for SpotLight<F> {
@@ -53,7 +39,7 @@ impl<F: Float> Light<F> for SpotLight<F> {
             };
         }
 
-        let lixel = if angle > inner_angle {
+        let mut lixel = if angle > inner_angle {
             let scale = F::ONE - (angle - inner_angle) / (outer_angle - inner_angle).max(F::BIAS);
             Lixel {
                 color: color * scale,
@@ -68,54 +54,41 @@ impl<F: Float> Light<F> for SpotLight<F> {
             }
         };
 
-        rt.shadow(maxel, lixel)
+        if let Some(color) = rt.ray_shadow(maxel, &lixel) {
+            lixel.color = color;
+        }
+        lixel
     }
 }
 
 impl<F: Float> Interactive<F> for SpotLight<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        use crate::frontend::gui::controls;
+        use egui::Slider;
+        use num_traits::FloatConst;
 
-        egui::CollapsingHeader::new("Spot light")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
+        use crate::gui::controls;
 
-                        res |= controls::color(ui, &mut self.color, "Color");
-                        res |= controls::attenuation(ui, &mut self.attn);
+        let mut res = false;
 
-                        ui.label("Umbra");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.umbra.0, F::ZERO..=F::PI())
-                                    .step_by(f64::PI() / 180.0),
-                            )
-                            .changed();
-                        ui.end_row();
+        res |= controls::color(ui, &mut self.color, "Color");
+        res |= controls::attenuation(ui, &mut self.attn);
 
-                        ui.label("Penumbra");
-                        res |= ui
-                            .add(
-                                egui::Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI())
-                                    .step_by(f64::PI() / 180.0),
-                            )
-                            .changed();
-                        ui.end_row();
+        ui.label("Umbra");
+        res |= ui
+            .add(Slider::new(&mut self.umbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
+            .changed();
+        ui.end_row();
 
-                        res |= controls::position(ui, &mut self.pos, "Position");
-                        res |= controls::position(ui, &mut self.dir, "Direction");
+        ui.label("Penumbra");
+        res |= ui
+            .add(Slider::new(&mut self.penumbra.0, F::ZERO..=F::PI()).step_by(f64::PI() / 180.0))
+            .changed();
+        ui.end_row();
 
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res |= controls::position(ui, &mut self.dir, "Direction");
+
+        res
     }
 }

@@ -1,10 +1,9 @@
 use std::cell::RefCell;
 use std::fmt::{self, Debug};
-use std::sync::RwLockWriteGuard;
 
 use cgmath::MetricSpace;
 
-use crate::light::{Light, Lixel};
+use crate::light::Lixel;
 use crate::scene::{BoxScene, RayTracer};
 use crate::types::{Color, Float, Maxel, Ray};
 
@@ -17,19 +16,29 @@ pub struct Step<'a, F: Float> {
 }
 
 pub struct DebugTracer<'a, F: Float> {
-    scene: &'a RwLockWriteGuard<'a, BoxScene<F>>,
+    scene: &'a BoxScene<F>,
     pub steps: RefCell<Vec<Step<'a, F>>>,
     maxlvl: u16,
 }
 
 impl<'a, F: Float> DebugTracer<'a, F> {
     #[must_use]
-    pub fn new(scene: &'a RwLockWriteGuard<'a, BoxScene<F>>, maxlvl: u16) -> Self {
+    pub fn new(scene: &'a BoxScene<F>, maxlvl: u16) -> Self {
         Self {
             scene,
             steps: RefCell::new(vec![]),
             maxlvl,
         }
+    }
+
+    pub fn into_inner(self) -> Vec<Step<'a, F>> {
+        self.steps.into_inner()
+    }
+
+    pub fn trace_single(scene: &'a BoxScene<F>, maxlvl: u16, ray: &Ray<F>) -> Vec<Step<'a, F>> {
+        let dt = Self::new(scene, maxlvl);
+        dt.ray_trace(ray);
+        dt.into_inner()
     }
 }
 
@@ -59,13 +68,12 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
             if let Some(mut curhit) = curobj.intersect(&hitray) {
                 let cur_length = maxel.pos.distance2(curhit.pos);
                 if cur_length > F::BIAS2 && cur_length < best_length {
-                    if let Some(color) = curhit.mat.shadow(&mut curhit, lixel) {
-                        best_color = Some(color);
-                        best_length = cur_length;
+                    let color = curhit.mat.shadow(&mut curhit, self, lixel);
+                    best_color = Some(color);
+                    best_length = cur_length;
 
-                        step.color = best_color;
-                        step.maxel = Some(curhit);
-                    }
+                    step.color = best_color;
+                    step.maxel = Some(curhit);
                 }
             }
         }
@@ -95,18 +103,6 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
         self.steps.borrow_mut().push(step);
 
         res
-    }
-
-    fn ambient(&self) -> Color<F> {
-        self.scene.ambient
-    }
-
-    fn get_lights(&self) -> &[Box<dyn Light<F>>] {
-        &self.scene.lights
-    }
-
-    fn background(&self) -> Color<F> {
-        self.scene.background
     }
 
     fn scene(&self) -> &BoxScene<F> {

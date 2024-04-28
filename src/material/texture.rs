@@ -1,4 +1,10 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use crate::material::Material;
+use crate::sampler::Sampler;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 pub trait TextureSampler<F: Float>
 where
@@ -35,14 +41,19 @@ impl<F: Float, S: Sampler<F, Color<F>>> Material<F> for Texture<F, S> {
     fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         self.img.sample(maxel.uv())
     }
+}
 
+impl<F: Float, S: Sampler<F, Color<F>>> Interactive<F> for Texture<F, S> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Texture")
-            .default_open(true)
-            .show(ui, |_ui| {});
+        ui.strong("Texture");
+        ui.end_row();
         false
     }
+}
+
+impl<F: Float, S: Sampler<F, Color<F>>> SceneObject<F> for Texture<F, S> {
+    sceneobject_impl_body!("Texture", egui_phosphor::regular::IMAGE_SQUARE);
 }
 
 impl<F: Float, S: Sampler<F, Color<F>>> AsRef<Self> for Texture<F, S> {

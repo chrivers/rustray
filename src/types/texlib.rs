@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
-use crate::material::BoxMaterial;
+use image::DynamicImage;
+
 use crate::scene::Interactive;
 use crate::types::Float;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct MaterialId(pub u32);
+pub struct TextureId(pub u32);
 
-pub struct MaterialLib<F: Float> {
-    pub mats: HashMap<MaterialId, BoxMaterial<F>>,
+pub struct TextureLib {
+    pub mats: HashMap<TextureId, DynamicImage>,
     idx: u32,
 }
 
-impl<F: Float> MaterialLib<F> {
+impl TextureLib {
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -22,28 +23,28 @@ impl<F: Float> MaterialLib<F> {
     }
 
     #[must_use]
-    pub fn get_name(&self, mat: MaterialId) -> String {
-        format!("material-{}", mat.0)
+    pub fn get_name(&self, mat: TextureId) -> String {
+        format!("texture-{}", mat.0)
     }
 
-    pub fn insert(&mut self, material: BoxMaterial<F>) -> MaterialId {
-        let next = MaterialId(self.idx);
+    pub fn insert(&mut self, material: DynamicImage) -> TextureId {
+        let next = TextureId(self.idx);
         self.mats.insert(next, material);
         self.idx += 1;
         next
     }
 }
 
-impl<F: Float> Default for MaterialLib<F> {
+impl Default for TextureLib {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<F: Float> Interactive<F> for MaterialId {
+impl<F: Float> Interactive<F> for TextureId {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        ui.label(format!("Material id {}", self.0));
+        ui.label(format!("Texture id {}", self.0));
         ui.end_row();
         false
     }

@@ -1,11 +1,15 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+use std::ops::Add;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Adjust<F: Float, T: Texel, S: Sampler<F, T>> {
     scale: F,
     offset: F,
     samp: S,
-    _p1: PhantomData<T>,
+    p: PhantomData<T>,
 }
 
 impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
@@ -14,7 +18,7 @@ impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
             scale,
             offset,
             samp,
-            _p1: PhantomData {},
+            p: PhantomData {},
         }
     }
 }
@@ -22,7 +26,7 @@ impl<F: Float, T: Texel, S: Sampler<F, T>> Adjust<F, T, S> {
 impl<F, T, S> Sampler<F, T> for Adjust<F, T, S>
 where
     F: Float,
-    T: Texel + std::ops::Add<F, Output = T> + Lerp<Ratio = F>,
+    T: Texel<Ratio = F> + Add<F, Output = T>,
     S: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {
@@ -35,20 +39,16 @@ where
 
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
-        egui::CollapsingHeader::new("Transform")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                res |= ui
-                    .add(Slider::new(&mut self.scale, F::ZERO..=F::from_u32(100)).text("Scaling"))
-                    .changed();
-                res |= ui
-                    .add(Slider::new(&mut self.offset, F::ZERO..=F::from_u32(100)).text("Offset"))
-                    .changed();
-                res |= self.samp.ui(ui, name);
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        use egui::Slider;
+
+        let mut res = false;
+        res |= ui
+            .add(Slider::new(&mut self.scale, F::ZERO..=F::from_u32(100)).text("Scaling"))
+            .changed();
+        res |= ui
+            .add(Slider::new(&mut self.offset, F::ZERO..=F::from_u32(100)).text("Offset"))
+            .changed();
+        res |= self.samp.ui(ui, name);
+        res
     }
 }

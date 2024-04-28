@@ -22,7 +22,7 @@ rayon = ["dep:rayon", "indicatif/rayon"]
 gui = ["dep:eframe", "dep:egui"]
 
 [dependencies]
-image = { version = "0.25", default-features = false, features = [ "png", "jpeg" ] }
+image = { version = "0.25", default-features = false, features = [ "png", "jpeg", "bmp" ] }
 num = "0.4.1"
 num-traits = "0.2.18"
 rand = "0.8.5"
@@ -36,7 +36,7 @@ cgmath = "0.18"
 zip = "0.6"
 thiserror = "1"
 reqwest = { version = "0.12", features = ["blocking"] }
-pest = "2.7"
+pest = "=2.7.8"
 pest_derive = "2.7"
 itertools = "0.12"
 perlin2d = "0.2"
@@ -56,3 +56,5 @@ egui-gizmo = "0.16.2"
 mint = "0.5.9"
 egui_plot = "0.26"
 flagset = "0.4.5"
+egui-phosphor = "=0.4"
+parking_lot = { version = "0.12.1", features = ["arc_lock", "hardware-lock-elision"] }

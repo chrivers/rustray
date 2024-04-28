@@ -1,4 +1,9 @@
-use super::mat_util::*;
+use std::marker::PhantomData;
+
+use crate::material::Material;
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 /// Material blender, that interpolates between three materials.
 ///
@@ -26,8 +31,12 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Triblend<F, A, B,
     }
 }
 
-impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
-    for Triblend<F, A, B, C>
+impl<F, A, B, C> Material<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let a = self.a.render(maxel, rt);
@@ -41,21 +50,33 @@ impl<F: Float, A: Material<F>, B: Material<F>, C: Material<F>> Material<F>
 
         (a * w) + (b * u) + (c * v)
     }
+}
 
+impl<F, A, B, C> Interactive<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
+{
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Triblend")
-            .default_open(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        let mut res = false;
 
-                res |= self.a.ui(ui);
-                res |= self.b.ui(ui);
-                res |= self.c.ui(ui);
+        res |= self.a.ui(ui);
+        res |= self.b.ui(ui);
+        res |= self.c.ui(ui);
 
-                res
-            })
-            .body_returned
-            .unwrap_or(false)
+        res
     }
+}
+
+impl<F, A, B, C> SceneObject<F> for Triblend<F, A, B, C>
+where
+    F: Float,
+    A: Material<F>,
+    B: Material<F>,
+    C: Material<F>,
+{
+    sceneobject_impl_body!("Triblend", egui_phosphor::regular::TRIANGLE);
 }

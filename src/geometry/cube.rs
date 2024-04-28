@@ -1,4 +1,15 @@
-use super::geo_util::*;
+#[cfg(feature = "gui")]
+use crate::types::Camera;
+
+use cgmath::Matrix4;
+use glam::Vec3;
+use rtbvh::Aabb;
+
+use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Float, HasTransform, Maxel, Point, Ray, Transform, Vector, Vectorx};
 
 #[derive(Debug)]
 pub struct Cube<F: Float, M: Material<F>> {
@@ -9,42 +20,19 @@ pub struct Cube<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cube<F, M>);
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cube<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         self.mat.ui(ui)
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Cube<F, M> {
-    fn get_name(&self) -> &str {
-        "Cube"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
-
-impl<F: Float, M: Material<F>> HasTransform<F> for Cube<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
+geometry_impl_sceneobject!(Cube<F, M>, "Cube");
+geometry_impl_hastransform!(Cube<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cube<F, M> {
     fn recompute_aabb(&mut self) {
@@ -109,13 +97,15 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cube<F, M> {
 
         Some(
             ray.hit_at(best_t, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal).normalize())
+                .with_normal(self.xfrm.nml(normal))
                 .with_uv(uv),
         )
     }
 }
 
 impl<F: Float, M: Material<F>> Cube<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::CUBE;
+
     pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),

@@ -1,4 +1,9 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use cgmath::InnerSpace;
+
+use crate::sampler::Sampler;
+use crate::types::{Color, Float, Point, Vector};
 
 #[derive(Copy, Clone, Debug)]
 pub struct NormalMap<F: Float, S: Sampler<F, Color<F>>> {
@@ -24,15 +29,19 @@ impl<F: Float, S: Sampler<F, Color<F>>> NormalMap<F, S> {
     }
 }
 
-impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S>
-where
-    Vector<F>: Texel,
-{
+impl<F: Float, S: Sampler<F, Color<F>>> Sampler<F, Vector<F>> for NormalMap<F, S> {
     fn sample(&self, uv: Point<F>) -> Vector<F> {
         Self::color_to_vector(&self.sampler.sample(uv))
     }
 
     fn dimensions(&self) -> (u32, u32) {
         self.sampler.dimensions()
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.strong("Normal map");
+        ui.end_row();
+        self.sampler.ui(ui, name)
     }
 }

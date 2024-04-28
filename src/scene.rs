@@ -1,6 +1,6 @@
 use crate::geometry::{FiniteGeometry, Geometry};
 use crate::light::{Light, Lixel};
-use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray};
+use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib};
 
 use cgmath::MetricSpace;
 
@@ -10,15 +10,43 @@ use std::num::NonZeroUsize;
 
 pub trait SceneObject<F: Float> {
     fn get_name(&self) -> &str;
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        None
-    }
+    fn get_icon(&self) -> &str;
+    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>>;
     fn get_id(&self) -> Option<usize>;
+}
+
+#[macro_export]
+macro_rules! sceneobject_impl_body {
+    ( $name:expr, $icon:expr ) => {
+        fn get_name(&self) -> &str {
+            $name
+        }
+
+        fn get_icon(&self) -> &str {
+            $icon
+        }
+
+        #[cfg(feature = "gui")]
+        fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+            Some(self)
+        }
+
+        #[cfg(not(feature = "gui"))]
+        fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
+            None
+        }
+
+        fn get_id(&self) -> Option<usize> {
+            Some(std::ptr::addr_of!(*self) as usize)
+        }
+    };
 }
 
 pub trait Interactive<F: Float>: Debug {
     #[cfg(feature = "gui")]
-    fn ui(&mut self, ui: &mut egui::Ui) -> bool;
+    fn ui(&mut self, _ui: &mut egui::Ui) -> bool {
+        false
+    }
     #[cfg(feature = "gui")]
     fn ui_center(&mut self, _ui: &mut egui::Ui, _camera: &Camera<F>, _rect: &egui::Rect) -> bool {
         false
@@ -28,15 +56,6 @@ pub trait Interactive<F: Float>: Debug {
 pub trait RayTracer<F: Float> {
     fn ray_shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>>;
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
-    fn ambient(&self) -> Color<F>;
-    fn background(&self) -> Color<F>;
-    fn get_lights(&self) -> &[Box<dyn Light<F>>];
-    fn shadow(&self, maxel: &mut Maxel<F>, mut lixel: Lixel<F>) -> Lixel<F> {
-        if let Some(color) = self.ray_shadow(maxel, &lixel) {
-            lixel.color = color;
-        }
-        lixel
-    }
     fn scene(&self) -> &BoxScene<F>;
 }
 
@@ -44,6 +63,7 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub cameras: Vec<Camera<F>>,
     pub objects: Vec<B>,
     pub geometry: Vec<G>,
+    pub textures: TextureLib,
     pub materials: MaterialLib<F>,
     pub lights: Vec<L>,
     pub bvh: Bvh,
@@ -70,6 +90,7 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             cameras,
             objects,
             geometry,
+            textures: TextureLib::new(),
             materials,
             lights,
             bvh: Bvh::default(),
@@ -80,6 +101,21 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         res.recompute_bvh()?;
 
         Ok(res)
+    }
+
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            cameras: vec![],
+            objects: vec![],
+            geometry: vec![],
+            textures: TextureLib::new(),
+            materials: MaterialLib::new(),
+            lights: vec![],
+            bvh: Bvh::default(),
+            ambient: Color::BLACK,
+            background: Color::BLACK,
+        }
     }
 
     pub fn recompute_bvh(&mut self) -> RResult<()> {

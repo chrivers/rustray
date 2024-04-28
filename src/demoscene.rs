@@ -1,23 +1,23 @@
 #![allow(unused_variables)]
-use obj::Obj;
-use rand::distributions::{Distribution, Standard};
+
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
+
+use image::{DynamicImage, ImageFormat};
+use obj::Obj;
+use rand::distributions::{Distribution, Standard};
 use zip::ZipArchive;
 
 use crate::download::{ACGDownloader, ACGQuality, TextureDownloader};
 use crate::geometry::{FiniteGeometry, Geometry, Plane, Sphere, Triangle, TriangleMesh};
 use crate::light::{Attenuation, Light, PointLight};
-use crate::material::*;
+use crate::material::{
+    BumpPower, Bumpmap, ChessBoard, ChessBoardMode, Fresnel, Material, Matte, Phong, ScaleUV,
+};
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
-use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector};
-
 use crate::scene::{BoxScene, Scene};
-
+use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector, Vectorx};
 use crate::{point, vec3};
-
-use image::{DynamicImage, ImageFormat};
 
 fn point_light<F: Float>(pos: Vector<F>, color: Color<F>) -> impl Light<F>
 where
@@ -110,8 +110,6 @@ where
         vec3!(0.0, 1.0, 0.0),
         Vector::UNIT_Y,
         F::from_f32(50.0),
-        width,
-        height,
     )];
 
     let (h, l) = (1.2.into(), 0.3.into());
@@ -137,22 +135,33 @@ where
     let (tex2a, tex2b, tex2r, tex2m) = load_tex3(time, &dl, "Wood069")?;
 
     time.set("construct");
-    let mat_sphere = Fresnel::new(1.6.into()).dynamic();
+    let mat_sphere = Fresnel::new(1.6.into(), Color::WHITE, Color::WHITE).dynamic();
     let mat_white = Phong::white().dynamic();
 
     let mat_plane = ScaleUV::new(
         (0.1).into(),
         (0.1).into(),
         ChessBoard::new(
+            ChessBoardMode::UV,
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),
-                Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
+                Phong::new(
+                    Color::BLACK,
+                    tex0a.bilinear(),
+                    Color::WHITE,
+                    tex0r.bilinear(),
+                ),
             ),
             Bumpmap::new(
                 BumpPower(F::HALF),
                 NormalMap::new(tex1b.bilinear()),
-                Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
+                Phong::new(
+                    Color::BLACK,
+                    tex1a.bilinear(),
+                    Color::WHITE,
+                    tex1r.bilinear(),
+                ),
             ),
         ),
     );
@@ -160,7 +169,12 @@ where
     let mat_bmp2 = Bumpmap::new(
         BumpPower(F::HALF),
         NormalMap::new(tex2b.bilinear()),
-        Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
+        Phong::new(
+            Color::BLACK,
+            tex2a.bilinear(),
+            Color::WHITE,
+            tex2r.bilinear(),
+        ),
     );
 
     time.set("objload");
@@ -217,7 +231,7 @@ where
         Matte::new(
             Adjust::new((0.1).into(), (0.00).into(), Perlin::new(3, 3)),
             8,
-            Fresnel::new(0.1.into()),
+            Fresnel::new(0.1.into(), Color::WHITE, Color::WHITE),
         ),
     );
 

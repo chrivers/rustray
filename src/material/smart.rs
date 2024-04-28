@@ -1,158 +1,101 @@
-use super::mat_util::*;
-
-use num_traits::Zero;
+use crate::light::Lixel;
+use crate::material::{Fresnel, Material, Phong};
+use crate::sampler::{Sampler, Texel};
+use crate::scene::{Interactive, RayTracer, SceneObject};
+use crate::sceneobject_impl_body;
+use crate::types::{Color, Float, Maxel};
 
 /// Smart material shader that supports ambient, diffuse, specular, translucent,
 /// and reflective light. Implements the Phong shader model for light transport.
 #[derive(Clone, Debug)]
-pub struct Smart<F, S1, S2, S3, S4, S5, S6>
+pub struct Smart<F, SE, SD, SS, SP, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, Color<F>>,
-    S5: Sampler<F, Color<F>>,
-    S6: Sampler<F, Color<F>>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
-    ior: F,
-    pow: S1,
-    ke: S2,
-    kd: S3,
-    ks: S4,
-    kt: S5,
-    kr: S6,
-    ambient: Color<F>,
+    phong: Phong<F, SE, SD, SS, SP>,
+    fresnel: Fresnel<F, F, ST, SR>,
 }
 
-impl<F, S1, S2, S3, S4, S5, S6> Smart<F, S1, S2, S3, S4, S5, S6>
+impl<F, SE, SD, SS, SP, ST, SR> Smart<F, SE, SD, SS, SP, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, Color<F>>,
-    S5: Sampler<F, Color<F>>,
-    S6: Sampler<F, Color<F>>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
     #[must_use]
-    pub const fn new(ior: F, pow: S1, ke: S2, kd: S3, ks: S4, kt: S5, kr: S6) -> Self {
+    pub const fn new(ior: F, pow: SP, ke: SE, kd: SD, ks: SS, kt: ST, kr: SR) -> Self {
         Self {
-            ior,
-            pow,
-            ke,
-            kd,
-            ks,
-            kt,
-            kr,
-            ambient: Color::BLACK,
+            phong: Phong::new(ke, kd, ks, pow),
+            fresnel: Fresnel::new(ior, kt, kr),
         }
     }
 
     #[must_use]
     pub fn with_ambient(self, ambient: Color<F>) -> Self {
-        Self { ambient, ..self }
+        Self {
+            phong: self.phong.with_ambient(ambient),
+            ..self
+        }
     }
 }
 
-impl<F, S1, S2, S3, S4, S5, S6> Material<F> for Smart<F, S1, S2, S3, S4, S5, S6>
+impl<F, SE, SD, SS, SP, ST, SR> Material<F> for Smart<F, SE, SD, SS, SP, ST, SR>
 where
     F: Float + Texel,
-    S1: Sampler<F, F>,
-    S2: Sampler<F, Color<F>>,
-    S3: Sampler<F, Color<F>>,
-    S4: Sampler<F, Color<F>>,
-    S5: Sampler<F, Color<F>>,
-    S6: Sampler<F, Color<F>>,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
 {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
-        let uv = maxel.uv();
-        let normal = maxel.nml();
-        let diff_color = self.kd.sample(uv);
-        let spec_color = self.ks.sample(uv);
-        let spec_pow = self.pow.sample(uv);
-        let ambi_color = self.ambient * rt.ambient();
-
-        let mut res = self.ke.sample(uv) + ambi_color;
-
-        let tran_color = self.kt.sample(uv);
-        let refl_color = self.kr.sample(uv);
-
-        let refl_term = if !refl_color.is_zero() {
-            rt.ray_trace(&maxel.reflected_ray())
-                .unwrap_or_else(|| rt.background())
-                * refl_color
-        } else {
-            Color::BLACK
-        };
-
-        let ior = self.ior.sample(uv);
-
-        let refr_term = if !tran_color.is_zero() {
-            rt.ray_trace(&maxel.refracted_ray(ior))
-                .unwrap_or_else(|| rt.background())
-                * tran_color
-        } else {
-            Color::BLACK
-        };
-
-        res += refr_term.lerp(refl_term, maxel.fresnel(ior));
-
-        for light in rt.get_lights() {
-            let lixel = light.contribution(maxel, rt);
-
-            let lambert = normal.dot(lixel.dir);
-
-            if lambert < F::BIAS {
-                continue;
-            }
-
-            res += (lixel.color * diff_color) * lambert;
-
-            if spec_color.is_zero() {
-                continue;
-            }
-
-            let refl_dir = lixel.dir.reflect(&maxel.nml());
-            let spec_angle = refl_dir.dot(maxel.dir).max(F::ZERO);
-            let specular = spec_angle.pow(spec_pow);
-
-            res += lixel.color * spec_color * specular;
-        }
-        res
+        self.phong.render(maxel, rt) + self.fresnel.render(maxel, rt)
     }
 
-    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
-        let uv = maxel.uv();
-        let sha = self.kt.sample(uv);
-        let lambert = lixel.dir.dot(maxel.nml());
-        Some(sha * lixel.color * lambert)
+    fn shadow(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>, lixel: &Lixel<F>) -> Color<F> {
+        self.fresnel.shadow(maxel, rt, lixel)
     }
+}
 
+impl<F, SE, SD, SS, SP, ST, SR> Interactive<F> for Smart<F, SE, SD, SS, SP, ST, SR>
+where
+    F: Float + Texel,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
+{
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        CollapsingHeader::new("Smart")
-            .default_open(true)
-            .show(ui, |ui| {
-                egui::Grid::new("grid")
-                    .num_columns(2)
-                    .spacing([40.0, 4.0])
-                    .striped(true)
-                    .show(ui, |ui| {
-                        let mut res = false;
-                        res |= self.pow.ui(ui, "Power");
-                        res |= Sampler::ui(&mut self.ior, ui, "Index of refraction");
-                        res |= self.ke.ui(ui, "Emissive");
-                        res |= self.kd.ui(ui, "Diffuse");
-                        res |= self.ks.ui(ui, "Specular");
-                        res |= self.kt.ui(ui, "Translucense");
-                        res |= self.kr.ui(ui, "Reflection");
-                        res |= Sampler::ui(&mut self.ambient, ui, "ambient");
-                        res
-                    })
-                    .inner
-            })
-            .body_returned
-            .unwrap_or(false)
+        let mut res = false;
+        res |= self.phong.ui(ui);
+        res |= self.fresnel.ui(ui);
+        res
     }
+}
+
+impl<F, SE, SD, SS, SP, ST, SR> SceneObject<F> for Smart<F, SE, SD, SS, SP, ST, SR>
+where
+    F: Float + Texel,
+    SE: Sampler<F, Color<F>>,
+    SD: Sampler<F, Color<F>>,
+    SS: Sampler<F, Color<F>>,
+    SP: Sampler<F, F>,
+    ST: Sampler<F, Color<F>>,
+    SR: Sampler<F, Color<F>>,
+{
+    sceneobject_impl_body!("Smart material", egui_phosphor::regular::PLAY_CIRCLE);
 }

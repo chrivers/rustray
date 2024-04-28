@@ -1,6 +1,10 @@
-use crate::types::Float;
+use std::ops::Div;
+
 use derive_more::{Add, Mul, Sub};
 use num::Num;
+use num_traits::ConstZero;
+
+use crate::types::Float;
 
 /**
 Convenience macro to construct a [`Point<F>`] from input values.
@@ -38,7 +42,12 @@ pub struct Point<F: Num> {
     pub y: F,
 }
 
-impl<F: Num + Copy> Point<F> {
+impl<F: Num + Copy + ConstZero> Point<F> {
+    pub const ZERO: Self = Self {
+        x: F::ZERO,
+        y: F::ZERO,
+    };
+
     #[must_use]
     pub const fn new(x: F, y: F) -> Self {
         Self { x, y }
@@ -55,9 +64,25 @@ impl<F: Num + Copy> Point<F> {
     #[must_use]
     pub const fn zero() -> Self {
         Self {
-            x: F::zero(),
-            y: F::zero(),
+            x: F::ZERO,
+            y: F::ZERO,
         }
+    }
+}
+
+impl<F: Float> Div for Point<F> {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        point!(self.x / rhs.x, self.y / rhs.y)
+    }
+}
+
+impl<F: Float> Div<F> for Point<F> {
+    type Output = Self;
+
+    fn div(self, rhs: F) -> Self::Output {
+        point!(self.x / rhs, self.y / rhs)
     }
 }
 

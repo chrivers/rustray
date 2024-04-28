@@ -1,19 +1,20 @@
-use az::Cast;
-use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
-use derive_more::{AddAssign, Neg, SubAssign};
-use fixed::FixedI64;
-use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
-use num_traits::{Bounded, FloatConst, Pow};
 use std::{
     fmt::{Debug, Display},
     ops::{Add, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub},
     str::FromStr,
 };
 
+use az::Cast;
+use cgmath::{AbsDiffEq, RelativeEq, UlpsEq};
+use derive_more::{AddAssign, Neg, SubAssign};
+use fixed::FixedI64;
+use num::{Num, NumCast, One, Signed, ToPrimitive, Zero};
+use num_traits::{Bounded, ConstOne, ConstZero, FloatConst, Pow};
+
 #[cfg(feature = "gui")]
 use egui::emath::Numeric;
 
-use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
+use crate::types::{Float, Lerp};
 
 #[derive(Clone, Copy, AddAssign, SubAssign, PartialEq, Eq, PartialOrd, Neg)]
 pub struct FXP<const P: i32>(FixedI64<P>);
@@ -167,13 +168,13 @@ impl<const P: i32> From<i64> for FXP<P> {
 
 impl<const P: i32> From<i32> for FXP<P> {
     fn from(value: i32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
 impl<const P: i32> From<u32> for FXP<P> {
     fn from(value: u32) -> Self {
-        (value as i64).into()
+        Into::<i64>::into(value).into()
     }
 }
 
@@ -234,6 +235,14 @@ impl<const P: i32> Mul for FXP<P> {
     }
 }
 
+impl<const P: i32> ConstZero for FXP<P> {
+    const ZERO: Self = Self(FixedI64::<P>::ZERO);
+}
+
+impl<const P: i32> ConstOne for FXP<P> {
+    const ONE: Self = Self(FixedI64::<P>::const_from_int(1));
+}
+
 impl<const P: i32> Zero for FXP<P> {
     fn zero() -> Self {
         Self(FixedI64::<P>::ZERO)
@@ -265,8 +274,6 @@ impl<const P: i32> FromStr for FXP<P> {
         todo!()
     }
 }
-
-impl<const P: i32> Texel for FXP<P> {}
 
 impl<const P: i32> FloatConst for FXP<P> {
     #[doc = "Return Euler’s number."]
@@ -617,8 +624,6 @@ impl<const P: i32> RelativeEq for FXP<P> {
 }
 
 impl<const P: i32> Float for FXP<P> {
-    const ZERO: Self = Self(FixedI64::<P>::ZERO);
-
     /* const BIAS:  Self = Self(Self::ONE.0.unwrapped_div_int(1_000_000)); */
     /* const BIAS2: Self = Self(Self::ONE.0.unwrapped_div_int(100_000)); */
     /* const BIAS3: Self = Self(Self::ONE.0.unwrapped_div_int(10_000)); */
@@ -640,8 +645,6 @@ impl<const P: i32> Float for FXP<P> {
     /* const BIAS4: Self = Self(0x1000); */
 
     const HALF: Self = Self(Self::ONE.0.unwrapped_div_int(2));
-
-    const ONE: Self = Self(FixedI64::<P>::const_from_int(1));
 
     const TWO: Self = Self(FixedI64::<P>::const_from_int(2));
 
@@ -679,7 +682,7 @@ mod test {
     use super::FXP as FPG;
     use crate::types::Float;
     use num::ToPrimitive;
-    use num_traits::{Float as _, FloatConst as _, Pow as _};
+    use num_traits::{ConstOne as _, ConstZero as _, Float as _, FloatConst as _, Pow as _};
 
     use assert_float_eq::{afe_is_f32_near, afe_near_error_msg, assert_f32_near};
 

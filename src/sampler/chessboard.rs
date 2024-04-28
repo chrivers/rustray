@@ -1,4 +1,7 @@
-use super::samp_util::*;
+use std::marker::PhantomData;
+
+use crate::sampler::{Sampler, Texel};
+use crate::types::{Float, Point};
 
 #[derive(Copy, Clone, Debug)]
 pub struct ChessBoardSampler<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> {
@@ -19,8 +22,12 @@ impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> ChessBoardSampler<F
     }
 }
 
-impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> Sampler<F, T>
-    for ChessBoardSampler<F, T, A, B>
+impl<F, T, A, B> Sampler<F, T> for ChessBoardSampler<F, T, A, B>
+where
+    F: Float,
+    T: Texel,
+    A: Sampler<F, T>,
+    B: Sampler<F, T>,
 {
     fn sample(&self, uv: Point<F>) -> T {
         let u = uv.x.abs().fract() > F::HALF;
@@ -35,5 +42,15 @@ impl<F: Float, T: Texel, A: Sampler<F, T>, B: Sampler<F, T>> Sampler<F, T>
 
     fn dimensions(&self) -> (u32, u32) {
         self.a.dimensions()
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui, name: &str) -> bool {
+        ui.strong(name);
+        ui.end_row();
+        let mut res = false;
+        res |= self.a.ui(ui, name);
+        res |= self.b.ui(ui, name);
+        res
     }
 }

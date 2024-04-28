@@ -1,4 +1,15 @@
-use super::geo_util::*;
+use cgmath::{InnerSpace, Matrix4};
+use glam::Vec3;
+use rtbvh::Aabb;
+
+use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
+use crate::material::Material;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::vec3;
+
+#[cfg(feature = "gui")]
+use crate::types::Camera;
 
 #[derive(Debug)]
 pub struct Cone<F: Float, M: Material<F>> {
@@ -13,85 +24,55 @@ pub struct Cone<F: Float, M: Material<F>> {
 
 aabb_impl_fm!(Cone<F, M>);
 
+#[cfg(feature = "gui")]
 impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
-    #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| {
-                let mut res = false;
+        use egui::{Slider, Widget};
+        let mut res = false;
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Top radius"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= Slider::new(&mut self.top_r, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Top radius")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Bottom radius"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= Slider::new(&mut self.bot_r, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Bottom radius")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui
-                    .add(
-                        Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
-                            .clamp_to_range(false)
-                            .smallest_positive(0.01)
-                            .text("Height"),
-                    )
-                    .changed();
-                ui.end_row();
+        res |= Slider::new(&mut self.height, F::ZERO..=F::from_u32(10))
+            .clamp_to_range(false)
+            .smallest_positive(0.01)
+            .text("Height")
+            .ui(ui)
+            .changed();
+        ui.end_row();
 
-                res |= ui.checkbox(&mut self.capped, "Capped").changed();
-                ui.end_row();
+        res |= ui.checkbox(&mut self.capped, "Capped").changed();
+        ui.end_row();
 
-                res |= self.mat.ui(ui);
+        res |= self.mat.ui(ui);
 
-                res
-            })
-            .inner
+        if res {
+            self.recompute_aabb();
+        }
+
+        res
     }
 
-    #[cfg(feature = "gui")]
     fn ui_center(&mut self, ui: &mut egui::Ui, camera: &Camera<F>, rect: &egui::Rect) -> bool {
-        gizmo_ui(ui, camera, self, rect)
+        crate::gui::gizmo::gizmo_ui(ui, camera, self, rect)
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Cone<F, M> {
-    fn get_name(&self) -> &str {
-        "Cone"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
-
-impl<F: Float, M: Material<F>> HasTransform<F> for Cone<F, M> {
-    fn get_transform(&self) -> &Transform<F> {
-        &self.xfrm
-    }
-
-    fn set_transform(&mut self, xfrm: &Transform<F>) {
-        self.xfrm = *xfrm;
-        self.recompute_aabb();
-    }
-}
+geometry_impl_sceneobject!(Cone<F, M>, "Cone");
+geometry_impl_hastransform!(Cone<F, M>);
 
 impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cone<F, M> {
     fn recompute_aabb(&mut self) {
@@ -141,7 +122,7 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
 
         let mut root = F::max_value();
 
-        let (root1, root2) = crate::types::ray::quadratic2(a, b, c)?;
+        let (root1, root2) = types::quadratic2(a, b, c)?;
 
         /* test side 1 */
         if root1.is_positive() && (root1 < root) {
@@ -200,6 +181,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Cone<F, M> {
+    pub const ICON: &'static str = egui_phosphor::regular::TRAFFIC_CONE;
+
     pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Self {
         let mut res = Self {
             height,

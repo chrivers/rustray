@@ -1,4 +1,10 @@
-use super::geo_util::*;
+use cgmath::InnerSpace;
+
+use crate::geometry::Geometry;
+use crate::material::Material;
+use crate::point;
+use crate::scene::{Interactive, SceneObject};
+use crate::types::{Float, Maxel, Point, Ray, Vector};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Plane<F: Float, M: Material<F>> {
@@ -14,32 +20,16 @@ pub struct Plane<F: Float, M: Material<F>> {
 impl<F: Float, M: Material<F>> Interactive<F> for Plane<F, M> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        egui::Grid::new("grid")
-            .num_columns(2)
-            .spacing([40.0, 4.0])
-            .striped(true)
-            .show(ui, |ui| {
-                let mut res = false;
-                res |= controls::position(ui, &mut self.pos, "Position");
-                res |= self.mat.ui(ui);
-                res
-            })
-            .inner
+        use crate::gui::controls;
+
+        let mut res = false;
+        res |= controls::position(ui, &mut self.pos, "Position");
+        res |= self.mat.ui(ui);
+        res
     }
 }
 
-impl<F: Float, M: Material<F>> SceneObject<F> for Plane<F, M> {
-    fn get_name(&self) -> &str {
-        "Plane"
-    }
-
-    fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
-        Some(self)
-    }
-    fn get_id(&self) -> Option<usize> {
-        Some(std::ptr::addr_of!(*self) as usize)
-    }
-}
+geometry_impl_sceneobject!(Plane<F, M>, "Plane");
 
 impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
@@ -59,6 +49,8 @@ impl<F: Float, M: Material<F>> Geometry<F> for Plane<F, M> {
 }
 
 impl<F: Float, M: Material<F>> Plane<F, M> {
+    const ICON: &'static str = egui_phosphor::regular::SQUARE_LOGO;
+
     pub fn new(pos: Vector<F>, d1: Vector<F>, d2: Vector<F>, mat: M) -> Self {
         let dir1 = d1.normalize();
         let dir2 = d2.normalize();

@@ -1,10 +1,8 @@
-use super::Float;
-use crate::geometry::Geometry;
-use crate::types::{Maxel, Ray};
-
+use cgmath::MetricSpace;
 use rtbvh::Primitive;
 
-use cgmath::MetricSpace;
+use crate::geometry::Geometry;
+use crate::types::{Float, Maxel, Ray};
 
 pub trait BvhExt {
     fn nearest_intersection<'a, F, T>(
