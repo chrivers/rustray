@@ -11,9 +11,6 @@ pub enum Error {
     ImageError(#[from] image::ImageError),
 
     #[error(transparent)]
-    PestError(#[from] Box<pest::error::Error<crate::format::sbt::Rule>>),
-
-    #[error(transparent)]
     PestError2(#[from] Box<pest::error::Error<crate::format::sbt2::Rule>>),
 
     #[error(transparent)]
@@ -55,12 +52,6 @@ pub enum Error {
 }
 
 pub type RResult<F> = Result<F, Error>;
-
-impl From<pest::error::Error<crate::format::sbt::Rule>> for Error {
-    fn from(value: pest::error::Error<crate::format::sbt::Rule>) -> Self {
-        Self::PestError(Box::new(value))
-    }
-}
 
 impl From<pest::error::Error<crate::format::sbt2::Rule>> for Error {
     fn from(value: pest::error::Error<crate::format::sbt2::Rule>) -> Self {

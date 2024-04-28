@@ -11,7 +11,7 @@ use crate::light::{Attenuation, Light, PointLight};
 use crate::material::*;
 use crate::sampler::{Adjust, NormalMap, Perlin, SamplerExt, Texel};
 use crate::types::vector::Vectorx;
-use crate::types::{Camera, Color, Float, Point, RResult, TimeSlice, Vector};
+use crate::types::{Camera, Color, Float, MaterialLib, Point, RResult, TimeSlice, Vector};
 
 use crate::scene::{BoxScene, Scene};
 
@@ -103,6 +103,8 @@ where
 {
     time.set("construct");
 
+    let mut materials = MaterialLib::new();
+
     let cameras = vec![Camera::parametric(
         vec3!(10.0, 4.5, 10.0),
         vec3!(0.0, 1.0, 0.0),
@@ -143,12 +145,12 @@ where
         (0.1).into(),
         ChessBoard::new(
             Bumpmap::new(
-                0.5.into(),
+                BumpPower(F::HALF),
                 NormalMap::new(tex0b.bilinear()),
                 Phong::new(tex0r.bilinear(), tex0a.bilinear().texture()),
             ),
             Bumpmap::new(
-                0.5.into(),
+                BumpPower(F::HALF),
                 NormalMap::new(tex1b.bilinear()),
                 Phong::new(tex1r.bilinear(), tex1a.bilinear().texture()),
             ),
@@ -156,7 +158,7 @@ where
     );
 
     let mat_bmp2 = Bumpmap::new(
-        0.5.into(),
+        BumpPower(F::HALF),
         NormalMap::new(tex2b.bilinear()),
         Phong::new(tex2r.bilinear(), tex2a.bilinear().texture()),
     );
@@ -164,7 +166,12 @@ where
     time.set("objload");
     let obj = Obj::load("models/teapot.obj")?;
 
-    let trimesh1 = TriangleMesh::load_obj(obj, vec3!(0.5, 0.0, 1.5), F::from_f32(1.0 / 5.0))?;
+    let trimesh1 = TriangleMesh::load_obj(
+        obj,
+        &mut materials,
+        vec3!(0.5, 0.0, 1.5),
+        F::from_f32(1.0 / 5.0),
+    )?;
 
     time.set("construct");
     let plane1 = Plane::new(
@@ -284,5 +291,5 @@ where
         // Box::new(trimesh3),
     ];
 
-    Scene::new(cameras, objects, geometry, lights)
+    Scene::new(cameras, objects, geometry, materials, lights)
 }

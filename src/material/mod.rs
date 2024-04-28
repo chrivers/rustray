@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::light::Lixel;
+use crate::types::matlib::MaterialId;
 use crate::types::{Color, Float, Maxel};
 
 use crate::scene::RayTracer;
@@ -17,7 +18,7 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     where
         Self: Sized + 'static,
     {
-        Arc::new(Box::new(self))
+        Arc::new(self)
     }
 
     #[cfg(feature = "gui")]
@@ -27,7 +28,8 @@ pub trait Material<F: Float>: Debug + Send + Sync {
     }
 }
 
-pub type DynMaterial<F> = Arc<Box<dyn Material<F>>>;
+pub type BoxMaterial<F> = Box<dyn Material<F>>;
+pub type DynMaterial<F> = Arc<dyn Material<F>>;
 
 impl<F: Float> Material<F> for Color<F> {
     fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Self {
@@ -40,7 +42,34 @@ impl<F: Float> Material<F> for Color<F> {
     }
 }
 
-impl<F: Float> Material<F> for Arc<Box<dyn Material<F>>> {
+impl<F: Float> Material<F> for MaterialId {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        let mat = &rt.scene().materials.mats[self];
+        mat.render(maxel, rt)
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.label(format!("Material id: {self:?}"));
+        false
+    }
+}
+
+impl<F: Float> Material<F> for Box<dyn Material<F>> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        (**self).render(maxel, rt)
+    }
+
+    fn shadow(&self, maxel: &mut Maxel<F>, lixel: &Lixel<F>) -> Option<Color<F>> {
+        (**self).shadow(maxel, lixel)
+    }
+
+    #[cfg(feature = "gui")]
+    fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        (**self).ui(ui)
+    }
+}
+
+impl<F: Float> Material<F> for Arc<dyn Material<F>> {
     fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         (**self).render(maxel, rt)
     }
@@ -100,7 +129,7 @@ mod texture;
 mod triblend;
 
 pub use blend::Blend;
-pub use bumpmap::Bumpmap;
+pub use bumpmap::{Bumpmap, BumpPower};
 pub use chessboard::ChessBoard;
 pub use chessboardxyz::ChessBoardXYZ;
 pub use colornormal::ColorNormal;

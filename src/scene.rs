@@ -1,6 +1,6 @@
 use crate::geometry::{FiniteGeometry, Geometry};
 use crate::light::{Light, Lixel};
-use crate::types::{BvhExt, Camera, Color, Float, Maxel, RResult, Ray};
+use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray};
 
 use cgmath::MetricSpace;
 
@@ -9,9 +9,7 @@ use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
 pub trait SceneObject<F: Float> {
-    fn get_name(&self) -> &str {
-        "Unknown object"
-    }
+    fn get_name(&self) -> &str;
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         None
     }
@@ -39,12 +37,14 @@ pub trait RayTracer<F: Float> {
         }
         lixel
     }
+    fn scene(&self) -> &BoxScene<F>;
 }
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub cameras: Vec<Camera<F>>,
     pub objects: Vec<B>,
     pub geometry: Vec<G>,
+    pub materials: MaterialLib<F>,
     pub lights: Vec<L>,
     pub bvh: Bvh,
     pub ambient: Color<F>,
@@ -63,12 +63,14 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
         cameras: Vec<Camera<F>>,
         objects: Vec<B>,
         geometry: Vec<G>,
+        materials: MaterialLib<F>,
         lights: Vec<L>,
     ) -> RResult<Self> {
         let mut res = Self {
             cameras,
             objects,
             geometry,
+            materials,
             lights,
             bvh: Bvh::default(),
             background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),

@@ -4,6 +4,7 @@ pub mod controls;
 pub mod visualtrace;
 
 pub use gizmo::gizmo_ui;
+use itertools::Itertools;
 
 use std::{
     path::Path,
@@ -18,7 +19,7 @@ use crate::{
     point,
     sampler::Texel,
     scene::{BoxScene, SceneObject},
-    types::{ray::RF, Color, Error, Float, Point, RResult},
+    types::{matlib::MaterialId, ray::RF, Color, Error, Float, Point, RResult},
 };
 
 use eframe::egui::Key;
@@ -95,6 +96,23 @@ where
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.label("Objects");
             let mut changed = false;
+
+            let mat_keys: Vec<MaterialId> = scene
+                .materials
+                .mats
+                .keys()
+                .copied()
+                .sorted_by(|a, b| Ord::cmp(&a, &b))
+                .collect();
+
+            for (idx, id) in mat_keys.into_iter().enumerate() {
+                CollapsingHeader::new(format!("Material: {idx}"))
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        let mat = scene.materials.mats.get_mut(&id).unwrap();
+                        changed |= mat.ui(ui);
+                    });
+            }
 
             scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
                 let resp = CollapsingHeader::new(format!("Object {i}: {}", obj.get_name()))

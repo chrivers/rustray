@@ -11,18 +11,102 @@ use pest_derive::Parser;
 use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Rad, SquareMatrix, Vector4};
 use num_traits::Zero;
 
-use super::sbt::{face_normals, spherical_uvs, SbtVersion};
-
 use crate::geometry::{
     Cone, Cube, Cylinder, FiniteGeometry, Sphere, Square, Triangle, TriangleMesh,
 };
 use crate::light::{AreaLight, Attenuation, DirectionalLight, Light, PointLight, SpotLight};
 use crate::mat_util::Vectorx;
-use crate::material::{Bumpmap, DynMaterial, Material, Smart, Triblend};
+use crate::material::{Bumpmap, Material, Smart, Triblend};
 use crate::sampler::{DynSampler, NormalMap, Sampler, SamplerExt, ShineMap, Texel};
 use crate::scene::{BoxScene, Scene};
+use crate::types::matlib::MaterialId;
 use crate::types::result::{Error, RResult};
-use crate::types::{Camera, Color, Float, Point, Vector};
+use crate::types::{Camera, Color, Float, MaterialLib, Point, Vector};
+use crate::BumpPower;
+
+#[derive(Copy, Clone, Debug)]
+pub enum SbtVersion {
+    Sbt0_9,
+    Sbt1_0,
+}
+
+impl FromStr for SbtVersion {
+    type Err = crate::types::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "0.9" => Ok(Self::Sbt0_9),
+            "1.0" => Ok(Self::Sbt1_0),
+            _ => Err(Error::ParseError("internal parser error")),
+        }
+    }
+}
+
+fn hash<F: Float>(p: Vector<F>) -> (u64, u64, u64) {
+    (
+        p.x.to_f64().to_bits(),
+        p.y.to_f64().to_bits(),
+        p.z.to_f64().to_bits(),
+    )
+}
+
+pub fn face_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
+    let mut normals = vec![Vector::zero(); points.len()];
+    /* Single-face normals */
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] += n;
+        normals[face[1]] += n;
+        normals[face[2]] += n;
+    }
+    normals
+}
+
+pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> Vec<Vector<F>> {
+    /* Vertex-smoothed normals */
+    let mut norms: HashMap<(u64, u64, u64), Vector<F>> = HashMap::new();
+    let mut normals = vec![Vector::zero(); points.len()];
+
+    for face in faces {
+        let ab = points[face[0]] - points[face[1]];
+        let ac = points[face[0]] - points[face[2]];
+        let n = ab.cross(ac);
+        normals[face[0]] = n;
+        normals[face[1]] = n;
+        normals[face[2]] = n;
+        *norms
+            .entry(hash(points[face[0]]))
+            .or_insert_with(Vector::zero) += n;
+        *norms
+            .entry(hash(points[face[1]]))
+            .or_insert_with(Vector::zero) += n;
+        *norms
+            .entry(hash(points[face[2]]))
+            .or_insert_with(Vector::zero) += n;
+    }
+    for face in faces {
+        normals[face[0]] = norms[&hash(points[face[0]])];
+        normals[face[1]] = norms[&hash(points[face[1]])];
+        normals[face[2]] = norms[&hash(points[face[2]])];
+    }
+    normals
+}
+
+pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
+    let mut center = Vector::zero();
+    for point in points {
+        center += *point;
+    }
+    center /= F::from_usize(points.len());
+
+    let mut uvs = vec![];
+    for point in points {
+        uvs.push((point - center).normalize().polar_uv().into());
+    }
+    uvs
+}
 
 #[derive(Parser)]
 #[grammar = "format/sbt2.pest"]
@@ -393,6 +477,7 @@ pub struct SbtBuilder<'a, F: Float> {
     resdir: &'a Path,
     version: SbtVersion,
     material: SbtDict<'a, F>,
+    materials: MaterialLib<F>,
 }
 
 impl<'a, F> SbtBuilder<'a, F>
@@ -408,6 +493,7 @@ where
             resdir,
             version: SbtVersion::Sbt1_0,
             material: SbtDict::new(),
+            materials: MaterialLib::new(),
         }
     }
 
@@ -497,7 +583,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
+    fn parse_material(&mut self, dict: &impl SDict<F>) -> MaterialId {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -524,13 +610,15 @@ where
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
-        match bump {
-            None => smart.dynamic(),
-            Some(b) => Bumpmap::new(F::from_f32(0.25), NormalMap::new(b), smart).dynamic(),
-        }
+        let res: Box<dyn Material<F>> = match bump {
+            None => Box::new(smart),
+            Some(b) => Box::new(Bumpmap::new(BumpPower(F::from_f32(0.25)), NormalMap::new(b), smart)),
+        };
+
+        self.materials.insert(res)
     }
 
-    fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> DynMaterial<F> {
+    fn parse_material_obj(&mut self, dict: &impl SDict<F>) -> MaterialId {
         self.parse_material(&dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
@@ -565,7 +653,7 @@ where
         if let Ok(path) = dict.string("objfile") {
             info!("Reading {}", path);
             let obj = Obj::load(self.resdir.join(path))?;
-            tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
+            tris = crate::format::obj::load(obj, &mut self.materials, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
                 points.push(point.tuple()?.vector3()?);
@@ -598,15 +686,15 @@ where
         }
 
         for face in &faces {
-            let m = if !materials.is_empty() {
-                Triblend::new(
-                    materials[face[0]].clone(),
-                    materials[face[1]].clone(),
-                    materials[face[2]].clone(),
-                )
-                .dynamic()
+            let m: MaterialId = if !materials.is_empty() {
+                let mat: Box<dyn Material<F>> = Box::new(Triblend::new(
+                    materials[face[0]],
+                    materials[face[1]],
+                    materials[face[2]],
+                ));
+                self.materials.insert(mat)
             } else {
-                mat.clone()
+                mat
             };
 
             /* let ab = points[face[0]] - points[face[1]]; */
@@ -770,7 +858,7 @@ where
         }
     }
 
-    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
+    pub fn build(mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -806,6 +894,7 @@ where
                 }
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights)?.with_ambient(ambient))
+
+        Ok(Scene::new(cameras, objects, vec![], self.materials, lights)?.with_ambient(ambient))
     }
 }

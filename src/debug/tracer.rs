@@ -108,6 +108,10 @@ impl<'a, F: Float> RayTracer<F> for DebugTracer<'a, F> {
     fn background(&self) -> Color<F> {
         self.scene.background
     }
+
+    fn scene(&self) -> &BoxScene<F> {
+        self.scene
+    }
 }
 
 impl<'a, F: Float> Debug for DebugTracer<'a, F> {
