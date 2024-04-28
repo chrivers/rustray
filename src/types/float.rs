@@ -23,6 +23,7 @@ pub trait Float
 where
     Self: Debug
         + Display
+        + Default
         + Send
         + Sync
         + AbsDiffEq<Epsilon = Self>

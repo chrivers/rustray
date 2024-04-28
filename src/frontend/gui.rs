@@ -1,7 +1,10 @@
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::{Deg, Matrix4, SquareMatrix};
 use itertools::Itertools;
+use obj::Obj;
 
 use std::{
+    ffi::OsStr,
+    io::BufReader,
     path::{Path, PathBuf},
     sync::Arc,
     time::Duration,
@@ -10,13 +13,14 @@ use std::{
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, Geometry, Sphere, Square},
+    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
     gui::{
         controls::{self, Canvas},
         gizmo,
         visualtrace::VisualTraceWidget,
+        IconButton,
     },
-    material::Phong,
+    light::{AreaLight, Attenuation, DirectionalLight, PointLight, SpotLight},
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
@@ -43,6 +47,8 @@ pub struct RenderModes<F: Float> {
 
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
+    paths: Vec<PathBuf>,
+    pathindex: usize,
     lock: Arc<RwLock<BoxScene<F>>>,
     obj: Option<usize>,
     obj_last: Option<usize>,
@@ -58,7 +64,8 @@ where
     rand::distributions::Standard: rand::distributions::Distribution<F>,
 {
     /// Called once before the first frame.
-    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, scene: BoxScene<F>) -> Self {
+    #[must_use]
+    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<PathBuf>) -> Self {
         // load fonts
         let mut fonts = egui::FontDefinitions::default();
         egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
@@ -71,12 +78,12 @@ where
         };
         cc.egui_ctx.set_visuals(visuals);
 
-        let lock = Arc::new(RwLock::new(scene));
+        let lock = Arc::new(RwLock::new(BoxScene::empty()));
 
         let render_modes = RenderModes {
             default: RenderJob::new(),
             preview: RenderJob::new()
-                .with_mult(5)
+                .with_mult(3)
                 .with_ray_flags(RF::Preview.into()),
             normals: RenderJob::new().with_func_debug_normals(),
         };
@@ -84,6 +91,8 @@ where
         // construct gui
         Self {
             engine,
+            paths,
+            pathindex: 0,
             lock,
             obj: None,
             obj_last: None,
@@ -101,6 +110,23 @@ where
             .iter_mut()
             .find(|obj| obj.get_id() == self.obj)
             .map(|m| m as &mut _)
+    }
+
+    fn change_obj(&self, scene: &mut BoxScene<F>, func: impl Fn(&mut Box<dyn FiniteGeometry<F>>)) {
+        scene
+            .objects
+            .iter_mut()
+            .find(|obj| obj.get_id() == self.obj)
+            .map(func);
+    }
+
+    fn delete_current_obj(&mut self, scene: &mut BoxScene<F>) {
+        scene.objects.retain(|obj| obj.get_id() != self.obj);
+        self.obj = None;
+        self.bounding_box.clear();
+
+        scene.recompute_bvh().unwrap();
+        self.engine.submit(&self.render_modes.preview, &self.lock);
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -256,11 +282,7 @@ where
         macro_rules! add_geometry_option {
             ($name:ident, $code:block) => {
                 if ui
-                    .button(format!(
-                        "{} {}",
-                        $name::<_, Color<F>>::ICON,
-                        stringify!($name)
-                    ))
+                    .icon_button($name::<F>::ICON, stringify!($name))
                     .clicked()
                 {
                     scene.objects.push(Box::new($code));
@@ -269,7 +291,9 @@ where
             };
         }
 
-        add_geometry_option!(Cube, { Cube::new(Matrix4::identity(), Phong::white()) });
+        add_geometry_option!(Cube, {
+            Cube::new(Matrix4::identity(), scene.materials.default())
+        });
 
         add_geometry_option!(Cone, {
             Cone::new(
@@ -278,31 +302,133 @@ where
                 F::ONE,
                 true,
                 Matrix4::identity(),
-                Phong::white(),
+                scene.materials.default(),
             )
         });
 
         add_geometry_option!(Cylinder, {
-            Cylinder::new(Matrix4::identity(), true, Phong::white())
+            Cylinder::new(Matrix4::identity(), true, scene.materials.default())
         });
 
         add_geometry_option!(Sphere, {
-            Sphere::place(Vector::ZERO, F::ONE, Phong::white())
+            Sphere::place(Vector::ZERO, F::ONE, scene.materials.default())
         });
 
-        add_geometry_option!(Square, { Square::new(Matrix4::identity(), Phong::white()) });
+        add_geometry_option!(Square, {
+            Square::new(Matrix4::identity(), scene.materials.default())
+        });
+
+        res
+    }
+
+    fn context_menu_add_light(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
+        let mut res = false;
+
+        macro_rules! add_light_option {
+            ($name:ident, $code:block) => {
+                if ui
+                    .icon_button($name::<F>::ICON, stringify!($name))
+                    .clicked()
+                {
+                    scene.add_light($code);
+                    res = true;
+                }
+            };
+        }
+
+        let attn = Attenuation {
+            a: F::ZERO,
+            b: F::ONE,
+            c: F::ZERO,
+        };
+
+        add_light_option!(PointLight, {
+            PointLight::new(Vector::ZERO, attn, Color::WHITE)
+        });
+
+        add_light_option!(DirectionalLight, {
+            DirectionalLight::new(-Vector::UNIT_Z, Color::WHITE)
+        });
+
+        add_light_option!(SpotLight, {
+            SpotLight {
+                attn,
+                umbra: Deg(F::from_u32(45)).into(),
+                penumbra: Deg(F::from_u32(60)).into(),
+                pos: Vector::ZERO,
+                dir: -Vector::UNIT_Z,
+                color: Color::WHITE,
+            }
+        });
+
+        add_light_option!(AreaLight, {
+            AreaLight::new(
+                attn,
+                Vector::ZERO,
+                -Vector::UNIT_Z,
+                Vector::UNIT_Y,
+                Color::WHITE,
+                F::from_u32(10),
+                F::from_u32(10),
+            )
+        });
 
         res
     }
 
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
-        ui.menu_button("Add geometry", |ui| {
+        if let Some(obj) = self.obj {
+            ui.horizontal(|ui| {
+                ui.label(format!("Object id: {obj:x}"));
+                ui.add_space(50.0);
+            });
+
+            if ui.icon_button(icon::TRASH, "Delete").clicked() {
+                self.delete_current_obj(scene);
+                ui.close_menu();
+            }
+
+            ui.icon_menu_button(icon::ARTICLE_MEDIUM, "Set material", |ui| {
+                let mut mat_id = None;
+                for (id, mat) in &scene.materials.mats {
+                    let button = ui.button(format!("{id:?} {}", mat.get_name()));
+                    if button.clicked() {
+                        mat_id = Some(*id);
+                        info!("Select material {mat_id:?}");
+                        ui.close_menu();
+                    }
+                    if button.hovered() {
+                        mat_id = Some(*id);
+                    }
+                }
+
+                if let Some(id) = mat_id {
+                    self.change_obj(scene, move |obj| {
+                        if let Some(mat) = obj.material() {
+                            mat.set_material(id);
+                        }
+                    });
+                    self.engine.submit(&self.render_modes.preview, &self.lock);
+                }
+            });
+            ui.separator();
+        }
+
+        ui.icon_menu_button(icon::PLUS_SQUARE, "Add geometry", |ui| {
             if Self::context_menu_add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
         });
+
+        ui.icon_menu_button(icon::PLUS_CIRCLE, "Add light", |ui| {
+            if Self::context_menu_add_light(ui, scene) {
+                self.engine.submit(&self.render_modes.preview, &self.lock);
+                ui.close_menu();
+            }
+        });
+
         if ui
             .checkbox(&mut self.ray_debugger.enabled, "Ray trace debugger")
             .changed()
@@ -380,20 +506,41 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_scene_from_file(path: &Path) -> RResult<BoxScene<F>> {
-        let data = std::fs::read_to_string(path)?;
+    fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
+        let resdir = path.parent().ok_or(Error::InvalidFilename(path.into()))?;
 
-        let resdir = path
-            .parent()
-            .ok_or(Error::ParseError("Invalid filename".into()))?;
+        let name = path.to_str().ok_or(Error::InvalidFilename(path.into()))?;
 
-        let name = path
-            .to_str()
-            .ok_or(Error::ParseError("Invalid UTF-8 filename".into()))?;
-        let p = SbtParser2::parse(SbtRule::program, &data).map_err(|err| err.with_path(name))?;
-        let p = SbtParser2::ast(p)?;
-        let scene = SbtBuilder::new(resdir).build(p)?;
-        Ok(scene)
+        match path
+            .extension()
+            .and_then(OsStr::to_str)
+            .ok_or(Error::InvalidFilename(path.into()))?
+            .to_lowercase()
+            .as_str()
+        {
+            "ray" => {
+                let data = std::fs::read_to_string(path)?;
+                let p = SbtParser2::parse(SbtRule::program, &data)
+                    .map_err(|err| err.with_path(name))?;
+                let p = SbtParser2::ast(p)?;
+                SbtBuilder::new(resdir, scene).build(p)?;
+            }
+            "obj" => {
+                let obj = Obj::load(path)?;
+                crate::format::obj::load(obj, scene)?;
+                scene.add_camera_if_missing()?;
+                scene.add_light_if_missing()?;
+            }
+            "ply" => {
+                let mut reader = BufReader::new(std::fs::File::open(path)?);
+                crate::format::ply::PlyParser::parse_file(&mut reader, scene)?;
+                scene.add_camera_if_missing()?;
+                scene.add_light_if_missing()?;
+            }
+            other => Err(Error::UnknownFileExtension(other.into()))?,
+        }
+
+        Ok(())
     }
 
     fn load_file(&mut self, path: &Path) -> RResult<()> {
@@ -403,12 +550,24 @@ where
             self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
         }
 
-        let scene = Self::load_scene_from_file(path)?;
-        self.lock = Arc::new(RwLock::new(scene));
+        let mut scene = self.lock.write();
+        scene.clear();
+        if let Err(e) = Self::load_scene_from_file(path, &mut scene) {
+            let _ = scene.add_camera_if_missing();
+            return Err(e);
+        }
+        drop(scene);
 
         self.engine.submit(&self.render_modes.default, &self.lock);
 
         Ok(())
+    }
+
+    fn load_index(&mut self, mut index: usize) -> RResult<()> {
+        index %= self.paths.len();
+        self.pathindex = index;
+        let path = self.paths[index].clone();
+        self.load_file(&path)
     }
 }
 
@@ -459,6 +618,14 @@ where
             self.file_dialog.select_file();
         }
 
+        if ctx.input(|i| i.key_pressed(Key::PageDown)) {
+            let _ = self.load_index(self.pathindex + 1);
+        }
+
+        if ctx.input(|i| i.key_pressed(Key::PageUp)) {
+            let _ = self.load_index(self.pathindex - 1);
+        }
+
         // vtracer controls
         if ctx.input(|i| i.key_pressed(Key::D)) {
             self.ray_debugger.toggle();
@@ -482,13 +649,18 @@ where
         self.file_dialog.update(ctx);
 
         if let Some(path) = self.file_dialog.take_selected() {
-            let _ = self.load_file(&path);
+            self.load_file(&path).unwrap();
         }
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
 
         let lock = Arc::clone(&self.lock);
         let mut scene = lock.write();
+
+        // object control
+        if ctx.input(|i| i.key_pressed(Key::Delete)) {
+            self.delete_current_obj(&mut scene);
+        }
 
         SidePanel::left("Scene controls")
             .resizable(true)
@@ -498,7 +670,7 @@ where
     }
 }
 
-pub fn run<F>(path: PathBuf, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(paths: Vec<PathBuf>, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
@@ -523,8 +695,8 @@ where
             Box::new({
                 let engine = RenderEngine::new(width, height);
 
-                let mut app = RustRayGui::new(cc, engine, BoxScene::empty());
-                let _ = app.load_file(&path);
+                let mut app = RustRayGui::new(cc, engine, paths);
+                app.load_index(0).unwrap();
 
                 app
             })

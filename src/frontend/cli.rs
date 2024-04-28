@@ -16,7 +16,7 @@ use image::{ColorType, ImageBuffer, Rgb};
 
 use crate::format::sbt2::{Rule as Rule2, SbtBuilder, SbtParser2};
 use crate::sampler::Texel;
-use crate::scene::{BoxScene, RayTracer};
+use crate::scene::{BoxScene, RayTracer, Scene};
 use crate::tracer::Tracer;
 use crate::types::{Error, Float, RResult, TimeSlice};
 
@@ -74,7 +74,8 @@ where
 
     /* info!("AST {:#?}", p); */
     time.set("build");
-    let scene = SbtBuilder::new(resdir).build(p)?;
+    let mut scene = Scene::empty();
+    SbtBuilder::new(resdir, &mut scene).build(p)?;
 
     /* Option 3: Scene from built-in constructor */
     /* use rustray::demoscene; */

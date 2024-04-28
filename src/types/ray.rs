@@ -1,9 +1,8 @@
-use cgmath::{EuclideanSpace, InnerSpace, Matrix4, Point3, Transform as _};
+use cgmath::InnerSpace;
 use flagset::{flags, FlagSet};
 
 use crate::geometry::Geometry;
-use crate::material::Material;
-use crate::types::{Float, Maxel, Transform, Vector, Vectorx};
+use crate::types::{Float, MaterialId, Maxel, Transform, Vector, Vectorx};
 
 flags! {
     pub enum RF: u16 {
@@ -52,11 +51,32 @@ impl<'a, F: Float> Ray<F> {
 
     pub fn hit_at(
         self,
+        hit: Vector<F>,
         ext: F,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F>,
+        mat: MaterialId,
     ) -> Maxel<'a, F> {
-        Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat, self.flags)
+        Maxel::new(
+            hit,
+            self.extend(ext),
+            self.dir,
+            self.lvl,
+            obj,
+            mat,
+            self.flags,
+        )
+    }
+
+    pub fn synthetic_hit<G: Geometry<F>>(self, center: Vector<F>, obj: &'a G) -> Maxel<'a, F> {
+        Maxel::new(
+            Vector::ZERO,
+            center,
+            -self.dir,
+            self.lvl,
+            obj,
+            MaterialId::NULL,
+            self.flags,
+        )
     }
 
     pub fn enter_group(self) -> Option<Self> {
@@ -65,21 +85,6 @@ impl<'a, F: Float> Ray<F> {
         } else {
             Some(self)
         }
-    }
-
-    #[must_use]
-    pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
-        let inv = xfrm.inverse_transform()?;
-        self.transform(&inv)
-    }
-
-    #[must_use]
-    pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
-        Some(Self {
-            pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
-            dir: xfrm.transform_vector(self.dir),
-            ..*self
-        })
     }
 
     #[must_use]

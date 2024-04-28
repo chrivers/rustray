@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use glam::f32::Vec3;
 use rtbvh::Aabb;
 
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
 use crate::types::{Float, Maxel, Point, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
@@ -18,6 +19,7 @@ pub trait Geometry<F: Float>: SceneObject<F> + Debug + Sync + Send {
     fn st(&self, _maxel: &mut Maxel<F>) -> Point<F> {
         Point::ZERO
     }
+    fn material(&mut self) -> Option<&mut dyn HasMaterial>;
 }
 
 pub trait FiniteGeometry<F: Float>: Geometry<F> + SceneObject<F> + rtbvh::Primitive {
@@ -43,6 +45,9 @@ where
 
     fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
         (**self).st(maxel)
+    }
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        (**self).material()
     }
 }
 
@@ -76,6 +81,7 @@ impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
     fn get_interactive(&mut self) -> Option<&mut dyn Interactive<F>> {
         (**self).get_interactive()
     }
+
     fn get_id(&self) -> Option<usize> {
         (**self).get_id()
     }
@@ -117,7 +123,7 @@ pub fn build_aabb_symmetric<F: Float>(xfrm: &Transform<F>, x: F, y: F, z: F) -> 
 
 macro_rules! aabb_impl_fm {
     ( $t:ty ) => {
-        impl<F: Float, M: Material<F>> rtbvh::Primitive for $t {
+        impl<F: Float> rtbvh::Primitive for $t {
             fn center(&self) -> Vec3 {
                 self.aabb.center()
             }
@@ -131,7 +137,7 @@ macro_rules! aabb_impl_fm {
 
 macro_rules! geometry_impl_sceneobject {
     ( $type:ty, $name:expr ) => {
-        impl<F: Float, M: Material<F>> SceneObject<F> for $type {
+        impl<F: Float> SceneObject<F> for $type {
             crate::sceneobject_impl_body!($name, Self::ICON);
         }
     };
@@ -139,7 +145,7 @@ macro_rules! geometry_impl_sceneobject {
 
 macro_rules! geometry_impl_hastransform {
     ( $type:ty ) => {
-        impl<F: Float, M: Material<F>> HasTransform<F> for $type {
+        impl<F: Float> HasTransform<F> for $type {
             fn get_transform(&self) -> &Transform<F> {
                 &self.xfrm
             }
@@ -152,9 +158,24 @@ macro_rules! geometry_impl_hastransform {
     };
 }
 
+macro_rules! geometry_impl_hasmaterial {
+    ( $type:ty ) => {
+        impl<F: Float> HasMaterial for $type {
+            fn get_material(&self) -> MaterialId {
+                self.mat
+            }
+
+            fn set_material(&mut self, id: MaterialId) {
+                self.mat = id;
+            }
+        }
+    };
+}
+
 mod cone;
 mod cube;
 mod cylinder;
+mod group;
 mod plane;
 mod sphere;
 mod square;
@@ -164,6 +185,7 @@ mod trianglemesh;
 pub use cone::Cone;
 pub use cube::Cube;
 pub use cylinder::Cylinder;
+pub use group::Group;
 pub use plane::Plane;
 pub use sphere::Sphere;
 pub use square::Square;

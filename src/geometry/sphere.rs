@@ -6,23 +6,23 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_symmetric, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::types::{Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx};
 
 #[derive(Debug)]
-pub struct Sphere<F: Float, M: Material<F>> {
+pub struct Sphere<F: Float> {
     xfrm: Transform<F>,
-    mat: M,
+    mat: MaterialId,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Sphere<F, M>);
+aabb_impl_fm!(Sphere<F>);
 
-impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
+impl<F: Float> Interactive<F> for Sphere<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        self.mat.ui(ui)
+        Interactive::<F>::ui(&mut self.mat, ui)
     }
 
     #[cfg(feature = "gui")]
@@ -36,35 +36,43 @@ impl<F: Float, M: Material<F>> Interactive<F> for Sphere<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Sphere<F, M>, "Sphere");
-geometry_impl_hastransform!(Sphere<F, M>);
+geometry_impl_sceneobject!(Sphere<F>, "Sphere");
+geometry_impl_hastransform!(Sphere<F>);
+geometry_impl_hasmaterial!(Sphere<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Sphere<F, M> {
+impl<F: Float> FiniteGeometry<F> for Sphere<F> {
     fn recompute_aabb(&mut self) {
         self.aabb = build_aabb_symmetric(&self.xfrm, F::ONE, F::ONE, F::ONE);
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Sphere<F, M> {
+impl<F: Float> Geometry<F> for Sphere<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
         let result = r.intersect_unit_sphere()?;
-        let normal = r.extend(result);
-        let uv = normal.polar_uv();
+        let intersect = r.extend(result);
 
-        Some(
-            ray.hit_at(result, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal))
-                .with_uv(uv.into()),
-        )
+        Some(ray.hit_at(intersect, result, self, self.mat))
+    }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
+    }
+
+    fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F> {
+        self.xfrm.nml(maxel.hit)
+    }
+
+    fn uv(&self, maxel: &mut Maxel<F>) -> crate::types::Point<F> {
+        maxel.hit.polar_uv().into()
     }
 }
 
-impl<F: Float, M: Material<F>> Sphere<F, M> {
+impl<F: Float> Sphere<F> {
     pub const ICON: &'static str = egui_phosphor::regular::CIRCLE;
 
-    pub fn new(xfrm: Matrix4<F>, mat: M) -> Self {
+    pub fn new(xfrm: Matrix4<F>, mat: MaterialId) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
             mat,
@@ -74,7 +82,7 @@ impl<F: Float, M: Material<F>> Sphere<F, M> {
         res
     }
 
-    pub fn place(pos: Vector<F>, radius: F, mat: M) -> Self {
+    pub fn place(pos: Vector<F>, radius: F, mat: MaterialId) -> Self {
         let scale = Matrix4::from_scale(radius);
         let xlate = Matrix4::from_translation(pos);
         Self::new(xlate * scale, mat)
@@ -92,15 +100,15 @@ mod tests {
     use test::Bencher;
 
     use super::{Float, Geometry, Ray, Sphere, Vector, Vectorx};
-    use crate::types::Color;
+    use crate::types::MaterialId;
 
     type F = f64;
 
-    fn sphere() -> Sphere<F, Color<F>> {
+    fn sphere() -> Sphere<F> {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.3);
-        let sq = Sphere::new(xfrm, Color::BLACK);
+        let sq = Sphere::new(xfrm, MaterialId::NULL);
         black_box(sq)
     }
 
@@ -117,7 +125,7 @@ mod tests {
     fn bench_sphere_intersect(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, obj: &Sphere<F, Color<F>>) -> bool,
+        test: fn(ray: &Ray<F>, obj: &Sphere<F>) -> bool,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -136,10 +144,7 @@ mod tests {
         })
     }
 
-    fn bench_sphere_intersect_mixed(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_mixed(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| randdir(),
@@ -151,10 +156,7 @@ mod tests {
         )
     }
 
-    fn bench_sphere_intersect_never(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_never(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| {
@@ -169,10 +171,7 @@ mod tests {
         )
     }
 
-    fn bench_sphere_intersect_always(
-        bench: &mut Bencher,
-        test: fn(&Ray<F>, &Sphere<F, Color<F>>) -> bool,
-    ) {
+    fn bench_sphere_intersect_always(bench: &mut Bencher, test: fn(&Ray<F>, &Sphere<F>) -> bool) {
         bench_sphere_intersect(
             bench,
             |_idx| {

@@ -72,6 +72,12 @@ impl<const P: i32> ToPrimitive for FXP<P> {
     }
 }
 
+impl<const P: i32> Default for FXP<P> {
+    fn default() -> Self {
+        Self::ZERO
+    }
+}
+
 impl<const P: i32> Display for FXP<P> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.into_f32())

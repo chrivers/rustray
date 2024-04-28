@@ -9,16 +9,10 @@ pub use pointlight::PointLight;
 pub use spotlight::SpotLight;
 
 use crate::scene::{Interactive, RayTracer, SceneObject};
-use crate::types::{Color, Float, Maxel, Vector, Vectorx};
+use crate::types::{Color, Float, Maxel, Vector};
 
 pub trait Light<F: Float>: SceneObject<F> + Sync + Send {
-    fn contribution(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Lixel<F> {
-        Lixel {
-            dir: Vector::UNIT_Z,
-            color: Color::BLACK,
-            len2: F::from_u32(100_000),
-        }
-    }
+    fn contribution(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Lixel<F>;
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

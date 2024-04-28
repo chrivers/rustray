@@ -1,19 +1,29 @@
 use core::fmt::{self, Debug};
 
 use crate::geometry::Geometry;
-use crate::material::Material;
-use crate::types::{Float, Point, Ray, RayFlags, Vector, Vectorx, RF};
+use crate::types::{Float, MaterialId, Point, Ray, RayFlags, Transform, Vector, Vectorx, RF};
 
 #[derive(Copy, Clone)]
 pub struct Maxel<'a, F: Float> {
+    /// Intersection point in object space
+    pub hit: Vector<F>,
+    /// Intersection point in world space
     pub pos: Vector<F>,
+    /// Intersection direction
     pub dir: Vector<F>,
+    /// Intersected object
     pub obj: &'a dyn Geometry<F>,
-    pub mat: &'a dyn Material<F>,
+    /// Material id at intersection
+    pub mat: MaterialId,
+    /// Normal at intersection
     nml: Option<Vector<F>>,
+    /// Texture (u, v) coordinates at intersection
     uv: Option<Point<F>>,
+    /// Object (s, t) coordinates at intersection
     st: Option<Point<F>>,
+    /// Ray nesting level
     pub lvl: u16,
+    /// Ray flags from intersecting ray
     pub flags: RayFlags,
 }
 
@@ -35,14 +45,16 @@ impl<'a, F: Float> Debug for Maxel<'a, F> {
 /* Maxel */
 impl<'a, F: Float> Maxel<'a, F> {
     pub fn new(
+        hit: Vector<F>,
         pos: Vector<F>,
         dir: Vector<F>,
         lvl: u16,
         obj: &'a dyn Geometry<F>,
-        mat: &'a dyn Material<F>,
+        mat: MaterialId,
         flags: RayFlags,
     ) -> Self {
         Maxel {
+            hit,
             pos,
             dir,
             lvl,
@@ -53,6 +65,14 @@ impl<'a, F: Float> Maxel<'a, F> {
             st: None,
             flags,
         }
+    }
+
+    #[must_use]
+    pub fn xfrm(mut self, xfrm: &Transform<F>) -> Self {
+        self.pos = xfrm.pos(self.pos);
+        self.dir = xfrm.dir(self.dir);
+        self.nml = self.nml.map(|nml| xfrm.nml(nml));
+        self
     }
 
     pub fn ray(&self, pos: Vector<F>, dir: Vector<F>) -> Ray<F> {

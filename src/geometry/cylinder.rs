@@ -6,29 +6,29 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::types::{self, Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 #[derive(Debug)]
-pub struct Cylinder<F: Float, M: Material<F>> {
+pub struct Cylinder<F: Float> {
     xfrm: Transform<F>,
     capped: bool,
-    mat: M,
+    mat: MaterialId,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Cylinder<F, M>);
+aabb_impl_fm!(Cylinder<F>);
 
-impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
+impl<F: Float> Interactive<F> for Cylinder<F> {
     #[cfg(feature = "gui")]
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         res |= ui.checkbox(&mut self.capped, "Capped").changed();
         ui.end_row();
 
-        res |= self.mat.ui(ui);
+        res |= Interactive::<F>::ui(&mut self.mat, ui);
 
         res
     }
@@ -44,10 +44,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cylinder<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cylinder<F, M>, "Cylinder");
-geometry_impl_hastransform!(Cylinder<F, M>);
+geometry_impl_sceneobject!(Cylinder<F>, "Cylinder");
+geometry_impl_hastransform!(Cylinder<F>);
+geometry_impl_hasmaterial!(Cylinder<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
+impl<F: Float> FiniteGeometry<F> for Cylinder<F> {
     fn recompute_aabb(&mut self) {
         self.aabb = build_aabb_ranged(
             &self.xfrm,
@@ -58,7 +59,7 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cylinder<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
+impl<F: Float> Geometry<F> for Cylinder<F> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cylinder.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -157,14 +158,21 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cylinder<F, M> {
 
         let nml = self.xfrm.nml(normal.normalize());
 
-        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
+        Some(
+            ray.hit_at(r.extend(root), root, self, self.mat)
+                .with_normal(nml),
+        )
+    }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
     }
 }
 
-impl<F: Float, M: Material<F>> Cylinder<F, M> {
+impl<F: Float> Cylinder<F> {
     pub const ICON: &'static str = egui_phosphor::regular::CYLINDER;
 
-    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: M) -> Self {
+    pub fn new(xfrm: Matrix4<F>, capped: bool, mat: MaterialId) -> Self {
         let mut res = Self {
             xfrm: Transform::new(xfrm),
             capped,
@@ -182,7 +190,7 @@ mod test {
     use cgmath::Matrix4;
 
     use super::{Cylinder, Geometry, Ray, Vector};
-    use crate::types::Color;
+    use crate::types::MaterialId;
 
     macro_rules! assert_vec {
         ($val:expr, $x:expr, $y:expr, $z:expr) => {
@@ -194,7 +202,7 @@ mod test {
 
     #[test]
     fn test_cylinder1() {
-        let c = Cylinder::new(Matrix4::from_scale(2.0), false, Color::WHITE);
+        let c = Cylinder::new(Matrix4::from_scale(2.0), false, MaterialId::NULL);
 
         let r0 = Ray::new(Vector::UNIT_X * 4.0, -Vector::UNIT_X);
         let h0 = c.intersect(&r0).unwrap();
@@ -224,11 +232,11 @@ mod test {
 
     type F = f64;
 
-    fn cylinder() -> Cylinder<F, Color<F>> {
+    fn cylinder() -> Cylinder<F> {
         let xfrm = Matrix4::from_translation(Vector::UNIT_Z)
             * Matrix4::from_angle_y(Deg(45.0))
             * Matrix4::from_scale(0.3);
-        let sq = Cylinder::new(xfrm, true, Color::BLACK);
+        let sq = Cylinder::new(xfrm, true, MaterialId::NULL);
         black_box(sq)
     }
 
@@ -245,7 +253,7 @@ mod test {
     fn bench_cylinder_intersect(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, obj: &Cylinder<F, Color<F>>) -> bool,
+        test: fn(ray: &Ray<F>, obj: &Cylinder<F>) -> bool,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -266,7 +274,7 @@ mod test {
 
     fn bench_cylinder_intersect_mixed(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+        test: fn(&Ray<F>, &Cylinder<F>) -> bool,
     ) {
         bench_cylinder_intersect(
             bench,
@@ -281,7 +289,7 @@ mod test {
 
     fn bench_cylinder_intersect_never(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+        test: fn(&Ray<F>, &Cylinder<F>) -> bool,
     ) {
         bench_cylinder_intersect(
             bench,
@@ -299,7 +307,7 @@ mod test {
 
     fn bench_cylinder_intersect_always(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Cylinder<F, Color<F>>) -> bool,
+        test: fn(&Ray<F>, &Cylinder<F>) -> bool,
     ) {
         bench_cylinder_intersect(
             bench,

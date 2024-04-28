@@ -2,19 +2,15 @@ use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
 
-use cgmath::{InnerSpace, Matrix4, SquareMatrix};
+use cgmath::{Matrix4, SquareMatrix};
 use num_traits::Zero;
 
-use crate::geometry::{FiniteGeometry, Triangle, TriangleMesh};
-use crate::light::{Attenuation, Light, PointLight};
-use crate::material::{Material, Phong};
+use crate::geometry::{Triangle, TriangleMesh};
 use crate::sampler::Texel;
-use crate::scene::{BoxScene, Scene};
-use crate::types::{Camera, Color, Error, Float, MaterialLib, Point, RResult, Vector, Vectorx};
-use crate::vec3;
+use crate::scene::BoxScene;
+use crate::types::{Error, Float, Point, RResult, Vector, Vectorx};
 
 use ply_rs::{parser, ply};
-use rtbvh::Primitive;
 
 pub struct PlyParser<F: Float> {
     _p: PhantomData<F>,
@@ -83,11 +79,7 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
 }
 
 impl<F: Float + Texel> PlyParser<F> {
-    pub fn parse_file(file: &mut impl BufRead) -> RResult<BoxScene<F>> {
-        let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
-        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
-
+    pub fn parse_file(file: &mut impl BufRead, scene: &mut BoxScene<F>) -> RResult<()> {
         let vertex_parser = parser::Parser::<Vertex<F>>::new();
         let face_parser = parser::Parser::<Face<F>>::new();
 
@@ -109,7 +101,7 @@ impl<F: Float + Texel> PlyParser<F> {
         info!("vl: {:#?}", vertex_list.len());
         info!("fl: {:#?}", face_list.len());
 
-        let mat = Phong::white().dynamic();
+        let mat = scene.materials.default();
 
         let mut tris = vec![];
         for face in &face_list {
@@ -137,39 +129,14 @@ impl<F: Float + Texel> PlyParser<F> {
                     Point::ZERO,
                     Point::ZERO,
                     Point::ZERO,
-                    mat.clone(),
+                    mat,
                 );
                 tris.push(tri);
             }
         }
 
         let mesh = TriangleMesh::new(tris, Matrix4::identity());
-
-        let bb = mesh.aabb();
-        info!("aabb {:?}", bb);
-
-        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
-        let look: Vector<F> = Vector::from_vec3(bb.center());
-        let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
-
-        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(120.0), F::ONE);
-
-        cameras.push(cam);
-
-        objects.push(Box::new(mesh));
-
-        let lgt = PointLight {
-            attn: Attenuation {
-                a: F::from_f32(0.1),
-                b: F::from_f32(0.0001),
-                c: F::from_f32(0.0),
-            },
-            pos,
-            color: Color::WHITE,
-        };
-
-        lights.push(Box::new(lgt));
-
-        Scene::new(cameras, objects, vec![], MaterialLib::new(), lights)
+        scene.objects.push(Box::new(mesh));
+        scene.recompute_bvh()
     }
 }

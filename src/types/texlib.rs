@@ -9,7 +9,7 @@ use crate::types::Float;
 pub struct TextureId(pub u32);
 
 pub struct TextureLib {
-    pub mats: HashMap<TextureId, DynamicImage>,
+    pub texs: HashMap<TextureId, DynamicImage>,
     idx: u32,
 }
 
@@ -17,19 +17,19 @@ impl TextureLib {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            mats: HashMap::new(),
+            texs: HashMap::new(),
             idx: 0,
         }
     }
 
     #[must_use]
-    pub fn get_name(&self, mat: TextureId) -> String {
-        format!("texture-{}", mat.0)
+    pub fn get_name(&self, tex: TextureId) -> String {
+        format!("texture-{}", tex.0)
     }
 
-    pub fn insert(&mut self, material: DynamicImage) -> TextureId {
+    pub fn insert(&mut self, texture: DynamicImage) -> TextureId {
         let next = TextureId(self.idx);
-        self.mats.insert(next, material);
+        self.texs.insert(next, texture);
         self.idx += 1;
         next
     }

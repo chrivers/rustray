@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use thiserror::Error;
 
 use crate::engine::RenderSpan;
@@ -40,6 +42,12 @@ pub enum Error {
 
     #[error("unsupported parse element {0}")]
     ParseUnsupported(String),
+
+    #[error("Invalid filename {0}")]
+    InvalidFilename(PathBuf),
+
+    #[error("Unknown file extension {0}")]
+    UnknownFileExtension(String),
 
     #[error(transparent)]
     BuildError(#[from] rtbvh::BuildError),

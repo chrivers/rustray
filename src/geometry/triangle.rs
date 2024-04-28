@@ -5,13 +5,13 @@ use glam::Vec3;
 use rtbvh::{Aabb, SpatialTriangle};
 
 use crate::geometry::{FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::point;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{Float, Maxel, Point, Ray, Vector, Vectorx};
+use crate::types::{Float, MaterialId, Maxel, Point, Ray, Vector, Vectorx};
 
 #[derive(Clone, Debug)]
-pub struct Triangle<F: Float, M: Material<F>> {
+pub struct Triangle<F: Float> {
     pub(crate) a: Vector<F>,
     pub(crate) b: Vector<F>,
     pub(crate) c: Vector<F>,
@@ -30,13 +30,13 @@ pub struct Triangle<F: Float, M: Material<F>> {
 
     aabb: Aabb,
 
-    mat: M,
+    mat: MaterialId,
 }
 
 #[cfg(feature = "gui")]
-impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
+impl<F: Float> Interactive<F> for Triangle<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
-        self.mat.ui(ui)
+        Interactive::<F>::ui(&mut self.mat, ui)
     }
 
     #[cfg(feature = "gui")]
@@ -45,9 +45,10 @@ impl<F: Float, M: Material<F>> Interactive<F> for Triangle<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Triangle<F, M>, "Triangle");
+geometry_impl_sceneobject!(Triangle<F>, "Triangle");
+geometry_impl_hasmaterial!(Triangle<F>);
 
-impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
+impl<F: Float> SpatialTriangle for Triangle<F> {
     fn vertex0(&self) -> Vec3 {
         self.a.into_vec3()
     }
@@ -59,7 +60,7 @@ impl<F: Float, M: Material<F>> SpatialTriangle for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Triangle<F, M> {
+impl<F: Float> FiniteGeometry<F> for Triangle<F> {
     fn recompute_aabb(&mut self) {
         let mut aabb = Aabb::empty();
         aabb.grow(self.a.into_vec3());
@@ -69,9 +70,9 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for Triangle<F, M> {
     }
 }
 
-aabb_impl_fm!(Triangle<F, M>);
+aabb_impl_fm!(Triangle<F>);
 
-impl<F: Float, M: Material<F>> fmt::Display for Triangle<F, M> {
+impl<F: Float> fmt::Display for Triangle<F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -89,7 +90,7 @@ impl<F: Float, M: Material<F>> fmt::Display for Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Triangle<F, M> {
+impl<F: Float> Triangle<F> {
     fn interpolate_normal(&self, u: F, v: F) -> Vector<F> {
         let w = F::ONE - u - v;
         let normal = self.na * w + self.nb * u + self.nc * v;
@@ -103,10 +104,10 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Triangle<F, M> {
+impl<F: Float> Geometry<F> for Triangle<F> {
     fn st(&self, hit: &mut Maxel<F>) -> Point<F> {
-        let c1 = self.edge1.cross(hit.pos - self.b);
-        let c2 = self.edge2.cross(hit.pos - self.c);
+        let c1 = self.edge1.cross(hit.hit - self.b);
+        let c2 = self.edge2.cross(hit.hit - self.c);
         let s = c2.magnitude() / self.area2;
         let t = c1.magnitude() / self.area2;
 
@@ -125,11 +126,15 @@ impl<F: Float, M: Material<F>> Geometry<F> for Triangle<F, M> {
 
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let t = ray.intersect_triangle4(&self.edge1, &self.edge2, &self.a)?;
-        Some(ray.hit_at(t, self, &self.mat))
+        Some(ray.hit_at(ray.extend(t), t, self, self.mat))
+    }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
     }
 }
 
-impl<F: Float, M: Material<F>> Triangle<F, M> {
+impl<F: Float> Triangle<F> {
     const ICON: &'static str = egui_phosphor::regular::TRIANGLE;
 
     #[allow(clippy::too_many_arguments)]
@@ -143,7 +148,7 @@ impl<F: Float, M: Material<F>> Triangle<F, M> {
         ta: Point<F>,
         tb: Point<F>,
         tc: Point<F>,
-        mat: M,
+        mat: MaterialId,
     ) -> Self {
         let edge1 = b - a;
         let edge2 = c - a;
@@ -179,14 +184,13 @@ mod tests {
     use rand::Rng;
     use test::Bencher;
 
-    use crate::geometry::Triangle;
+    use crate::{geometry::Triangle, types::MaterialId};
 
     use super::{Float, Point, Ray, Vector, Vectorx};
-    use crate::types::Color;
 
     type F = f64;
 
-    fn triangle() -> Triangle<F, Color<F>> {
+    fn triangle() -> Triangle<F> {
         let a = Vector::new(0.0, -1.0, 10.0);
         let b = Vector::new(-1.0, 1.0, 10.0);
         let c = Vector::new(1.0, 1.0, 10.0);
@@ -200,7 +204,7 @@ mod tests {
             Point::ZERO,
             Point::ZERO,
             Point::ZERO,
-            Color::BLACK,
+            MaterialId::NULL,
         );
         black_box(tri)
     }
@@ -218,7 +222,7 @@ mod tests {
     fn bench_triangle_intersect<T>(
         bench: &mut Bencher,
         gendir: fn(idx: usize) -> Vector<F>,
-        test: fn(ray: &Ray<F>, tri: &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(ray: &Ray<F>, tri: &Triangle<F>) -> Option<T>,
         check: fn(hits: usize, rays: usize),
     ) {
         const ITERATIONS: usize = 100;
@@ -239,7 +243,7 @@ mod tests {
 
     fn bench_triangle_intersect_mixed<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,
@@ -254,7 +258,7 @@ mod tests {
 
     fn bench_triangle_intersect_never<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,
@@ -272,7 +276,7 @@ mod tests {
 
     fn bench_triangle_intersect_always<T>(
         bench: &mut Bencher,
-        test: fn(&Ray<F>, &Triangle<F, Color<F>>) -> Option<T>,
+        test: fn(&Ray<F>, &Triangle<F>) -> Option<T>,
     ) {
         bench_triangle_intersect(
             bench,

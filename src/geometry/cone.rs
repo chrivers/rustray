@@ -3,29 +3,29 @@ use glam::Vec3;
 use rtbvh::Aabb;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry};
-use crate::material::Material;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{self, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx};
+use crate::types::{self, Float, HasTransform, MaterialId, Maxel, Ray, Transform, Vector, Vectorx};
 use crate::vec3;
 
 #[cfg(feature = "gui")]
 use crate::types::Camera;
 
 #[derive(Debug)]
-pub struct Cone<F: Float, M: Material<F>> {
+pub struct Cone<F: Float> {
     height: F,
     top_r: F,
     bot_r: F,
     capped: bool,
-    mat: M,
+    mat: MaterialId,
     xfrm: Transform<F>,
     aabb: Aabb,
 }
 
-aabb_impl_fm!(Cone<F, M>);
+aabb_impl_fm!(Cone<F>);
 
 #[cfg(feature = "gui")]
-impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
+impl<F: Float> Interactive<F> for Cone<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         use egui::{Slider, Widget};
         let mut res = false;
@@ -57,7 +57,7 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
         res |= ui.checkbox(&mut self.capped, "Capped").changed();
         ui.end_row();
 
-        res |= self.mat.ui(ui);
+        res |= Interactive::<F>::ui(&mut self.mat, ui);
 
         if res {
             self.recompute_aabb();
@@ -76,17 +76,18 @@ impl<F: Float, M: Material<F>> Interactive<F> for Cone<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(Cone<F, M>, "Cone");
-geometry_impl_hastransform!(Cone<F, M>);
+geometry_impl_sceneobject!(Cone<F>, "Cone");
+geometry_impl_hastransform!(Cone<F>);
+geometry_impl_hasmaterial!(Cone<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for Cone<F, M> {
+impl<F: Float> FiniteGeometry<F> for Cone<F> {
     fn recompute_aabb(&mut self) {
         let m = self.bot_r.max(self.top_r);
         self.aabb = build_aabb_ranged(&self.xfrm, [-m, m], [-m, m], [F::ZERO, self.height]);
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
+impl<F: Float> Geometry<F> for Cone<F> {
     /* Adapted from publicly-available code for University of Washington's course csep557 */
     /* https://courses.cs.washington.edu/courses/csep557/01sp/projects/trace/Cone.cpp */
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
@@ -181,14 +182,28 @@ impl<F: Float, M: Material<F>> Geometry<F> for Cone<F, M> {
 
         let nml = self.xfrm.nml(normal.normalize());
 
-        Some(ray.hit_at(root, self, &self.mat).with_normal(nml))
+        Some(
+            ray.hit_at(r.extend(root), root, self, self.mat)
+                .with_normal(nml),
+        )
+    }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        Some(self)
     }
 }
 
-impl<F: Float, M: Material<F>> Cone<F, M> {
+impl<F: Float> Cone<F> {
     pub const ICON: &'static str = egui_phosphor::regular::TRAFFIC_CONE;
 
-    pub fn new(height: F, top_r: F, bot_r: F, capped: bool, xfrm: Matrix4<F>, mat: M) -> Self {
+    pub fn new(
+        height: F,
+        top_r: F,
+        bot_r: F,
+        capped: bool,
+        xfrm: Matrix4<F>,
+        mat: MaterialId,
+    ) -> Self {
         let mut res = Self {
             height,
             top_r,

@@ -1,10 +1,13 @@
 use crate::geometry::{FiniteGeometry, Geometry};
-use crate::light::{Light, Lixel};
-use crate::types::{BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib};
+use crate::light::{DirectionalLight, Light, Lixel};
+use crate::types::{
+    BvhExt, Camera, Color, Float, MaterialLib, Maxel, RResult, Ray, TextureLib, Vector, Vectorx,
+};
+use crate::vec3;
 
-use cgmath::MetricSpace;
+use cgmath::{InnerSpace, MetricSpace};
 
-use rtbvh::{Builder, Bvh};
+use rtbvh::{Bounds, Builder, Bvh};
 use std::fmt::Debug;
 use std::num::NonZeroUsize;
 
@@ -118,8 +121,18 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             lights: vec![],
             bvh: Bvh::default(),
             ambient: Color::BLACK,
-            background: Color::BLACK,
+            background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.cameras.clear();
+        self.objects.clear();
+        self.geometry.clear();
+        self.textures.texs.clear();
+        self.materials.mats.clear();
+        self.lights.clear();
+        self.bvh = Bvh::default();
     }
 
     pub fn recompute_bvh(&mut self) -> RResult<()> {
@@ -129,13 +142,17 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             .map(rtbvh::Primitive::aabb)
             .collect::<Vec<rtbvh::Aabb>>();
 
-        let builder = Builder {
-            aabbs: Some(aabbs.as_slice()),
-            primitives: self.objects.as_slice(),
-            primitives_per_leaf: NonZeroUsize::new(16),
-        };
+        if aabbs.is_empty() {
+            self.bvh = Bvh::default();
+        } else {
+            let builder = Builder {
+                aabbs: Some(aabbs.as_slice()),
+                primitives: self.objects.as_slice(),
+                primitives_per_leaf: NonZeroUsize::new(16),
+            };
 
-        self.bvh = builder.construct_binned_sah()?;
+            self.bvh = builder.construct_binned_sah()?;
+        }
 
         Ok(())
     }
@@ -159,8 +176,72 @@ impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G,
             .or(hit)
     }
 
-    #[must_use]
-    pub fn with_ambient(self, ambient: Color<F>) -> Self {
-        Self { ambient, ..self }
+    pub fn set_ambient(&mut self, ambient: Color<F>) {
+        self.ambient = ambient;
+    }
+
+    pub const fn get_ambient(&self) -> Color<F> {
+        self.ambient
+    }
+
+    pub fn set_background(&mut self, background: Color<F>) {
+        self.background = background;
+    }
+
+    pub const fn get_background(&self) -> Color<F> {
+        self.background
+    }
+
+    pub fn add_camera(&mut self, camera: Camera<F>) {
+        self.cameras.push(camera);
+    }
+}
+
+impl<F: Float> BoxScene<F> {
+    pub fn add_light(&mut self, light: impl Light<F> + 'static) {
+        self.lights.push(Box::new(light));
+    }
+
+    pub fn add_geometry(&mut self, geometry: impl Geometry<F> + 'static) {
+        self.geometry.push(Box::new(geometry));
+    }
+
+    pub fn add_object(&mut self, geometry: impl FiniteGeometry<F> + 'static) {
+        self.objects.push(Box::new(geometry));
+    }
+
+    pub fn add_camera_if_missing(&mut self) -> RResult<()> {
+        if !self.cameras.is_empty() {
+            return Ok(());
+        }
+
+        self.recompute_bvh()?;
+
+        let bb = self.bvh.bounds();
+
+        let sz: Vector<F> = Vector::from_vec3(bb.lengths());
+        let look: Vector<F> = Vector::from_vec3(bb.center());
+        let pos = vec3!(F::ZERO, sz.y / F::TWO, sz.magnitude());
+
+        let cam = Camera::build(pos, look - pos, Vector::UNIT_Y, F::from_f32(60.0), F::ONE);
+
+        info!("Add camera");
+        self.cameras.push(cam);
+
+        Ok(())
+    }
+
+    pub fn add_light_if_missing(&mut self) -> RResult<()> {
+        if !self.lights.is_empty() {
+            return Ok(());
+        }
+
+        info!("Add light");
+        self.add_light(DirectionalLight::new(
+            Vector::new(F::ZERO, -F::HALF, -F::ONE),
+            Color::WHITE,
+        ));
+
+        Ok(())
     }
 }

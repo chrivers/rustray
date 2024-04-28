@@ -1,33 +1,27 @@
 use std::num::NonZeroUsize;
 
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::Matrix4;
 use glam::Vec3;
-use obj::Obj;
 use rtbvh::{Aabb, Bounds, Builder, Bvh, Primitive};
 
 #[cfg(feature = "gui")]
 use crate::types::Camera;
 
 use crate::geometry::{build_aabb_ranged, FiniteGeometry, Geometry, Triangle};
-use crate::material::{BoxMaterial, Material};
-use crate::sampler::Texel;
+use crate::material::HasMaterial;
 use crate::scene::{Interactive, SceneObject};
-use crate::types::{
-    BvhExt, Color, Float, HasTransform, MaterialId, MaterialLib, Maxel, RResult, Ray, Transform,
-    Vector, Vectorx, RF,
-};
+use crate::types::{BvhExt, Float, HasTransform, Maxel, Ray, Transform, Vector, Vectorx, RF};
 
 #[derive(Debug)]
-pub struct TriangleMesh<F: Float, M: Material<F>> {
+pub struct TriangleMesh<F: Float> {
     xfrm: Transform<F>,
-    mat: BoxMaterial<F>,
-    pub tris: Vec<Triangle<F, M>>,
+    pub tris: Vec<Triangle<F>>,
     bvh: Bvh,
     aabb: Aabb,
 }
 
 #[cfg(feature = "gui")]
-impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
+impl<F: Float> Interactive<F> for TriangleMesh<F> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
         let mut res = false;
         if ui.button("Face normals").clicked() {
@@ -51,11 +45,11 @@ impl<F: Float, M: Material<F>> Interactive<F> for TriangleMesh<F, M> {
     }
 }
 
-geometry_impl_sceneobject!(TriangleMesh<F, M>, "TriangleMesh");
-geometry_impl_hastransform!(TriangleMesh<F, M>);
-aabb_impl_fm!(TriangleMesh<F, M>);
+geometry_impl_sceneobject!(TriangleMesh<F>, "TriangleMesh");
+geometry_impl_hastransform!(TriangleMesh<F>);
+aabb_impl_fm!(TriangleMesh<F>);
 
-impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
+impl<F: Float> FiniteGeometry<F> for TriangleMesh<F> {
     fn recompute_aabb(&mut self) {
         let bounds = self.bvh.bounds();
 
@@ -66,45 +60,40 @@ impl<F: Float, M: Material<F>> FiniteGeometry<F> for TriangleMesh<F, M> {
     }
 }
 
-impl<F: Float, M: Material<F>> Geometry<F> for TriangleMesh<F, M> {
+impl<F: Float> Geometry<F> for TriangleMesh<F> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        if !ray.flags.contains(RF::StopAtGroup) {
-            let r = ray.xfrm_inv(&self.xfrm).enter_group()?;
+        if ray.flags.contains(RF::StopAtGroup) {
+            let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
+            return Some(ray.synthetic_hit(center, self));
+        }
 
-            let maxel = self
-                .bvh
-                .nearest_intersection(&r, &self.tris, &mut F::max_value());
+        let r = ray.xfrm_inv(&self.xfrm);
 
-            /* FIXME: We have to transform maxel results backwards through our
-             * xfrm, to avoid results in object space. This breaks the design
-             * idea of maxel, which can calculate information on-demand (but
-             * this would require access to the resulting Transform, which is
-             * not currently available). */
-            maxel.map(|mut mxl| {
+        self.bvh
+            .nearest_intersection(&r, &self.tris, &mut F::max_value())
+            .map(|mut mxl| {
+                /* FIXME: We have to make maxel cache all results here, to avoid results
+                 * in object space. This breaks the design idea of maxel, which can
+                 * calculate information on-demand (but this would require access to the
+                 * resulting Transform, which is not currently available). */
                 mxl.st();
                 mxl.uv();
-                mxl.pos = self.xfrm.pos(mxl.pos);
-                mxl.dir = self.xfrm.dir(mxl.dir);
-                mxl.with_normal(self.xfrm.nml(mxl.nml()))
+                mxl.nml();
+
+                /* Transform maxel from object space */
+                mxl.xfrm(&self.xfrm)
             })
-        } else {
-            let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
-            Some(Maxel::new(
-                center,
-                -ray.dir,
-                ray.lvl,
-                self,
-                self.mat.as_ref(),
-                ray.flags,
-            ))
-        }
+    }
+
+    fn material(&mut self) -> Option<&mut dyn HasMaterial> {
+        None
     }
 }
 
-impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
+impl<F: Float> TriangleMesh<F> {
     const ICON: &'static str = egui_phosphor::regular::POLYGON;
 
-    pub fn new(tris: Vec<Triangle<F, M>>, xfrm: Matrix4<F>) -> Self {
+    pub fn new(tris: Vec<Triangle<F>>, xfrm: Matrix4<F>) -> Self {
         debug!("building bvh for {} triangles..", tris.len());
 
         let aabbs: Vec<Aabb> = tris.iter().map(rtbvh::Primitive::aabb).collect();
@@ -121,19 +110,11 @@ impl<F: Float, M: Material<F>> TriangleMesh<F, M> {
 
         let mut res = Self {
             xfrm: Transform::new(xfrm),
-            mat: Box::new(Color::BLACK),
             tris,
             bvh,
             aabb: Aabb::empty(),
         };
         res.recompute_aabb();
         res
-    }
-}
-
-impl<F: Float + Texel> TriangleMesh<F, MaterialId> {
-    pub fn load_obj(obj: Obj, lib: &mut MaterialLib<F>, pos: Vector<F>, scale: F) -> RResult<Self> {
-        let tris = crate::format::obj::load(obj, lib, pos, scale)?;
-        Ok(Self::new(tris, Matrix4::identity()))
     }
 }
