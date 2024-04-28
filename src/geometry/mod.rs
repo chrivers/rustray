@@ -46,6 +46,7 @@ where
     fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
         (**self).st(maxel)
     }
+
     fn material(&mut self) -> Option<&mut dyn HasMaterial> {
         (**self).material()
     }
@@ -67,6 +68,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn FiniteGeometry<F> + 'static)> {
     fn get_id(&self) -> Option<usize> {
         (**self).get_id()
     }
+
+    fn get_object(&mut self, id: usize) -> Option<&mut dyn Geometry<F>> {
+        (**self).get_object(id)
+    }
 }
 
 impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
@@ -84,6 +89,10 @@ impl<F: Float> SceneObject<F> for Box<(dyn Geometry<F> + 'static)> {
 
     fn get_id(&self) -> Option<usize> {
         (**self).get_id()
+    }
+
+    fn get_object(&mut self, id: usize) -> Option<&mut dyn Geometry<F>> {
+        (**self).get_object(id)
     }
 }
 
@@ -139,6 +148,14 @@ macro_rules! geometry_impl_sceneobject {
     ( $type:ty, $name:expr ) => {
         impl<F: Float> SceneObject<F> for $type {
             crate::sceneobject_impl_body!($name, Self::ICON);
+
+            fn get_object(&mut self, id: usize) -> Option<&mut dyn crate::geometry::Geometry<F>> {
+                if SceneObject::get_id(self) == Some(id) {
+                    Some(self as &mut dyn crate::geometry::Geometry<F>)
+                } else {
+                    None
+                }
+            }
         }
     };
 }

@@ -1,7 +1,5 @@
 use std::fmt::{self, Debug};
 
-use cgmath::MetricSpace;
-
 use crate::engine::RenderSpan;
 use crate::light::Lixel;
 use crate::material::Material;
@@ -67,27 +65,17 @@ impl<'a, F: Float> RayTracer<F> for Tracer<'a, F> {
             return None;
         }
 
-        let pos = maxel.pos + maxel.nml() * F::BIAS2;
-        let hitray = maxel.ray(pos, lixel.dir);
+        let hitray = maxel.shadow_ray(lixel);
 
-        let mut best_length = lixel.len2;
-        let mut best_color = None;
+        let mut len2 = lixel.len2;
 
-        let mut r = hitray.into();
-
-        #[allow(clippy::significant_drop_in_scrutinee)]
-        for (curobj, _ray) in self.scene.bvh.traverse_iter(&mut r, &self.scene.objects) {
-            if let Some(mut curhit) = curobj.intersect(&hitray) {
-                let cur_length = maxel.pos.distance2(curhit.pos);
-                if cur_length > F::BIAS2 && cur_length < best_length {
-                    let mat = &self.scene.materials.mats[&curhit.mat];
-                    let color = mat.shadow(&mut curhit, self, lixel);
-                    best_color = Some(color);
-                    best_length = cur_length;
-                }
-            }
-        }
-        best_color
+        self.scene
+            .root
+            .nearest_intersection(&hitray, &mut len2)
+            .map(|mut maxel| {
+                let mat = &self.scene.materials.mats[&maxel.mat];
+                mat.shadow(&mut maxel, self, lixel)
+            })
     }
 
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>> {

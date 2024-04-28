@@ -117,4 +117,8 @@ impl<F: Float, S: SceneObject<F>> SceneObject<F> for NamedObject<S> {
     fn get_id(&self) -> Option<usize> {
         self.obj.get_id()
     }
+
+    fn get_object(&mut self, id: usize) -> Option<&mut dyn Geometry<F>> {
+        self.obj.get_object(id)
+    }
 }

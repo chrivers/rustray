@@ -58,3 +58,4 @@ egui_plot = "0.26"
 flagset = "0.4.5"
 egui-phosphor = "=0.4"
 parking_lot = { version = "0.12.1", features = ["arc_lock", "hardware-lock-elision"] }
+camino = "1.1.6"

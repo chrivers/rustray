@@ -2619,6 +2619,7 @@ version = "0.5.0"
 dependencies = [
  "assert_float_eq",
  "az",
+ "camino",
  "cgmath",
  "clap",
  "colog",

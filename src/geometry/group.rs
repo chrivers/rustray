@@ -15,21 +15,89 @@ use crate::types::{
 };
 
 #[derive(Debug)]
-pub struct Group<F: Float> {
+pub struct Group<F: Float, G: FiniteGeometry<F>> {
     xfrm: Transform<F>,
-    pub geo: Vec<Box<dyn FiniteGeometry<F>>>,
+    geo: Vec<G>,
     bvh: Bvh,
     aabb: Aabb,
 }
 
 #[cfg(feature = "gui")]
-impl<F: Float> Interactive<F> for Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Interactive<F> for Group<F, G> {
     fn ui(&mut self, ui: &mut egui::Ui) -> bool {
+        use crate::gui::controls;
+        use crate::types::hash;
+        use egui::{vec2, Align, Button, Id, Layout, NumExt, Sense, TextStyle, Widget, WidgetText};
+        use egui_phosphor::regular as icon;
+
         let mut res = false;
-        for g in &mut self.geo {
-            ui.label(g.get_name());
-            res |= g.get_interactive().is_some_and(|i| i.ui(ui));
-        }
+
+        let mut self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
+        let self_obj_last = ui
+            .data(|mem| mem.get_temp("obj_last".into()))
+            .unwrap_or(None);
+
+        self.iter_mut().enumerate().for_each(|(i, obj)| {
+            let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
+            let obj_id = SceneObject::get_id(obj);
+            let id = hash(&obj_id);
+            let proplist = controls::CustomCollapsible::new(Id::new(id));
+            let (response, _header_response, _body_response) = proplist.show(
+                ui,
+                |pl, ui| {
+                    let text = WidgetText::from(name);
+                    let available = ui.available_rect_before_wrap();
+                    let text_pos = available.min;
+                    let wrap_width = available.right() - text_pos.x;
+                    let galley = text.into_galley(ui, Some(false), wrap_width, TextStyle::Button);
+                    let text_max_x = text_pos.x + galley.size().x;
+                    let desired_width = text_max_x + available.left();
+                    let desired_size =
+                        vec2(desired_width, galley.size().y).at_least(ui.spacing().interact_size);
+                    let rect = ui.allocate_space(desired_size).1;
+                    let header_response = ui.interact(rect, pl.id, Sense::click());
+                    if header_response.clicked() {
+                        pl.toggle();
+                    }
+                    let visuals = ui.style().interact_selectable(&header_response, false);
+                    ui.painter().galley(text_pos, galley, visuals.text_color());
+
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        let button = Button::new(format!("{} Select", icon::CROSSHAIR_SIMPLE))
+                            .selected(self_obj == obj_id)
+                            .ui(ui);
+
+                        if button.clicked() {
+                            if self_obj == obj_id {
+                                info!("deselect: {:?} {:?}", self_obj, obj_id);
+                                ui.data_mut(|mem| {
+                                    mem.insert_temp("obj".into(), Option::<usize>::None);
+                                });
+                            } else {
+                                info!("select: {:?} {:?}", self_obj, obj_id);
+                                ui.data_mut(|mem| mem.insert_temp("obj".into(), obj_id));
+                            }
+                        }
+                        ui.end_row();
+                    });
+                },
+                |ui| {
+                    if let Some(interactive) = obj.get_interactive() {
+                        res |= interactive.ui(ui);
+                    } else {
+                        ui.label("Non-interactive object :(");
+                    }
+                },
+            );
+
+            self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
+            if self_obj == obj.get_id() && self_obj != self_obj_last {
+                response.highlight().scroll_to_me(Some(Align::Center));
+            }
+        });
+
         res
     }
 
@@ -43,11 +111,45 @@ impl<F: Float> Interactive<F> for Group<F> {
     }
 }
 
-geometry_impl_sceneobject!(Group<F>, "Group");
-geometry_impl_hastransform!(Group<F>);
-aabb_impl_fm!(Group<F>);
+impl<F: Float, G: FiniteGeometry<F>> SceneObject<F> for Group<F, G> {
+    crate::sceneobject_impl_body!("Group", Self::ICON);
 
-impl<F: Float> FiniteGeometry<F> for Group<F> {
+    fn get_object(&mut self, id: usize) -> Option<&mut dyn Geometry<F>> {
+        if SceneObject::get_id(self) == Some(id) {
+            return Some(self as &mut dyn Geometry<F>);
+        }
+
+        for obj in &mut self.geo {
+            if let Some(res) = obj.get_object(id) {
+                return Some(res);
+            }
+        }
+        None
+    }
+}
+
+impl<F: Float, G: FiniteGeometry<F>> HasTransform<F> for Group<F, G> {
+    fn get_transform(&self) -> &Transform<F> {
+        &self.xfrm
+    }
+
+    fn set_transform(&mut self, xfrm: &Transform<F>) {
+        self.xfrm = *xfrm;
+        self.recompute_aabb();
+    }
+}
+
+impl<F: Float, G: FiniteGeometry<F>> rtbvh::Primitive for Group<F, G> {
+    fn center(&self) -> Vec3 {
+        self.aabb.center()
+    }
+
+    fn aabb(&self) -> Aabb {
+        self.aabb
+    }
+}
+
+impl<F: Float, G: FiniteGeometry<F>> FiniteGeometry<F> for Group<F, G> {
     fn recompute_aabb(&mut self) {
         let bounds = self.bvh.bounds();
 
@@ -58,7 +160,7 @@ impl<F: Float> FiniteGeometry<F> for Group<F> {
     }
 }
 
-impl<F: Float> Geometry<F> for Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Geometry<F> for Group<F, G> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         if ray.flags.contains(RF::StopAtGroup) {
             let center = self.xfrm.pos_inv(Vector::from_vec3(self.center()));
@@ -79,10 +181,10 @@ impl<F: Float> Geometry<F> for Group<F> {
     }
 }
 
-impl<F: Float> Group<F> {
+impl<F: Float, G: FiniteGeometry<F>> Group<F, G> {
     const ICON: &'static str = egui_phosphor::regular::POLYGON;
 
-    pub fn new(geo: Vec<Box<dyn FiniteGeometry<F>>>, xfrm: Matrix4<F>) -> Self {
+    pub fn new(geo: Vec<G>, xfrm: Matrix4<F>) -> Self {
         debug!("building bvh for {} geometries..", geo.len());
 
         let mut res = Self {
@@ -94,6 +196,30 @@ impl<F: Float> Group<F> {
         res.recompute_bvh().unwrap();
         res.recompute_aabb();
         res
+    }
+
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            geo: vec![],
+            xfrm: Transform::identity(),
+            bvh: Bvh::default(),
+            aabb: Aabb::empty(),
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.bvh = Bvh::default();
+        self.aabb = Aabb::empty();
+        self.geo.clear();
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<G> {
+        self.geo.iter_mut()
+    }
+
+    pub fn nearest_intersection(&self, ray: &Ray<F>, dist: &mut F) -> Option<Maxel<F>> {
+        self.bvh.nearest_intersection(ray, &self.geo, dist)
     }
 
     pub fn recompute_bvh(&mut self) -> RResult<()> {
@@ -116,5 +242,31 @@ impl<F: Float> Group<F> {
         }
 
         Ok(())
+    }
+
+    pub fn len(&self) -> usize {
+        self.geo.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.geo.is_empty()
+    }
+
+    pub fn add_object(&mut self, geometry: G) {
+        self.geo.push(geometry);
+        let _ = self.recompute_bvh();
+        self.recompute_aabb();
+    }
+
+    pub fn del_object(&mut self, id: usize) {
+        self.geo.retain(|obj| obj.get_id() != Some(id));
+    }
+}
+
+impl<'a, F: Float, G: FiniteGeometry<F> + 'a> IntoIterator for &'a mut Group<F, G> {
+    type IntoIter = std::slice::IterMut<'a, G>;
+    type Item = &'a mut G;
+    fn into_iter(self) -> Self::IntoIter {
+        self.geo.iter_mut()
     }
 }

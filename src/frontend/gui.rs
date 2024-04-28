@@ -1,39 +1,32 @@
-use cgmath::{Deg, Matrix4, SquareMatrix};
+use camino::{Utf8Path, Utf8PathBuf};
 use itertools::Itertools;
 use obj::Obj;
 
-use std::{
-    ffi::OsStr,
-    io::BufReader,
-    path::{Path, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+use std::{io::BufReader, sync::Arc, time::Duration};
 
 use crate::{
     engine::{RenderEngine, RenderJob},
     format::sbt2::{Rule as SbtRule, SbtBuilder, SbtParser2},
-    geometry::{Cone, Cube, Cylinder, FiniteGeometry, Geometry, Sphere, Square},
+    geometry::{FiniteGeometry, Geometry},
     gui::{
+        context_menu,
         controls::{self, Canvas},
         gizmo,
         visualtrace::VisualTraceWidget,
         IconButton,
     },
-    light::{AreaLight, Attenuation, DirectionalLight, PointLight, SpotLight},
     point,
     sampler::Texel,
     scene::{BoxScene, Interactive, SceneObject},
-    types::{Color, Error, Float, Point, RResult, Vector, Vectorx, RF},
+    types::{Error, Float, Point, RResult, RF},
 };
 
 use parking_lot::RwLock;
 
 use eframe::{egui::Key, CreationContext};
 use egui::{
-    vec2, Align, Button, CentralPanel, Context, KeyboardShortcut, Layout, Modifiers, NumExt,
-    ProgressBar, RichText, ScrollArea, Sense, SidePanel, TextStyle, TopBottomPanel, Ui,
-    ViewportBuilder, ViewportCommand, Visuals, Widget, WidgetText,
+    CentralPanel, Context, KeyboardShortcut, Modifiers, ProgressBar, RichText, ScrollArea, Sense,
+    SidePanel, TopBottomPanel, Ui, ViewportBuilder, ViewportCommand, Visuals,
 };
 use egui_file_dialog::FileDialog;
 use egui_phosphor::regular as icon;
@@ -47,11 +40,9 @@ pub struct RenderModes<F: Float> {
 
 pub struct RustRayGui<F: Float> {
     engine: RenderEngine<F>,
-    paths: Vec<PathBuf>,
+    paths: Vec<Utf8PathBuf>,
     pathindex: usize,
     lock: Arc<RwLock<BoxScene<F>>>,
-    obj: Option<usize>,
-    obj_last: Option<usize>,
     file_dialog: FileDialog,
     ray_debugger: VisualTraceWidget,
     bounding_box: VisualTraceWidget,
@@ -65,7 +56,7 @@ where
 {
     /// Called once before the first frame.
     #[must_use]
-    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<PathBuf>) -> Self {
+    pub fn new(cc: &CreationContext<'_>, engine: RenderEngine<F>, paths: Vec<Utf8PathBuf>) -> Self {
         // load fonts
         let mut fonts = egui::FontDefinitions::default();
         egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
@@ -94,8 +85,6 @@ where
             paths,
             pathindex: 0,
             lock,
-            obj: None,
-            obj_last: None,
             file_dialog: FileDialog::new().show_devices(false),
             ray_debugger: VisualTraceWidget::new(),
             bounding_box: VisualTraceWidget::new(),
@@ -104,29 +93,39 @@ where
         }
     }
 
-    fn find_obj<'a>(&self, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
-        scene
-            .objects
-            .iter_mut()
-            .find(|obj| obj.get_id() == self.obj)
-            .map(|m| m as &mut _)
+    fn find_obj<'a>(ui: &Ui, scene: &'a mut BoxScene<F>) -> Option<&'a mut dyn Geometry<F>> {
+        let self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+        scene.root.get_object(self_obj?)
     }
 
-    fn change_obj(&self, scene: &mut BoxScene<F>, func: impl Fn(&mut Box<dyn FiniteGeometry<F>>)) {
+    fn change_obj(
+        ui: &Ui,
+        scene: &mut BoxScene<F>,
+        func: impl Fn(&mut Box<dyn FiniteGeometry<F>>),
+    ) {
+        let self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
         scene
-            .objects
+            .root
             .iter_mut()
-            .find(|obj| obj.get_id() == self.obj)
+            .find(|obj| obj.get_id() == self_obj)
             .map(func);
     }
 
-    fn delete_current_obj(&mut self, scene: &mut BoxScene<F>) {
-        scene.objects.retain(|obj| obj.get_id() != self.obj);
-        self.obj = None;
+    fn delete_current_obj(&mut self, ctx: &Context, scene: &mut BoxScene<F>) {
+        let mut self_obj = ctx.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+        let Some(id) = self_obj else {
+            return;
+        };
+        scene.root.del_object(id);
+        self_obj = None;
         self.bounding_box.clear();
 
         scene.recompute_bvh().unwrap();
         self.engine.submit(&self.render_modes.preview, &self.lock);
+
+        ctx.data_mut(|mem| {
+            mem.insert_temp("obj".into(), self_obj);
+        });
     }
 
     fn update_top_panel(&mut self, ctx: &Context, ui: &mut Ui) {
@@ -175,63 +174,7 @@ where
                 }
             });
 
-            controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| {
-                scene.objects.iter_mut().enumerate().for_each(|(i, obj)| {
-                    let name = format!("{} Object {i}: {}", obj.get_icon(), obj.get_name());
-                    let obj_id = obj.get_id();
-                    let proplist = controls::CustomCollapsible::new(name.clone());
-                    let (response, _header_response, _body_response) = proplist.show(
-                        ui,
-                        |pl, ui| {
-                            let text = WidgetText::from(name);
-                            let available = ui.available_rect_before_wrap();
-                            let text_pos = available.min;
-                            let wrap_width = available.right() - text_pos.x;
-                            let galley =
-                                text.into_galley(ui, Some(false), wrap_width, TextStyle::Button);
-                            let text_max_x = text_pos.x + galley.size().x;
-                            let desired_width = text_max_x + available.left();
-                            let desired_size = vec2(desired_width, galley.size().y)
-                                .at_least(ui.spacing().interact_size);
-                            let rect = ui.allocate_space(desired_size).1;
-                            let header_response = ui.interact(rect, pl.id, Sense::click());
-                            if header_response.clicked() {
-                                pl.toggle();
-                            }
-                            let visuals = ui.style().interact_selectable(&header_response, false);
-                            ui.painter().galley(text_pos, galley, visuals.text_color());
-
-                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                let button =
-                                    Button::new(format!("{} Select", icon::CROSSHAIR_SIMPLE))
-                                        .selected(self.obj == obj_id)
-                                        .ui(ui);
-
-                                if button.clicked() {
-                                    if self.obj == obj_id {
-                                        info!("deselect: {:?} {:?}", self.obj, obj_id);
-                                        self.obj = None;
-                                    } else {
-                                        self.obj = obj_id;
-                                    }
-                                }
-                                ui.end_row();
-                            });
-                        },
-                        |ui| {
-                            if let Some(interactive) = obj.get_interactive() {
-                                changed |= interactive.ui(ui);
-                            } else {
-                                ui.label("Non-interactive object :(");
-                            }
-                        },
-                    );
-
-                    if self.obj == obj.get_id() && self.obj != self.obj_last {
-                        response.highlight().scroll_to_me(Some(Align::Center));
-                    }
-                });
-            });
+            controls::collapsing_group("Objects", icon::SHAPES).show(ui, |ui| scene.root.ui(ui));
 
             controls::collapsing_group("Lights", icon::LIGHTBULB).show(ui, |ui| {
                 scene.lights.iter_mut().enumerate().for_each(|(i, light)| {
@@ -248,7 +191,7 @@ where
 
             controls::collapsing_group("Cameras", icon::VIDEO_CAMERA).show(ui, |ui| {
                 scene.cameras.iter_mut().enumerate().for_each(|(i, cam)| {
-                    let name = format!("{} Camera {i}", cam.get_icon());
+                    let name = format!("{} Camera {i}: {}", cam.get_icon(), cam.get_name());
                     controls::property_list(&name, ui, |ui| {
                         if let Some(interactive) = cam.get_interactive() {
                             changed |= interactive.ui(ui);
@@ -276,115 +219,17 @@ where
         });
     }
 
-    fn context_menu_add_geometry(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
-        let mut res = false;
-
-        macro_rules! add_geometry_option {
-            ($name:ident, $code:block) => {
-                if ui
-                    .icon_button($name::<F>::ICON, stringify!($name))
-                    .clicked()
-                {
-                    scene.objects.push(Box::new($code));
-                    res = true;
-                }
-            };
-        }
-
-        add_geometry_option!(Cube, {
-            Cube::new(Matrix4::identity(), scene.materials.default())
-        });
-
-        add_geometry_option!(Cone, {
-            Cone::new(
-                F::ONE,
-                F::ZERO,
-                F::ONE,
-                true,
-                Matrix4::identity(),
-                scene.materials.default(),
-            )
-        });
-
-        add_geometry_option!(Cylinder, {
-            Cylinder::new(Matrix4::identity(), true, scene.materials.default())
-        });
-
-        add_geometry_option!(Sphere, {
-            Sphere::place(Vector::ZERO, F::ONE, scene.materials.default())
-        });
-
-        add_geometry_option!(Square, {
-            Square::new(Matrix4::identity(), scene.materials.default())
-        });
-
-        res
-    }
-
-    fn context_menu_add_light(ui: &mut egui::Ui, scene: &mut BoxScene<F>) -> bool {
-        let mut res = false;
-
-        macro_rules! add_light_option {
-            ($name:ident, $code:block) => {
-                if ui
-                    .icon_button($name::<F>::ICON, stringify!($name))
-                    .clicked()
-                {
-                    scene.add_light($code);
-                    res = true;
-                }
-            };
-        }
-
-        let attn = Attenuation {
-            a: F::ZERO,
-            b: F::ONE,
-            c: F::ZERO,
-        };
-
-        add_light_option!(PointLight, {
-            PointLight::new(Vector::ZERO, attn, Color::WHITE)
-        });
-
-        add_light_option!(DirectionalLight, {
-            DirectionalLight::new(-Vector::UNIT_Z, Color::WHITE)
-        });
-
-        add_light_option!(SpotLight, {
-            SpotLight {
-                attn,
-                umbra: Deg(F::from_u32(45)).into(),
-                penumbra: Deg(F::from_u32(60)).into(),
-                pos: Vector::ZERO,
-                dir: -Vector::UNIT_Z,
-                color: Color::WHITE,
-            }
-        });
-
-        add_light_option!(AreaLight, {
-            AreaLight::new(
-                attn,
-                Vector::ZERO,
-                -Vector::UNIT_Z,
-                Vector::UNIT_Y,
-                Color::WHITE,
-                F::from_u32(10),
-                F::from_u32(10),
-            )
-        });
-
-        res
-    }
-
     fn context_menu(&mut self, ui: &mut egui::Ui, scene: &mut BoxScene<F>) {
-        if let Some(obj) = self.obj {
+        let self_obj: Option<usize> = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
+        if let Some(obj) = self_obj {
             ui.horizontal(|ui| {
                 ui.label(format!("Object id: {obj:x}"));
                 ui.add_space(50.0);
             });
 
             if ui.icon_button(icon::TRASH, "Delete").clicked() {
-                self.delete_current_obj(scene);
+                self.delete_current_obj(ui.ctx(), scene);
                 ui.close_menu();
             }
 
@@ -403,7 +248,7 @@ where
                 }
 
                 if let Some(id) = mat_id {
-                    self.change_obj(scene, move |obj| {
+                    Self::change_obj(ui, scene, move |obj| {
                         if let Some(mat) = obj.material() {
                             mat.set_material(id);
                         }
@@ -415,7 +260,7 @@ where
         }
 
         ui.icon_menu_button(icon::PLUS_SQUARE, "Add geometry", |ui| {
-            if Self::context_menu_add_geometry(ui, scene) {
+            if context_menu::add_geometry(ui, scene) {
                 scene.recompute_bvh().unwrap();
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
@@ -423,7 +268,7 @@ where
         });
 
         ui.icon_menu_button(icon::PLUS_CIRCLE, "Add light", |ui| {
-            if Self::context_menu_add_light(ui, scene) {
+            if context_menu::add_light(ui, scene) {
                 self.engine.submit(&self.render_modes.preview, &self.lock);
                 ui.close_menu();
             }
@@ -451,6 +296,8 @@ where
 
         let act = response.interact(Sense::click_and_drag());
 
+        let mut self_obj = ui.data(|mem| mem.get_temp("obj".into())).unwrap_or(None);
+
         if act.clicked() {
             if let Some(pos) = act.interact_pointer_pos {
                 let coord = from_screen.transform_pos(pos);
@@ -458,20 +305,24 @@ where
                 ray.flags |= RF::StopAtGroup;
                 if let Some(maxel) = scene.intersect(&ray) {
                     let id = maxel.obj.get_id();
-                    if self.obj == id {
+                    if self_obj == id {
                         info!("Deselect {:?}", maxel.obj.get_name());
-                        self.obj = None;
+                        self_obj = None;
                     } else {
                         info!("Select {:?}", maxel.obj.get_name());
-                        self.obj = id;
+                        self_obj = id;
                     }
                 } else {
-                    self.obj = None;
+                    self_obj = None;
                 }
                 self.bounding_box.clear();
             }
         }
-        self.obj_last = self.obj;
+
+        ui.data_mut(|mem| {
+            mem.insert_temp("obj".into(), self_obj);
+            mem.insert_temp("obj_last".into(), self_obj);
+        });
 
         if let Some(pos) = act.hover_pos() {
             if self.ray_debugger.enabled {
@@ -487,7 +338,7 @@ where
         let camera = scene.cameras[0];
 
         let mut aabb: Option<rtbvh::Aabb> = None;
-        if let Some(obj) = self.find_obj(scene) {
+        if let Some(obj) = Self::find_obj(ui, scene) {
             if let Some(int) = obj.get_interactive() {
                 aabb = int.ui_bounding_box().copied();
                 if int.ui_center(ui, &camera, &response.rect) {
@@ -506,14 +357,11 @@ where
         ui_progress(ctx, ui, progress);
     }
 
-    fn load_scene_from_file(path: &Path, scene: &mut BoxScene<F>) -> RResult<()> {
+    fn load_scene_from_file(path: &Utf8Path, scene: &mut BoxScene<F>) -> RResult<()> {
         let resdir = path.parent().ok_or(Error::InvalidFilename(path.into()))?;
-
-        let name = path.to_str().ok_or(Error::InvalidFilename(path.into()))?;
 
         match path
             .extension()
-            .and_then(OsStr::to_str)
             .ok_or(Error::InvalidFilename(path.into()))?
             .to_lowercase()
             .as_str()
@@ -521,7 +369,7 @@ where
             "ray" => {
                 let data = std::fs::read_to_string(path)?;
                 let p = SbtParser2::parse(SbtRule::program, &data)
-                    .map_err(|err| err.with_path(name))?;
+                    .map_err(|err| err.with_path(path.as_str()))?;
                 let p = SbtParser2::ast(p)?;
                 SbtBuilder::new(resdir, scene).build(p)?;
             }
@@ -543,11 +391,11 @@ where
         Ok(())
     }
 
-    fn load_file(&mut self, path: &Path) -> RResult<()> {
+    fn load_file(&mut self, path: &Utf8Path) -> RResult<()> {
         info!("Loading file: {path:?}");
 
         if let Some(parent) = path.parent() {
-            self.file_dialog.config_mut().initial_directory = parent.to_path_buf();
+            self.file_dialog.config_mut().initial_directory = parent.to_path_buf().into();
         }
 
         let mut scene = self.lock.write();
@@ -588,12 +436,7 @@ where
 {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        let recv = self.engine.update();
-        if recv {
-            ctx.request_repaint_after(Duration::from_millis(100));
-        } else {
-            ctx.request_repaint_after(Duration::from_millis(500));
-        }
+        self.engine.update();
 
         if ctx.input(|i| i.key_pressed(Key::Q)) {
             ctx.send_viewport_cmd(ViewportCommand::Close);
@@ -649,7 +492,7 @@ where
         self.file_dialog.update(ctx);
 
         if let Some(path) = self.file_dialog.take_selected() {
-            self.load_file(&path).unwrap();
+            self.load_file(Utf8Path::from_path(&path).unwrap()).unwrap();
         }
 
         TopBottomPanel::top("top_panel").show(ctx, |ui| self.update_top_panel(ctx, ui));
@@ -659,7 +502,7 @@ where
 
         // object control
         if ctx.input(|i| i.key_pressed(Key::Delete)) {
-            self.delete_current_obj(&mut scene);
+            self.delete_current_obj(ctx, &mut scene);
         }
 
         SidePanel::left("Scene controls")
@@ -670,7 +513,7 @@ where
     }
 }
 
-pub fn run<F>(paths: Vec<PathBuf>, width: u32, height: u32) -> RResult<()>
+pub fn run<F>(paths: Vec<Utf8PathBuf>, width: u32, height: u32) -> RResult<()>
 where
     F: Float + Texel + From<f32>,
     rand::distributions::Standard: rand::distributions::Distribution<F>,
