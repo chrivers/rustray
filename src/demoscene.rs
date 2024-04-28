@@ -17,11 +17,11 @@ use crate::{point, vec3};
 
 use image::{DynamicImage, ImageFormat};
 
-pub fn construct_demo_scene<'a, 'b, F>(
-    time: &'a mut TimeSlice,
+pub fn construct_demo_scene<'a, F>(
+    time: &mut TimeSlice,
     width: u32,
     height: u32,
-) -> RResult<BoxScene<'b, F>>
+) -> RResult<BoxScene<'a, F>>
 where
     F: Float + Texel + 'static,
     f32: Into<F>,

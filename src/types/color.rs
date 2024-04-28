@@ -153,3 +153,13 @@ impl<F: Float> AsRef<Color<F>> for Color<F> {
         self
     }
 }
+
+impl<F: Float> From<[f32; 3]> for Color<F> {
+    fn from(val: [f32; 3]) -> Self {
+        Self::new(
+            F::from_f32(val[0]),
+            F::from_f32(val[1]),
+            F::from_f32(val[2]),
+        )
+    }
+}
