@@ -25,20 +25,15 @@ impl<F: Float + Texel> Phong<F, F, Color<F>> {
 impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<F, S, M> {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let mut res = Color::black();
 
-        let self_color = self.mat.render(maxel, lights, rt);
+        let self_color = self.mat.render(maxel, rt);
         let spec_adjust = self.pow.sample(maxel.uv()) / F::from_u32(2);
 
-        for light in lights {
+        for light in rt.get_lights() {
             let light_color = rt
-                .ray_shadow(maxel, &**light)
+                .ray_shadow(maxel, light)
                 .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());
@@ -46,7 +41,7 @@ impl<F: Float + Texel, S: Sampler<F, F>, M: Material<F = F>> Material for Phong<
 
             let lambert = maxel.nml().dot(light_dir);
 
-            if lambert > F::ZERO {
+            if lambert.is_positive() {
                 let light_color = light.attenuate(light_color * self_color, light_vec.magnitude());
                 res += light_color * lambert;
 

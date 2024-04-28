@@ -24,7 +24,7 @@ impl<'a, F: Float> Debug for Maxel<'a, F> {
         f.debug_struct("Maxel")
             .field("pos", &self.pos)
             .field("dir", &self.dir)
-            .field("obj", &"<dyn Geometry>")
+            .field("obj", &self.obj)
             .field("mat", &self.mat)
             .field("lvl", &self.lvl)
             .field("nml", &self.nml)
@@ -69,6 +69,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         self.dir.fresnel(&self.nml(), ior)
     }
 
+    #[must_use]
     pub fn with_normal(self, nml: Vector<F>) -> Self {
         Self {
             nml: Some(nml),
@@ -76,6 +77,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
+    #[must_use]
     pub fn with_uv(self, uv: Point<F>) -> Self {
         Self {
             uv: Some(uv),
@@ -83,6 +85,7 @@ impl<'a, F: Float> Maxel<'a, F> {
         }
     }
 
+    #[must_use]
     pub fn with_st(self, st: Point<F>) -> Self {
         Maxel {
             st: Some(st),

@@ -8,12 +8,7 @@ use crate::scene::{Light, RayTracer};
 
 pub trait Material: Debug + Send + Sync {
     type F: Float;
-    fn render(
-        &self,
-        maxel: &mut Maxel<Self::F>,
-        light: &[&dyn Light<Self::F>],
-        rt: &dyn RayTracer<Self::F>,
-    ) -> Color<Self::F>;
+    fn render(&self, maxel: &mut Maxel<Self::F>, rt: &dyn RayTracer<Self::F>) -> Color<Self::F>;
 
     fn shadow(
         &self,
@@ -23,37 +18,27 @@ pub trait Material: Debug + Send + Sync {
         Some(Color::black())
     }
 
-    fn dynamic<'a>(self) -> DynMaterial<'a, Self::F>
+    fn dynamic(self) -> DynMaterial<Self::F>
     where
-        Self: Sized + 'a,
+        Self: Sized + 'static,
     {
         Arc::new(Box::new(self))
     }
 }
 
-pub type DynMaterial<'a, F> = Arc<Box<dyn Material<F = F> + 'a>>;
+pub type DynMaterial<F> = Arc<Box<dyn Material<F = F>>>;
 
 impl<F: Float> Material for Color<F> {
     type F = F;
-    fn render(
-        &self,
-        _maxel: &mut Maxel<F>,
-        _light: &[&dyn Light<F>],
-        _rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, _maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         *self
     }
 }
 
-impl<'a, F: Float> Material for Arc<Box<dyn Material<F = F> + 'a>> {
+impl<F: Float> Material for Arc<Box<dyn Material<F = F>>> {
     type F = F;
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        light: &[&dyn Light<F>],
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
-        self.as_ref().render(maxel, light, rt)
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        self.as_ref().render(maxel, rt)
     }
 }
 

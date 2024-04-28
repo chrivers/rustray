@@ -18,21 +18,19 @@ use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
 pub struct FXP<const P: i32>(FixedI64<P>);
 
 impl<const P: i32> FXP<P> {
+    #[must_use]
     pub fn int(&self) -> i64 {
         self.0.int().cast()
     }
 
-    /* const SCALING: i64 = (1i64 << P); */
-    /* const MASK: i64 = Self::SCALING - 1; */
-
+    #[must_use]
     pub fn into_f32(&self) -> f32 {
-        //self.into_f64() as f32
         self.0.cast()
     }
 
+    #[must_use]
     pub fn into_f64(&self) -> f64 {
         self.0.cast()
-        /* (self.0 as f64) / (Self::SCALING as f64) */
     }
 }
 

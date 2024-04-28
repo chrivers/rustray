@@ -23,14 +23,14 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
             let c = p.x * p.x + p.y * p.y - F::ONE;
 
             let (t1, t2) = crate::types::ray::quadratic2(a, b, c)?;
-            if t1 < F::ZERO || t2 < F::ZERO {
+            if t1.is_negative() || t2.is_negative() {
                 return None;
             }
 
             fn isect_side<F: Float>(r: &Ray<F>, t: F, capped: bool) -> Option<(F, Vector<F>)> {
                 let p = r.extend(t);
 
-                if p.z < F::ZERO || p.z > F::ONE {
+                if !p.z.is_unit() {
                     return None;
                 }
 
@@ -39,8 +39,8 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
                 /* In case we are _inside_ the _uncapped_ cone, we need to flip the normal. */
                 /* Essentially, the cone in this case is a double-sided surface */
                 /* and has _2_ normals */
-                if !capped && r.dir.dot(normal) > F::ZERO {
-                    normal = -normal
+                if !capped && r.dir.dot(normal).is_positive() {
+                    normal = -normal;
                 }
                 Some((t, normal))
             }
@@ -52,14 +52,14 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
             let pz = r.pos.z;
             let dz = r.dir.z;
 
-            if dz == F::ZERO {
+            if dz.is_zero() {
                 return None;
             }
 
             let t1;
             let t2;
 
-            if dz > F::ZERO {
+            if dz.is_positive() {
                 t1 = (-pz) / dz;
                 t2 = (F::ONE - pz) / dz;
             } else {
@@ -75,7 +75,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cylinder<F, M> {
 
             let p = r.extend(t);
             if (p.x * p.x + p.y * p.y) <= F::ONE {
-                let n = if dz > F::ZERO {
+                let n = if dz.is_positive() {
                     /* Intersection with cap at z = 0. */
                     -Vector::unit_z()
                 } else {

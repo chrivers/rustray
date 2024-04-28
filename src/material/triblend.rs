@@ -1,5 +1,12 @@
 use super::mat_util::*;
 
+/// Material blender, that interpolates between three materials.
+///
+/// This material composes three materials (A, B, and C), and blends linearly
+/// between these, based on UV coordinates.
+///
+/// Useful for representing triangles with heterogenous materials.
+
 #[derive(Clone, Debug)]
 pub struct Triblend<F: Float, A: Material, B: Material, C: Material> {
     a: A,
@@ -24,15 +31,10 @@ impl<F: Float, A: Material<F = F>, B: Material<F = F>, C: Material<F = F>> Mater
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
-        let a = self.a.render(maxel, lights, rt);
-        let b = self.b.render(maxel, lights, rt);
-        let c = self.c.render(maxel, lights, rt);
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
+        let a = self.a.render(maxel, rt);
+        let b = self.b.render(maxel, rt);
+        let c = self.c.render(maxel, rt);
 
         let st = maxel.st();
         let u = st.x;

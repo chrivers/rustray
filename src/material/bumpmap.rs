@@ -38,12 +38,7 @@ where
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let n = self.img.sample(uv);
         let pow = self.pow.sample(uv);
@@ -56,7 +51,7 @@ where
 
         mxl = mxl.with_normal(nx.normalize());
 
-        self.mat.render(&mut mxl, lights, rt)
+        self.mat.render(&mut mxl, rt)
     }
 
     fn shadow(&self, maxel: &mut Maxel<F>, light: &dyn Light<F>) -> Option<Color<F>> {

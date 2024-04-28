@@ -47,8 +47,8 @@ pub type SbtTuple<'a, F> = Vec<SbtValue<'a, F>>;
 trait SDict<F: Float + Texel> {
     fn float(&self, name: &str) -> RResult<F>;
     fn color(&self, name: &str) -> RResult<Color<F>>;
-    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>>;
-    fn sampler3<'a>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'a, F, Color<F>>>;
+    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>>;
+    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>>;
     fn string(&self, name: &str) -> RResult<&str>;
     fn vector(&self, name: &str) -> RResult<Vector<F>>;
     fn boolean(&self, name: &str) -> RResult<bool>;
@@ -66,7 +66,7 @@ trait STuple<F: Float> {
     fn vector4(&self) -> RResult<Vector4<F>>;
 }
 
-impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
+impl<'a, F: Float + Texel> SDict<F> for &SbtDict<'a, F> {
     fn float(&self, name: &str) -> RResult<F> {
         match self.get(name) {
             Some(val) => val.float(),
@@ -92,7 +92,7 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
         }
     }
 
-    fn shinemap<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, F>> {
+    fn shinemap(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, F>> {
         let load = |name| {
             info!("{:?}", resdir.join(name));
             Ok(
@@ -112,7 +112,7 @@ impl<'a, F: Float + Texel + 'static> SDict<F> for &SbtDict<'a, F> {
         }
     }
 
-    fn sampler3<'b>(&self, name: &str, resdir: &Path) -> RResult<DynSampler<'b, F, Color<F>>> {
+    fn sampler3(&self, name: &str, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
         use SbtValue as S;
         match self.get(name) {
             Some(S::Tuple(tuple)) if tuple.len() == 3 => Ok(tuple.color()?.dynsampler()),
@@ -309,7 +309,7 @@ impl<F: Float> SbtParser2<F> {
 
         /* Manual iteration is significantly faster than map()+collect() */
         for p in pr {
-            tuple.push(Self::parse_value(p)?)
+            tuple.push(Self::parse_value(p)?);
         }
 
         Ok(SbtValue::Tuple(tuple))
@@ -349,7 +349,7 @@ impl<F: Float> SbtParser2<F> {
             Rule::string => Self::parse_string(pr)?,
             Rule::boolean => Self::parse_boolean(pr)?,
             Rule::block => SbtValue::Block(Box::new(Self::parse_block(pr.into_inner())?)),
-            other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
+            other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
         };
         Ok(value)
     }
@@ -374,10 +374,10 @@ impl<F: Float> SbtParser2<F> {
                 Rule::dict => {
                     /* warn!("Workaround for malformed file"); */
                     let value = Self::parse_dict(p.into_inner())?;
-                    prog.blocks.push(SbtBlock { name, value })
+                    prog.blocks.push(SbtBlock { name, value });
                 }
                 Rule::EOI => break,
-                other => return Err(Error::ParseUnsupported(format!("{:?}", other))),
+                other => return Err(Error::ParseUnsupported(format!("{other:?}"))),
             }
         }
         Ok(prog)
@@ -394,7 +394,7 @@ pub struct SbtBuilder<'a, F: Float> {
 
 impl<'a, F: Float> SbtBuilder<'a, F>
 where
-    F: Float + FromStr + Texel + Lerp<Ratio = F> + 'a + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio = F>,
 {
     pub fn new(width: u32, height: u32, resdir: &'a Path) -> Self {
         Self {
@@ -418,7 +418,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z())
+            viewdir = Some(-Vector::unit_z());
         }
 
         info!("Camera:");
@@ -440,7 +440,7 @@ where
         ))
     }
 
-    fn parse_point_light(&mut self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
+    fn parse_point_light(&self, dict: impl SDict<F>) -> RResult<PointLight<F>> {
         let pos = dict.vector("position")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
         let a = dict.float("constant_attenuation_coeff").unwrap_or(F::ZERO);
@@ -458,7 +458,7 @@ where
         Ok(res)
     }
 
-    fn parse_directional_light(&mut self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
+    fn parse_directional_light(&self, dict: impl SDict<F>) -> RResult<DirectionalLight<F>> {
         let dir = dict.vector("direction")?;
         let color = dict.color("color").or_else(|_| dict.color("colour"))?;
 
@@ -467,7 +467,7 @@ where
         Ok(res)
     }
 
-    fn parse_material(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
+    fn parse_material(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
         let float = |name| dict.float(name).or_else(|_| (&self.material).float(name));
         let color = |name| dict.color(name).or_else(|_| (&self.material).color(name));
 
@@ -488,21 +488,20 @@ where
         let diff = colormap("diffuse").unwrap_or_else(|_| Color::black().dynsampler());
         let spec = colormap("specular").unwrap_or_else(|_| Color::black().dynsampler());
         let tran = colormap("transmissive").unwrap_or_else(|_| Color::black().dynsampler());
-        let refl = colormap("reflective").unwrap_or_else(|_| spec.clone());
+        let refl = colormap("reflective").or_else(|_| colormap("specular")).unwrap_or_else(|_| Color::black().dynsampler());
         let bump = colormap("bump").ok();
 
         let smart = Smart::new(idx, shi, emis, diff, spec, tran, refl).with_ambient(ambi);
         /* use crate::ColorNormal; let smart = ColorNormal::new(F::ONE).dynamic(); */
 
         match bump {
-            None => Ok(smart.dynamic()),
-            Some(b) => Ok(
+            None => smart.dynamic(),
+            Some(b) =>
                 Bumpmap::new(F::from_f32(0.25).dynsampler(), NormalMap::new(b), smart).dynamic(),
-            ),
         }
     }
 
-    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> RResult<DynMaterial<'a, F>> {
+    fn parse_material_obj(&mut self, dict: impl SDict<F>) -> DynMaterial<F> {
         self.parse_material(dict.dict("material").unwrap_or(&SbtDict::new()))
     }
 
@@ -510,7 +509,7 @@ where
         &mut self,
         xfrm: Matrix4<F>,
         dict: impl SDict<F>,
-    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         let mut tris = vec![];
         let mut points = vec![];
         let mut faces = vec![];
@@ -520,17 +519,17 @@ where
 
         if let Ok(nmls) = dict.tuple("normals") {
             for normal in nmls {
-                normals.push(normal.tuple()?.vector3()?.xfrm_nml(&xfrm))
+                normals.push(normal.tuple()?.vector3()?.xfrm_nml(&xfrm));
             }
         }
         if let Ok(mats) = dict.tuple("materials") {
             for mat in mats {
-                materials.push(self.parse_material(mat.dict()?)?)
+                materials.push(self.parse_material(mat.dict()?));
             }
         }
         if let Ok(uvs) = dict.tuple("texture_uv") {
             for uv in uvs {
-                texture_uvs.push(uv.tuple()?.point()?)
+                texture_uvs.push(uv.tuple()?.point()?);
             }
         }
         if let Ok(path) = dict.string("objfile") {
@@ -539,7 +538,7 @@ where
             tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
         } else {
             for point in dict.tuple("points")? {
-                points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm))
+                points.push(point.tuple()?.vector3()?.xfrm_pos(&xfrm));
             }
             for point in dict.tuple("faces")? {
                 let tuple = point.tuple()?;
@@ -548,11 +547,11 @@ where
                     faces.push([f[0], f[1], f[2]]);
                     faces.push([f[0], f[2], f[3]]);
                 } else {
-                    faces.push(point.tuple()?.int3()?)
+                    faces.push(point.tuple()?.int3()?);
                 }
             }
         }
-        let mat = self.parse_material_obj(dict)?;
+        let mat = self.parse_material_obj(dict);
 
         if normals.is_empty() {
             info!("Generating normals");
@@ -565,7 +564,7 @@ where
             texture_uvs = spherical_uvs(&points);
         }
 
-        for face in faces.iter() {
+        for face in &faces {
             let m = if !materials.is_empty() {
                 Triblend::new(
                     materials[face[0]].clone(),
@@ -599,11 +598,12 @@ where
         Ok(vec![Box::new(TriangleMesh::new(tris))])
     }
 
-    fn build_geometry<'b>(
+    #[allow(clippy::too_many_lines)]
+    fn build_geometry(
         &mut self,
-        blk: &'b SbtValue<F>,
+        blk: &SbtValue<F>,
         xfrm: Matrix4<F>,
-    ) -> RResult<Vec<Box<dyn FiniteGeometry<F> + 'a>>> {
+    ) -> RResult<Vec<Box<dyn FiniteGeometry<F>>>> {
         use SbtValue as S;
         /* info!("block: {:#?}", blk); */
         match blk {
@@ -656,7 +656,7 @@ where
 
                 other => {
                     info!("unhandled: {:#?}", other);
-                    Err(Error::ParseUnsupported(name.to_string()))
+                    Err(Error::ParseUnsupported((*name).to_string()))
                 }
             },
 
@@ -670,7 +670,7 @@ where
                         /* return Ok(box Sphere::new(xfrm, self.parse_material(dict.dict("material").unwrap_or_default())?)) */
                         Ok(vec![Box::new(Sphere::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -678,7 +678,7 @@ where
                         /* info!("Cube(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Cube::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -690,7 +690,7 @@ where
                             dict.float("bottom_radius").unwrap_or(F::ONE),
                             dict.boolean("capped").unwrap_or(true),
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -698,7 +698,7 @@ where
                         /* info!("Square(xfrm={:7.4?})", xfrm); */
                         Ok(vec![Box::new(Square::new(
                             xfrm,
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -707,7 +707,7 @@ where
                         Ok(vec![Box::new(Cylinder::new(
                             xfrm,
                             dict.boolean("capped").unwrap_or(true),
-                            self.parse_material_obj(dict)?,
+                            self.parse_material_obj(dict),
                         ))])
                     }
 
@@ -723,7 +723,7 @@ where
             SbtValue::Tuple(blks) => {
                 let mut res = vec![];
                 for blk in blks {
-                    res.append(&mut self.build_geometry(blk, xfrm)?)
+                    res.append(&mut self.build_geometry(blk, xfrm)?);
                 }
                 Ok(res)
             }
@@ -735,11 +735,11 @@ where
         }
     }
 
-    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<'a, F>> {
+    pub fn build(&mut self, prog: SbtProgram<'a, F>) -> RResult<BoxScene<F>> {
         use SbtValue as S;
         let mut cameras = vec![];
-        let mut objects: Vec<Box<dyn FiniteGeometry<F> + 'a>> = vec![];
-        let mut lights: Vec<Box<dyn Light<F> + 'a>> = vec![];
+        let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
+        let mut lights: Vec<Box<dyn Light<F>>> = vec![];
         let mut ambient = Color::black();
         self.material.clear();
         self.version = prog.version;
@@ -747,30 +747,27 @@ where
         for blk in prog.blocks {
             match (blk.name, blk.value) {
                 ("camera", S::Dict(ref dict)) => cameras.push(self.parse_camera(dict)?),
-                ("directional_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_directional_light(dict)?))
-                }
-                ("point_light", S::Dict(ref dict)) => {
-                    lights.push(Box::new(self.parse_point_light(dict)?))
-                }
-                ("ambient_light", S::Dict(ref dict)) => {
-                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?
-                }
+                ("directional_light", S::Dict(ref dict)) =>
+                    lights.push(Box::new(self.parse_directional_light(dict)?)),
+                ("point_light", S::Dict(ref dict)) =>
+                    lights.push(Box::new(self.parse_point_light(dict)?)),
+                ("ambient_light", S::Dict(ref dict)) =>
+                    ambient = dict.color("color").or_else(|_| dict.color("colour"))?,
                 ("spot_light", S::Dict(_)) => warn!("spot_light not supported"),
                 ("material", S::Dict(dict)) => self.material.extend(dict),
 
                 ("area_light" | "area_light_rect", S::Dict(ref dict)) => {
                     warn!("Simulating {} using point_light", blk.name);
-                    lights.push(Box::new(self.parse_point_light(dict)?))
+                    lights.push(Box::new(self.parse_point_light(dict)?));
                 }
 
                 (name, value) => {
                     let block = S::Block(Box::new(SbtBlock { name, value }));
                     let mut objs = self.build_geometry(&block, Matrix4::identity())?;
-                    objects.append(&mut objs)
+                    objects.append(&mut objs);
                 }
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights).with_ambient(ambient))
+        Ok(Scene::new(cameras, objects, vec![], lights)?.with_ambient(ambient))
     }
 }

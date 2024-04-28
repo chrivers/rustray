@@ -106,20 +106,20 @@ pub fn smooth_normals<F: Float>(faces: &[[usize; 3]], points: &[Vector<F>]) -> V
 pub fn spherical_uvs<F: Float>(points: &[Vector<F>]) -> Vec<Point<F>> {
     let mut center = Vector::zero();
     for point in points {
-        center += *point
+        center += *point;
     }
     center /= F::from_usize(points.len());
 
     let mut uvs = vec![];
     for point in points {
-        uvs.push((point - center).normalize().polar_uv().into())
+        uvs.push((point - center).normalize().polar_uv().into());
     }
     uvs
 }
 
 impl<F> SbtParser<F>
 where
-    F: Float + FromStr + Texel + Lerp<Ratio = F> + 'static,
+    F: Float + FromStr + Texel + Lerp<Ratio = F>,
 {
     /* Primitive types */
 
@@ -202,10 +202,7 @@ where
 
     /* Composite types */
 
-    pub fn parse_sampler3<'a>(
-        p: Pair<Rule>,
-        resdir: &Path,
-    ) -> RResult<DynSampler<'a, F, Color<F>>> {
+    pub fn parse_sampler3(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<F, Color<F>>> {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
             Rule::sampler3 => {
@@ -231,7 +228,7 @@ where
         }
     }
 
-    pub fn parse_sampler1<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<'a, F, F>> {
+    pub fn parse_sampler1(p: Pair<Rule>, resdir: &Path) -> RResult<DynSampler<F, F>> {
         let ps = p.into_inner().next().unwrap();
         match ps.as_rule() {
             Rule::sampler1 => {
@@ -262,7 +259,7 @@ where
         }
     }
 
-    pub fn parse_material<'a>(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<'a, F>> {
+    pub fn parse_material(p: Pair<Rule>, resdir: &Path) -> RResult<DynMaterial<F>> {
         let mut diff = Color::black().dynsampler();
         let mut spec = Color::black().dynsampler();
         let mut refl = None;
@@ -327,9 +324,7 @@ where
                 Rule::updir => updir = Self::parse_val3(q),
                 Rule::fov => fov = Self::parse_val1(q)?,
                 Rule::look_at => look_at = Ok(Self::parse_val3(q)),
-                _ => {
-                    error!("{}", q)
-                }
+                _ => error!("{q}"),
             }
         }
 
@@ -337,7 +332,7 @@ where
             viewdir = Some(look_at? - position);
         }
         if viewdir.is_none() {
-            viewdir = Some(-Vector::unit_z())
+            viewdir = Some(-Vector::unit_z());
         }
 
         info!("Camera:");
@@ -377,7 +372,7 @@ where
                 other => error!("unsupported: {:?}", other),
             }
         }
-        info!("Cylinder(xfrm={:7.4?}, capped={})", xfrm, capped);
+        info!("Cylinder(xfrm={xfrm:7.4?}, capped={capped})");
         Ok(vec![Box::new(Cylinder::new(xfrm, capped, mat))])
     }
 
@@ -393,7 +388,7 @@ where
             match rule.as_rule() {
                 Rule::material_spec => mat = Self::parse_material(rule, resdir)?,
                 Rule::name => {}
-                other => error!("unsupported: {:?}", other),
+                other => error!("unsupported: {other:?}"),
             }
         }
 
@@ -461,14 +456,14 @@ where
                 Rule::points => {
                     for f in rule.into_inner() {
                         // info!("point: {:?}", f);
-                        points.push(Self::parse_val3b(f).xfrm_pos(&xfrm))
+                        points.push(Self::parse_val3b(f).xfrm_pos(&xfrm));
                         /* points.push(parse_val3(f.into_inner().next().ok_or(ParseError())?).xfrm(&xfrm)) */
                     }
                 }
                 Rule::faces3 => {
                     for f in rule.into_inner() {
                         // info!("face: {:?}", f);
-                        faces.push(Self::parse_int3(f))
+                        faces.push(Self::parse_int3(f));
                     }
                 }
                 Rule::faces4 => {
@@ -500,7 +495,7 @@ where
                 Rule::objfile => {
                     let path = rule.into_inner().next().unwrap().as_str();
                     let path = &path[1..path.len() - 1];
-                    info!("Reading {}", path);
+                    info!("Reading {path}");
                     let obj = Obj::load(resdir.join(path))?;
                     tris = crate::format::obj::load(obj, Vector::zero(), F::ONE)?;
                 }
@@ -519,7 +514,7 @@ where
             texture_uvs = spherical_uvs(&points);
         }
 
-        for face in faces.iter() {
+        for face in &faces {
             let m = if !materials.is_empty() {
                 Triblend::new(
                     materials[face[0]].clone(),
@@ -569,7 +564,7 @@ where
                 Rule::bottom_radius => bot_r = Self::parse_val1(rule)?,
                 Rule::capped => capped = Self::parse_bool(rule),
                 Rule::material_ref => {}
-                other => error!("unsupported: {:?}", other),
+                other => error!("unsupported: {other:?}"),
             }
         }
 
@@ -598,7 +593,7 @@ where
                 Rule::coeff1 => b = Self::parse_val1(q)?,
                 Rule::coeff2 => c = Self::parse_val1(q)?,
                 _ => {
-                    error!("{}", q)
+                    error!("{q}");
                 }
             }
         }
@@ -612,7 +607,7 @@ where
             pos,
             color,
         };
-        info!("{:7.3?}", res);
+        info!("{res:7.3?}");
         Ok(res)
     }
 
@@ -624,7 +619,7 @@ where
                 Rule::direction => direction = Ok(Self::parse_val3(q)),
                 Rule::color => color = Ok(Self::parse_val3(q)),
                 _ => {
-                    error!("{}", q)
+                    error!("{q}");
                 }
             }
         }
@@ -750,12 +745,12 @@ where
         }
     }
 
-    pub fn parse_file<'a>(
+    pub fn parse_file(
         p: Pairs<Rule>,
         resdir: &Path,
         width: u32,
         height: u32,
-    ) -> RResult<BoxScene<'a, F>> {
+    ) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -773,7 +768,7 @@ where
 
                 Rule::area_light => {
                     warn!("Simulating area_light using point_light");
-                    lights.push(Box::new(Self::parse_point_light(r)?))
+                    lights.push(Box::new(Self::parse_point_light(r)?));
                 }
 
                 Rule::spot_light => warn!("unimplemented: spot_light"),
@@ -788,6 +783,6 @@ where
                 )?),
             }
         }
-        Ok(Scene::new(cameras, objects, vec![], lights).with_ambient(ambient))
+        Ok(Scene::new(cameras, objects, vec![], lights)?.with_ambient(ambient))
     }
 }

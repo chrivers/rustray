@@ -40,30 +40,31 @@ macro_rules! vec3 {
 pub type Vector<F> = cgmath::Vector3<F>;
 
 impl<F: Float> Vectorx<F> for Vector<F> {
-    fn identity_x() -> Vector<F> {
-        Vector {
+    fn identity_x() -> Self {
+        Self {
             x: F::ONE,
             y: F::ZERO,
             z: F::ZERO,
         }
     }
 
-    fn identity_y() -> Vector<F> {
-        Vector {
+    fn identity_y() -> Self {
+        Self {
             x: F::ZERO,
             y: F::ONE,
             z: F::ZERO,
         }
     }
 
-    fn identity_z() -> Vector<F> {
-        Vector {
+    fn identity_z() -> Self {
+        Self {
             x: F::ZERO,
             y: F::ZERO,
             z: F::ONE,
         }
     }
 
+    #[must_use]
     fn surface_tangents(&self) -> (Self, Self) {
         let u = if self.x.abs() <= self.y.abs() && self.x.abs() <= self.z.abs() {
             /* x smallest: tangent in yz plane */
@@ -80,6 +81,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         (u, self.cross(u))
     }
 
+    #[must_use]
     fn from_f32(val: Vector<f32>) -> Self {
         Self {
             x: F::from_f32(val[0]),
@@ -88,6 +90,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         }
     }
 
+    #[must_use]
     fn from_f32s(val: [f32; 3]) -> Self {
         Self {
             x: F::from_f32(val[0]),
@@ -96,6 +99,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         }
     }
 
+    #[must_use]
     fn into_f32(self) -> Vector<f32> {
         Vector::new(
             self.x.to_f32().unwrap_or_default(),
@@ -112,6 +116,7 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         )
     }
 
+    #[must_use]
     fn from_vector3(val: glam::Vec3) -> Self {
         Self {
             x: F::from_f32(val[0]),
@@ -122,10 +127,11 @@ impl<F: Float> Vectorx<F> for Vector<F> {
 
     fn polar_angles(self) -> (F, F) {
         let theta = self.x.atan2(self.z);
-        let phi = self.y.acos();
+        let phi = self.y.asin();
         (phi, theta)
     }
 
+    #[must_use]
     fn min(&self, other: &Self) -> Self {
         vec3!(
             self.x.min(other.x),
@@ -142,10 +148,12 @@ impl<F: Float> Vectorx<F> for Vector<F> {
         )
     }
 
+    #[must_use]
     fn xfrm_pos(&self, xfrm: &Matrix4<F>) -> Self {
         Transform::new(*xfrm).pos(*self)
     }
 
+    #[must_use]
     fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self {
         Transform::new(*xfrm).nml(*self)
     }
@@ -158,9 +166,13 @@ where
     fn identity_x() -> Self;
     fn identity_y() -> Self;
     fn identity_z() -> Self;
+    #[must_use]
     fn min(&self, other: &Self) -> Self;
+    #[must_use]
     fn max(&self, other: &Self) -> Self;
+    #[must_use]
     fn xfrm_nml(&self, xfrm: &Matrix4<F>) -> Self;
+    #[must_use]
     fn xfrm_pos(&self, xfrm: &Matrix4<F>) -> Self;
 
     fn surface_tangents(&self) -> (Self, Self);
@@ -173,11 +185,13 @@ where
     fn into_f32(self) -> Vector<f32>;
 
     #[inline]
+    #[must_use]
     fn vector_to(self, other: Self) -> Self {
         other - self
     }
 
     #[inline]
+    #[must_use]
     fn normal_to(self, other: Self) -> Self {
         self.vector_to(other).normalize()
     }
@@ -190,24 +204,26 @@ where
         let raw_u = theta / (F::TWO * F::PI());
 
         let u = raw_u + F::HALF;
-        let v = phi / (F::TWO * F::PI());
+        let v = phi / F::PI();
 
         (u, v)
     }
 
     /* Reflect vector (self) around normal */
+    #[must_use]
     fn reflect(self, normal: &Self) -> Self {
         self - *normal * (F::TWO * self.dot(*normal))
     }
 
     /* Refract vector (self) relative to surface normal, according to ior.
     (Index of Refraction) */
+    #[must_use]
     fn refract(self, normal: &Self, ior: F) -> Self {
         let mut cosi = self.dot(*normal).clamp(-F::ONE, F::ONE);
         let eta_i;
         let eta_t;
         let n;
-        if cosi < F::ZERO {
+        if cosi.is_negative() {
             eta_i = F::ONE;
             eta_t = ior;
             cosi = -cosi;
@@ -222,7 +238,7 @@ where
 
         let k = F::ONE - eta * eta * (F::ONE - cosi * cosi);
 
-        if k < F::ZERO {
+        if k.is_negative() {
             Self::zero()
         } else {
             self * eta + n * (eta * cosi - k.sqrt())
@@ -234,10 +250,11 @@ where
      *
      * https://en.wikipedia.org/wiki/Fresnel_equations
      */
+    #[must_use]
     fn fresnel(self, normal: &Self, ior: F) -> F {
         let mut cos_i = self.dot(*normal).clamp(-F::ONE, F::ONE);
         let (eta_i, eta_t);
-        if cos_i > F::ZERO {
+        if cos_i.is_positive() {
             eta_i = ior;
             eta_t = F::ONE;
         } else {

@@ -16,9 +16,11 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Sphere<F, M> {
         let result = r.intersect_sphere(&Vector::zero(), F::ONE)?;
         let normal = r.extend(result);
 
+        let nml = self.xfrm.nml(normal);
         Some(
             ray.hit_at(result, self, &self.mat)
-                .with_normal(self.xfrm.nml(normal)),
+                .with_normal(nml)
+                .with_uv(nml.polar_uv().into()),
         )
     }
 }
@@ -33,6 +35,6 @@ impl<F: Float, M: Material<F = F>> Sphere<F, M> {
     pub fn place(pos: Vector<F>, radius: F, mat: M) -> Sphere<F, M> {
         let scale = Matrix4::from_scale(radius);
         let xlate = Matrix4::from_translation(pos);
-        Self::new(scale * xlate, mat)
+        Self::new(xlate * scale, mat)
     }
 }

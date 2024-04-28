@@ -9,8 +9,9 @@ pub struct TimeSlice {
 }
 
 impl TimeSlice {
-    pub fn new(start: &str) -> TimeSlice {
-        TimeSlice {
+    #[must_use]
+    pub fn new(start: &str) -> Self {
+        Self {
             map: HashMap::new(),
             name: start.to_string(),
             time: Instant::now(),
@@ -31,7 +32,7 @@ impl TimeSlice {
     }
 
     pub fn stop(&mut self) {
-        self.set("")
+        self.set("");
     }
 
     pub fn get(&self, key: &'static str) -> Option<Duration> {

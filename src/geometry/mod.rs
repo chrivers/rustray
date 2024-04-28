@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::types::ray::{Maxel, Ray};
 use crate::types::transform::Transform;
 use crate::types::vector::Vectorx;
@@ -11,7 +13,7 @@ use rtbvh::Aabb;
 
 use glam::f32::Vec3;
 
-pub trait Geometry<F: Float>: Sync {
+pub trait Geometry<F: Float>: Debug + Sync + Send {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>>;
     fn normal(&self, _maxel: &mut Maxel<F>) -> Vector<F> {
         Vector::zero()
@@ -26,58 +28,38 @@ pub trait Geometry<F: Float>: Sync {
 
 pub trait FiniteGeometry<F: Float>: Geometry<F> + rtbvh::Primitive {}
 
-impl<'a, F: Float> Geometry<F> for Box<dyn Geometry<F> + 'a> {
+impl<F: Float, T> Geometry<F> for Box<T>
+where
+    T: Geometry<F> + ?Sized,
+{
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        self.as_ref().intersect(ray)
+        (**self).intersect(ray)
     }
 
     fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F> {
-        self.as_ref().normal(maxel)
+        (**self).normal(maxel)
     }
 
     fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().uv(maxel)
+        (**self).uv(maxel)
     }
 
     fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().st(maxel)
-    }
-}
-
-impl<'a, F: Float> Geometry<F> for Box<dyn FiniteGeometry<F> + 'a> {
-    fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
-        self.as_ref().intersect(ray)
-    }
-
-    fn normal(&self, maxel: &mut Maxel<F>) -> Vector<F> {
-        self.as_ref().normal(maxel)
-    }
-
-    fn uv(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().uv(maxel)
-    }
-
-    fn st(&self, maxel: &mut Maxel<F>) -> Point<F> {
-        self.as_ref().st(maxel)
+        (**self).st(maxel)
     }
 }
 
 impl<'a, F: Float> rtbvh::Primitive for Box<dyn FiniteGeometry<F> + 'a> {
     fn center(&self) -> Vec3 {
-        self.as_ref().center()
+        (**self).center()
     }
 
     fn aabb(&self) -> Aabb {
-        self.as_ref().aabb()
+        (**self).aabb()
     }
 }
 
-impl<F: Float, G> FiniteGeometry<F> for G
-where
-    G: Geometry<F> + Send,
-    Self: rtbvh::Primitive,
-{
-}
+impl<F: Float, G: Geometry<F> + rtbvh::Primitive> FiniteGeometry<F> for G {}
 
 pub fn build_aabb_ranged<F: Float>(xfrm: &Transform<F>, x: [F; 2], y: [F; 2], z: [F; 2]) -> Aabb {
     /* Transform all corner points, expand aabb with each result */

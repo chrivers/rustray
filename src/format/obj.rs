@@ -12,11 +12,11 @@ use crate::types::result::RResult;
 use crate::types::{Color, Float, Point, Vector};
 use crate::types::vector::Vectorx;
 
-fn obj_sampler<'a, F: Float + 'a>(
+fn obj_sampler<F: Float + Texel>(
     resdir: &Path,
     map: &Option<String>,
     col: &Option<[f32; 3]>,
-) -> DynSampler<'a, F, Color<F>> {
+) -> DynSampler<F, Color<F>> {
     match map {
         Some(ref kd) => {
             info!("loading [{}]", kd);
@@ -27,31 +27,32 @@ fn obj_sampler<'a, F: Float + 'a>(
                     Color::white().dynsampler()
                 })
         }
-        None => col.map(|c| Color::from(c)).unwrap_or(Color::white()).dynsampler(),
+        None => col.map(Color::from).unwrap_or_else(Color::black).dynsampler()
     }
 }
 
-pub fn load<'a, F: Float + Texel + 'a>(
+pub fn load<F: Float + Texel>(
     mut obj: Obj,
     pos: Vector<F>,
     scale: F,
-) -> RResult<Vec<Triangle<F, DynMaterial<'a, F>>>> {
+) -> RResult<Vec<Triangle<F, DynMaterial<F>>>> {
     let mut corner = Vector::new(F::max_value(), F::max_value(), F::max_value());
 
     for o in &obj.data.objects {
         for g in &o.groups {
             for poly in &g.polys {
+                let pos = &obj.data.position;
                 for n in 0..(poly.0.len() - 1) {
-                    corner.x = corner.x.min(F::from_f32(obj.data.position[poly.0[n].0][0]));
-                    corner.y = corner.y.min(F::from_f32(obj.data.position[poly.0[n].0][1]));
-                    corner.z = corner.z.min(F::from_f32(obj.data.position[poly.0[n].0][2]));
+                    corner.x = corner.x.min(F::from_f32(pos[poly.0[n].0][0]));
+                    corner.y = corner.y.min(F::from_f32(pos[poly.0[n].0][1]));
+                    corner.z = corner.z.min(F::from_f32(pos[poly.0[n].0][2]));
                 }
             }
         }
     }
 
     let mut tris = vec![];
-    obj.load_mtls().unwrap();
+    obj.load_mtls()?;
     /* info!("mats: {:#?}", obj.data.material_libs); */
     for o in &obj.data.objects {
         for g in &o.groups {
@@ -81,10 +82,11 @@ pub fn load<'a, F: Float + Texel + 'a>(
                 if !obj.data.texture.is_empty() && poly.0[0].1.is_none() {
                     continue;
                 }
+                let data = &obj.data;
                 for n in 1..(poly.0.len() - 1) {
-                    let a = (Vector::from_f32s(obj.data.position[poly.0[0].0]) - corner) * scale + pos;
-                    let b = (Vector::from_f32s(obj.data.position[poly.0[n].0]) - corner) * scale + pos;
-                    let c = (Vector::from_f32s(obj.data.position[poly.0[n + 1].0]) - corner) * scale + pos;
+                    let a = (Vector::from_f32s(data.position[poly.0[0].0]) - corner) * scale + pos;
+                    let b = (Vector::from_f32s(data.position[poly.0[n].0]) - corner) * scale + pos;
+                    let c = (Vector::from_f32s(data.position[poly.0[n + 1].0]) - corner) * scale + pos;
 
                     /* FIXME: .unwrap() is a terrible when loading data from a file */
                     let (na, nb, nc) = if obj.data.normal.is_empty() {
@@ -92,9 +94,9 @@ pub fn load<'a, F: Float + Texel + 'a>(
                         (n, n, n)
                     } else {
                         (
-                            Vector::from_f32s(obj.data.normal[poly.0[0].2.unwrap()]).normalize(),
-                            Vector::from_f32s(obj.data.normal[poly.0[n].2.unwrap()]).normalize(),
-                            Vector::from_f32s(obj.data.normal[poly.0[n + 1].2.unwrap()]).normalize(),
+                            Vector::from_f32s(data.normal[poly.0[0].2.unwrap()]).normalize(),
+                            Vector::from_f32s(data.normal[poly.0[n].2.unwrap()]).normalize(),
+                            Vector::from_f32s(data.normal[poly.0[n + 1].2.unwrap()]).normalize(),
                         )
                     };
 
@@ -102,9 +104,9 @@ pub fn load<'a, F: Float + Texel + 'a>(
                         (Point::zero(), Point::zero(), Point::zero())
                     } else {
                         (
-                            Point::from(obj.data.texture[poly.0[0].1.unwrap()]),
-                            Point::from(obj.data.texture[poly.0[n].1.unwrap()]),
-                            Point::from(obj.data.texture[poly.0[n + 1].1.unwrap()]),
+                            Point::from(data.texture[poly.0[0].1.unwrap()]),
+                            Point::from(data.texture[poly.0[n].1.unwrap()]),
+                            Point::from(data.texture[poly.0[n + 1].1.unwrap()]),
                         )
                     };
 

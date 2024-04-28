@@ -14,12 +14,7 @@ impl<F: Float> ColorST<F> {
 impl<F: Float> Material for ColorST<F> {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        _lights: &[&dyn Light<F>],
-        _rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, _rt: &dyn RayTracer<F>) -> Color<F> {
         let st = maxel.st();
         let w = F::ONE - st.x - st.y;
         Color::new(st.x, w, st.y) * self.scale

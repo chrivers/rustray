@@ -1,6 +1,6 @@
 use crate::geometry::{FiniteGeometry, Geometry};
 use crate::types::ray::{Maxel, Ray};
-use crate::types::{BvhExt, Camera, Color, Float, Vector};
+use crate::types::{BvhExt, Camera, Color, Float, RResult, Vector};
 
 use cgmath::MetricSpace;
 
@@ -32,6 +32,7 @@ pub trait RayTracer<F: Float>: Sync {
     fn ray_trace(&self, ray: &Ray<F>) -> Option<Color<F>>;
     fn ambient(&self) -> Color<F>;
     fn background(&self) -> Color<F>;
+    fn get_lights(&self) -> &[Box<dyn Light<F>>];
 }
 
 pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
@@ -41,40 +42,49 @@ pub struct Scene<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> {
     pub lights: Vec<L>,
     pub bvh: Bvh,
     pub ambient: Color<F>,
+    pub background: Color<F>,
 }
 
-pub type BoxScene<'a, F> =
-    Scene<F, Box<dyn FiniteGeometry<F> + 'a>, Box<dyn Geometry<F> + 'a>, Box<dyn Light<F> + 'a>>;
+pub type BoxScene<F> = Scene<F,
+                             Box<dyn FiniteGeometry<F> + 'static>,
+                             Box<dyn Geometry<F> + 'static>,
+                             Box<dyn Light<F> + 'static>
+                             >;
 
 impl<F: Float, B: FiniteGeometry<F>, G: Geometry<F>, L: Light<F>> Scene<F, B, G, L> {
-    pub fn new(cameras: Vec<Camera<F>>, objects: Vec<B>, geometry: Vec<G>, lights: Vec<L>) -> Self {
-        if objects.is_empty() {
-            panic!("BVH crate fails with empty lists");
-        }
+    pub fn new(
+        cameras: Vec<Camera<F>>,
+        objects: Vec<B>,
+        geometry: Vec<G>,
+        lights: Vec<L>,
+    ) -> RResult<Self> {
+        let bvh = if objects.is_empty() {
+            Bvh::default()
+        } else {
+            let aabbs = objects
+                .iter()
+                .map(rtbvh::Primitive::aabb)
+                .collect::<Vec<rtbvh::Aabb>>();
 
-        let aabbs = objects
-            .iter()
-            .map(|t| t.aabb())
-            .collect::<Vec<rtbvh::Aabb>>();
+            Builder {
+                aabbs: Some(aabbs.as_slice()),
+                primitives: objects.as_slice(),
+                primitives_per_leaf: NonZeroUsize::new(16),
+            }
+            /* .construct_spatial_sah()? */
+            /* .construct_locally_ordered_clustered()?; */
+            .construct_binned_sah()?
+        };
 
-        let bvh = Builder {
-            aabbs: Some(aabbs.as_slice()),
-            primitives: objects.as_slice(),
-            primitives_per_leaf: NonZeroUsize::new(16),
-        }
-        /* .construct_spatial_sah().unwrap(); */
-        .construct_binned_sah()
-        .unwrap();
-        /* .construct_locally_ordered_clustered().unwrap(); */
-
-        Self {
+        Ok(Self {
             cameras,
             objects,
             geometry,
             lights,
             bvh,
+            background: Color::new(F::ZERO, F::ZERO, F::from_f32(0.2)),
             ambient: Color::black(),
-        }
+        })
     }
 
     pub fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {

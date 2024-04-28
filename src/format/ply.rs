@@ -2,7 +2,6 @@ use std::fmt::Debug;
 use std::io::BufRead;
 use std::marker::PhantomData;
 use std::path::Path;
-use std::str::FromStr;
 
 use cgmath::InnerSpace;
 use num_traits::Zero;
@@ -49,13 +48,13 @@ impl<F: Float> ply::PropertyAccess for Vertex<F> {
                 "s" | "t" => {}
                 "tx" | "ty" | "tz" => {}
                 "bx" | "by" | "bz" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {}", k),
+                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
             },
             ply::Property::UChar(_v) => match key.as_ref() {
                 "red" | "green" | "blue" | "alpha" => {}
-                k => panic!("Vertex: Unexpected key/value combination: key: {}", k),
+                k => panic!("Vertex: Unexpected key/value combination: key: {k}"),
             },
-            t => panic!("Vertex: Unexpected type: {:?}", t),
+            t => panic!("Vertex: Unexpected type: {t:?}"),
         }
     }
 }
@@ -70,38 +69,35 @@ impl<F: Float> ply::PropertyAccess for Face<F> {
     fn set_property(&mut self, key: String, property: ply::Property) {
         match (key.as_ref(), property) {
             ("vertex_indices", ply::Property::ListInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("vertex_indices", ply::Property::ListUInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("vertex_index", ply::Property::ListUInt(vec)) => {
-                self.idx = vec.iter().map(|x| *x as usize).collect()
+                self.idx = vec.into_iter().map(|x| x as usize).collect();
             }
             ("texcoord", ply::Property::ListFloat(vec)) => {
-                self.uv = vec.iter().map(|x| F::from_f32(*x)).collect()
+                self.uv = vec.into_iter().map(F::from_f32).collect();
             }
             ("red" | "green" | "blue" | "alpha", _) => {}
             ("flags", _) => {}
             ("texnumber", _) => {}
-            (k, t) => panic!(
-                "Face: Unexpected key/value combination: key: {} (type {:?})",
-                k, t
-            ),
+            (k, t) => panic!("Face: Unexpected key/value combination: key: {k} (type {t:?})"),
         }
     }
 }
 
 impl<F> PlyParser<F>
 where
-    F: Float + FromStr + Texel + 'static,
+    F: Float + Texel,
 {
     pub fn parse_file(
         file: &mut impl BufRead,
         _resdir: &Path,
         width: u32,
         height: u32,
-    ) -> RResult<BoxScene<'static, F>> {
+    ) -> RResult<BoxScene<F>> {
         let mut cameras = vec![];
         let mut objects: Vec<Box<dyn FiniteGeometry<F>>> = vec![];
         let mut lights: Vec<Box<dyn Light<F>>> = vec![];
@@ -116,10 +112,10 @@ where
         for (_, element) in &header.elements {
             match element.name.as_ref() {
                 "vertex" => {
-                    vertex_list = vertex_parser.read_payload_for_element(file, element, &header)?
+                    vertex_list = vertex_parser.read_payload_for_element(file, element, &header)?;
                 }
                 "face" => {
-                    face_list = face_parser.read_payload_for_element(file, element, &header)?
+                    face_list = face_parser.read_payload_for_element(file, element, &header)?;
                 }
                 other => return Err(Error::ParseUnsupported(other.to_owned())),
             }
@@ -137,13 +133,13 @@ where
                 let mut c = vertex_list[face.idx[n + 1]];
                 let n = (a.0 - b.0).cross(a.0 - c.0);
                 if a.1.is_zero() {
-                    a.1 = n
+                    a.1 = n;
                 }
                 if b.1.is_zero() {
-                    b.1 = n
+                    b.1 = n;
                 }
                 if c.1.is_zero() {
-                    c.1 = n
+                    c.1 = n;
                 }
                 let tri = Triangle::new(
                     a.0,
@@ -194,6 +190,6 @@ where
 
         lights.push(Box::new(lgt));
 
-        Ok(Scene::new(cameras, objects, vec![], lights))
+        Scene::new(cameras, objects, vec![], lights)
     }
 }

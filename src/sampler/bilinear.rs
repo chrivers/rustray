@@ -1,6 +1,8 @@
+use std::fmt::{self, Debug};
+
 use super::samp_util::*;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Bilinear<P: Texel, S: Sampler<u32, P>> {
     samp: S,
     _p0: PhantomData<P>,
@@ -12,6 +14,14 @@ impl<P: Texel, S: Sampler<u32, P>> Bilinear<P, S> {
             samp,
             _p0: PhantomData {},
         }
+    }
+}
+
+impl<P: Texel, S: Sampler<u32, P>> Debug for Bilinear<P, S> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.debug_struct("Bilinear")
+            .field("<type>", &self._p0)
+            .finish_non_exhaustive()
     }
 }
 

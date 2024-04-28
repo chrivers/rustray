@@ -22,7 +22,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cube<F, M> {
         for it in 0..6 {
             let mod0 = it % 3;
 
-            if d[mod0] == F::ZERO {
+            if d[mod0].is_zero() {
                 continue;
             }
 

@@ -16,9 +16,9 @@ pub enum ACGQuality {
 impl Display for ACGQuality {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ACGQuality::PNG_1K => write!(f, "1K-PNG"),
-            ACGQuality::PNG_2K => write!(f, "2K-PNG"),
-            ACGQuality::PNG_4K => write!(f, "4K-PNG"),
+            Self::PNG_1K => write!(f, "1K-PNG"),
+            Self::PNG_2K => write!(f, "2K-PNG"),
+            Self::PNG_4K => write!(f, "4K-PNG"),
         }
     }
 }
@@ -34,6 +34,7 @@ impl ACGDownloader {
         Ok(Self { root, qual })
     }
 
+    #[must_use]
     pub fn fullname(&self, name: &str) -> PathBuf {
         let mut pb = self.root.clone();
         pb.push(self.filename(name));

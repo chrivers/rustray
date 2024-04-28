@@ -2,6 +2,8 @@ use super::mat_util::*;
 
 use num_traits::Zero;
 
+/// Smart material shader that supports ambient, diffuse, specular, translucent,
+/// and reflective light. Implements the Phong shader model for light transport.
 #[derive(Clone, Debug)]
 pub struct Smart<F, S1, S2, S3, S4, S5, S6>
 where
@@ -63,12 +65,7 @@ where
 {
     type F = F;
 
-    fn render(
-        &self,
-        maxel: &mut Maxel<F>,
-        lights: &[&dyn Light<F>],
-        rt: &dyn RayTracer<F>,
-    ) -> Color<F> {
+    fn render(&self, maxel: &mut Maxel<F>, rt: &dyn RayTracer<F>) -> Color<F> {
         let uv = maxel.uv();
         let normal = maxel.nml();
         let diff_color = self.kd.sample(uv);
@@ -99,19 +96,18 @@ where
 
         res += refr_term.lerp(refl_term, maxel.fresnel(ior));
 
-        for light in lights {
+        for light in rt.get_lights() {
             let light_color = rt
-                .ray_shadow(maxel, *light)
+                .ray_shadow(maxel, light)
                 .unwrap_or_else(|| light.get_color());
 
             let light_vec = maxel.pos.vector_to(light.get_position());
             let light_dir = light_vec.normalize();
 
-            let light_color = light.attenuate(light_color, light_vec.magnitude());
-
             let lambert = normal.dot(light_dir);
 
             if lambert > F::BIAS {
+                let light_color = light.attenuate(light_color, light_vec.magnitude());
                 res += (light_color * diff_color) * lambert;
 
                 if !spec_color.is_zero() {

@@ -13,7 +13,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
     fn intersect(&self, ray: &Ray<F>) -> Option<Maxel<F>> {
         let r = ray.xfrm_inv(&self.xfrm);
 
-        if r.dir.z == F::ZERO {
+        if r.dir.z.is_zero() {
             return None;
         }
 
@@ -27,15 +27,15 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Square<F, M> {
         p.x += F::HALF;
         p.y += F::HALF;
 
-        if p.x < F::ZERO || p.x > F::ONE {
+        if !p.x.is_unit() {
             return None;
         }
 
-        if p.y < F::ZERO || p.y > F::ONE {
+        if !p.y.is_unit() {
             return None;
         }
 
-        let normal = if r.dir.z > F::ZERO {
+        let normal = if r.dir.z.is_positive() {
             -Vector::unit_z()
         } else {
             Vector::unit_z()

@@ -16,10 +16,11 @@ pub struct Ray<F: Float> {
 }
 
 impl<'a, F: Float> Ray<F> {
-    pub fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Ray<F> {
+    pub const fn new(pos: Vector<F>, dir: Vector<F>, lvl: u32) -> Self {
         Ray { pos, dir, lvl }
     }
 
+    #[must_use]
     pub fn extend(self, scale: F) -> Vector<F> {
         self.pos + self.dir * scale
     }
@@ -33,12 +34,14 @@ impl<'a, F: Float> Ray<F> {
         Maxel::new(self.extend(ext), self.dir, self.lvl, obj, mat)
     }
 
-    pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>> {
+    #[must_use]
+    pub fn inverse_transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
         let inv = xfrm.inverse_transform()?;
         self.transform(&inv)
     }
 
-    pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Ray<F>> {
+    #[must_use]
+    pub fn transform(&self, xfrm: &Matrix4<F>) -> Option<Self> {
         Some(Self {
             pos: xfrm.transform_point(Point3::from_vec(self.pos)).to_vec(),
             dir: xfrm.transform_vector(self.dir),
@@ -46,7 +49,8 @@ impl<'a, F: Float> Ray<F> {
         })
     }
 
-    pub fn xfrm_inv(&self, xfrm: &Transform<F>) -> Ray<F> {
+    #[must_use]
+    pub fn xfrm_inv(&self, xfrm: &Transform<F>) -> Self {
         Self {
             pos: xfrm.pos_inv(self.pos),
             dir: xfrm.dir_inv(self.dir),
@@ -54,7 +58,8 @@ impl<'a, F: Float> Ray<F> {
         }
     }
 
-    pub fn xfrm(&self, xfrm: &Transform<F>) -> Ray<F> {
+    #[must_use]
+    pub fn xfrm(&self, xfrm: &Transform<F>) -> Self {
         Self {
             pos: xfrm.pos(self.pos),
             dir: xfrm.dir(self.dir),
@@ -110,13 +115,13 @@ impl<'a, F: Float> Ray<F> {
 
         let s = self.pos - *a;
         let u = f * s.dot(h);
-        if u < F::ZERO || u > F::ONE {
+        if !u.is_unit() {
             return None;
         }
 
         let q = s.cross(edge1);
         let v = f * self.dir.dot(q);
-        if v < F::ZERO || u + v > F::ONE {
+        if v.is_negative() || u + v > F::ONE {
             return None;
         }
 
@@ -306,7 +311,7 @@ impl<'a, F: Float> Ray<F> {
         let w1 = e1.cross(*e2);
         let w = a.dot(w1);
 
-        if w < F::ZERO {
+        if w.is_negative() {
             return None;
         }
 
@@ -352,7 +357,7 @@ impl<F: Float> From<&Ray<F>> for rtbvh::Ray {
 
 pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
     let (t0, t1) = quadratic2(a, b, c)?;
-    if t0 < F::ZERO || t1 < F::ZERO {
+    if t0.is_negative() || t1.is_negative() {
         None
     } else {
         Some(t0.min(t1))
@@ -362,11 +367,11 @@ pub fn quadratic<F: Float>(a: F, b: F, c: F) -> Option<F> {
 pub fn quadratic2<F: Float>(a: F, b: F, c: F) -> Option<(F, F)> {
     let discr = b * b - F::FOUR * a * c;
 
-    if discr < F::ZERO {
+    if discr.is_negative() {
         return None;
     }
 
-    let q = if b > F::ZERO {
+    let q = if b.is_positive() {
         -F::HALF * (b + discr.sqrt())
     } else {
         -F::HALF * (b - discr.sqrt())

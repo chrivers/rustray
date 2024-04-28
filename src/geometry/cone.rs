@@ -25,17 +25,17 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
         let mut beta = (top_r - bot_r) / self.height;
 
         if beta.abs() < F::BIAS {
-            beta = F::BIAS
+            beta = F::BIAS;
         }
 
         let mut gamma;
-        gamma = if beta < F::ZERO {
+        gamma = if beta.is_negative() {
             top_r / beta
         } else {
             bot_r / beta
         };
 
-        if gamma < F::ZERO {
+        if gamma.is_negative() {
             gamma -= self.height;
         }
 
@@ -67,7 +67,7 @@ impl<F: Float, M: Material<F = F>> Geometry<F> for Cone<F, M> {
             let p = r.extend(tx);
             if p.x * p.x + p.y * p.y <= rad * rad {
                 *root = tx;
-                if dz > F::ZERO {
+                if dz.is_positive() {
                     *normal = -Vector::unit_z();
                 } else {
                     *normal = Vector::unit_z();

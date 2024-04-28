@@ -14,6 +14,7 @@ use crate::{mat_util::Texel, sampler::samp_util::Lerp, types::float::Float};
 pub struct FP<const P: u8>(i64);
 
 impl<const P: u8> FP<P> {
+    #[must_use]
     pub const fn int(&self) -> i64 {
         self.0 >> P
     }
@@ -21,10 +22,12 @@ impl<const P: u8> FP<P> {
     const SCALING: i64 = (1i64 << P);
     const MASK: i64 = Self::SCALING - 1;
 
+    #[must_use]
     pub fn into_f32(&self) -> f32 {
         self.into_f64() as f32
     }
 
+    #[must_use]
     pub fn into_f64(&self) -> f64 {
         (self.0 as f64) / (Self::SCALING as f64)
     }
